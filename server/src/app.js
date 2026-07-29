@@ -16,12 +16,13 @@ const app = express();
 
 /* ------------------------- Security Middleware ------------------------- */
 
-app.use(
-    cors({
-        origin: process.env.CLIENT_URL || "*",
-        credentials: true,
-    })
-);
+const corsOptions = {
+    origin: process.env.CLIENT_URL ? process.env.CLIENT_URL.split(',') : true,
+    credentials: true,
+};
+app.use(cors(corsOptions));
+// Ensure preflight requests are handled
+app.options('*', cors(corsOptions));
 
 app.use(
   helmet({
