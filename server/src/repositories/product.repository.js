@@ -1,6 +1,6 @@
 // server/src/repositories/product.repository.js
 
-const Product = require("../models/Product");
+const Product = require("../models/product");
 
 const create = async (productData) => {
   return await Product.create(productData);
