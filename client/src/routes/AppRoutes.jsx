@@ -15,7 +15,7 @@ import AddProduct from "../pages/Admin/AddProduct";
 import ProductList from "../pages/Admin/ProductList";
 import EditProduct from "../pages/Admin/EditProduct";
 import MemberDashboard from "../pages/Dashboard/MemberDashboard";
-import VerifyOtp from "../pages/auth/VerifyOtp";
+// import VerifyOtp from "../pages/auth/VerifyOtp";
 import ProductDetails from "../pages/Products/ProductDetails";
 const AppRoutes = () => {
   return (
@@ -34,7 +34,6 @@ const AppRoutes = () => {
         <Route path="/register" element={<Register />} />
         <Route path="/products/:id" element={<ProductDetails />} />
         <Route path="/dashboard" element={<MemberDashboard />} />
-        <Route path="/verify-otp" element={<VerifyOtp />} />
         <Route path="/admin/products" element={<ProductList />} />
         <Route path="/admin/products/add" element={<AddProduct />} />
         <Route
