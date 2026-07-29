@@ -18,6 +18,7 @@ import {
 
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
+import { getImageUrl } from "../../utils/imageUrl";
 
 import {
   getProducts,
@@ -166,7 +167,7 @@ return (
                       <img
                         src={
                           product.images?.length
-                            ? `http://localhost:5000${product.images[0]}`
+                            ? `src={getImageUrl(product.images[0])}`
                             : "https://via.placeholder.com/80"
                         }
                         alt={product.productName}

@@ -8,13 +8,14 @@ import {
   Box,
   Chip,
 } from "@mui/material";
+import { getImageUrl } from "../../utils/imageUrl";
 
 const ProductCard = ({ product }) => {
   const navigate = useNavigate();
 
   const imageUrl =
     product.images?.length > 0
-      ? `http://localhost:5000${product.images[0]}`
+      ? `src={getImageUrl(product.images[0])}`
       : "https://via.placeholder.com/400x300";
 
   return (

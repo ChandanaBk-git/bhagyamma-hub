@@ -10,6 +10,7 @@ import NotFound from "../pages/NotFound/NotFound";
 // Authentication
 import Login from "../pages/Auth/Login";
 import Register from "../pages/Auth/Register";
+import axios from "axios";
 
 import AddProduct from "../pages/Admin/AddProduct";
 import ProductList from "../pages/Admin/ProductList";
@@ -36,10 +37,7 @@ const AppRoutes = () => {
         <Route path="/dashboard" element={<MemberDashboard />} />
         <Route path="/admin/products" element={<ProductList />} />
         <Route path="/admin/products/add" element={<AddProduct />} />
-        <Route
-  path="/admin/products/edit/:id"
-  element={<EditProduct />}
-/>
+        <Route path="/admin/products/edit/:id" element={<EditProduct />} />
       </Route>
 
       {/* 404 */}

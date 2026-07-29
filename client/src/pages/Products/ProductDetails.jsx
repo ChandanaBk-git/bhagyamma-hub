@@ -12,6 +12,7 @@ import {
   Stack,
 } from "@mui/material";
 
+import { getImageUrl } from "../../utils/imageUrl";
 import { getProductById } from "../../services/product.service";
 
 const ProductDetails = () => {
@@ -82,7 +83,7 @@ const ProductDetails = () => {
 
   const imageUrl =
     product.images && product.images.length > 0
-      ? `http://localhost:5000${product.images[selectedImage]}`
+      ? `src={getImageUrl(product.images[selectedImage])}`
       : "https://via.placeholder.com/600";
 
   return (
@@ -156,7 +157,7 @@ const ProductDetails = () => {
                     }}
                   >
                     <img
-                      src={`http://localhost:5000${image}`}
+                      src={getImageUrl(image)}
                       alt={`Product ${index + 1}`}
                       style={{
                         width: "100%",

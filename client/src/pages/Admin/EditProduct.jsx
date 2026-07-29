@@ -13,6 +13,7 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
+import { getImageUrl } from "../../utils/imageUrl";
 
 import {
   getProductById,
@@ -259,7 +260,7 @@ const EditProduct = () => {
                       <img
                         src={
                           image.startsWith("/uploads")
-                            ? `http://localhost:5000${image}`
+                            ? `src={getImageUrl(image)}`
                             : image
                         }
                         alt=""

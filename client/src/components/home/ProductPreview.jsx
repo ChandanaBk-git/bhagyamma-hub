@@ -12,6 +12,7 @@ import {
 } from "@mui/material";
 
 import { Link } from "react-router-dom";
+import { getImageUrl } from "../../utils/imageUrl";
 import { getProducts } from "../../services/product.service";
 
 const ProductPreview = () => {
@@ -77,7 +78,7 @@ const ProductPreview = () => {
             {products.slice(0, 6).map((product) => {
               const imageUrl =
                 product.images?.length > 0
-                  ? `http://localhost:5000${product.images[0]}`
+                  ? `src={getImageUrl(product.images[0])}`
                   : "https://via.placeholder.com/400x300";
 
               return (
