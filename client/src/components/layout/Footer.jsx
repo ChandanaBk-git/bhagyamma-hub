@@ -83,7 +83,7 @@ const Footer = () => {
             <Box display="flex" alignItems="center" mb={1}>
               <Person sx={{ mr: 1 }} fontSize="small" />
               <Typography variant="body2">
-                <strong>Owner:</strong> Hucharaddi
+                <strong>Prop :</strong> Hucharaddi
               </Typography>
             </Box>
 
