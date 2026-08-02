@@ -6,38 +6,95 @@ import {
   Toolbar,
   Typography,
   Tooltip,
+  useTheme,
 } from "@mui/material";
 
-import NotificationsNoneIcon from "@mui/icons-material/NotificationsNone";
-import AccountCircleIcon from "@mui/icons-material/AccountCircle";
+import {
+  MenuRounded,
+  MenuOpenRounded,
+  NotificationsNoneRounded,
+} from "@mui/icons-material";
 
-const TopNavbar = ({ drawerWidth }) => {
-  const user = JSON.parse(localStorage.getItem("user")) || {};
+const TopNavbar = ({
+  drawerWidth,
+  collapsed,
+  handleCollapse,
+  handleDrawerToggle,
+  isMobile,
+}) => {
+  const theme = useTheme();
 
-  return (
+    return (
     <AppBar
       position="fixed"
-      color="inherit"
-      elevation={1}
+      elevation={0}
       sx={{
-        width: `calc(100% - ${drawerWidth}px)`,
-        ml: `${drawerWidth}px`,
-        bgcolor: "background.paper",
+        bgcolor: "#ffffff",
+        color: "#222",
+
+        borderBottom: "1px solid #E5E7EB",
+
+        width: {
+          md: `calc(100% - ${drawerWidth}px)`,
+        },
+
+        ml: {
+          md: `${drawerWidth}px`,
+        },
+
+        transition: "all .3s ease",
+
+        boxShadow: "0 2px 10px rgba(0,0,0,.05)",
       }}
     >
-      <Toolbar sx={{ justifyContent: "space-between" }}>
-        {/* Left Side */}
-        <Box>
-          <Typography variant="h5" fontWeight="bold">
+      <Toolbar
+        sx={{
+          display: "flex",
+          justifyContent: "space-between",
+        }}
+      >
+
+              <Box
+          sx={{
+            display: "flex",
+            alignItems: "center",
+          }}
+        >
+          <Tooltip title="Menu">
+            <IconButton
+              color="inherit"
+              onClick={
+                isMobile
+                  ? handleDrawerToggle
+                  : handleCollapse
+              }
+            >
+              {collapsed ? (
+                <MenuRounded />
+              ) : (
+                <MenuOpenRounded />
+              )}
+            </IconButton>
+          </Tooltip>
+
+          <Typography
+            variant="h6"
+            fontWeight={700}
+            sx={{
+              ml: 2,
+              display: {
+                xs: "none",
+                sm: "block",
+              },
+            }}
+          >
             Admin Dashboard
           </Typography>
 
-          <Typography variant="body2" color="text.secondary">
-            Welcome back 👋
-          </Typography>
-        </Box>
+                  </Box>
 
-        {/* Right Side */}
+        {/* Right Section */}
+
         <Box
           sx={{
             display: "flex",
@@ -46,30 +103,54 @@ const TopNavbar = ({ drawerWidth }) => {
           }}
         >
           <Tooltip title="Notifications">
-            <IconButton>
-              <NotificationsNoneIcon />
+            <IconButton
+              sx={{
+                bgcolor: "#F5F7FA",
+
+                "&:hover": {
+                  bgcolor: "#E8F5E9",
+                },
+              }}
+            >
+              <NotificationsNoneRounded />
             </IconButton>
           </Tooltip>
 
-          <Avatar sx={{ bgcolor: "primary.main" }}>
-            <AccountCircleIcon />
-          </Avatar>
-
-          <Box>
+          <Box
+            sx={{
+              display: {
+                xs: "none",
+                sm: "flex",
+              },
+              flexDirection: "column",
+              alignItems: "flex-end",
+            }}
+          >
             <Typography
-              variant="subtitle1"
-              fontWeight={600}
+              fontWeight={700}
+              fontSize={15}
             >
-              {user?.name || "Super Admin"}
+              Super Admin
             </Typography>
 
             <Typography
               variant="caption"
               color="text.secondary"
             >
-              {user?.role || "SUPER_ADMIN"}
+              Bhagyamma Hub
             </Typography>
           </Box>
+
+          <Avatar
+            sx={{
+              bgcolor: theme.palette.primary.main,
+              width: 42,
+              height: 42,
+              cursor: "pointer",
+            }}
+          >
+            
+          </Avatar>
         </Box>
       </Toolbar>
     </AppBar>
