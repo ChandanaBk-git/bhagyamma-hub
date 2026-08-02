@@ -1,14 +1,10 @@
 import { useEffect, useState } from "react";
-
 import {
   FaChevronDown,
   FaChevronRight,
   FaEye,
-  FaUser,
-  FaPhoneAlt,
+  FaUserCircle,
   FaUsers,
-  FaBoxOpen,
-  FaMoneyBillWave,
 } from "react-icons/fa";
 
 const ReferralNode = ({
@@ -24,23 +20,20 @@ const ReferralNode = ({
 
   return (
     <div className="tree-node">
+
       <div className="member-card">
 
         {/* Avatar */}
 
         <div className="avatar">
-          <FaUser />
+          <FaUserCircle />
         </div>
 
         {/* Name */}
 
-        <h3>{member.name}</h3>
-
-        {/* Role */}
-
-        <div className={`role ${member.role}`}>
-          {member.role.replace("_", " ")}
-        </div>
+        <h3 className="member-name">
+          {member.name}
+        </h3>
 
         {/* User ID */}
 
@@ -54,58 +47,18 @@ const ReferralNode = ({
           {member.referralCode}
         </div>
 
-        {/* Information */}
+        {/* Direct Members */}
 
-        <div className="member-info">
+        <div className="direct-members">
+          <FaUsers />
 
-          <div className="info-row">
-            <span>
-              <FaPhoneAlt />
-              Mobile
-            </span>
+          <span>
+            Direct Members
+          </span>
 
-            <strong>
-              {member.mobile || "-"}
-            </strong>
-          </div>
-
-          <div className="info-row">
-            <span>
-              <FaMoneyBillWave />
-              Payment
-            </span>
-
-            <span
-              className={`status payment ${member.paymentStatus}`}
-            >
-              {member.paymentStatus || "Pending"}
-            </span>
-          </div>
-
-          <div className="info-row">
-            <span>
-              <FaBoxOpen />
-              Welcome Kit
-            </span>
-
-            <span
-              className={`status welcome ${member.welcomeKitStatus}`}
-            >
-              {member.welcomeKitStatus || "Pending"}
-            </span>
-          </div>
-
-          <div className="info-row">
-            <span>
-              <FaUsers />
-              Direct Members
-            </span>
-
-            <strong>
-              {member.children?.length || 0}
-            </strong>
-          </div>
-
+          <strong>
+            {member.children?.length || 0}
+          </strong>
         </div>
 
         {/* Buttons */}
@@ -142,8 +95,7 @@ const ReferralNode = ({
       </div>
 
       {expanded &&
-        member.children &&
-        member.children.length > 0 && (
+        member.children?.length > 0 && (
 
           <div className="children-wrapper">
 
