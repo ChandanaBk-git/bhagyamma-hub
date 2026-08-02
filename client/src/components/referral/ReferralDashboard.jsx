@@ -6,6 +6,7 @@ import {
   InputAdornment,
   Button,
 } from "@mui/material";
+
 import {
   People,
   Person,
@@ -22,81 +23,201 @@ const ReferralDashboard = ({
 }) => {
   return (
     <>
+      {/* Heading */}
+
       <Typography
-        variant="h4"
         fontWeight="bold"
-        mb={3}
+        sx={{
+          mb: 3,
+          fontSize: {
+            xs: 28,
+            sm: 34,
+            md: 40,
+          },
+        }}
       >
         Referral Network
       </Typography>
 
-      <Grid container spacing={2} mb={3}>
+      {/* Statistics */}
 
-        <Grid item xs={12} md={4}>
-          <Paper sx={{ p: 3 }}>
+      <Grid
+        container
+        spacing={2}
+        mb={3}
+        alignItems="stretch"
+      >
+        {/* Total Members */}
+
+        <Grid
+          item
+          xs={12}
+          sm={6}
+          md={4}
+        >
+          <Paper
+            elevation={0}
+            sx={{
+              p: 3,
+              borderRadius: 4,
+              border: "1px solid #E5E7EB",
+              boxShadow:
+                "0 8px 20px rgba(0,0,0,.08)",
+              transition: ".3s",
+
+              "&:hover": {
+                transform: "translateY(-5px)",
+                boxShadow:
+                  "0 15px 30px rgba(0,0,0,.12)",
+              },
+            }}
+          >
             <People
               color="primary"
-              sx={{ fontSize: 35 }}
+              sx={{
+                fontSize: 42,
+                mb: 1,
+              }}
             />
 
-            <Typography variant="h6">
+            <Typography
+              color="text.secondary"
+            >
               Total Members
             </Typography>
 
-            <Typography variant="h4">
+            <Typography
+              variant="h4"
+              fontWeight="bold"
+            >
               {stats.totalMembers}
             </Typography>
           </Paper>
         </Grid>
 
-        <Grid item xs={12} md={4}>
-          <Paper sx={{ p: 3 }}>
+        {/* Managers */}
+
+        <Grid
+          item
+          xs={12}
+          sm={6}
+          md={4}
+        >
+          <Paper
+            elevation={0}
+            sx={{
+              p: 3,
+              borderRadius: 4,
+              border: "1px solid #E5E7EB",
+              boxShadow:
+                "0 8px 20px rgba(0,0,0,.08)",
+              transition: ".3s",
+
+              "&:hover": {
+                transform: "translateY(-5px)",
+                boxShadow:
+                  "0 15px 30px rgba(0,0,0,.12)",
+              },
+            }}
+          >
             <Person
               color="success"
-              sx={{ fontSize: 35 }}
+              sx={{
+                fontSize: 42,
+                mb: 1,
+              }}
             />
 
-            <Typography variant="h6">
+            <Typography
+              color="text.secondary"
+            >
               Managers
             </Typography>
 
-            <Typography variant="h4">
+            <Typography
+              variant="h4"
+              fontWeight="bold"
+            >
               {stats.managers}
             </Typography>
           </Paper>
         </Grid>
 
-        <Grid item xs={12} md={4}>
-          <Paper sx={{ p: 3 }}>
+        {/* Referral Levels */}
+
+        <Grid
+          item
+          xs={12}
+          sm={12}
+          md={4}
+        >
+          <Paper
+            elevation={0}
+            sx={{
+              p: 3,
+              borderRadius: 4,
+              border: "1px solid #E5E7EB",
+              boxShadow:
+                "0 8px 20px rgba(0,0,0,.08)",
+              transition: ".3s",
+
+              "&:hover": {
+                transform: "translateY(-5px)",
+                boxShadow:
+                  "0 15px 30px rgba(0,0,0,.12)",
+              },
+            }}
+          >
             <AccountTree
               color="warning"
-              sx={{ fontSize: 35 }}
+              sx={{
+                fontSize: 42,
+                mb: 1,
+              }}
             />
 
-            <Typography variant="h6">
+            <Typography
+              color="text.secondary"
+            >
               Referral Levels
             </Typography>
 
-            <Typography variant="h4">
+            <Typography
+              variant="h4"
+              fontWeight="bold"
+            >
               {stats.levels}
             </Typography>
           </Paper>
         </Grid>
-
       </Grid>
+
+      {/* Search & Buttons */}
 
       <Grid
         container
         spacing={2}
         mb={4}
+        alignItems="center"
       >
-        <Grid item xs={12} md={6}>
-
+        <Grid
+          item
+          xs={12}
+          md={6}
+        >
           <TextField
             fullWidth
+            size="medium"
             value={search}
-            onChange={(e) => setSearch(e.target.value)}
+            onChange={(e) =>
+              setSearch(e.target.value)
+            }
             placeholder="Search by Name / User ID"
+            sx={{
+              "& .MuiOutlinedInput-root": {
+                borderRadius: 3,
+              },
+            }}
             InputProps={{
               startAdornment: (
                 <InputAdornment position="start">
@@ -105,7 +226,6 @@ const ReferralDashboard = ({
               ),
             }}
           />
-
         </Grid>
 
         <Grid
@@ -113,11 +233,27 @@ const ReferralDashboard = ({
           xs={12}
           md={6}
           display="flex"
-          justifyContent="flex-end"
+          flexDirection={{
+            xs: "column",
+            sm: "row",
+          }}
+          justifyContent={{
+            xs: "center",
+            md: "flex-end",
+          }}
+          alignItems="center"
           gap={2}
         >
           <Button
             variant="contained"
+            fullWidth
+            sx={{
+              maxWidth: {
+                xs: "100%",
+                sm: 180,
+              },
+              borderRadius: 3,
+            }}
             onClick={expandAll}
           >
             Expand All
@@ -125,11 +261,18 @@ const ReferralDashboard = ({
 
           <Button
             variant="outlined"
+            fullWidth
+            sx={{
+              maxWidth: {
+                xs: "100%",
+                sm: 180,
+              },
+              borderRadius: 3,
+            }}
             onClick={collapseAll}
           >
             Collapse All
           </Button>
-
         </Grid>
       </Grid>
     </>

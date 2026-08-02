@@ -8,11 +8,15 @@ import {
   getReferralTree as getManagerTree,
 } from "../../services/manager.service";
 
+import {
+  Box,
+  Button,
+} from "@mui/material";
+
 import ReferralNode from "./ReferralNode";
 import MemberDetailsModal from "./MemberDetailsModal";
 import ReferralDashboard from "./ReferralDashboard";
 import "./ReferralTree.css";
-
 const ReferralTree = ({ role = "admin" }) => {
   const [tree, setTree] = useState([]);
   const [selectedMember, setSelectedMember] = useState(null);
@@ -160,7 +164,6 @@ const ReferralTree = ({ role = "admin" }) => {
   const filteredTree = useMemo(() => {
     return filterTree(tree, search);
   }, [tree, search]);
-
   return (
     <>
       <ReferralDashboard

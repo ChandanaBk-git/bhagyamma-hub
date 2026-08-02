@@ -1,9 +1,14 @@
 import { useEffect, useState } from "react";
+
 import {
   FaChevronDown,
   FaChevronRight,
   FaEye,
   FaUser,
+  FaPhoneAlt,
+  FaUsers,
+  FaBoxOpen,
+  FaMoneyBillWave,
 } from "react-icons/fa";
 
 const ReferralNode = ({
@@ -19,34 +24,91 @@ const ReferralNode = ({
 
   return (
     <div className="tree-node">
-
       <div className="member-card">
+
+        {/* Avatar */}
 
         <div className="avatar">
           <FaUser />
         </div>
 
+        {/* Name */}
+
         <h3>{member.name}</h3>
+
+        {/* Role */}
 
         <div className={`role ${member.role}`}>
           {member.role.replace("_", " ")}
         </div>
 
+        {/* User ID */}
+
         <div className="user-id">
           {member.userId}
         </div>
+
+        {/* Referral Code */}
 
         <div className="referral-id">
           {member.referralCode}
         </div>
 
-        <p className="member-count">
-          Direct Members :
-          <strong>
-            {" "}
-            {member.children?.length || 0}
-          </strong>
-        </p>
+        {/* Information */}
+
+        <div className="member-info">
+
+          <div className="info-row">
+            <span>
+              <FaPhoneAlt />
+              Mobile
+            </span>
+
+            <strong>
+              {member.mobile || "-"}
+            </strong>
+          </div>
+
+          <div className="info-row">
+            <span>
+              <FaMoneyBillWave />
+              Payment
+            </span>
+
+            <span
+              className={`status payment ${member.paymentStatus}`}
+            >
+              {member.paymentStatus || "Pending"}
+            </span>
+          </div>
+
+          <div className="info-row">
+            <span>
+              <FaBoxOpen />
+              Welcome Kit
+            </span>
+
+            <span
+              className={`status welcome ${member.welcomeKitStatus}`}
+            >
+              {member.welcomeKitStatus || "Pending"}
+            </span>
+          </div>
+
+          <div className="info-row">
+            <span>
+              <FaUsers />
+              Direct Members
+            </span>
+
+            <strong>
+              {member.children?.length || 0}
+            </strong>
+          </div>
+
+        </div>
+
+        {/* Buttons */}
 
         <div className="card-buttons">
 
@@ -59,6 +121,7 @@ const ReferralNode = ({
           </button>
 
           {member.children?.length > 0 && (
+
             <button
               className="expand-btn"
               onClick={() =>
@@ -71,6 +134,7 @@ const ReferralNode = ({
                 <FaChevronRight />
               )}
             </button>
+
           )}
 
         </div>
@@ -81,24 +145,26 @@ const ReferralNode = ({
         member.children &&
         member.children.length > 0 && (
 
-        <div className="children-wrapper">
+          <div className="children-wrapper">
 
-          <div className="vertical-line" />
+            <div className="vertical-line" />
 
-          <div className="children">
+            <div className="children">
 
-            {member.children.map((child) => (
-              <ReferralNode
-                key={child._id}
-                member={child}
-                onView={onView}
-                expandAll={expandAll}
-              />
-            ))}
+              {member.children.map((child) => (
+
+                <ReferralNode
+                  key={child._id}
+                  member={child}
+                  onView={onView}
+                  expandAll={expandAll}
+                />
+
+              ))}
+
+            </div>
 
           </div>
-
-        </div>
 
       )}
 
