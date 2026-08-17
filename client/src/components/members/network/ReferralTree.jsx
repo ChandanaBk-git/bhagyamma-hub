@@ -133,7 +133,63 @@ const ReferralTree = ({ data = [] }) => {
             }}
             sx={{ mb: 3 }}
           />
+<Stack
+  direction="row"
+  spacing={1}
+  flexWrap="wrap"
+  useFlexGap
+  sx={{ mb: 3 }}
+>
+  <Chip
+    size="small"
+    label="Level 1 • Direct"
+    sx={{
+      bgcolor: "#1565C0",
+      color: "#FFFFFF",
+      fontWeight: 700,
+    }}
+  />
 
+  <Chip
+    size="small"
+    label="Level 2"
+    sx={{
+      bgcolor: "#7B1FA2",
+      color: "#FFFFFF",
+      fontWeight: 700,
+    }}
+  />
+
+  <Chip
+    size="small"
+    label="Level 3"
+    sx={{
+      bgcolor: "#EF6C00",
+      color: "#FFFFFF",
+      fontWeight: 700,
+    }}
+  />
+
+  <Chip
+    size="small"
+    label="Level 4"
+    sx={{
+      bgcolor: "#C62828",
+      color: "#FFFFFF",
+      fontWeight: 700,
+    }}
+  />
+
+  <Chip
+    size="small"
+    label="Level 5+"
+    sx={{
+      bgcolor: "#00838F",
+      color: "#FFFFFF",
+      fontWeight: 700,
+    }}
+  />
+</Stack>
           <ButtonGroup
             fullWidth
             sx={{ mb: 4 }}

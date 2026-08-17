@@ -13,83 +13,191 @@ import {
   Groups,
 } from "@mui/icons-material";
 
-const CommissionTable = ({ commissions = [] }) => {
+const CommissionTable = ({
+  commissions = [],
+}) => {
+  // =====================================================
+  // EMPTY STATE
+  // =====================================================
 
   if (commissions.length === 0) {
     return (
       <Card
-        elevation={2}
+        elevation={0}
         sx={{
-          borderRadius: 4,
-          border: "1px solid #E8F5E9",
+          width: "100%",
+          boxSizing: "border-box",
+
+          borderRadius: {
+            xs: "24px",
+            sm: "26px",
+            md: "28px",
+          },
+
+          border:
+            "1px solid #E8F5E9",
+
+          backgroundColor: "#FFFFFF",
+
+          boxShadow:
+            "0 6px 20px rgba(0,0,0,0.07)",
         }}
       >
-        <CardContent>
-
+        <CardContent
+          sx={{
+            p: {
+              xs: 2,
+              sm: 2.5,
+              md: 3,
+            },
+          }}
+        >
           <Typography
-            variant="h5"
-            fontWeight="bold"
-            mb={3}
+            fontWeight={700}
+            sx={{
+              fontSize: {
+                xs: "1.15rem",
+                sm: "1.3rem",
+                md: "1.5rem",
+              },
+            }}
           >
             Commission History
           </Typography>
 
           <Box
-            py={6}
-            textAlign="center"
-          >
+            sx={{
+              py: {
+                xs: 5,
+                sm: 6,
+              },
 
+              px: 1,
+
+              textAlign: "center",
+            }}
+          >
             <CurrencyRupee
               sx={{
-                fontSize: 70,
+                fontSize: {
+                  xs: 55,
+                  sm: 65,
+                  md: 70,
+                },
+
                 color: "#C8E6C9",
               }}
             />
 
             <Typography
-              variant="h6"
-              mt={2}
-              fontWeight="bold"
+              sx={{
+                mt: 2,
+                fontWeight: 700,
+
+                fontSize: {
+                  xs: "1rem",
+                  sm: "1.1rem",
+                  md: "1.25rem",
+                },
+              }}
             >
               No Commission Yet
             </Typography>
 
             <Typography
               color="text.secondary"
+              sx={{
+                mt: 1,
+
+                fontSize: {
+                  xs: "0.82rem",
+                  sm: "0.9rem",
+                },
+              }}
             >
-              Start referring members and purchasing
-              products to earn your first commission.
+              Start referring members and
+              purchasing products to earn
+              your first commission.
             </Typography>
-
           </Box>
-
         </CardContent>
       </Card>
     );
   }
 
-  return (
+  // =====================================================
+  // HISTORY
+  // =====================================================
 
+  return (
     <Card
-      elevation={2}
+      elevation={0}
       sx={{
-        borderRadius: 4,
-        border: "1px solid #E8F5E9",
+        width: "100%",
+        maxWidth: "100%",
+
+        boxSizing: "border-box",
+
+        borderRadius: {
+          xs: "24px",
+          sm: "26px",
+          md: "28px",
+        },
+
+        border:
+          "1px solid #E8F5E9",
+
+        backgroundColor: "#FFFFFF",
+
+        boxShadow:
+          "0 6px 20px rgba(0,0,0,0.07)",
+
+        overflow: "hidden",
       }}
     >
+      <CardContent
+        sx={{
+          p: {
+            xs: 1.5,
+            sm: 2.5,
+            md: 3,
+          },
 
-      <CardContent>
+          "&:last-child": {
+            pb: {
+              xs: 1.5,
+              sm: 2.5,
+              md: 3,
+            },
+          },
+        }}
+      >
+        {/* =================================================
+            HEADER
+        ================================================= */}
 
         <Stack
-          direction="row"
+          direction={{
+            xs: "column",
+            sm: "row",
+          }}
           justifyContent="space-between"
-          alignItems="center"
+          alignItems={{
+            xs: "flex-start",
+            sm: "center",
+          }}
+          spacing={1.5}
           mb={3}
         >
-
           <Typography
-            variant="h5"
-            fontWeight="bold"
+            fontWeight={700}
+            sx={{
+              fontSize: {
+                xs: "1.15rem",
+                sm: "1.3rem",
+                md: "1.5rem",
+              },
+            }}
           >
             Commission History
           </Typography>
@@ -97,171 +205,291 @@ const CommissionTable = ({ commissions = [] }) => {
           <Chip
             label={`${commissions.length} Records`}
             color="success"
+            size="small"
+            sx={{
+              fontWeight: 500,
+            }}
           />
-
         </Stack>
 
-        {
+        {/* =================================================
+            COMMISSION RECORDS
+        ================================================= */}
 
-          commissions.map((item) => (
+        {commissions.map((item, index) => (
+          <Box
+            key={item?._id || index}
+            sx={{
+              width: "100%",
+              boxSizing: "border-box",
 
-            <Box
-              key={item._id}
-              sx={{
-                mb: 3,
-                p: 2,
-                borderRadius: 3,
-                transition: ".3s",
+              mb:
+                index === commissions.length - 1
+                  ? 0
+                  : 2,
 
-                "&:hover": {
-                  bgcolor: "#FAFAFA",
-                  transform: "translateY(-4px)",
+              p: {
+                xs: 1.5,
+                sm: 2,
+              },
+
+              borderRadius: {
+                xs: "18px",
+                sm: "20px",
+              },
+
+              backgroundColor: "#FFFFFF",
+
+              border:
+                "1px solid #EEEEEE",
+
+              transition:
+                "background-color .2s ease, transform .2s ease",
+
+              "&:hover": {
+                bgcolor: "#FAFAFA",
+
+                transform: {
+                  xs: "none",
+                  sm: "translateY(-2px)",
                 },
+              },
+            }}
+          >
+            {/* =================================================
+                TOP SECTION
+            ================================================= */}
+
+            <Stack
+              direction={{
+                xs: "column",
+                sm: "row",
               }}
+              justifyContent="space-between"
+              alignItems={{
+                xs: "stretch",
+                sm: "center",
+              }}
+              spacing={2}
             >
+              {/* USER */}
 
               <Stack
                 direction="row"
-                justifyContent="space-between"
+                spacing={1.5}
                 alignItems="center"
+                sx={{
+                  minWidth: 0,
+                }}
               >
+                <Box
+                  sx={{
+                    width: {
+                      xs: 50,
+                      sm: 60,
+                    },
 
-                <Stack
-                  direction="row"
-                  spacing={2}
-                  alignItems="center"
+                    height: {
+                      xs: 50,
+                      sm: 60,
+                    },
+
+                    minWidth: {
+                      xs: 50,
+                      sm: 60,
+                    },
+
+                    bgcolor: "#E8F5E9",
+
+                    borderRadius: "50%",
+
+                    display: "flex",
+
+                    justifyContent: "center",
+
+                    alignItems: "center",
+
+                    boxShadow:
+                      "0 4px 10px rgba(0,0,0,.06)",
+                  }}
                 >
-
-                  <Box
+                  <Groups
                     sx={{
-                      width: 60,
-                      height: 60,
-                      bgcolor: "#E8F5E9",
-                      borderRadius: "50%",
-                      display: "flex",
-                      justifyContent: "center",
-                      alignItems: "center",
-                      boxShadow:
-                        "0 4px 10px rgba(0,0,0,.08)",
+                      color: "#2E7D32",
+
+                      fontSize: {
+                        xs: 25,
+                        sm: 30,
+                      },
+                    }}
+                  />
+                </Box>
+
+                <Box
+                  sx={{
+                    minWidth: 0,
+                  }}
+                >
+                  <Typography
+                    fontWeight={700}
+                    sx={{
+                      fontSize: {
+                        xs: "0.95rem",
+                        sm: "1rem",
+                      },
+
+                      overflowWrap:
+                        "anywhere",
                     }}
                   >
+                    {item?.fromUser?.name ||
+                      "System"}
+                  </Typography>
 
-                    <Groups
-                      sx={{
-                        color: "#2E7D32",
-                        fontSize: 30,
-                      }}
-                    />
+                  <Typography
+                    color="text.secondary"
+                    sx={{
+                      fontSize: {
+                        xs: "0.78rem",
+                        sm: "0.85rem",
+                      },
 
-                  </Box>
-
-                  <Box>
-
-                    <Typography
-                      fontWeight="bold"
-                      fontSize={16}
-                    >
-                      {item.fromUser?.name || "System"}
-                    </Typography>
-
-                    <Typography
-                      variant="body2"
-                      color="text.secondary"
-                    >
-                      {item.fromUser?.userId || "-"}
-                    </Typography>
-
-                  </Box>
-
-                </Stack>
-
-                <Typography
-                  variant="h5"
-                  fontWeight="bold"
-                  color="success.main"
-                >
-                  ₹
-                  {Number(
-                    item.commissionAmount || 0
-                  ).toLocaleString("en-IN")}
-                </Typography>
-
+                      overflowWrap:
+                        "anywhere",
+                    }}
+                  >
+                    {item?.fromUser?.userId ||
+                      "-"}
+                  </Typography>
+                </Box>
               </Stack>
 
-              <Stack
-                direction="row"
-                spacing={1}
-                mt={2}
-                flexWrap="wrap"
-              >
-
-                <Chip
-                  size="small"
-                  label={`L${item.level}`}
-                  color="primary"
-                />
-
-                <Chip
-                  size="small"
-                  label={`${item.percentage}%`}
-                  sx={{
-                    bgcolor: "#FFF3E0",
-                    color: "#EF6C00",
-                  }}
-                />
-
-                <Chip
-                  size="small"
-                  label="Paid"
-                  color="success"
-                />
-
-              </Stack>
+              {/* AMOUNT */}
 
               <Typography
-                mt={2}
-                variant="body2"
-                color="text.secondary"
-              >
-                Joining Amount :
-                <b>
-                  {" "}
-                  ₹
-                  {Number(
-                    item.joiningAmount || 0
-                  ).toLocaleString("en-IN")}
-                </b>
-              </Typography>
-
-              <Typography
-                variant="body2"
-                color="text.secondary"
-              >
-                Earned On :
-                {" "}
-                {new Date(
-                  item.createdAt
-                ).toLocaleDateString()}
-              </Typography>
-
-              <Divider
+                fontWeight={700}
+                color="success.main"
                 sx={{
-                  mt: 3,
+                  fontSize: {
+                    xs: "1.25rem",
+                    sm: "1.4rem",
+                    md: "1.5rem",
+                  },
+
+                  textAlign: {
+                    xs: "left",
+                    sm: "right",
+                  },
+
+                  whiteSpace: "nowrap",
+                }}
+              >
+                ₹
+                {Number(
+                  item?.commissionAmount || 0
+                ).toLocaleString("en-IN")}
+              </Typography>
+            </Stack>
+
+            {/* =================================================
+                CHIPS
+            ================================================= */}
+
+            <Stack
+              direction="row"
+              spacing={1}
+              mt={2}
+              flexWrap="wrap"
+              useFlexGap
+            >
+              <Chip
+                size="small"
+                label={`L${item?.level ?? 0}`}
+                color="primary"
+              />
+
+              <Chip
+                size="small"
+                label={`${item?.percentage ?? 0}%`}
+                sx={{
+                  bgcolor: "#FFF3E0",
+                  color: "#EF6C00",
                 }}
               />
 
-            </Box>
+              <Chip
+                size="small"
+                label="Paid"
+                color="success"
+              />
+            </Stack>
 
-          ))
+            {/* =================================================
+                JOINING AMOUNT
+            ================================================= */}
 
-        }
+            <Typography
+              mt={2}
+              color="text.secondary"
+              sx={{
+                fontSize: {
+                  xs: "0.8rem",
+                  sm: "0.88rem",
+                },
+              }}
+            >
+              Joining Amount :{" "}
+              <Box
+                component="span"
+                fontWeight={700}
+                color="#333"
+              >
+                ₹
+                {Number(
+                  item?.joiningAmount || 0
+                ).toLocaleString("en-IN")}
+              </Box>
+            </Typography>
 
+            {/* =================================================
+                DATE
+            ================================================= */}
+
+            <Typography
+              color="text.secondary"
+              sx={{
+                mt: 0.5,
+
+                fontSize: {
+                  xs: "0.8rem",
+                  sm: "0.88rem",
+                },
+              }}
+            >
+              Earned On :{" "}
+              {item?.createdAt
+                ? new Date(
+                    item.createdAt
+                  ).toLocaleDateString("en-IN")
+                : "-"}
+            </Typography>
+
+            {/* =================================================
+                DIVIDER
+            ================================================= */}
+
+            {index !== commissions.length - 1 && (
+              <Divider
+                sx={{
+                  mt: 2.5,
+                }}
+              />
+            )}
+          </Box>
+        ))}
       </CardContent>
-
     </Card>
-
   );
-
 };
 
 export default CommissionTable;

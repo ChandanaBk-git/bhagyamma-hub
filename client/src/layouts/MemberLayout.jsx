@@ -1,15 +1,17 @@
 import { useState } from "react";
-import { Outlet } from "react-router-dom";
 import { Box } from "@mui/material";
+import { Outlet } from "react-router-dom";
 
 import MemberSidebar from "../components/members/layout/MemberSidebar";
 import MemberTopbar from "../components/members/layout/MemberTopbar";
 
+const DRAWER_WIDTH = 280;
+
 const MemberLayout = () => {
   const [mobileOpen, setMobileOpen] = useState(false);
 
-  const handleDrawerToggle = () => {
-    setMobileOpen((prev) => !prev);
+  const handleDrawerOpen = () => {
+    setMobileOpen(true);
   };
 
   const handleDrawerClose = () => {
@@ -21,55 +23,63 @@ const MemberLayout = () => {
       sx={{
         display: "flex",
         minHeight: "100vh",
-        bgcolor: "#f5f7fa",
+        width: "100%",
+        maxWidth: "100%",
+        overflowX: "hidden",
+        bgcolor: "#F5F7FA",
       }}
     >
       {/* =====================================================
           MEMBER SIDEBAR
       ===================================================== */}
-
       <MemberSidebar
         mobileOpen={mobileOpen}
         onClose={handleDrawerClose}
       />
 
       {/* =====================================================
-          MAIN CONTENT
+          MAIN AREA
       ===================================================== */}
-
       <Box
         component="main"
         sx={{
           flexGrow: 1,
           minWidth: 0,
-          display: "flex",
-          flexDirection: "column",
+          width: {
+            xs: "100%",
+            md: `calc(100% - ${DRAWER_WIDTH}px)`,
+          },
+          maxWidth: "100%",
+          overflowX: "hidden",
         }}
       >
         {/* ===================================================
-            MEMBER TOPBAR
+            TOPBAR
         =================================================== */}
-
-        <MemberTopbar
-          onMenuClick={handleDrawerToggle}
-        />
+        <MemberTopbar onMenuClick={handleDrawerOpen} />
 
         {/* ===================================================
             PAGE CONTENT
         =================================================== */}
-
         <Box
           sx={{
-            flexGrow: 1,
+            width: "100%",
+            maxWidth: "100%",
+            minWidth: 0,
+            overflowX: "hidden",
 
-            p: {
+            px: {
               xs: 1.5,
               sm: 2,
               md: 3,
+              lg: 4,
             },
 
-            width: "100%",
-            boxSizing: "border-box",
+            py: {
+              xs: 2,
+              sm: 2.5,
+              md: 3,
+            },
           }}
         >
           <Outlet />

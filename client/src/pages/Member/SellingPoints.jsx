@@ -19,7 +19,7 @@ const SellingPoints = () => {
   const [error, setError] = useState("");
 
   // =====================================================
-  // LOAD DATA
+  // LOAD SELLING POINT DATA
   // =====================================================
 
   useEffect(() => {
@@ -33,17 +33,13 @@ const SellingPoints = () => {
 
       const dashboard = await getDashboard();
 
-      console.log(
-        "SELLING POINTS DASHBOARD:",
-        dashboard
-      );
+      console.log("SELLING POINTS DASHBOARD:", dashboard);
 
       // =================================================
-      // GET API DATA
+      // API DATA
       // =================================================
 
-      const apiSummary =
-        dashboard?.summary || {};
+      const apiSummary = dashboard?.summary || {};
 
       const apiSellingPoints =
         dashboard?.sellingPoints || {};
@@ -69,7 +65,7 @@ const SellingPoints = () => {
       );
 
       // =================================================
-      // SUPERVISOR
+      // SUPERVISOR STATUS
       // =================================================
 
       const isSupervisor =
@@ -78,13 +74,13 @@ const SellingPoints = () => {
         false;
 
       // =================================================
-      // TARGET
+      // SUPERVISOR TARGET
       // =================================================
 
       const supervisorTarget = 500;
 
       // =================================================
-      // REMAINING
+      // REMAINING TARGET
       // =================================================
 
       const remainingTarget = Math.max(
@@ -93,7 +89,7 @@ const SellingPoints = () => {
       );
 
       // =================================================
-      // TRANSACTIONS
+      // SELLING POINT TRANSACTIONS
       // =================================================
 
       const transactions = Array.isArray(
@@ -132,15 +128,15 @@ const SellingPoints = () => {
       );
 
       setData(normalizedData);
-    } catch (error) {
+    } catch (err) {
       console.error(
         "SELLING POINTS ERROR:",
-        error
+        err
       );
 
       setError(
-        error?.response?.data?.message ||
-          error?.message ||
+        err?.response?.data?.message ||
+          err?.message ||
           "Failed to load Selling Points."
       );
     } finally {
@@ -156,10 +152,16 @@ const SellingPoints = () => {
     return (
       <Box
         sx={{
+          width: "100%",
           minHeight: "70vh",
+
           display: "flex",
           justifyContent: "center",
           alignItems: "center",
+
+          bgcolor: "#F5F7FA",
+
+          boxSizing: "border-box",
         }}
       >
         <CircularProgress color="success" />
@@ -175,14 +177,38 @@ const SellingPoints = () => {
     return (
       <Box
         sx={{
-          p: 3,
+          width: "100%",
+          maxWidth: "100%",
+
           minHeight: "70vh",
+
+          boxSizing: "border-box",
+
+          bgcolor: "#F5F7FA",
+
+          p: {
+            xs: 1.5,
+            sm: 2,
+            md: 3,
+          },
+
+          overflowX: "hidden",
         }}
       >
         <Typography
-          variant="h4"
-          fontWeight="bold"
-          mb={3}
+          fontWeight={700}
+          mb={{
+            xs: 2,
+            sm: 2.5,
+            md: 3,
+          }}
+          sx={{
+            fontSize: {
+              xs: "1.45rem",
+              sm: "1.8rem",
+              md: "2.4rem",
+            },
+          }}
         >
           Selling Points
         </Typography>
@@ -191,6 +217,8 @@ const SellingPoints = () => {
           severity="error"
           sx={{
             borderRadius: 3,
+            width: "100%",
+            boxSizing: "border-box",
           }}
         >
           {error}
@@ -200,17 +228,37 @@ const SellingPoints = () => {
   }
 
   // =====================================================
-  // SAFETY
+  // SAFETY CHECK
   // =====================================================
 
   if (!data) {
     return (
       <Box
         sx={{
-          p: 3,
+          width: "100%",
+          maxWidth: "100%",
+
+          boxSizing: "border-box",
+
+          bgcolor: "#F5F7FA",
+
+          p: {
+            xs: 1.5,
+            sm: 2,
+            md: 3,
+          },
+
+          minHeight: "70vh",
+
+          overflowX: "hidden",
         }}
       >
-        <Alert severity="warning">
+        <Alert
+          severity="warning"
+          sx={{
+            borderRadius: 3,
+          }}
+        >
           Selling Point data is not available.
         </Alert>
       </Box>
@@ -224,17 +272,22 @@ const SellingPoints = () => {
   return (
     <Box
       sx={{
-        p: {
-          xs: 2,
-          sm: 2.5,
-          md: 3,
-        },
-
-        bgcolor: "#F5F7FA",
+        width: "100%",
+        maxWidth: "100%",
 
         minHeight: "100vh",
 
-        width: "100%",
+        boxSizing: "border-box",
+
+        bgcolor: "#F5F7FA",
+
+        p: {
+          xs: 1.5,
+          sm: 2,
+          md: 3,
+        },
+
+        overflowX: "hidden",
       }}
     >
       {/* =================================================
@@ -242,45 +295,101 @@ const SellingPoints = () => {
       ================================================= */}
 
       <Typography
-        variant="h4"
-        fontWeight="bold"
-        mb={3}
+        component="h1"
+        fontWeight={700}
         sx={{
+          mb: {
+            xs: 2,
+            sm: 2.5,
+            md: 3,
+          },
+
           fontSize: {
-            xs: "1.8rem",
-            sm: "2.1rem",
+            xs: "1.45rem",
+            sm: "1.8rem",
             md: "2.4rem",
           },
+
+          lineHeight: 1.25,
+
+          color: "#292929",
         }}
       >
         Selling Points
       </Typography>
 
       {/* =================================================
-          SUMMARY
+          SUMMARY CARDS
+          
+          Mobile:
+          1 card per row
+
+          Tablet:
+          2 cards per row
+
+          Desktop:
+          4 cards per row
       ================================================= */}
 
-      <SummaryCard
-        summary={data.summary}
-      />
+      <Box
+        sx={{
+          width: "100%",
+          maxWidth: "100%",
+          boxSizing: "border-box",
+        }}
+      >
+        <SummaryCard
+          summary={data.summary}
+        />
+      </Box>
 
       {/* =================================================
           SUPERVISOR PROGRESS
       ================================================= */}
 
-      <ProgressCard
-        summary={data.summary}
-      />
+      <Box
+        sx={{
+          width: "100%",
+          maxWidth: "100%",
+          boxSizing: "border-box",
+
+          mt: {
+            xs: 2,
+            sm: 2.5,
+            md: 3,
+          },
+        }}
+      >
+        <ProgressCard
+          summary={data.summary}
+        />
+      </Box>
 
       {/* =================================================
-          HISTORY
+          SELLING POINT HISTORY
       ================================================= */}
 
-      <HistoryTable
-        history={
-          data.sellingPoints?.transactions || []
-        }
-      />
+      <Box
+        sx={{
+          width: "100%",
+          maxWidth: "100%",
+          boxSizing: "border-box",
+
+          mt: {
+            xs: 2,
+            sm: 2.5,
+            md: 3,
+          },
+
+          overflowX: "hidden",
+        }}
+      >
+        <HistoryTable
+          history={
+            data.sellingPoints?.transactions || []
+          }
+        />
+      </Box>
     </Box>
   );
 };

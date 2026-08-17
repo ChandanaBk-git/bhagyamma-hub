@@ -11,23 +11,55 @@ import {
 import {
   Stars,
   ShoppingBag,
+  CardMembership,
+  WorkspacePremium,
 } from "@mui/icons-material";
 
+const getTransactionTitle = (item) => {
+  switch (item?.transactionType) {
+    case "MEMBERSHIP_PAYMENT":
+      return "Membership Payment";
+
+    case "MEMBERSHIP_ACTIVATED":
+      return "Membership Activated";
+
+    case "SUPERVISOR":
+      return "Supervisor Promotion";
+
+    case "SUPERVISOR_REWARD":
+      return "Supervisor Reward";
+
+    case "ORDER_PURCHASE":
+    default:
+      return "Product Purchase";
+  }
+};
+
+const getTransactionIcon = (item) => {
+  switch (item?.transactionType) {
+    case "MEMBERSHIP_PAYMENT":
+      return <CardMembership />;
+
+    case "SUPERVISOR":
+    case "SUPERVISOR_REWARD":
+      return <WorkspacePremium />;
+
+    default:
+      return <ShoppingBag />;
+  }
+};
+
 const HistoryTable = ({ history = [] }) => {
-
   if (!history.length) {
-
     return (
-
       <Card
         elevation={2}
         sx={{
           borderRadius: 4,
+          width: "100%",
         }}
       >
-
         <CardContent>
-
           <Typography
             variant="h5"
             fontWeight="bold"
@@ -40,7 +72,6 @@ const HistoryTable = ({ history = [] }) => {
             py={7}
             textAlign="center"
           >
-
             <Stars
               sx={{
                 fontSize: 70,
@@ -56,40 +87,38 @@ const HistoryTable = ({ history = [] }) => {
               No Selling Points Yet
             </Typography>
 
-            <Typography
-              color="text.secondary"
-            >
-              Purchase products to earn Selling Points.
+            <Typography color="text.secondary">
+              Purchase products or complete membership
+              payment to earn Selling Points.
             </Typography>
-
           </Box>
-
         </CardContent>
-
       </Card>
-
     );
-
   }
 
   return (
-
     <Card
       elevation={2}
       sx={{
         borderRadius: 4,
+        width: "100%",
       }}
     >
-
       <CardContent>
-
         <Stack
-          direction="row"
+          direction={{
+            xs: "column",
+            sm: "row",
+          }}
           justifyContent="space-between"
-          alignItems="center"
+          alignItems={{
+            xs: "flex-start",
+            sm: "center",
+          }}
+          spacing={1}
           mb={3}
         >
-
           <Typography
             variant="h5"
             fontWeight="bold"
@@ -101,89 +130,155 @@ const HistoryTable = ({ history = [] }) => {
             label={`${history.length} Records`}
             color="success"
           />
-
         </Stack>
 
-        {
+        {history.map((item) => {
+          const points = Number(
+            item?.pointsEarned ??
+              item?.points ??
+              0
+          );
 
-          history.map((item) => (
+          const purchaseAmount = Number(
+            item?.purchaseAmount ?? 0
+          );
 
+          const orderNumber =
+            item?.order?.orderNumber ||
+            item?.orderId ||
+            "--";
+
+          const title =
+            getTransactionTitle(item);
+
+          const icon =
+            getTransactionIcon(item);
+
+          return (
             <Box
-              key={item._id}
+              key={item?._id}
               sx={{
-                p: 2,
-                mb: 3,
+                p: {
+                  xs: 1.5,
+                  sm: 2,
+                },
+
+                mb: 2,
+
                 borderRadius: 3,
-                transition: ".3s",
+
+                border:
+                  "1px solid #E8E8E8",
+
+                backgroundColor:
+                  "#FFFFFF",
+
+                transition: ".2s",
 
                 "&:hover": {
                   bgcolor: "#FAFAFA",
-                  transform: "translateY(-4px)",
+                  transform:
+                    "translateY(-2px)",
                 },
               }}
             >
-
               <Stack
-                direction="row"
+                direction={{
+                  xs: "column",
+                  sm: "row",
+                }}
                 justifyContent="space-between"
-                alignItems="center"
+                alignItems={{
+                  xs: "flex-start",
+                  sm: "center",
+                }}
+                spacing={2}
               >
-
                 <Stack
                   direction="row"
-                  spacing={2}
+                  spacing={1.5}
                   alignItems="center"
+                  sx={{
+                    minWidth: 0,
+                    width: "100%",
+                  }}
                 >
-
                   <Box
                     sx={{
-                      width: 60,
-                      height: 60,
-                      bgcolor: "#FFF8E1",
+                      width: 52,
+                      height: 52,
+                      minWidth: 52,
+
+                      bgcolor:
+                        item?.transactionType ===
+                        "MEMBERSHIP_PAYMENT"
+                          ? "#E8F5E9"
+                          : "#FFF8E1",
+
                       borderRadius: "50%",
+
                       display: "flex",
                       justifyContent: "center",
                       alignItems: "center",
                     }}
                   >
-
-                    <ShoppingBag
-                      sx={{
-                        color: "#F9A825",
-                      }}
-                    />
-
+                    {icon}
                   </Box>
 
-                  <Box>
-
+                  <Box
+                    sx={{
+                      minWidth: 0,
+                    }}
+                  >
                     <Typography
                       fontWeight="bold"
+                      sx={{
+                        wordBreak:
+                          "break-word",
+                      }}
                     >
-                      {item.productName || "Product Purchase"}
+                      {title}
                     </Typography>
 
-                    <Typography
-                      variant="body2"
-                      color="text.secondary"
-                    >
-                      Order :
-                      {" "}
-                      {item.orderId || "--"}
-                    </Typography>
-
+                    {item?.transactionType ===
+                    "ORDER_PURCHASE" ? (
+                      <Typography
+                        variant="body2"
+                        color="text.secondary"
+                        sx={{
+                          wordBreak:
+                            "break-word",
+                        }}
+                      >
+                        Order: {orderNumber}
+                      </Typography>
+                    ) : (
+                      <Typography
+                        variant="body2"
+                        color="text.secondary"
+                        sx={{
+                          wordBreak:
+                            "break-word",
+                        }}
+                      >
+                        {item?.remarks ||
+                          "Selling Point transaction"}
+                      </Typography>
+                    )}
                   </Box>
-
                 </Stack>
 
                 <Typography
                   variant="h5"
                   fontWeight="bold"
-                  color="warning.main"
+                  sx={{
+                    color: "#2E7D32",
+                    whiteSpace:
+                      "nowrap",
+                  }}
                 >
-                  +{item.points || 0} SP
+                  +{points} SP
                 </Typography>
-
               </Stack>
 
               <Stack
@@ -192,19 +287,46 @@ const HistoryTable = ({ history = [] }) => {
                 mt={2}
                 flexWrap="wrap"
               >
-
                 <Chip
                   size="small"
-                  label={`₹${Number(item.purchaseAmount || 0).toLocaleString("en-IN")}`}
+                  label={`₹${purchaseAmount.toLocaleString(
+                    "en-IN"
+                  )}`}
                   color="primary"
                 />
 
                 <Chip
                   size="small"
-                  label="Earned"
-                  color="success"
+                  label={
+                    points > 0
+                      ? "Earned"
+                      : "Information"
+                  }
+                  color={
+                    points > 0
+                      ? "success"
+                      : "default"
+                  }
                 />
 
+                {item?.transactionType && (
+                  <Chip
+                    size="small"
+                    label={String(
+                      item.transactionType
+                    )
+                      .replaceAll(
+                        "_",
+                        " "
+                      )
+                      .toLowerCase()
+                      .replace(
+                        /\b\w/g,
+                        (c) =>
+                          c.toUpperCase()
+                      )}
+                  />
+                )}
               </Stack>
 
               <Typography
@@ -212,29 +334,27 @@ const HistoryTable = ({ history = [] }) => {
                 variant="body2"
                 color="text.secondary"
               >
-                Date :
-                {" "}
-                {new Date(item.createdAt).toLocaleDateString()}
+                Date:{" "}
+                {item?.createdAt
+                  ? new Date(
+                      item.createdAt
+                    ).toLocaleDateString(
+                      "en-IN"
+                    )
+                  : "--"}
               </Typography>
 
               <Divider
                 sx={{
-                  mt: 3,
+                  mt: 2,
                 }}
               />
-
             </Box>
-
-          ))
-
-        }
-
+          );
+        })}
       </CardContent>
-
     </Card>
-
   );
-
 };
 
 export default HistoryTable;

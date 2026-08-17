@@ -1,16 +1,14 @@
-import { Link, useLocation } from "react-router-dom";
-
 import {
   Box,
   Drawer,
-  Toolbar,
   Typography,
+  Avatar,
+  Divider,
   List,
   ListItemButton,
   ListItemIcon,
   ListItemText,
-  Divider,
-  Avatar,
+  Tooltip,
 } from "@mui/material";
 
 import {
@@ -22,162 +20,236 @@ import {
   HubRounded,
   StarsRounded,
   PaidRounded,
-  PaymentsRounded,
   AccountBalanceWalletRounded,
+  PaymentsRounded,
   CardGiftcardRounded,
-  BarChartRounded,
   SettingsRounded,
   LogoutRounded,
 } from "@mui/icons-material";
 
-const drawerWidth = 260;
+import { Link, useLocation, useNavigate } from "react-router-dom";
 
-const menuItems = [
+const DRAWER_WIDTH = 280;
 
-  // ================= PUBLIC =================
-
-  {
-    title: "Home",
-    icon: <HomeRounded />,
-    path: "/",
-  },
-
-  // ================= MAIN =================
-
+const mainMenu = [
+{
+  title: "Home",
+  icon: <HomeRounded />,
+  path: "/member/home",
+},
   {
     title: "Dashboard",
     icon: <DashboardRounded />,
     path: "/member/dashboard",
   },
-
   {
     title: "My Profile",
     icon: <PersonRounded />,
     path: "/member/profile",
   },
-
   {
     title: "Products",
     icon: <StorefrontRounded />,
     path: "/member/products",
   },
-
   {
-    title: "Orders",
+    title: "My Orders",
     icon: <ReceiptLongRounded />,
     path: "/member/orders",
   },
+];
 
-  // ================= MLM =================
-
+const mlmMenu = [
   {
     title: "My Network",
     icon: <HubRounded />,
     path: "/member/network",
   },
-
   {
     title: "Selling Points",
     icon: <StarsRounded />,
     path: "/member/selling-points",
   },
-
   {
     title: "Commission",
     icon: <PaidRounded />,
     path: "/member/commission",
   },
-
   {
     title: "Wallet",
     icon: <AccountBalanceWalletRounded />,
     path: "/member/wallet",
   },
-
   {
     title: "Withdraw",
     icon: <PaymentsRounded />,
     path: "/member/withdraw",
   },
+];
 
-  // ================= OTHER =================
-
+const otherMenu = [
   {
     title: "Welcome Kit",
     icon: <CardGiftcardRounded />,
     path: "/member/welcome-kit",
   },
-
-  {
-    title: "Reports",
-    icon: <BarChartRounded />,
-    path: "/member/reports",
-  },
-
-  {
-    title: "Settings",
-    icon: <SettingsRounded />,
-    path: "/member/settings",
-  },
+  // {
+  //   title: "Settings",
+  //   icon: <SettingsRounded />,
+  //   path: "/member/settings",
+  // },
 ];
 
-const MemberSidebar = () => {
+const MemberSidebar = ({
+  mobileOpen = false,
+  onClose = () => {},
+}) => {
   const location = useLocation();
+  const navigate = useNavigate();
 
-  const user = JSON.parse(
-    localStorage.getItem("user") || "{}"
-  );
+  let user = {};
+
+  try {
+    user = JSON.parse(localStorage.getItem("user") || "{}");
+  } catch {
+    user = {};
+  }
+
+  const memberName =
+    user?.name ||
+    user?.fullName ||
+    user?.username ||
+    "Member";
+
+  const memberId =
+    user?.userId ||
+    user?.memberId ||
+    user?.id ||
+    "-";
+
+  const firstLetter =
+    memberName?.charAt(0)?.toUpperCase() || "M";
+
+  const isActive = (path) => {
+    if (path === "/member") {
+      return location.pathname === "/member";
+    }
+
+    return (
+      location.pathname === path ||
+      location.pathname.startsWith(`${path}/`)
+    );
+  };
+
+  const handleNavigation = () => {
+    onClose();
+  };
 
   const handleLogout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("user");
 
-    sessionStorage.removeItem("token");
-    sessionStorage.removeItem("user");
+    onClose();
 
-    window.dispatchEvent(
-      new Event("auth-logout")
-    );
-
-    window.location.href = "/login";
+    navigate("/login", {
+      replace: true,
+    });
   };
 
-  return (
-    <Drawer
-      variant="permanent"
+  const renderMenu = (items) =>
+    items.map((item) => {
+      const active = isActive(item.path);
+
+      return (
+        <ListItemButton
+          key={item.path}
+          component={Link}
+          to={item.path}
+          onClick={handleNavigation}
+          selected={active}
+          sx={{
+            minHeight: 50,
+            mx: 1.5,
+            mb: 0.6,
+            px: 2,
+            borderRadius: 3,
+
+            color: "#fff",
+
+            transition: "all 0.2s ease",
+
+            "&:hover": {
+              bgcolor: "rgba(255,255,255,0.12)",
+            },
+
+            "&.Mui-selected": {
+              bgcolor: "#4CAF50",
+              color: "#fff",
+            },
+
+            "&.Mui-selected:hover": {
+              bgcolor: "#43A047",
+            },
+          }}
+        >
+          <ListItemIcon
+            sx={{
+              minWidth: 40,
+              color: "inherit",
+            }}
+          >
+            {item.icon}
+          </ListItemIcon>
+
+          <ListItemText
+            primary={item.title}
+            primaryTypographyProps={{
+              fontSize: {
+                xs: "0.9rem",
+                md: "0.95rem",
+              },
+              fontWeight: active ? 600 : 400,
+              whiteSpace: "nowrap",
+            }}
+          />
+        </ListItemButton>
+      );
+    });
+
+  const sidebarContent = (
+    <Box
       sx={{
-        width: drawerWidth,
-
-        flexShrink: 0,
-
-        "& .MuiDrawer-paper": {
-          width: drawerWidth,
-
-          boxSizing: "border-box",
-
-          bgcolor: "#1B5E20",
-
-          color: "#fff",
-        },
+        width: DRAWER_WIDTH,
+        height: "100%",
+        display: "flex",
+        flexDirection: "column",
+        bgcolor: "#176B2A",
+        color: "#fff",
+        overflow: "hidden",
       }}
     >
-
-      <Toolbar />
-
-      {/* =================================================
-          LOGO
-      ================================================= */}
-
+      {/* =====================================================
+          BRAND
+      ===================================================== */}
       <Box
         sx={{
-          textAlign: "center",
-
-          py: 2,
+          px: 3,
+          py: 3,
+          minHeight: 90,
+          display: "flex",
+          alignItems: "center",
         }}
       >
         <Typography
-          variant="h5"
-          fontWeight="bold"
+          sx={{
+            fontSize: {
+              xs: "1.45rem",
+              md: "1.55rem",
+            },
+            fontWeight: 800,
+            color: "#fff",
+            whiteSpace: "nowrap",
+          }}
         >
           Bhagyamma Hub
         </Typography>
@@ -185,211 +257,248 @@ const MemberSidebar = () => {
 
       <Divider
         sx={{
-          bgcolor:
-            "rgba(255,255,255,.2)",
+          borderColor: "rgba(255,255,255,0.12)",
         }}
       />
 
-
-      {/* =================================================
+      {/* =====================================================
           USER
-      ================================================= */}
-
+      ===================================================== */}
       <Box
         sx={{
-          textAlign: "center",
-
+          px: 2,
           py: 3,
+          textAlign: "center",
         }}
       >
         <Avatar
           sx={{
-            width: 70,
-
-            height: 70,
-
-            bgcolor: "#43A047",
-
+            width: 74,
+            height: 74,
             mx: "auto",
-
-            fontSize: 28,
+            mb: 1.5,
+            bgcolor: "#4CAF50",
+            color: "#fff",
+            fontSize: "2rem",
+            fontWeight: 700,
           }}
         >
-          {user?.name
-            ?.charAt(0)
-            ?.toUpperCase() || "M"}
+          {firstLetter}
         </Avatar>
 
         <Typography
-          mt={2}
-          fontWeight="bold"
-          noWrap
+          fontWeight={700}
           sx={{
-            px: 2,
+            fontSize: "1rem",
+            whiteSpace: "nowrap",
+            overflow: "hidden",
+            textOverflow: "ellipsis",
           }}
         >
-          {user?.name || "Member"}
+          {memberName}
         </Typography>
 
         <Typography
-          variant="caption"
-          color="#B2DFDB"
+          sx={{
+            mt: 0.4,
+            fontSize: "0.75rem",
+            opacity: 0.8,
+            letterSpacing: 0.5,
+          }}
         >
           MEMBER
+        </Typography>
+
+        <Typography
+          sx={{
+            mt: 0.5,
+            fontSize: "0.7rem",
+            opacity: 0.65,
+            wordBreak: "break-word",
+          }}
+        >
+          ID: {memberId}
         </Typography>
       </Box>
 
       <Divider
         sx={{
-          bgcolor:
-            "rgba(255,255,255,.2)",
+          borderColor: "rgba(255,255,255,0.12)",
         }}
       />
 
-
-      {/* =================================================
-          MENU
-      ================================================= */}
-
-      <List
-        sx={{
-          mt: 1,
-
-          px: 0.5,
-        }}
-      >
-
-        {menuItems.map(
-          (item) => {
-
-            const isHome =
-              item.path === "/";
-
-            const isSelected =
-              isHome
-                ? location.pathname === "/"
-                : location.pathname ===
-                  item.path;
-
-            return (
-              <ListItemButton
-                key={item.title}
-                component={Link}
-                to={item.path}
-                selected={isSelected}
-                sx={{
-                  mx: 1,
-
-                  mb: 0.5,
-
-                  borderRadius: 2,
-
-                  color: "#fff",
-
-                  minHeight: 46,
-
-                  "&.Mui-selected": {
-                    bgcolor:
-                      "#43A047",
-                  },
-
-                  "&.Mui-selected:hover": {
-                    bgcolor:
-                      "#4CAF50",
-                  },
-
-                  "&:hover": {
-                    bgcolor:
-                      "#2E7D32",
-                  },
-                }}
-              >
-
-                <ListItemIcon
-                  sx={{
-                    color: "#fff",
-
-                    minWidth: 40,
-                  }}
-                >
-                  {item.icon}
-                </ListItemIcon>
-
-                <ListItemText
-                  primary={
-                    item.title
-                  }
-                />
-
-              </ListItemButton>
-            );
-          }
-        )}
-
-      </List>
-
-
-      {/* =================================================
-          BOTTOM AREA
-      ================================================= */}
-
+      {/* =====================================================
+          SCROLLABLE MENU
+      ===================================================== */}
       <Box
         sx={{
-          flexGrow: 1,
+          flex: 1,
+          overflowY: "auto",
+          overflowX: "hidden",
+          py: 2,
+
+          "&::-webkit-scrollbar": {
+            width: 5,
+          },
+
+          "&::-webkit-scrollbar-thumb": {
+            backgroundColor: "rgba(255,255,255,0.25)",
+            borderRadius: 10,
+          },
         }}
-      />
-
-
-      <Divider
-        sx={{
-          bgcolor:
-            "rgba(255,255,255,.2)",
-        }}
-      />
-
-
-      {/* =================================================
-          LOGOUT
-      ================================================= */}
-
-      <List>
-
-        <ListItemButton
-          onClick={
-            handleLogout
-          }
+      >
+        <Typography
           sx={{
-            color: "#fff",
-
-            mx: 1,
-
-            borderRadius: 2,
-
-            "&:hover": {
-              bgcolor: "#D32F2F",
-            },
+            px: 3,
+            mb: 1,
+            fontSize: "0.68rem",
+            fontWeight: 700,
+            opacity: 0.55,
+            letterSpacing: 1,
           }}
         >
+          MAIN
+        </Typography>
 
-          <ListItemIcon
+        <List disablePadding>
+          {renderMenu(mainMenu)}
+        </List>
+
+        <Typography
+          sx={{
+            px: 3,
+            mt: 2.5,
+            mb: 1,
+            fontSize: "0.68rem",
+            fontWeight: 700,
+            opacity: 0.55,
+            letterSpacing: 1,
+          }}
+        >
+          MLM
+        </Typography>
+
+        <List disablePadding>
+          {renderMenu(mlmMenu)}
+        </List>
+
+        <Typography
+          sx={{
+            px: 3,
+            mt: 2.5,
+            mb: 1,
+            fontSize: "0.68rem",
+            fontWeight: 700,
+            opacity: 0.55,
+            letterSpacing: 1,
+          }}
+        >
+          OTHER
+        </Typography>
+
+        <List disablePadding>
+          {renderMenu(otherMenu)}
+        </List>
+      </Box>
+
+      {/* =====================================================
+          LOGOUT
+      ===================================================== */}
+      <Box
+        sx={{
+          borderTop: "1px solid rgba(255,255,255,0.12)",
+          p: 1.5,
+        }}
+      >
+        <Tooltip title="Logout" placement="right">
+          <ListItemButton
+            onClick={handleLogout}
             sx={{
+              minHeight: 50,
+              borderRadius: 3,
               color: "#fff",
 
-              minWidth: 40,
+              "&:hover": {
+                bgcolor: "rgba(255,255,255,0.12)",
+              },
             }}
           >
-            <LogoutRounded />
-          </ListItemIcon>
+            <ListItemIcon
+              sx={{
+                minWidth: 40,
+                color: "#fff",
+              }}
+            >
+              <LogoutRounded />
+            </ListItemIcon>
 
-          <ListItemText
-            primary="Logout"
-          />
+            <ListItemText
+              primary="Logout"
+              primaryTypographyProps={{
+                fontSize: "0.95rem",
+              }}
+            />
+          </ListItemButton>
+        </Tooltip>
+      </Box>
+    </Box>
+  );
 
-        </ListItemButton>
+  return (
+    <>
+      {/* =====================================================
+          MOBILE DRAWER
+      ===================================================== */}
+      <Drawer
+        variant="temporary"
+        open={mobileOpen}
+        onClose={onClose}
+        ModalProps={{
+          keepMounted: true,
+        }}
+        sx={{
+          display: {
+            xs: "block",
+            md: "none",
+          },
 
-      </List>
+          "& .MuiDrawer-paper": {
+            width: DRAWER_WIDTH,
+            maxWidth: "85vw",
+            boxSizing: "border-box",
+            border: 0,
+          },
+        }}
+      >
+        {sidebarContent}
+      </Drawer>
 
-    </Drawer>
+      {/* =====================================================
+          DESKTOP DRAWER
+      ===================================================== */}
+      <Drawer
+        variant="permanent"
+        open
+        sx={{
+          display: {
+            xs: "none",
+            md: "block",
+          },
+
+          width: DRAWER_WIDTH,
+          flexShrink: 0,
+
+          "& .MuiDrawer-paper": {
+            width: DRAWER_WIDTH,
+            boxSizing: "border-box",
+            border: 0,
+            bgcolor: "#176B2A",
+          },
+        }}
+      >
+        {sidebarContent}
+      </Drawer>
+    </>
   );
 };
 

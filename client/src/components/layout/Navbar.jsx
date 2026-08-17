@@ -14,6 +14,7 @@ import {
   ListItemButton,
   ListItemText,
   Divider,
+  Badge,
 } from "@mui/material";
 
 import {
@@ -23,6 +24,7 @@ import {
   Inventory2Outlined,
   PersonOutline,
   LogoutOutlined,
+  Close as CloseIcon,
 } from "@mui/icons-material";
 
 import {
@@ -52,14 +54,11 @@ const navItems = [
 const Navbar = () => {
   const navigate = useNavigate();
 
-  const [mobileOpen, setMobileOpen] =
-    useState(false);
-
-  const [isLoggedIn, setIsLoggedIn] =
-    useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   /* =====================================================
-     CHECK LOGIN STATUS
+     LOGIN STATUS
   ===================================================== */
 
   const checkLoginStatus = () => {
@@ -70,33 +69,19 @@ const Navbar = () => {
     setIsLoggedIn(Boolean(token));
   };
 
-  /* =====================================================
-     INITIAL LOGIN CHECK
-  ===================================================== */
-
   useEffect(() => {
     checkLoginStatus();
 
-    /*
-     * LoginForm dispatches this event
-     * after successful login.
-     */
     window.addEventListener(
       "auth-login",
       checkLoginStatus
     );
 
-    /*
-     * Useful after logout.
-     */
     window.addEventListener(
       "auth-logout",
       checkLoginStatus
     );
 
-    /*
-     * Also check when storage changes.
-     */
     window.addEventListener(
       "storage",
       checkLoginStatus
@@ -121,11 +106,24 @@ const Navbar = () => {
   }, []);
 
   /* =====================================================
-     MOBILE DRAWER
+     DRAWER
   ===================================================== */
 
-  const toggleDrawer = () => {
+  const handleDrawerToggle = () => {
     setMobileOpen((prev) => !prev);
+  };
+
+  const closeDrawer = () => {
+    setMobileOpen(false);
+  };
+
+  /* =====================================================
+     CART
+  ===================================================== */
+
+  const handleCartClick = () => {
+    closeDrawer();
+    navigate("/cart");
   };
 
   /* =====================================================
@@ -139,22 +137,13 @@ const Navbar = () => {
     sessionStorage.removeItem("token");
     sessionStorage.removeItem("user");
 
-    /*
-     * Notify other components that
-     * authentication has changed.
-     */
     window.dispatchEvent(
       new Event("auth-logout")
     );
 
     setIsLoggedIn(false);
+    closeDrawer();
 
-    setMobileOpen(false);
-
-    /*
-     * Send user to Login page.
-     * Login page now has Home navigation.
-     */
     navigate("/login");
   };
 
@@ -168,77 +157,124 @@ const Navbar = () => {
         position="sticky"
         elevation={0}
         sx={{
-          bgcolor:
-            "rgba(255,255,255,0.92)",
-
-          backdropFilter:
-            "blur(14px)",
-
+          bgcolor: "rgba(255,255,255,0.96)",
+          backdropFilter: "blur(14px)",
           borderBottom:
             "1px solid rgba(0,0,0,0.08)",
+          color: "#222",
         }}
       >
         <Container maxWidth="xl">
-
           <Toolbar
+            disableGutters
             sx={{
               minHeight: {
-                xs: 65,
-                sm: 75,
+                xs: 62,
+                sm: 70,
+                md: 76,
               },
-
-              justifyContent:
-                "space-between",
 
               px: {
-                xs: 0,
+                xs: 1,
                 sm: 1,
+                md: 2,
               },
+
+              display: "flex",
+              alignItems: "center",
             }}
           >
+
+            {/* =================================================
+                MOBILE MENU BUTTON
+            ================================================= */}
+
+            <IconButton
+              onClick={handleDrawerToggle}
+              aria-label="Open menu"
+              sx={{
+                display: {
+                  xs: "flex",
+                  md: "none",
+                },
+
+                color: "#2E7D32",
+
+                mr: 0.5,
+
+                width: 44,
+                height: 44,
+              }}
+            >
+              {mobileOpen ? (
+                <CloseIcon />
+              ) : (
+                <MenuIcon />
+              )}
+            </IconButton>
+
 
             {/* =================================================
                 LOGO
             ================================================= */}
 
             <Box
-              display="flex"
-              alignItems="center"
-              gap={1}
-              sx={{
-                cursor: "pointer",
+              onClick={() => {
+                closeDrawer();
+                navigate("/");
               }}
-              onClick={() =>
-                navigate("/")
-              }
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                gap: {
+                  xs: 0.7,
+                  sm: 1,
+                },
+
+                cursor: "pointer",
+
+                minWidth: 0,
+
+                flexShrink: 1,
+              }}
             >
               <ShoppingBag
                 sx={{
                   color: "#2E7D32",
 
                   fontSize: {
-                    xs: 28,
-                    sm: 34,
+                    xs: 27,
+                    sm: 32,
+                    md: 34,
                   },
+
+                  flexShrink: 0,
                 }}
               />
 
               <Typography
-                variant="h5"
                 sx={{
                   fontWeight: 700,
 
                   color: "#2E7D32",
 
                   letterSpacing: {
-                    xs: 0.5,
-                    sm: 1,
+                    xs: 0.2,
+                    sm: 0.5,
+                    md: 1,
                   },
 
                   fontSize: {
-                    xs: "1.15rem",
-                    sm: "1.5rem",
+                    xs: "1rem",
+                    sm: "1.25rem",
+                    md: "1.5rem",
                   },
+
+                  whiteSpace: "nowrap",
+
+                  overflow: "hidden",
+
+                  textOverflow: "ellipsis",
                 }}
               >
                 Bhagyamma Hub
@@ -247,7 +283,7 @@ const Navbar = () => {
 
 
             {/* =================================================
-                DESKTOP MENU
+                DESKTOP NAVIGATION
             ================================================= */}
 
             <Box
@@ -260,10 +296,10 @@ const Navbar = () => {
                 gap: 0.5,
 
                 alignItems: "center",
+
+                ml: "auto",
               }}
             >
-
-              {/* HOME / ABOUT / PRODUCTS / CONTACT */}
 
               {navItems.map((item) => (
                 <Button
@@ -274,26 +310,21 @@ const Navbar = () => {
                     color: "#333",
 
                     px: 1.8,
-
                     py: 1,
 
                     borderRadius: 2,
 
-                    textTransform:
-                      "none",
+                    textTransform: "none",
 
                     fontWeight: 600,
 
                     "&.active": {
                       color: "#fff",
-
-                      bgcolor:
-                        "#2E7D32",
+                      bgcolor: "#2E7D32",
                     },
 
                     "&:hover": {
-                      bgcolor:
-                        "#E8F5E9",
+                      bgcolor: "#E8F5E9",
                     },
                   }}
                 >
@@ -302,9 +333,7 @@ const Navbar = () => {
               ))}
 
 
-              {/* =================================================
-                  CART
-              ================================================= */}
+              {/* CART */}
 
               <Button
                 component={NavLink}
@@ -316,26 +345,21 @@ const Navbar = () => {
                   color: "#333",
 
                   px: 1.8,
-
                   py: 1,
 
                   borderRadius: 2,
 
-                  textTransform:
-                    "none",
+                  textTransform: "none",
 
                   fontWeight: 600,
 
                   "&.active": {
                     color: "#fff",
-
-                    bgcolor:
-                      "#2E7D32",
+                    bgcolor: "#2E7D32",
                   },
 
                   "&:hover": {
-                    bgcolor:
-                      "#E8F5E9",
+                    bgcolor: "#E8F5E9",
                   },
                 }}
               >
@@ -343,9 +367,7 @@ const Navbar = () => {
               </Button>
 
 
-              {/* =================================================
-                  PUBLIC ORDERS
-              ================================================= */}
+              {/* ORDERS */}
 
               <Button
                 component={NavLink}
@@ -357,26 +379,21 @@ const Navbar = () => {
                   color: "#333",
 
                   px: 1.8,
-
                   py: 1,
 
                   borderRadius: 2,
 
-                  textTransform:
-                    "none",
+                  textTransform: "none",
 
                   fontWeight: 600,
 
                   "&.active": {
                     color: "#fff",
-
-                    bgcolor:
-                      "#2E7D32",
+                    bgcolor: "#2E7D32",
                   },
 
                   "&:hover": {
-                    bgcolor:
-                      "#E8F5E9",
+                    bgcolor: "#E8F5E9",
                   },
                 }}
               >
@@ -384,9 +401,7 @@ const Navbar = () => {
               </Button>
 
 
-              {/* =================================================
-                  LOGGED OUT
-              ================================================= */}
+              {/* LOGIN */}
 
               {!isLoggedIn && (
                 <>
@@ -396,10 +411,9 @@ const Navbar = () => {
                     variant="outlined"
                     color="success"
                     sx={{
-                      ml: 1.5,
+                      ml: 1,
 
-                      textTransform:
-                        "none",
+                      textTransform: "none",
 
                       borderRadius: 2,
 
@@ -415,8 +429,7 @@ const Navbar = () => {
                     variant="contained"
                     color="success"
                     sx={{
-                      textTransform:
-                        "none",
+                      textTransform: "none",
 
                       borderRadius: 2,
 
@@ -429,9 +442,7 @@ const Navbar = () => {
               )}
 
 
-              {/* =================================================
-                  LOGGED IN
-              ================================================= */}
+              {/* LOGGED IN */}
 
               {isLoggedIn && (
                 <>
@@ -444,10 +455,9 @@ const Navbar = () => {
                     variant="outlined"
                     color="success"
                     sx={{
-                      ml: 1.5,
+                      ml: 1,
 
-                      textTransform:
-                        "none",
+                      textTransform: "none",
 
                       borderRadius: 2,
 
@@ -458,17 +468,14 @@ const Navbar = () => {
                   </Button>
 
                   <Button
-                    onClick={
-                      handleLogout
-                    }
+                    onClick={handleLogout}
                     startIcon={
                       <LogoutOutlined />
                     }
                     variant="contained"
                     color="success"
                     sx={{
-                      textTransform:
-                        "none",
+                      textTransform: "none",
 
                       borderRadius: 2,
 
@@ -479,29 +486,52 @@ const Navbar = () => {
                   </Button>
                 </>
               )}
-
             </Box>
 
 
             {/* =================================================
-                MOBILE MENU BUTTON
+                MOBILE CART
             ================================================= */}
 
-            <IconButton
+            <Box
               sx={{
                 display: {
                   xs: "flex",
                   md: "none",
                 },
 
-                color: "#2E7D32",
+                alignItems: "center",
+
+                ml: "auto",
               }}
-              onClick={
-                toggleDrawer
-              }
             >
-              <MenuIcon />
-            </IconButton>
+              <IconButton
+                onClick={handleCartClick}
+                aria-label="Cart"
+                sx={{
+                  color: "#2E7D32",
+
+                  width: 44,
+                  height: 44,
+
+                  "&:hover": {
+                    bgcolor: "#E8F5E9",
+                  },
+                }}
+              >
+                <Badge
+                  badgeContent={0}
+                  color="error"
+                  invisible
+                >
+                  <ShoppingCartOutlined
+                    sx={{
+                      fontSize: 27,
+                    }}
+                  />
+                </Badge>
+              </IconButton>
+            </Box>
 
           </Toolbar>
         </Container>
@@ -515,24 +545,31 @@ const Navbar = () => {
       <Drawer
         anchor="left"
         open={mobileOpen}
-        onClose={
-          toggleDrawer
-        }
+        onClose={closeDrawer}
+        ModalProps={{
+          keepMounted: true,
+        }}
+        sx={{
+          "& .MuiDrawer-paper": {
+            width: {
+              xs: "82vw",
+              sm: 320,
+            },
+
+            maxWidth: 340,
+
+            boxSizing: "border-box",
+          },
+        }}
       >
         <Box
           sx={{
-            width: {
-              xs: "82vw",
-              sm: 300,
-            },
-
-            maxWidth: 320,
+            width: "100%",
+            height: "100%",
           }}
         >
 
-          {/* =================================================
-              DRAWER HEADER
-          ================================================= */}
+          {/* DRAWER HEADER */}
 
           <Box
             sx={{
@@ -547,9 +584,7 @@ const Navbar = () => {
           >
             <ShoppingBag
               sx={{
-                color:
-                  "#2E7D32",
-
+                color: "#2E7D32",
                 fontSize: 30,
               }}
             />
@@ -557,11 +592,8 @@ const Navbar = () => {
             <Typography
               variant="h6"
               sx={{
-                color:
-                  "#2E7D32",
-
-                fontWeight:
-                  "bold",
+                color: "#2E7D32",
+                fontWeight: "bold",
               }}
             >
               Bhagyamma Hub
@@ -571,66 +603,38 @@ const Navbar = () => {
           <Divider />
 
 
-          {/* =================================================
-              NAVIGATION
-          ================================================= */}
+          {/* MENU */}
 
           <List>
 
-            {/* HOME / ABOUT / PRODUCTS / CONTACT */}
-
-            {navItems.map(
-              (item) => (
-                <ListItem
-                  key={
-                    item.path
-                  }
-                  disablePadding
+            {navItems.map((item) => (
+              <ListItem
+                key={item.path}
+                disablePadding
+              >
+                <ListItemButton
+                  component={NavLink}
+                  to={item.path}
+                  onClick={closeDrawer}
                 >
-                  <ListItemButton
-                    component={
-                      NavLink
-                    }
-                    to={
-                      item.path
-                    }
-                    onClick={
-                      toggleDrawer
-                    }
-                  >
-                    <ListItemText
-                      primary={
-                        item.name
-                      }
-                    />
-                  </ListItemButton>
-                </ListItem>
-              )
-            )}
+                  <ListItemText
+                    primary={item.name}
+                  />
+                </ListItemButton>
+              </ListItem>
+            ))}
 
 
-            {/* =================================================
-                CART
-            ================================================= */}
+            {/* CART */}
 
-            <ListItem
-              disablePadding
-            >
+            <ListItem disablePadding>
               <ListItemButton
-                component={
-                  NavLink
-                }
-                to="/cart"
-                onClick={
-                  toggleDrawer
-                }
+                onClick={handleCartClick}
               >
                 <ShoppingCartOutlined
                   sx={{
                     mr: 2,
-
-                    color:
-                      "#333",
+                    color: "#2E7D32",
                   }}
                 />
 
@@ -641,28 +645,18 @@ const Navbar = () => {
             </ListItem>
 
 
-            {/* =================================================
-                ORDERS
-            ================================================= */}
+            {/* ORDERS */}
 
-            <ListItem
-              disablePadding
-            >
+            <ListItem disablePadding>
               <ListItemButton
-                component={
-                  NavLink
-                }
+                component={NavLink}
                 to="/orders"
-                onClick={
-                  toggleDrawer
-                }
+                onClick={closeDrawer}
               >
                 <Inventory2Outlined
                   sx={{
                     mr: 2,
-
-                    color:
-                      "#333",
+                    color: "#2E7D32",
                   }}
                 />
 
@@ -673,30 +667,18 @@ const Navbar = () => {
             </ListItem>
 
 
-            <Divider
-              sx={{
-                my: 2,
-              }}
-            />
+            <Divider sx={{ my: 2 }} />
 
 
-            {/* =================================================
-                LOGGED OUT MOBILE
-            ================================================= */}
+            {/* LOGGED OUT */}
 
             {!isLoggedIn && (
               <>
-                <ListItem
-                  disablePadding
-                >
+                <ListItem disablePadding>
                   <ListItemButton
-                    component={
-                      NavLink
-                    }
+                    component={NavLink}
                     to="/login"
-                    onClick={
-                      toggleDrawer
-                    }
+                    onClick={closeDrawer}
                   >
                     <ListItemText
                       primary="Login"
@@ -704,17 +686,11 @@ const Navbar = () => {
                   </ListItemButton>
                 </ListItem>
 
-                <ListItem
-                  disablePadding
-                >
+                <ListItem disablePadding>
                   <ListItemButton
-                    component={
-                      NavLink
-                    }
+                    component={NavLink}
                     to="/register"
-                    onClick={
-                      toggleDrawer
-                    }
+                    onClick={closeDrawer}
                   >
                     <ListItemText
                       primary="Register"
@@ -725,30 +701,20 @@ const Navbar = () => {
             )}
 
 
-            {/* =================================================
-                LOGGED IN MOBILE
-            ================================================= */}
+            {/* LOGGED IN */}
 
             {isLoggedIn && (
               <>
-                <ListItem
-                  disablePadding
-                >
+                <ListItem disablePadding>
                   <ListItemButton
-                    component={
-                      NavLink
-                    }
+                    component={NavLink}
                     to="/member/profile"
-                    onClick={
-                      toggleDrawer
-                    }
+                    onClick={closeDrawer}
                   >
                     <PersonOutline
                       sx={{
                         mr: 2,
-
-                        color:
-                          "#2E7D32",
+                        color: "#2E7D32",
                       }}
                     />
 
@@ -758,20 +724,14 @@ const Navbar = () => {
                   </ListItemButton>
                 </ListItem>
 
-                <ListItem
-                  disablePadding
-                >
+                <ListItem disablePadding>
                   <ListItemButton
-                    onClick={
-                      handleLogout
-                    }
+                    onClick={handleLogout}
                   >
                     <LogoutOutlined
                       sx={{
                         mr: 2,
-
-                        color:
-                          "#2E7D32",
+                        color: "#2E7D32",
                       }}
                     />
 

@@ -32,3 +32,151 @@ img {
 ul {
   list-style: none;
 }
+
+/* =========================================================
+   BHAGYAMMA HUB - GLOBAL MOBILE RESPONSIVE FIX
+========================================================= */
+
+html,
+body,
+#root {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  overflow-x: hidden;
+}
+
+body {
+  overflow-x: hidden;
+  background: #f5f7fa;
+}
+
+/* Prevent accidental horizontal page overflow */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+/* Images */
+
+img {
+  max-width: 100%;
+  height: auto;
+}
+
+/* Tables */
+
+table {
+  max-width: 100%;
+}
+
+.MuiTableContainer-root {
+  max-width: 100%;
+  overflow-x: auto !important;
+}
+
+/* MUI containers */
+
+.MuiContainer-root {
+  width: 100%;
+  max-width: 100%;
+}
+
+/* Forms */
+
+input,
+textarea,
+select,
+button {
+  max-width: 100%;
+}
+
+/* Long text */
+
+p,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  overflow-wrap: anywhere;
+}
+
+/* =========================================================
+   MOBILE
+========================================================= */
+
+@media (max-width: 599px) {
+  body {
+    font-size: 14px;
+  }
+
+  .MuiTypography-h1 {
+    font-size: 1.8rem !important;
+  }
+
+  .MuiTypography-h2 {
+    font-size: 1.6rem !important;
+  }
+
+  .MuiTypography-h3 {
+    font-size: 1.4rem !important;
+  }
+
+  .MuiTypography-h4 {
+    font-size: 1.25rem !important;
+  }
+
+  .MuiTypography-h5 {
+    font-size: 1.1rem !important;
+  }
+
+  .MuiTypography-h6 {
+    font-size: 1rem !important;
+  }
+
+  .MuiButton-root {
+    min-height: 42px;
+  }
+
+  .MuiCard-root {
+    max-width: 100%;
+  }
+
+  .MuiDialog-paper {
+    width: calc(100% - 24px) !important;
+    max-width: calc(100% - 24px) !important;
+    margin: 12px !important;
+  }
+
+  .MuiFormControl-root {
+    max-width: 100%;
+  }
+}
+
+/* =========================================================
+   SMALL PHONES
+========================================================= */
+
+@media (max-width: 380px) {
+  .MuiToolbar-root {
+    padding-left: 8px !important;
+    padding-right: 8px !important;
+  }
+
+  .MuiCardContent-root {
+    padding: 12px !important;
+  }
+
+  .MuiButton-root {
+    font-size: 0.78rem !important;
+  }
+}

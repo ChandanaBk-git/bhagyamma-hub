@@ -26,14 +26,18 @@ const Wallet = () => {
 
   const loadWallet = async () => {
     try {
+      setLoading(true);
+
       const data = await getWallet();
 
       setWalletData({
         wallet: data?.wallet || {},
-        transactions: data?.transactions || [],
+        transactions: Array.isArray(data?.transactions)
+          ? data.transactions
+          : [],
       });
     } catch (error) {
-      console.error(error);
+      console.error("WALLET LOAD ERROR:", error);
     } finally {
       setLoading(false);
     }
@@ -42,10 +46,13 @@ const Wallet = () => {
   if (loading) {
     return (
       <Box
-        height="70vh"
-        display="flex"
-        justifyContent="center"
-        alignItems="center"
+        sx={{
+          minHeight: "70vh",
+          width: "100%",
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+        }}
       >
         <CircularProgress color="success" />
       </Box>
@@ -55,22 +62,67 @@ const Wallet = () => {
   return (
     <Box
       sx={{
-        p: 3,
+        width: "100%",
+        maxWidth: "100%",
+        minWidth: 0,
+        boxSizing: "border-box",
+
+        px: {
+          xs: 1.5,
+          sm: 2,
+          md: 3,
+        },
+
+        py: {
+          xs: 2,
+          sm: 2.5,
+          md: 3,
+        },
+
         bgcolor: "#F5F7FA",
         minHeight: "100vh",
+
+        overflowX: "hidden",
       }}
     >
+      {/* PAGE TITLE */}
+
       <Typography
-        variant="h4"
-        fontWeight="bold"
-        mb={3}
+        component="h1"
+        fontWeight={700}
+        sx={{
+          mb: {
+            xs: 2,
+            sm: 2.5,
+            md: 3,
+          },
+
+          fontSize: {
+            xs: "1.5rem",
+            sm: "1.8rem",
+            md: "2.1rem",
+          },
+
+          lineHeight: 1.2,
+        }}
       >
         Wallet
       </Typography>
 
-      <WalletSummary wallet={walletData.wallet} />
+      {/* SUMMARY */}
 
-      <WithdrawCard wallet={walletData.wallet} />
+      <WalletSummary
+        wallet={walletData.wallet}
+      />
+
+      {/* WITHDRAW */}
+
+      <WithdrawCard
+        wallet={walletData.wallet}
+        onSuccess={loadWallet}
+      />
+
+      {/* TRANSACTIONS */}
 
       <WalletTransactions
         transactions={walletData.transactions}

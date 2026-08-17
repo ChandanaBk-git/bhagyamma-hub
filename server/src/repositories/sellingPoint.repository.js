@@ -5,7 +5,7 @@ const SellingPointTransaction = require("../models/sellingPointTransaction.model
 // ======================================
 
 const createTransaction = async (data) => {
-    return await SellingPointTransaction.create(data);
+  return await SellingPointTransaction.create(data);
 };
 
 // ======================================
@@ -13,14 +13,14 @@ const createTransaction = async (data) => {
 // ======================================
 
 const getTransactions = async (userId) => {
-    return await SellingPointTransaction.find({
-        user: userId,
+  return await SellingPointTransaction.find({
+    user: userId,
+  })
+    .sort({
+      createdAt: -1,
     })
-        .sort({
-            createdAt: -1,
-        })
-        .populate("order", "orderNumber")
-        .lean();
+    .populate("order", "orderNumber")
+    .lean();
 };
 
 // ======================================
@@ -28,13 +28,29 @@ const getTransactions = async (userId) => {
 // ======================================
 
 const getTransactionById = async (id) => {
-    return await SellingPointTransaction.findById(id)
-        .populate("user", "name userId")
-        .populate("order", "orderNumber");
+  return await SellingPointTransaction.findById(id)
+    .populate("user", "name userId")
+    .populate("order", "orderNumber");
+};
+
+// ======================================
+// Find Membership Transaction
+// ======================================
+
+const findMembershipTransaction = async (userId) => {
+  return await SellingPointTransaction.findOne({
+    user: userId,
+    transactionType: "MEMBERSHIP_PAYMENT",
+  })
+    .sort({
+      createdAt: -1,
+    })
+    .lean();
 };
 
 module.exports = {
-    createTransaction,
-    getTransactions,
-    getTransactionById,
+  createTransaction,
+  getTransactions,
+  getTransactionById,
+  findMembershipTransaction,
 };

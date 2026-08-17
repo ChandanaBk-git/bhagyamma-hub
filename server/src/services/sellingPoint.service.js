@@ -19,24 +19,10 @@ const SP_PER_HUNDRED = 2;
 const SUPERVISOR_TARGET = 500;
 
 // =====================================================
-// ACTIVATE PAID MEMBERSHIP
-// =====================================================
-//
-// This function checks the EXISTING paymentStatus
-// stored in MongoDB.
-//
-// If paymentStatus === "Paid":
-//
-//      membershipStatus = Active
-//      membershipActivationMethod = WelcomeKit
-//      sellingPoints += 40
-//
-// It gives the 40 SP ONLY ONCE.
-//
+// ACTIVATE / SYNC PAID MEMBERSHIP
 // =====================================================
 
 const syncPaidMembership = async (userId) => {
-
   const user =
     await User.findById(userId);
 
@@ -48,7 +34,10 @@ const syncPaidMembership = async (userId) => {
   // ONLY PAID USERS
   // ===================================================
 
-  if (user.paymentStatus !== "Paid") {
+  if (
+    String(user.paymentStatus || "").toLowerCase() !==
+    "paid"
+  ) {
     return user;
   }
 
@@ -56,7 +45,8 @@ const syncPaidMembership = async (userId) => {
   // MEMBERSHIP
   // ===================================================
 
-  user.membershipStatus = "Active";
+  user.membershipStatus =
+    "Active";
 
   user.membershipActivationMethod =
     "WelcomeKit";
@@ -67,19 +57,34 @@ const syncPaidMembership = async (userId) => {
   }
 
   // ===================================================
-  // GIVE 40 SP ONLY ONCE
+  // CHECK WHETHER HISTORY ALREADY EXISTS
+  // ===================================================
+
+  const membershipTransaction =
+    await repository.findMembershipTransaction(
+      user._id
+    );
+
+  // ===================================================
+  // GIVE 40 SP ONLY IF NOT ALREADY AWARDED
   // ===================================================
 
   if (!user.membershipSPAwarded) {
-
     user.sellingPoints =
       (user.sellingPoints || 0) +
       MEMBERSHIP_SP;
 
-    user.membershipSPAwarded = true;
+    user.membershipSPAwarded =
+      true;
+  }
 
+  // ===================================================
+  // IMPORTANT:
+  // CREATE HISTORY EVEN IF SP WAS ALREADY AWARDED
+  // ===================================================
+
+  if (!membershipTransaction) {
     await repository.createTransaction({
-
       user: user._id,
 
       order: null,
@@ -101,7 +106,6 @@ const syncPaidMembership = async (userId) => {
 
       remarks:
         "₹2,000 membership payment received. 40 Selling Points awarded.",
-
     });
   }
 
@@ -114,13 +118,13 @@ const syncPaidMembership = async (userId) => {
 // UPDATE SELLING POINTS FROM PRODUCT PURCHASE
 // =====================================================
 //
-// PRODUCT PURCHASE RULE:
-//
 // ₹100 = 2 SP
 //
-// Product purchases also count toward the ₹2,000
-// product-membership qualification.
+// Example:
+// ₹2,000 purchase = 40 SP
+// ₹500 purchase = 10 SP
 //
+// Pending amounts below ₹100 are carried forward.
 // =====================================================
 
 const updateSellingPoints = async (
@@ -128,7 +132,6 @@ const updateSellingPoints = async (
   orderAmount,
   orderId
 ) => {
-
   const user =
     await User.findById(userId);
 
@@ -136,23 +139,24 @@ const updateSellingPoints = async (
     throw new Error("User not found");
   }
 
+  const amount =
+    Number(orderAmount) || 0;
+
+  if (amount <= 0) {
+    throw new Error(
+      "Invalid order amount"
+    );
+  }
+
   // ===================================================
   // FIRST CHECK PAID MEMBERSHIP
   // ===================================================
-  //
-  // If the person already paid ₹2,000, make sure
-  // their 40 SP exists.
-  //
-  // This is particularly useful for your EXISTING
-  // MongoDB users whose paymentStatus is already Paid.
-  //
-  // ===================================================
 
   if (
-    user.paymentStatus === "Paid" &&
+    String(user.paymentStatus || "").toLowerCase() ===
+      "paid" &&
     !user.membershipSPAwarded
   ) {
-
     user.membershipStatus =
       "Active";
 
@@ -170,31 +174,37 @@ const updateSellingPoints = async (
     user.membershipSPAwarded =
       true;
 
-    await repository.createTransaction({
+    // Check whether membership history already exists
+    const membershipTransaction =
+      await repository.findMembershipTransaction(
+        user._id
+      );
 
-      user: user._id,
+    if (!membershipTransaction) {
+      await repository.createTransaction({
+        user: user._id,
 
-      order: null,
+        order: null,
 
-      purchaseAmount:
-        MEMBERSHIP_AMOUNT,
+        purchaseAmount:
+          MEMBERSHIP_AMOUNT,
 
-      pointsEarned:
-        MEMBERSHIP_SP,
+        pointsEarned:
+          MEMBERSHIP_SP,
 
-      pendingAmount:
-        user.pendingPurchaseAmount || 0,
+        pendingAmount:
+          user.pendingPurchaseAmount || 0,
 
-      lifetimePurchase:
-        user.lifetimePurchase || 0,
+        lifetimePurchase:
+          user.lifetimePurchase || 0,
 
-      transactionType:
-        "MEMBERSHIP_PAYMENT",
+        transactionType:
+          "MEMBERSHIP_PAYMENT",
 
-      remarks:
-        "₹2,000 membership payment received. 40 Selling Points awarded.",
-
-    });
+        remarks:
+          "₹2,000 membership payment received. 40 Selling Points awarded.",
+      });
+    }
   }
 
   // ===================================================
@@ -203,17 +213,20 @@ const updateSellingPoints = async (
 
   user.lifetimePurchase =
     (user.lifetimePurchase || 0) +
-    orderAmount;
+    amount;
 
   // ===================================================
-  // PRODUCT SP
-  //
-  // ₹100 = 2 SP
+  // PRODUCT SP CALCULATION
   // ===================================================
+
+  const previousPending =
+    Number(
+      user.pendingPurchaseAmount || 0
+    );
 
   const totalPurchase =
-    (user.pendingPurchaseAmount || 0) +
-    orderAmount;
+    previousPending +
+    amount;
 
   const completedHundreds =
     Math.floor(
@@ -241,19 +254,13 @@ const updateSellingPoints = async (
   // ===================================================
   // PRODUCT PURCHASE MEMBERSHIP QUALIFICATION
   // ===================================================
-  //
-  // If the person DID NOT pay ₹2,000,
-  // cumulative PRODUCT purchases of ₹2,000
-  // activate membership.
-  //
-  // ===================================================
 
   if (
     user.paymentStatus !== "Paid" &&
     user.membershipStatus !== "Active" &&
-    user.lifetimePurchase >= MEMBERSHIP_AMOUNT
+    user.lifetimePurchase >=
+      MEMBERSHIP_AMOUNT
   ) {
-
     user.membershipStatus =
       "Active";
 
@@ -263,22 +270,13 @@ const updateSellingPoints = async (
     user.membershipActivatedAt =
       new Date();
 
-    // =================================================
-    // SAFETY
-    // =================================================
-    //
-    // ₹2,000 product purchase already produces
-    // exactly 40 SP through the calculation above.
-    //
-    // Therefore DO NOT add another 40 SP here.
-    //
-    // =================================================
+    // The ₹2,000 purchase has already generated
+    // its 40 SP through the normal calculation.
 
     user.membershipSPAwarded =
       true;
 
     await repository.createTransaction({
-
       user: user._id,
 
       order: orderId,
@@ -300,7 +298,6 @@ const updateSellingPoints = async (
 
       remarks:
         "Membership activated through ₹2,000 qualifying product purchases.",
-
     });
   }
 
@@ -313,7 +310,6 @@ const updateSellingPoints = async (
       SUPERVISOR_TARGET &&
     !user.isSupervisor
   ) {
-
     user.isSupervisor =
       true;
 
@@ -331,16 +327,13 @@ const updateSellingPoints = async (
     // =================================================
 
     if (user.sponsorId) {
-
       const sponsor =
         await User.findById(
           user.sponsorId
         );
 
       if (sponsor) {
-
         await walletService.creditWallet(
-
           sponsor._id,
 
           1000,
@@ -348,7 +341,6 @@ const updateSellingPoints = async (
           "Direct Downline Supervisor Reward",
 
           user._id.toString()
-
         );
       }
     }
@@ -358,7 +350,6 @@ const updateSellingPoints = async (
     // =================================================
 
     await repository.createTransaction({
-
       user: user._id,
 
       order: orderId,
@@ -380,12 +371,11 @@ const updateSellingPoints = async (
 
       remarks:
         "Promoted to Supervisor",
-
     });
   }
 
   // ===================================================
-  // SAVE
+  // SAVE USER
   // ===================================================
 
   await user.save();
@@ -395,13 +385,12 @@ const updateSellingPoints = async (
   // ===================================================
 
   await repository.createTransaction({
-
     user: user._id,
 
     order: orderId,
 
     purchaseAmount:
-      orderAmount,
+      amount,
 
     pointsEarned:
       earnedPoints,
@@ -416,8 +405,9 @@ const updateSellingPoints = async (
       "ORDER_PURCHASE",
 
     remarks:
-      "Selling Points Earned",
-
+      earnedPoints > 0
+        ? `${earnedPoints} Selling Points Earned`
+        : "Purchase recorded. Selling Points pending.",
   });
 
   return user;
@@ -427,23 +417,22 @@ const updateSellingPoints = async (
 // GET SELLING POINTS
 // =====================================================
 
-const getPoints = async (
-  userId
-) => {
-
+const getPoints = async (userId) => {
   // ===================================================
   // IMPORTANT
   // ===================================================
   //
-  // Before displaying SP, check whether this is an
-  // existing user who already has paymentStatus = Paid.
+  // This automatically repairs existing paid users:
   //
-  // This allows your CURRENT MongoDB users to receive
-  // their missing 40 SP.
+  // paymentStatus = Paid
+  // membershipSPAwarded = true
+  // history missing
   //
+  // It will create the missing history WITHOUT
+  // adding another 40 SP.
   // ===================================================
 
-  let user =
+  const user =
     await syncPaidMembership(userId);
 
   const transactions =
@@ -455,26 +444,13 @@ const getPoints = async (
     user.sellingPoints || 0;
 
   return {
-
-    // =================================================
-    // SELLING POINTS
-    // =================================================
-
     sellingPoints,
-
-    // =================================================
-    // PURCHASE INFORMATION
-    // =================================================
 
     lifetimePurchase:
       user.lifetimePurchase || 0,
 
     pendingPurchaseAmount:
       user.pendingPurchaseAmount || 0,
-
-    // =================================================
-    // MEMBERSHIP
-    // =================================================
 
     paymentStatus:
       user.paymentStatus ||
@@ -492,10 +468,6 @@ const getPoints = async (
       user.membershipSPAwarded ||
       false,
 
-    // =================================================
-    // SUPERVISOR
-    // =================================================
-
     isSupervisor:
       user.isSupervisor ||
       false,
@@ -503,10 +475,6 @@ const getPoints = async (
     discount50Available:
       user.discount50Available ||
       false,
-
-    // =================================================
-    // TARGET
-    // =================================================
 
     target:
       SUPERVISOR_TARGET,
@@ -527,12 +495,7 @@ const getPoints = async (
         100
       ),
 
-    // =================================================
-    // TRANSACTIONS
-    // =================================================
-
     transactions,
-
   };
 };
 
@@ -541,11 +504,9 @@ const getPoints = async (
 // =====================================================
 
 module.exports = {
-
   updateSellingPoints,
 
   syncPaidMembership,
 
   getPoints,
-
 };
