@@ -1,30 +1,58 @@
-import { Paper, InputBase, IconButton } from "@mui/material";
-import SearchIcon from "@mui/icons-material/Search";
+import {
+  Box,
+  IconButton,
+  InputAdornment,
+  TextField,
+} from "@mui/material";
 
-const ProductSearch = ({ searchTerm, setSearchTerm }) => {
+import SearchIcon from "@mui/icons-material/Search";
+import ClearIcon from "@mui/icons-material/Clear";
+
+const ProductSearch = ({
+  searchTerm,
+  setSearchTerm,
+}) => {
   return (
-    <Paper
-      elevation={2}
+    <Box
       sx={{
-        display: "flex",
-        alignItems: "center",
-        p: "4px 12px",
         width: "100%",
-        maxWidth: 500,
-        borderRadius: 3,
+        maxWidth: 600,
+        mx: "auto",
       }}
     >
-      <InputBase
-        sx={{ ml: 1, flex: 1 }}
-        placeholder="Search products..."
+      <TextField
+        fullWidth
+        placeholder="Search products, category, brand..."
         value={searchTerm}
-        onChange={(e) => setSearchTerm(e.target.value)}
-      />
+        onChange={(e) =>
+          setSearchTerm(e.target.value)
+        }
+        InputProps={{
+          startAdornment: (
+            <InputAdornment position="start">
+              <SearchIcon color="success" />
+            </InputAdornment>
+          ),
 
-      <IconButton>
-        <SearchIcon />
-      </IconButton>
-    </Paper>
+          endAdornment: searchTerm && (
+            <InputAdornment position="end">
+              <IconButton
+                onClick={() =>
+                  setSearchTerm("")
+                }
+              >
+                <ClearIcon />
+              </IconButton>
+            </InputAdornment>
+          ),
+        }}
+        sx={{
+          "& .MuiOutlinedInput-root": {
+            borderRadius: 4,
+          },
+        }}
+      />
+    </Box>
   );
 };
 

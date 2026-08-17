@@ -1,26 +1,19 @@
 const Wallet = require("../models/wallet.model");
 
-const create = (data) => Wallet.create(data);
+const findWalletByUser = async (userId) => {
+  return await Wallet.findOne({ user: userId });
+};
 
-const findByUser = (userId) =>
-    Wallet.findOne({ userId });
+const createWallet = async (data) => {
+  return await Wallet.create(data);
+};
 
-const findById = (id) =>
-    Wallet.findById(id);
-
-const updateBalance = (id, data) =>
-    Wallet.findByIdAndUpdate(
-        id,
-        data,
-        {
-            new: true,
-            runValidators: true,
-        }
-    );
+const saveWallet = async (wallet) => {
+  return await wallet.save();
+};
 
 module.exports = {
-    create,
-    findByUser,
-    findById,
-    updateBalance,
+  findWalletByUser,
+  createWallet,
+  saveWallet,
 };

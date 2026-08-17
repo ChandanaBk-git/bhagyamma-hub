@@ -1,4 +1,3 @@
-import Hero from "../../components/home/Hero";
 import HeroBanner from "../../components/home/HeroBanner";
 import Intro from "../../components/home/Intro";
 import ProductPreview from "../../components/home/ProductPreview";
@@ -9,12 +8,13 @@ import MembershipBenefits from "../../components/home/MembershipBenefits";
 import Testimonials from "../../components/home/Testimonials";
 import CallToAction from "../../components/home/CallToAction";
 
-
 const Home = () => {
   return (
     <>
+      {/* HERO + TOP/BOTTOM MARQUEE */}
       <HeroBanner />
 
+      {/* HOME SECTIONS */}
       <Intro />
 
       <ProductPreview />
@@ -25,14 +25,11 @@ const Home = () => {
 
       <HowItWorks />
 
-      <MembershipBenefits/>
+      <MembershipBenefits />
 
+      <Testimonials />
 
-
-      <Testimonials/>
-
-      <CallToAction/>
-
+      <CallToAction />
     </>
   );
 };

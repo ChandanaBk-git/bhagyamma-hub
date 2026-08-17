@@ -19,9 +19,15 @@ const ProductForm = ({ initialValues, onSubmit, loading }) => {
       description: "",
       benefits: "",
       ingredients: "",
-      mrp: "",
-      sellingPrice: "",
-      stock: "",
+      usage: "",
+      storage: "",
+      weight: "",
+      quantity: "",
+      shelfLife: "",
+      manufacturer: "Bhagyamma Hub",
+      countryOfOrigin: "India",
+      sku: "",
+      price: "",
       status: "Active",
       images: [],
     }
@@ -40,8 +46,6 @@ const ProductForm = ({ initialValues, onSubmit, loading }) => {
 
   const handleImageChange = (e) => {
     const files = Array.from(e.target.files);
-
-    console.log("Selected Images:", files);
 
     setForm((prev) => ({
       ...prev,
@@ -83,7 +87,6 @@ const ProductForm = ({ initialValues, onSubmit, loading }) => {
 
   return (
     <Box component="form" onSubmit={handleSubmit}>
-
       <Grid container spacing={3}>
 
         <Grid item xs={12} md={6}>
@@ -154,14 +157,26 @@ const ProductForm = ({ initialValues, onSubmit, loading }) => {
           />
         </Grid>
 
-        <Grid item xs={12} md={4}>
+        <Grid item xs={12}>
           <TextField
             fullWidth
-            required
-            type="number"
-            label="MRP"
-            name="mrp"
-            value={form.mrp}
+            multiline
+            rows={3}
+            label="Usage"
+            name="usage"
+            value={form.usage}
+            onChange={handleChange}
+          />
+        </Grid>
+
+        <Grid item xs={12}>
+          <TextField
+            fullWidth
+            multiline
+            rows={2}
+            label="Storage"
+            name="storage"
+            value={form.storage}
             onChange={handleChange}
           />
         </Grid>
@@ -169,26 +184,74 @@ const ProductForm = ({ initialValues, onSubmit, loading }) => {
         <Grid item xs={12} md={4}>
           <TextField
             fullWidth
-            required
-            type="number"
-            label="Selling Price"
-            name="sellingPrice"
-            value={form.sellingPrice}
+            label="Weight"
+            name="weight"
+            value={form.weight}
             onChange={handleChange}
           />
         </Grid>
 
-        {/* <Grid item xs={12} md={4}>
+        <Grid item xs={12} md={4}>
+          <TextField
+            fullWidth
+            label="Quantity"
+            name="quantity"
+            value={form.quantity}
+            onChange={handleChange}
+          />
+        </Grid>
+
+        <Grid item xs={12} md={4}>
+          <TextField
+            fullWidth
+            label="Shelf Life"
+            name="shelfLife"
+            value={form.shelfLife}
+            onChange={handleChange}
+          />
+        </Grid>
+
+        <Grid item xs={12} md={6}>
+          <TextField
+            fullWidth
+            label="Manufacturer"
+            name="manufacturer"
+            value={form.manufacturer}
+            onChange={handleChange}
+          />
+        </Grid>
+
+        <Grid item xs={12} md={6}>
+          <TextField
+            fullWidth
+            label="Country Of Origin"
+            name="countryOfOrigin"
+            value={form.countryOfOrigin}
+            onChange={handleChange}
+          />
+        </Grid>
+
+        <Grid item xs={12} md={6}>
+          <TextField
+            fullWidth
+            label="SKU"
+            name="sku"
+            value={form.sku}
+            onChange={handleChange}
+          />
+        </Grid>
+
+        <Grid item xs={12} md={6}>
           <TextField
             fullWidth
             required
             type="number"
-            label="Stock"
-            name="stock"
-            value={form.stock}
+            label="Price"
+            name="price"
+            value={form.price}
             onChange={handleChange}
           />
-        </Grid> */}
+        </Grid>
 
         <Grid item xs={12} md={6}>
           <TextField
@@ -205,7 +268,6 @@ const ProductForm = ({ initialValues, onSubmit, loading }) => {
         </Grid>
 
         <Grid item xs={12} md={6}>
-
           <Button
             variant="outlined"
             component="label"
@@ -220,19 +282,12 @@ const ProductForm = ({ initialValues, onSubmit, loading }) => {
               accept="image/*"
               onChange={handleImageChange}
             />
-
           </Button>
-
         </Grid>
 
         {previewImages.length > 0 && (
-
           <Grid item xs={12}>
-
-            <Typography
-              variant="h6"
-              gutterBottom
-            >
+            <Typography variant="h6" gutterBottom>
               Image Preview ({previewImages.length})
             </Typography>
 
@@ -242,7 +297,6 @@ const ProductForm = ({ initialValues, onSubmit, loading }) => {
               flexWrap="wrap"
             >
               {previewImages.map((image, index) => (
-
                 <Card
                   key={index}
                   sx={{
@@ -260,12 +314,9 @@ const ProductForm = ({ initialValues, onSubmit, loading }) => {
                     }}
                   />
                 </Card>
-
               ))}
             </Box>
-
           </Grid>
-
         )}
 
         <Grid item xs={12}>
@@ -281,7 +332,6 @@ const ProductForm = ({ initialValues, onSubmit, loading }) => {
         </Grid>
 
       </Grid>
-
     </Box>
   );
 };

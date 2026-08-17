@@ -20,9 +20,20 @@ const countDirectReferrals = (userId) => {
     });
 };
 
+// ================================
+// Dashboard Helper
+// ================================
+
+const findBySponsor = (userId) => {
+    return User.find({
+        sponsorId: userId,
+    }).select("-password");
+};
+
 module.exports = {
     findByReferralCode,
     findById,
     getDirectReferrals,
     countDirectReferrals,
+    findBySponsor,
 };

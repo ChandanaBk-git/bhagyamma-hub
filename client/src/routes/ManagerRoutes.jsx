@@ -5,43 +5,89 @@ import ManagerLayout from "../layouts/ManagerLayout";
 import Dashboard from "../pages/manager/Dashboard";
 import Members from "../pages/manager/Members";
 import Profile from "../pages/manager/Profile";
+import Orders from "../pages/manager/Orders";
 
-// Reuse existing Referral Tree
 import ReferralTree from "../components/referral/ReferralTree";
+
 
 const ManagerRoutes = () => {
   return (
     <Routes>
-      <Route element={<ManagerLayout />}>
+
+      <Route
+        path="/"
+        element={<ManagerLayout />}
+      >
+
+        {/* =========================
+            MANAGER DASHBOARD
+        ========================= */}
 
         <Route
-          path="/dashboard"
+          path="dashboard"
           element={<Dashboard />}
         />
 
+
+        {/* =========================
+            MANAGER MEMBERS
+        ========================= */}
+
         <Route
-          path="/members"
+          path="members"
           element={<Members />}
         />
 
+
+        {/* =========================
+            MANAGER ORDERS
+        ========================= */}
+
         <Route
-          path="/referral-tree"
+          path="orders"
+          element={<Orders />}
+        />
+
+
+        {/* =========================
+            MANAGER REFERRAL TREE
+        ========================= */}
+
+        <Route
+          path="referral-tree"
           element={<ReferralTree />}
         />
 
+
+        {/* =========================
+            MANAGER PROFILE
+        ========================= */}
+
         <Route
-          path="/profile"
+          path="profile"
           element={<Profile />}
         />
 
+
+        {/* =========================
+            DEFAULT
+        ========================= */}
+
         <Route
           path="*"
-          element={<Navigate to="/manager/dashboard" />}
+          element={
+            <Navigate
+              to="dashboard"
+              replace
+            />
+          }
         />
 
       </Route>
+
     </Routes>
   );
 };
+
 
 export default ManagerRoutes;

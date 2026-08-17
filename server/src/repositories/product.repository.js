@@ -6,8 +6,8 @@ const create = async (productData) => {
   return await Product.create(productData);
 };
 
-const findAll = async () => {
-  return await Product.find().sort({ createdAt: -1 });
+const findAll = async (filter = {}) => {
+  return await Product.find(filter).sort({ createdAt: -1 });
 };
 
 const findById = async (id) => {

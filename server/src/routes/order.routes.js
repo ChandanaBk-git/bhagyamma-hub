@@ -2,48 +2,155 @@ const express = require("express");
 
 const router = express.Router();
 
-const controller = require("../controllers/order.controller");
-
-const { protect, authorize } = require("../middleware/auth.middleware");
-
-const validate = require("../middleware/validate.middleware");
+const controller =
+  require("../controllers/order.controller");
 
 const {
-    updateOrderStatusValidation,
+  protect,
+  authorize,
+} = require("../middleware/auth.middleware");
+
+const validate =
+  require("../middleware/validate.middleware");
+
+const {
+  updateOrderStatusValidation,
+  guestOrderValidation,
 } = require("../validations/order.validation");
 
+
+/* ======================================================
+   GUEST CREATE ORDER
+====================================================== */
+
 router.post(
-    "/",
-    protect,
-    controller.placeOrder
+  "/guest",
+  guestOrderValidation,
+  validate,
+  controller.placeGuestOrder
 );
 
-router.get(
-    "/my-orders",
-    protect,
-    controller.getMyOrders
-);
+
+/* ======================================================
+   GUEST ORDERS BY MOBILE
+====================================================== */
 
 router.get(
-    "/:id",
-    protect,
-    controller.getOrderById
+  "/guest/mobile/:mobile",
+  controller.getGuestOrdersByMobile
 );
 
-router.get(
-    "/",
-    protect,
-    authorize("ADMIN"),
-    controller.getAllOrders
+
+/* ======================================================
+   MEMBER CREATE ORDER
+====================================================== */
+
+router.post(
+  "/",
+  protect,
+  controller.placeOrder
 );
+
+
+/* ======================================================
+   MEMBER ORDERS
+====================================================== */
+
+router.get(
+  "/my-orders",
+  protect,
+  controller.getMyOrders
+);
+
+
+/* ======================================================
+   ADMIN - GET ALL ORDERS
+======================================================
+
+   IMPORTANT:
+   Your actual admin role is SUPER_ADMIN.
+
+   Therefore this MUST be:
+
+   authorize("SUPER_ADMIN")
+
+   NOT:
+
+   authorize("ADMIN")
+====================================================== */
+
+router.get(
+  "/",
+  protect,
+  authorize("SUPER_ADMIN"),
+  controller.getAllOrders
+);
+
+
+/* ======================================================
+   MANAGER - VIEW ALL ORDERS
+======================================================
+
+   Manager can view orders.
+
+   Manager cannot edit payment/order status.
+====================================================== */
+
+router.get(
+  "/manager-orders",
+  protect,
+  authorize("MANAGER"),
+  controller.getManagerOrders
+);
+
+
+/* ======================================================
+   ADMIN - UPDATE PAYMENT STATUS
+======================================================
+
+   Only SUPER_ADMIN can change payment status.
+
+====================================================== */
 
 router.patch(
-    "/:id/status",
-    protect,
-    authorize("ADMIN"),
-    updateOrderStatusValidation,
-    validate,
-    controller.updateOrderStatus
+  "/:id/payment-status",
+  protect,
+  authorize("SUPER_ADMIN"),
+  controller.updatePaymentStatus
 );
+
+
+/* ======================================================
+   ADMIN - UPDATE ORDER STATUS
+======================================================
+
+   Only SUPER_ADMIN can change order status.
+
+====================================================== */
+
+router.patch(
+  "/:id/status",
+  protect,
+  authorize("SUPER_ADMIN"),
+  updateOrderStatusValidation,
+  validate,
+  controller.updateOrderStatus
+);
+
+
+/* ======================================================
+   GET SINGLE ORDER
+====================================================== */
+
+router.get(
+  "/:id",
+  protect,
+  controller.getOrderById
+);
+
+
+/* ======================================================
+   EXPORT
+====================================================== */
 
 module.exports = router;

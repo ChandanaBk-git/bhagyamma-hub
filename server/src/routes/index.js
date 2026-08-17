@@ -2,41 +2,60 @@ const express = require("express");
 
 const router = express.Router();
 
+/* ========================= Route Imports ========================= */
+
+const authRoutes = require("./auth.routes");
+const userRoutes = require("./user.routes");
+const categoryRoutes = require("./category.routes");
+const productRoutes = require("./product.routes");
+const cartRoutes = require("./cart.routes");
+const orderRoutes = require("./order.routes");
+const referralRoutes = require("./referral.routes");
+const walletRoutes = require("./wallet.routes");
+const commissionRoutes = require("./commission.routes");
+const withdrawRoutes = require("./withdraw.routes");
+const adminRoutes = require("./admin.routes");
+const phonepeRoutes = require("./phonepe.routes");
 /* ========================= Authentication ========================= */
 
-router.use("/auth", require("./auth.routes"));
+router.use("/auth", authRoutes);
 
 /* ========================= User Management ========================= */
 
-router.use("/users", require("./user.routes"));
+router.use("/users", userRoutes);
 
 /* ========================= Product Catalog ========================= */
 
-router.use("/categories", require("./category.routes"));
-router.use("/products", require("./product.routes"));
-
+router.use("/categories", categoryRoutes);
+router.use("/products", productRoutes);
 
 /* ========================= Shopping ========================= */
 
-router.use("/cart", require("./cart.routes"));
-router.use("/orders", require("./order.routes"));
-/* ========================= MLMa Modules ========================= */
+router.use("/cart", cartRoutes);
+router.use("/orders", orderRoutes);
+router.use(
+  "/payments/phonepe",
+  phonepeRoutes
+);
 
-router.use("/referrals", require("./referral.routes"));
-router.use("/wallet", require("./wallet.routes"));
-router.use("/commissions", require("./commission.routes"));
+/* ========================= MLM Modules ========================= */
+
+router.use("/referrals", referralRoutes);
+router.use("/wallet", walletRoutes);
+router.use("/commissions", commissionRoutes);
+router.use("/withdraws", withdrawRoutes);
 
 /* ========================= Admin ========================= */
 
-router.use("/admin", require("./admin.routes"));
+router.use("/admin", adminRoutes);
 
 /* ========================= API Information ========================= */
 
 router.get("/", (req, res) => {
-    res.status(200).json({
-        success: true,
-        message: "Bhagyamma Hub API v1",
-    });
+  res.status(200).json({
+    success: true,
+    message: "Bhagyamma Hub API v1",
+  });
 });
 
 module.exports = router;

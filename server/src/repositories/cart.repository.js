@@ -1,47 +1,133 @@
-const Cart = require("../models/cart.model");
+const Cart =
+  require("../models/cart.model");
 
-const create = async (payload) => {
-    return await Cart.create(payload);
-};
 
-const findByUser = async (userId) => {
-    return await Cart.findOne({ userId })
-        .populate("items.productId");
-};
+/* =========================================================
+   FIND CART BY USER
+========================================================= */
 
-const updateById = async (id, payload) => {
-    return await Cart.findByIdAndUpdate(
-        id,
-        payload,
-        {
-            new: true,
-            runValidators: true,
-        }
-    ).populate("items.productId");
-};
+const findCartByUser =
+  async (
+    userId
+  ) => {
 
-const clearCart = async (userId) => {
-    return await Cart.findOneAndUpdate(
-        { userId },
-        {
-            items: [],
-            totalQuantity: 0,
-            subtotal: 0,
-        },
-        {
-            new: true,
-        }
+    return await Cart.findOne({
+      userId,
+    }).populate(
+      "items.productId"
     );
-};
 
-const deleteCart = async (userId) => {
-    return await Cart.findOneAndDelete({ userId });
-};
+  };
+
+
+/* =========================================================
+   COMPATIBILITY METHOD
+========================================================= */
+
+const findByUser =
+  async (
+    userId
+  ) => {
+
+    return await findCartByUser(
+      userId
+    );
+
+  };
+
+
+/* =========================================================
+   CREATE CART
+========================================================= */
+
+const createCart =
+  async (
+    cartData
+  ) => {
+
+    return await Cart.create(
+      cartData
+    );
+
+  };
+
+
+/* =========================================================
+   SAVE CART
+========================================================= */
+
+const saveCart =
+  async (
+    cart
+  ) => {
+
+    return await cart.save();
+
+  };
+
+
+/* =========================================================
+   DELETE CART
+========================================================= */
+
+const deleteCart =
+  async (
+    userId
+  ) => {
+
+    return await Cart.findOneAndDelete(
+      {
+        userId,
+      }
+    );
+
+  };
+
+
+/* =========================================================
+   CLEAR CART
+========================================================= */
+
+const clearCart =
+  async (
+    userId
+  ) => {
+
+    return await Cart.findOneAndUpdate(
+      {
+        userId,
+      },
+
+      {
+        $set: {
+          items: [],
+
+          totalItems: 0,
+
+          totalAmount: 0,
+        },
+      },
+
+      {
+        new: true,
+      }
+    );
+
+  };
+
 
 module.exports = {
-    create,
-    findByUser,
-    updateById,
-    clearCart,
-    deleteCart,
+
+  findCartByUser,
+
+  findByUser,
+
+  createCart,
+
+  saveCart,
+
+  deleteCart,
+
+  clearCart,
+
 };

@@ -4,17 +4,22 @@ const helmet = require("helmet");
 const compression = require("compression");
 const cookieParser = require("cookie-parser");
 const morgan = require("morgan");
+
+const kycRoutes = require("./routes/kyc.routes");
 const path = require("path");
-const fs = require("fs");
+
 const routes = require("./routes");
+
 const notFound = require("./middleware/notFound.middleware");
 const errorMiddleware = require("./middleware/error.middleware");
-const productRoutes = require("./routes/product.routes");
-const app = express();
+
 const managerRoutes = require("./routes/manager.routes");
 
+const app = express();
 
-/* ------------------------- Security Middleware ------------------------- */
+/* ===========================================================
+   Security Middleware
+=========================================================== */
 
 app.use(
   cors({
@@ -32,65 +37,87 @@ app.use(
   })
 );
 
-/* -------------------------- Body Parsers -------------------------- */
+/* ===========================================================
+   Body Parser
+=========================================================== */
 
 app.use(
-    express.json({
-        limit: "10mb",
-    })
+  express.json({
+    limit: "10mb",
+  })
 );
 
+app.use("/api/v1/kyc", kycRoutes);
+
 app.use(
-    express.urlencoded({
-        extended: true,
-        limit: "10mb",
-    })
+  express.urlencoded({
+    extended: true,
+    limit: "10mb",
+  })
 );
 
 app.use(cookieParser());
 
-app.use(
-    "/api/v1/manager",
-    managerRoutes
-);
-
-/* ------------------------- Performance ------------------------- */
+/* ===========================================================
+   Compression & Logging
+=========================================================== */
 
 app.use(compression());
 
-/* ---------------------------- Logging ---------------------------- */
-
 app.use(morgan("dev"));
 
-/* --------------------------- Health Check --------------------------- */
-
-app.get("/", (req, res) => {
-    res.status(200).json({
-        success: true,
-        message: "Bhagyamma Hub API Running",
-        version: "v1",
-    });
-});
+/* ===========================================================
+   Static Files
+=========================================================== */
 
 app.use(
   "/uploads",
-  express.static(path.join(process.cwd(), "uploads"))
+  express.static(
+    path.join(process.cwd(), "uploads")
+  )
 );
 
+/* ===========================================================
+   Health Check
+=========================================================== */
 
-app.get("/health", (req, res) => {
-    res.status(200).json({
-        success: true,
-        status: "UP",
-        timestamp: new Date().toISOString(),
-    });
+app.get("/", (req, res) => {
+  res.status(200).json({
+    success: true,
+    message: "Bhagyamma Hub API Running",
+    version: "v1",
+  });
 });
 
-/* ---------------------------- API Routes ---------------------------- */
+app.get("/health", (req, res) => {
+  res.status(200).json({
+    success: true,
+    status: "UP",
+    timestamp: new Date().toISOString(),
+  });
+});
 
-app.use("/api/v1", routes);
+/* ===========================================================
+   Manager Routes
+=========================================================== */
 
-/* ------------------------- Error Handling ------------------------- */
+app.use(
+  "/api/v1/manager",
+  managerRoutes
+);
+
+/* ===========================================================
+   Main API Routes
+=========================================================== */
+
+app.use(
+  "/api/v1",
+  routes
+);
+
+/* ===========================================================
+   Error Handling
+=========================================================== */
 
 app.use(notFound);
 

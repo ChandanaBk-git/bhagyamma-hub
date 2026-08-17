@@ -1,66 +1,186 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+
 import {
   Box,
   Container,
-  Grid,
-  CircularProgress,
   Typography,
+  CircularProgress,
+  Alert,
 } from "@mui/material";
 
 import ProductBanner from "../../components/products/ProductBanner";
 import ProductSearch from "../../components/products/ProductSearch";
-import ProductCard from "../../components/products/ProductCard";
+import ProductGrid from "../../components/products/ProductGrid";
+
 import { getProducts } from "../../services/product.service";
 
 const Products = () => {
   const [products, setProducts] = useState([]);
-  const [filteredProducts, setFilteredProducts] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  // =====================================================
+  // LOAD PRODUCTS
+  // =====================================================
 
   useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        setLoading(true);
+        setError("");
+
+        const data = await getProducts();
+
+        setProducts(Array.isArray(data) ? data : []);
+      } catch (err) {
+        console.error("PRODUCT FETCH ERROR:", err);
+
+        setError(
+          err?.response?.data?.message ||
+            err?.message ||
+            "Failed to load products."
+        );
+      } finally {
+        setLoading(false);
+      }
+    };
+
     fetchProducts();
   }, []);
 
-  useEffect(() => {
-    const filtered = products.filter((product) =>
-      product.productName
-        ?.toLowerCase()
-        .includes(searchTerm.toLowerCase())
-    );
+  // =====================================================
+  // FILTER PRODUCTS
+  // =====================================================
 
-    setFilteredProducts(filtered);
-  }, [searchTerm, products]);
+  const filteredProducts = useMemo(() => {
+    const search = searchTerm.trim().toLowerCase();
 
-const fetchProducts = async () => {
-  try {
-    setLoading(true);
+    if (!search) {
+      return products;
+    }
 
-const response = await getProducts();
+    return products.filter((product) => {
+      const productName =
+        product?.productName?.toLowerCase() || "";
 
-const productList = response.data || [];
+      const category =
+        product?.category?.toLowerCase() || "";
 
-    console.log("Product List:", productList);
+      const brand =
+        product?.brand?.toLowerCase() || "";
 
-    setProducts(productList);
-    setFilteredProducts(productList);
-  } catch (error) {
-    console.error(error);
-    alert(error.message);
-  } finally {
-    setLoading(false);
-  }
-};
+      const description =
+        product?.description?.toLowerCase() || "";
+
+      return (
+        productName.includes(search) ||
+        category.includes(search) ||
+        brand.includes(search) ||
+        description.includes(search)
+      );
+    });
+  }, [products, searchTerm]);
+
+  // =====================================================
+  // RENDER
+  // =====================================================
+
   return (
-    <>
+    <Box
+      sx={{
+        width: "100%",
+        minHeight: "100vh",
+        bgcolor: "#F8FAF8",
+      }}
+    >
+      {/* =================================================
+          PRODUCT HERO
+      ================================================= */}
+
       <ProductBanner />
 
-      <Container maxWidth="lg">
+      {/* =================================================
+          PRODUCT CONTENT
+      ================================================= */}
+
+      <Container
+        maxWidth="xl"
+        sx={{
+          px: {
+            xs: 2,
+            sm: 3,
+            md: 4,
+          },
+
+          py: {
+            xs: 4,
+            sm: 5,
+            md: 6,
+          },
+        }}
+      >
+        {/* =================================================
+            PAGE HEADING
+        ================================================= */}
+
         <Box
           sx={{
-            py: 5,
-            display: "flex",
-            justifyContent: "center",
+            textAlign: "center",
+            maxWidth: 750,
+            mx: "auto",
+            mb: {
+              xs: 3,
+              md: 4,
+            },
+          }}
+        >
+          <Typography
+            component="h1"
+            sx={{
+              fontWeight: 800,
+              color: "#222",
+
+              fontSize: {
+                xs: "1.7rem",
+                sm: "2rem",
+                md: "2.4rem",
+              },
+            }}
+          >
+            Our Products
+          </Typography>
+
+          <Typography
+            sx={{
+              mt: 1,
+              color: "#666",
+
+              fontSize: {
+                xs: "0.85rem",
+                sm: "0.95rem",
+              },
+
+              lineHeight: 1.7,
+            }}
+          >
+            Explore our collection of premium herbal, Ayurvedic,
+            skincare and wellness products.
+          </Typography>
+        </Box>
+
+        {/* =================================================
+            SEARCH
+        ================================================= */}
+
+        <Box
+          sx={{
+            maxWidth: 700,
+            mx: "auto",
+            mb: {
+              xs: 4,
+              md: 5,
+            },
           }}
         >
           <ProductSearch
@@ -69,32 +189,139 @@ const productList = response.data || [];
           />
         </Box>
 
-        {loading ? (
-          <Box display="flex" justifyContent="center" py={5}>
-            <CircularProgress />
+        {/* =================================================
+            LOADING
+        ================================================= */}
+
+        {loading && (
+          <Box
+            sx={{
+              minHeight: 350,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              flexDirection: "column",
+              gap: 2,
+            }}
+          >
+            <CircularProgress color="success" />
+
+            <Typography
+              color="text.secondary"
+              fontSize="0.9rem"
+            >
+              Loading products...
+            </Typography>
           </Box>
-        ) : filteredProducts.length === 0 ? (
-          <Typography align="center" sx={{ py: 5 }}>
-            No products found.
-          </Typography>
-        ) : (
-          <Grid container spacing={4}>
-            {filteredProducts.map((product) => (
-              <Grid
-                item
-                xs={12}
-                sm={6}
-                md={4}
-                lg={3}
-                key={product._id}
-              >
-                <ProductCard product={product} />
-              </Grid>
-            ))}
-          </Grid>
         )}
+
+        {/* =================================================
+            ERROR
+        ================================================= */}
+
+        {!loading && error && (
+          <Box
+            sx={{
+              maxWidth: 650,
+              mx: "auto",
+              py: 5,
+            }}
+          >
+            <Alert
+              severity="error"
+              sx={{
+                borderRadius: 2,
+              }}
+            >
+              {error}
+            </Alert>
+          </Box>
+        )}
+
+        {/* =================================================
+            NO PRODUCTS
+        ================================================= */}
+
+        {!loading &&
+          !error &&
+          filteredProducts.length === 0 && (
+            <Box
+              sx={{
+                minHeight: 300,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                textAlign: "center",
+                flexDirection: "column",
+              }}
+            >
+              <Typography
+                sx={{
+                  fontWeight: 700,
+                  fontSize: "1.2rem",
+                  color: "#333",
+                }}
+              >
+                No Products Found
+              </Typography>
+
+              <Typography
+                sx={{
+                  mt: 1,
+                  color: "#777",
+                  fontSize: "0.9rem",
+                }}
+              >
+                Try searching with a different product name,
+                category or brand.
+              </Typography>
+            </Box>
+          )}
+
+        {/* =================================================
+            PRODUCT COUNT
+        ================================================= */}
+
+        {!loading &&
+          !error &&
+          filteredProducts.length > 0 && (
+            <>
+              <Box
+                sx={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  mb: 2.5,
+                }}
+              >
+                <Typography
+                  sx={{
+                    color: "#555",
+                    fontSize: {
+                      xs: "0.82rem",
+                      sm: "0.9rem",
+                    },
+                    fontWeight: 600,
+                  }}
+                >
+                  {filteredProducts.length}{" "}
+                  {filteredProducts.length === 1
+                    ? "Product"
+                    : "Products"}
+                </Typography>
+              </Box>
+
+              {/* =================================================
+                  PRODUCT GRID
+              ================================================= */}
+
+              <ProductGrid
+                products={filteredProducts}
+              />
+            </>
+          )}
       </Container>
-    </>
+    </Box>
   );
 };
 

@@ -1,139 +1,100 @@
-const commissionRepository = require("../repositories/commission.repository");
-const commissionSettingRepository = require("../repositories/commissionSetting.repository");
-const userRepository = require("../repositories/user.repository");
+const User = require("../models/user.model");
+
 const walletService = require("./wallet.service");
+// const commissionHistoryService = require("./commissionHistory.service");
+
+const repository = require("../repositories/commission.repository");
+
+// ===========================================
+// Distribute Joining Commission
+// ===========================================
 
 const distributeCommission = async (
-    newUser,
-    membership,
-    approvedBy
+    newMemberId,
+    sponsorId,
+    joiningAmount = 2000
 ) => {
 
-    const setting = await commissionSettingRepository.getActive();
-
-    if (!setting) {
-        throw new Error("Commission settings not found.");
-    }
-
-    // Membership Amount
-    const membershipAmount =
-        membership.purchaseAmount || membership.amount;
-
-    // =====================================================
-    // CASE 1 : MEMBER REGISTERED WITHOUT REFERRAL
-    // =====================================================
-
-    if (!newUser.sponsorId && newUser.managerId) {
-
-        const manager =
-            await userRepository.findById(newUser.managerId);
-
-        if (!manager) return;
-
-        const amount =
-            (membershipAmount * setting.managerDirect) / 100;
-
-        await walletService.creditWallet(
-            manager._id,
-            amount,
-            `Manager Direct Commission from ${newUser.name}`
-        );
-
-        await commissionRepository.create({
-
-            fromUser: newUser._id,
-
-            toUser: manager._id,
-
-            membership: membership._id,
-
-            level: 0,
-
-            percentage: setting.managerDirect,
-
-            amount,
-
-            type: "MANAGER",
-
-            status: "SUCCESS",
-
-            approvedBy,
-
-        });
-
-        return;
-    }
-
-    // =====================================================
-    // REFERRAL COMMISSION
-    // =====================================================
-
-    let sponsorId = newUser.sponsorId;
+    let currentSponsorId = sponsorId;
 
     let level = 1;
 
-    while (
-        sponsorId &&
-        level <= setting.maxLevel
-    ) {
+    while (currentSponsorId) {
 
-        const sponsor =
-            await userRepository.findById(sponsorId);
+        const sponsor = await User.findById(currentSponsorId);
 
         if (!sponsor) break;
 
-        let percentage;
+        let percentage = 0;
 
         if (level === 1) {
-
-            percentage = setting.level1;
-
+            percentage = 20;
         } else if (level === 2) {
-
-            percentage = setting.level2;
-
+            percentage = 5;
         } else {
-
-            percentage = setting.level3Plus;
-
+            percentage = 1;
         }
 
-        const amount =
-            (membershipAmount * percentage) / 100;
+        const commissionAmount =
+            (joiningAmount * percentage) / 100;
+
+        // ==========================================
+        // Credit Wallet
+        // ==========================================
 
         await walletService.creditWallet(
-
             sponsor._id,
-
-            amount,
-
-            `Level ${level} Commission from ${newUser.name}`
-
+            commissionAmount,
+            `Level ${level} Joining Commission`,
+            newMemberId.toString()
         );
 
-        await commissionRepository.create({
+        // ==========================================
+        // Commission Table (Old)
+        // ==========================================
 
-            fromUser: newUser._id,
+        console.log("========== SAVING COMMISSION ==========");
+console.log({
+    receiver: sponsor._id,
+    fromUser: newMemberId,
+    level,
+    percentage,
+    joiningAmount,
+    commissionAmount,
+});
 
-            toUser: sponsor._id,
 
-            membership: membership._id,
+        await repository.create({
 
-            level,
+    receiver: sponsor._id,
 
-            percentage,
+    fromUser: newMemberId,
 
-            amount,
+    level,
 
-            type: "LEVEL",
+    percentage,
 
-            status: "SUCCESS",
+    joiningAmount,
 
-            approvedBy,
+    commissionAmount,
 
-        });
+    status: "PAID",
 
-        sponsorId = sponsor.sponsorId;
+    remarks: `Level ${level} Joining Commission`,
+
+});
+
+console.log("✅ Commission saved successfully");
+    
+
+        // ==========================================
+        // Next Upline
+        // ==========================================
+
+currentSponsorId = sponsor.sponsorId;
+
+        // If your User model uses sponsorId instead:
+        // currentSponsorId = sponsor.sponsorId;
 
         level++;
 
@@ -142,7 +103,5 @@ const distributeCommission = async (
 };
 
 module.exports = {
-
     distributeCommission,
-
 };

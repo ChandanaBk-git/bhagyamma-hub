@@ -1,4 +1,5 @@
 import { NavLink, useNavigate } from "react-router-dom";
+
 import {
   Box,
   Typography,
@@ -13,60 +14,102 @@ import DashboardIcon from "@mui/icons-material/Dashboard";
 import PeopleIcon from "@mui/icons-material/People";
 import AccountTreeIcon from "@mui/icons-material/AccountTree";
 import PersonIcon from "@mui/icons-material/Person";
+import ReceiptLongIcon from "@mui/icons-material/ReceiptLong";
 import LogoutIcon from "@mui/icons-material/Logout";
 
+
 const Sidebar = () => {
+
   const navigate = useNavigate();
 
+
+  /* =====================================================
+     LOGOUT
+  ===================================================== */
+
   const handleLogout = () => {
+
     localStorage.removeItem("token");
     localStorage.removeItem("user");
 
     navigate("/login");
+
   };
 
+
+  /* =====================================================
+     MANAGER MENU
+  ===================================================== */
+
   const menuItems = [
+
     {
       title: "Dashboard",
       icon: <DashboardIcon />,
       path: "/manager/dashboard",
     },
+
     {
       title: "Members",
       icon: <PeopleIcon />,
       path: "/manager/members",
     },
+
+    {
+      title: "Orders",
+      icon: <ReceiptLongIcon />,
+      path: "/manager/orders",
+    },
+
     {
       title: "Referral Tree",
       icon: <AccountTreeIcon />,
       path: "/manager/referral-tree",
     },
+
     {
       title: "Profile",
       icon: <PersonIcon />,
       path: "/manager/profile",
     },
+
   ];
 
+
+  /* =====================================================
+     UI
+  ===================================================== */
+
   return (
+
     <Box
       sx={{
         width: 260,
+
         minHeight: "100vh",
+
         bgcolor: "#0F172A",
+
         color: "#fff",
+
         display: "flex",
+
         flexDirection: "column",
       }}
     >
-      {/* Logo */}
+
+      {/* =================================================
+          LOGO
+      ================================================= */}
 
       <Box
         sx={{
           py: 3,
+
           textAlign: "center",
         }}
       >
+
         <Typography
           variant="h5"
           fontWeight="bold"
@@ -76,15 +119,32 @@ const Sidebar = () => {
 
         <Typography
           variant="body2"
-          sx={{ opacity: 0.7 }}
+          sx={{
+            opacity: 0.7,
+          }}
         >
           Manager Panel
         </Typography>
+
       </Box>
 
-      <Divider sx={{ bgcolor: "#334155" }} />
 
-      <List sx={{ mt: 2 }}>
+      <Divider
+        sx={{
+          bgcolor: "#334155",
+        }}
+      />
+
+
+      {/* =================================================
+          MENU
+      ================================================= */}
+
+      <List
+        sx={{
+          mt: 2,
+        }}
+      >
 
         {menuItems.map((item) => (
 
@@ -94,7 +154,9 @@ const Sidebar = () => {
             to={item.path}
             sx={{
               mx: 1,
+
               borderRadius: 2,
+
               mb: 1,
 
               "&.active": {
@@ -106,8 +168,11 @@ const Sidebar = () => {
               },
             }}
           >
+
             <ListItemIcon
-              sx={{ color: "#fff" }}
+              sx={{
+                color: "#fff",
+              }}
             >
               {item.icon}
             </ListItemIcon>
@@ -115,15 +180,35 @@ const Sidebar = () => {
             <ListItemText
               primary={item.title}
             />
+
           </ListItemButton>
 
         ))}
 
       </List>
 
-      <Box sx={{ flexGrow: 1 }} />
 
-      <Divider sx={{ bgcolor: "#334155" }} />
+      {/* =================================================
+          SPACER
+      ================================================= */}
+
+      <Box
+        sx={{
+          flexGrow: 1,
+        }}
+      />
+
+
+      <Divider
+        sx={{
+          bgcolor: "#334155",
+        }}
+      />
+
+
+      {/* =================================================
+          LOGOUT
+      ================================================= */}
 
       <List>
 
@@ -137,13 +222,19 @@ const Sidebar = () => {
             },
           }}
         >
+
           <ListItemIcon
-            sx={{ color: "#fff" }}
+            sx={{
+              color: "#fff",
+            }}
           >
             <LogoutIcon />
           </ListItemIcon>
 
-          <ListItemText primary="Logout" />
+          <ListItemText
+            primary="Logout"
+          />
+
         </ListItemButton>
 
       </List>
@@ -151,5 +242,6 @@ const Sidebar = () => {
     </Box>
   );
 };
+
 
 export default Sidebar;

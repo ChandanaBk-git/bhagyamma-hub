@@ -8,21 +8,27 @@ import {
   getReferralTree as getManagerTree,
 } from "../../services/manager.service";
 
-import {
-  Box,
-  Button,
-} from "@mui/material";
-
 import ReferralNode from "./ReferralNode";
 import MemberDetailsModal from "./MemberDetailsModal";
 import ReferralDashboard from "./ReferralDashboard";
-import "./ReferralTree.css";
-const ReferralTree = ({ role = "admin" }) => {
-  const [tree, setTree] = useState([]);
-  const [selectedMember, setSelectedMember] = useState(null);
-  const [openModal, setOpenModal] = useState(false);
 
-  const [search, setSearch] = useState("");
+import "./ReferralTree.css";
+
+
+const ReferralTree = ({
+  role = "admin",
+}) => {
+
+  const [tree, setTree] = useState([]);
+
+  const [selectedMember, setSelectedMember] =
+    useState(null);
+
+  const [openModal, setOpenModal] =
+    useState(false);
+
+  const [search, setSearch] =
+    useState("");
 
   const [stats, setStats] = useState({
     totalMembers: 0,
@@ -30,152 +36,465 @@ const ReferralTree = ({ role = "admin" }) => {
     levels: 0,
   });
 
-  const [expandAll, setExpandAll] = useState(true);
+  const [expandAll, setExpandAll] =
+    useState(true);
+
+
+  /* =====================================================
+     LOAD TREE WHEN COMPONENT MOUNTS
+  ===================================================== */
 
   useEffect(() => {
     loadTree();
-  }, []);
+  }, [role]);
 
-  // ==============================
-  // Count Members
-  // ==============================
 
-  const countMembers = (nodes = []) => {
+  /* =====================================================
+     COUNT ONLY ACTUAL MEMBERS
+     
+     IMPORTANT:
+     
+     MEMBER       → counted
+     MANAGER      → NOT counted
+     ADMIN        → NOT counted
+     SUPER_ADMIN  → NOT counted
+     
+     The manager remains visible in the tree.
+     We are only excluding the manager from the
+     "Total Members" number.
+  ===================================================== */
+
+  const countMembers = (
+    nodes = []
+  ) => {
+
     let count = 0;
 
-    const traverse = (list) => {
-      list.forEach((node) => {
-        count++;
 
-        if (node.children?.length) {
-          traverse(node.children);
+    const traverse = (
+      list = []
+    ) => {
+
+      list.forEach((node) => {
+
+        /*
+         * Only MEMBER users are counted.
+         */
+
+        if (
+          node?.role === "MEMBER"
+        ) {
+
+          count += 1;
+
         }
+
+
+        /*
+         * Continue through children.
+         */
+
+        if (
+          Array.isArray(node.children) &&
+          node.children.length > 0
+        ) {
+
+          traverse(
+            node.children
+          );
+
+        }
+
       });
+
     };
+
 
     traverse(nodes);
 
     return count;
   };
 
-  // ==============================
-  // Calculate Levels
-  // ==============================
 
-  const calculateLevels = (node) => {
-    if (!node.children || node.children.length === 0) {
+  /* =====================================================
+     COUNT MANAGERS
+     
+     This is separate from member count.
+  ===================================================== */
+
+  const countManagers = (
+    nodes = []
+  ) => {
+
+    let count = 0;
+
+
+    const traverse = (
+      list = []
+    ) => {
+
+      list.forEach((node) => {
+
+        if (
+          node?.role === "MANAGER"
+        ) {
+
+          count += 1;
+
+        }
+
+
+        if (
+          Array.isArray(node.children) &&
+          node.children.length > 0
+        ) {
+
+          traverse(
+            node.children
+          );
+
+        }
+
+      });
+
+    };
+
+
+    traverse(nodes);
+
+    return count;
+  };
+
+
+  /* =====================================================
+     CALCULATE LEVELS
+  ===================================================== */
+
+  const calculateLevels = (
+    node
+  ) => {
+
+    if (
+      !node?.children ||
+      node.children.length === 0
+    ) {
+
       return 1;
+
     }
+
 
     return (
       1 +
       Math.max(
-        ...node.children.map((child) =>
-          calculateLevels(child)
+        ...node.children.map(
+          (child) =>
+            calculateLevels(child)
         )
       )
     );
+
   };
 
-  // ==============================
-  // Load Tree
-  // ==============================
+
+  /* =====================================================
+     CALCULATE MAX LEVEL FOR TREE
+  ===================================================== */
+
+  const calculateTreeLevels = (
+    nodes = []
+  ) => {
+
+    if (!nodes.length) {
+      return 0;
+    }
+
+
+    return Math.max(
+      ...nodes.map(
+        (node) =>
+          calculateLevels(node)
+      )
+    );
+
+  };
+
+
+  /* =====================================================
+     LOAD REFERRAL TREE
+  ===================================================== */
 
   const loadTree = async () => {
+
     try {
+
       const response =
         role === "admin"
           ? await getAdminTree()
           : await getManagerTree();
 
-      console.log("Referral Tree", response);
 
-      if (!response.success) return;
+      console.log(
+        "Referral Tree Response:",
+        response
+      );
 
-      setTree(response.data);
 
-      setStats({
-        totalMembers: countMembers(response.data),
+      if (
+        !response?.success
+      ) {
 
-        managers: response.data.filter(
-          (item) => item.role === "MANAGER"
-        ).length,
-
-        levels:
-          response.data.length > 0
-            ? Math.max(
-                ...response.data.map((item) =>
-                  calculateLevels(item)
-                )
-              )
-            : 0,
-      });
-    } catch (err) {
-      console.log(err);
-    }
-  };
-
-  // ==============================
-  // View Member
-  // ==============================
-
-  const handleView = (member) => {
-    setSelectedMember(member);
-    setOpenModal(true);
-  };
-
-  // ==============================
-  // Search Tree
-  // ==============================
-
-  const filterTree = (nodes, keyword) => {
-    if (!keyword) return nodes;
-
-    return nodes
-      .map((node) => {
-        const children = filterTree(
-          node.children || [],
-          keyword
+        console.error(
+          "Referral tree API failed:",
+          response
         );
 
-        const matched =
+        return;
+
+      }
+
+
+      const treeData =
+        Array.isArray(
+          response.data
+        )
+          ? response.data
+          : [];
+
+
+      console.log(
+        "Referral Tree Data:",
+        treeData
+      );
+
+
+      setTree(treeData);
+
+
+      /* =================================================
+         STATISTICS
+      ================================================= */
+
+      const totalMembers =
+        countMembers(
+          treeData
+        );
+
+
+      const managers =
+        countManagers(
+          treeData
+        );
+
+
+      const levels =
+        calculateTreeLevels(
+          treeData
+        );
+
+
+      console.log(
+        "Referral Statistics:",
+        {
+          totalMembers,
+          managers,
+          levels,
+        }
+      );
+
+
+      setStats({
+        totalMembers,
+        managers,
+        levels,
+      });
+
+    } catch (err) {
+
+      console.error(
+        "Referral Tree Error:",
+        err
+      );
+
+    }
+
+  };
+
+
+  /* =====================================================
+     VIEW MEMBER DETAILS
+  ===================================================== */
+
+  const handleView = (
+    member
+  ) => {
+
+    setSelectedMember(
+      member
+    );
+
+    setOpenModal(
+      true
+    );
+
+  };
+
+
+  /* =====================================================
+     CLOSE MEMBER DETAILS
+  ===================================================== */
+
+  const handleCloseModal = () => {
+
+    setOpenModal(
+      false
+    );
+
+    setSelectedMember(
+      null
+    );
+
+  };
+
+
+  /* =====================================================
+     SEARCH / FILTER TREE
+  ===================================================== */
+
+  const filterTree = (
+    nodes = [],
+    keyword = ""
+  ) => {
+
+    if (!keyword) {
+
+      return nodes;
+
+    }
+
+
+    const normalizedKeyword =
+      keyword
+        .toLowerCase()
+        .trim();
+
+
+    return nodes
+
+      .map((node) => {
+
+        const children =
+          filterTree(
+            node.children || [],
+            normalizedKeyword
+          );
+
+
+        const name =
           node.name
             ?.toLowerCase()
-            .includes(keyword.toLowerCase()) ||
+            .includes(
+              normalizedKeyword
+            );
+
+
+        const userId =
           node.userId
             ?.toLowerCase()
-            .includes(keyword.toLowerCase()) ||
+            .includes(
+              normalizedKeyword
+            );
+
+
+        const referralCode =
           node.referralCode
             ?.toLowerCase()
-            .includes(keyword.toLowerCase());
+            .includes(
+              normalizedKeyword
+            );
 
-        if (matched || children.length > 0) {
+
+        const matched =
+          name ||
+          userId ||
+          referralCode;
+
+
+        if (
+          matched ||
+          children.length > 0
+        ) {
+
           return {
             ...node,
             children,
           };
+
         }
 
+
         return null;
+
       })
+
       .filter(Boolean);
+
   };
 
-  const filteredTree = useMemo(() => {
-    return filterTree(tree, search);
-  }, [tree, search]);
+
+  /* =====================================================
+     FILTERED TREE
+  ===================================================== */
+
+  const filteredTree =
+    useMemo(() => {
+
+      return filterTree(
+        tree,
+        search
+      );
+
+    }, [
+      tree,
+      search,
+    ]);
+
+
+  /* =====================================================
+     RENDER
+  ===================================================== */
+
   return (
+
     <>
+
+      {/* =================================================
+          DASHBOARD / STATISTICS
+      ================================================= */}
+
       <ReferralDashboard
         stats={stats}
         search={search}
         setSearch={setSearch}
-        expandAll={() => setExpandAll(true)}
-        collapseAll={() => setExpandAll(false)}
+
+        expandAll={() =>
+          setExpandAll(true)
+        }
+
+        collapseAll={() =>
+          setExpandAll(false)
+        }
       />
 
+
+      {/* =================================================
+          REFERRAL TREE
+      ================================================= */}
+
       <div className="tree-wrapper">
+
         {filteredTree.length === 0 ? (
+
           <div
             style={{
               width: "100%",
@@ -188,28 +507,44 @@ const ReferralTree = ({ role = "admin" }) => {
           >
             No Members Found
           </div>
+
         ) : (
-          filteredTree.map((member) => (
-            <ReferralNode
-              key={member._id}
-              member={member}
-              onView={handleView}
-              expandAll={expandAll}
-            />
-          ))
+
+          filteredTree.map(
+            (member) => (
+
+              <ReferralNode
+                key={member._id}
+                member={member}
+                onView={handleView}
+                expandAll={expandAll}
+              />
+
+            )
+          )
+
         )}
+
       </div>
+
+
+      {/* =================================================
+          MEMBER DETAILS MODAL
+      ================================================= */}
 
       <MemberDetailsModal
         open={openModal}
         member={selectedMember}
-        onClose={() => {
-          setOpenModal(false);
-          setSelectedMember(null);
-        }}
+        onClose={
+          handleCloseModal
+        }
       />
+
     </>
+
   );
+
 };
+
 
 export default ReferralTree;

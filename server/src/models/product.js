@@ -1,5 +1,3 @@
-// server/models/Product.js
-
 const mongoose = require("mongoose");
 
 const productSchema = new mongoose.Schema(
@@ -40,25 +38,67 @@ const productSchema = new mongoose.Schema(
       trim: true,
     },
 
-    mrp: {
-      type: Number,
-      required: true,
-      min: 0,
+    usage: {
+      type: String,
+      default: "",
+      trim: true,
     },
 
-    sellingPrice: {
-      type: Number,
-      required: true,
-      min: 0,
+    storage: {
+      type: String,
+      default: "",
+      trim: true,
     },
-    
+
+    weight: {
+      type: String,
+      default: "",
+      trim: true,
+    },
+
+    quantity: {
+      type: String,
+      default: "",
+      trim: true,
+    },
+
+    shelfLife: {
+      type: String,
+      default: "",
+      trim: true,
+    },
+
+    manufacturer: {
+      type: String,
+      default: "Bhagyamma Hub",
+      trim: true,
+    },
+
+    countryOfOrigin: {
+      type: String,
+      default: "India",
+      trim: true,
+    },
+
+    sku: {
+      type: String,
+      default: "",
+      trim: true,
+    },
+
+price: {
+    type: Number,
+    required: true,
+    min: 0,
+},
+
     images: {
       type: [String],
       validate: {
         validator: function (value) {
           return value.length <= 3;
         },
-        message: "A maximum of 3 images is allowed.",
+        message: "Maximum 3 images are allowed.",
       },
       default: [],
     },

@@ -1,60 +1,25 @@
 const express = require("express");
-
 const router = express.Router();
 
-const controller = require("../controllers/cart.controller");
-
+const cartController = require("../controllers/cart.controller");
 const { protect } = require("../middleware/auth.middleware");
 
-const validate = require("../middleware/validate.middleware");
+// All cart routes require login
+router.use(protect);
 
-const {
-    addToCartValidation,
-    updateCartValidation,
-} = require("../validations/cart.validation");
-console.log({
-    protect: typeof protect,
-    validate: typeof validate,
-    addToCartValidation,
-    updateCartValidation,
-    getCart: typeof controller.getCart,
-    addToCart: typeof controller.addToCart,
-    updateQuantity: typeof controller.updateQuantity,
-    removeFromCart: typeof controller.removeFromCart,
-    clearCart: typeof controller.clearCart,
-});
-router.get(
-    "/",
-    protect,
-    controller.getCart
-);
+// Get logged-in user's cart
+router.get("/", cartController.getCart);
 
-router.post(
-    "/",
-    protect,
-    addToCartValidation,
-    validate,
-    controller.addToCart
-);
+// Add product to cart
+router.post("/", cartController.addToCart);
 
-router.put(
-    "/",
-    protect,
-    updateCartValidation,
-    validate,
-    controller.updateQuantity
-);
+// Update quantity
+router.put("/", cartController.updateQuantity);
 
-router.delete(
-    "/:productId",
-    protect,
-    controller.removeFromCart
-);
+// Remove one product
+router.delete("/:productId", cartController.removeFromCart);
 
-router.delete(
-    "/",
-    protect,
-    controller.clearCart
-);
+// Clear entire cart
+router.delete("/", cartController.clearCart);
 
 module.exports = router;

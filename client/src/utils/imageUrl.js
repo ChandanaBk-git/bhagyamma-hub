@@ -8,7 +8,8 @@ const SERVER_URL = isDev
     : "https://bhagyamma-hub.onrender.com";
 
 export const getImageUrl = (path) => {
-  if (!path) return "";
+  if (!path) return "/images/no-image.png";
+
   if (/^https?:\/\//i.test(path)) return path;
 
   return `${SERVER_URL}${path}`;

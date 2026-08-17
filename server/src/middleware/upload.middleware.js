@@ -2,63 +2,163 @@ const multer = require("multer");
 const path = require("path");
 const fs = require("fs");
 
-// =========================
-// Upload Folder
-// =========================
+// =====================================================
+// KYC UPLOAD DIRECTORY
+// =====================================================
 
-const uploadPath = path.join(process.cwd(), "uploads", "products");
+const uploadPath = path.join(
+    process.cwd(),
+    "uploads",
+    "kyc"
+);
 
-console.log("📂 Upload Path:", uploadPath);
+console.log(
+    "📂 KYC Upload Path:",
+    uploadPath
+);
 
 if (!fs.existsSync(uploadPath)) {
-  fs.mkdirSync(uploadPath, { recursive: true });
+    fs.mkdirSync(uploadPath, {
+        recursive: true,
+    });
 }
 
-// =========================
-// Storage
-// =========================
+// =====================================================
+// STORAGE
+// =====================================================
 
 const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    console.log("📥 Saving File To:", uploadPath);
-    cb(null, uploadPath);
-  },
 
-  filename: (req, file, cb) => {
-    console.log("📸 Incoming File:", file.originalname);
+    destination: (req, file, cb) => {
+        cb(null, uploadPath);
+    },
 
-    const filename =
-      Date.now() +
-      "-" +
-      Math.round(Math.random() * 1e9) +
-      path.extname(file.originalname);
+    filename: (req, file, cb) => {
 
-    console.log("✅ Saved As:", filename);
+        const userId =
+            req.user?.userId || "USER";
 
-    cb(null, filename);
-  },
+        const documentType =
+            file.fieldname || "document";
+
+        const extension =
+            path.extname(
+                file.originalname
+            ).toLowerCase();
+
+        const filename =
+            `${userId}-${documentType}-${Date.now()}${extension}`;
+
+        cb(null, filename);
+    },
 });
 
-// =========================
-// File Filter
-// =========================
+// =====================================================
+// ALLOWED FILE TYPES
+// =====================================================
 
-const fileFilter = (req, file, cb) => {
-  if (file.mimetype.startsWith("image/")) {
-    cb(null, true);
-  } else {
-    cb(new Error("Only image files are allowed"), false);
-  }
+const allowedMimeTypes = new Set([
+    // PDF
+    "application/pdf",
+
+    // JPEG
+    "image/jpeg",
+
+    // PNG
+    "image/png",
+
+    // WEBP
+    "image/webp",
+
+    // GIF
+    "image/gif",
+
+    // BMP
+    "image/bmp",
+
+    // TIFF
+    "image/tiff",
+]);
+
+const allowedExtensions = new Set([
+    ".pdf",
+    ".jpg",
+    ".jpeg",
+    ".png",
+    ".webp",
+    ".gif",
+    ".bmp",
+    ".tif",
+    ".tiff",
+]);
+
+// =====================================================
+// FILE FILTER
+// =====================================================
+
+const fileFilter = (
+    req,
+    file,
+    cb
+) => {
+
+    const extension =
+        path.extname(
+            file.originalname
+        ).toLowerCase();
+
+    const mimeType =
+        file.mimetype.toLowerCase();
+
+    const validMime =
+        allowedMimeTypes.has(
+            mimeType
+        );
+
+    const validExtension =
+        allowedExtensions.has(
+            extension
+        );
+
+    if (
+        validMime &&
+        validExtension
+    ) {
+        cb(null, true);
+        return;
+    }
+
+    cb(
+        new Error(
+            "Invalid file type. Allowed formats: PDF, JPG, JPEG, PNG, WEBP, GIF, BMP, TIF and TIFF."
+        ),
+        false
+    );
 };
 
-// =========================
-// Export
-// =========================
+// =====================================================
+// MULTER
+// =====================================================
 
-module.exports = multer({
-  storage,
-  fileFilter,
-  limits: {
-    fileSize: 5 * 1024 * 1024, // 5 MB
-  },
+const kycUpload = multer({
+
+    storage,
+
+    fileFilter,
+
+    limits: {
+        // 5 MB per file
+        fileSize:
+            5 * 1024 * 1024,
+
+        // Maximum 3 files in one request
+        files: 3,
+    },
+
 });
+
+// =====================================================
+// EXPORT
+// =====================================================
+
+module.exports = kycUpload;

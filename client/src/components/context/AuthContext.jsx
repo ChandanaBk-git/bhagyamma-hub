@@ -28,7 +28,7 @@ const AuthProvider = ({ children }) => {
       try {
         const response = await getProfile();
 
-        const profile = response.data.data;
+        const profile = response.data;
 
         setUser(profile);
         localStorage.setItem(
@@ -48,7 +48,7 @@ const AuthProvider = ({ children }) => {
   const login = async (credentials) => {
     const response = await loginService(credentials);
 
-    const { token, user } = response.data.data;
+    const { token, user } = response.data;
 
     localStorage.setItem("token", token);
     localStorage.setItem(

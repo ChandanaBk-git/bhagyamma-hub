@@ -7,50 +7,100 @@ const controller = require("../controllers/user.controller");
 const { protect } = require("../middleware/auth.middleware");
 const authorize = require("../middleware/role.middleware");
 
-// =======================
-// User Management Routes
-// =======================
+// ======================================
+// User Management
+// ======================================
 
-// Get all users (Only SUPER_ADMIN & MANAGER)
+// Get All Users (SUPER_ADMIN & MANAGER)
 router.get(
-    "/",
-    protect,
-    authorize("SUPER_ADMIN", "MANAGER","USERS"),
-    controller.getAllUsers
+  "/",
+  protect,
+  authorize("SUPER_ADMIN", "MANAGER", "USERS"),
+  controller.getAllUsers
 );
 
+// ======================================
+// Logged In User
+// ======================================
+
+// My Profile
 router.get(
-    "/me",
-    protect,
-    controller.getMyProfile
+  "/me",
+  protect,
+  controller.getMyProfile
+);
+
+// Dashboard
+router.get(
+  "/dashboard",
+  protect,
+  controller.getDashboard
+);
+
+// Selling Points Dashboard
+router.get(
+  "/selling-points",
+  protect,
+  controller.getSellingPoints
+);
+
+// My Referral Network
+router.get(
+  "/my-network",
+  protect,
+  controller.getMyNetwork
+);
+
+// Referral Tree
+router.get(
+  "/referral-tree",
+  protect,
+  controller.getReferralTree
+);
+
+// ======================================
+// Statistics
+// ======================================
+
+router.get(
+  "/stats",
+  protect,
+  authorize("SUPER_ADMIN", "MANAGER"),
+  controller.getUserStats
+);
+
+// ======================================
+// Update / Delete
+// ======================================
+
+router.put(
+  "/me",
+  protect,
+  controller.updateMyProfile
 );
 
 router.put(
-    "/:id",
-    protect,
-    controller.updateUser
+  "/:id",
+  protect,
+  controller.updateUser
 );
+
 router.delete(
-    "/:id",
-    protect,
-    authorize("SUPER_ADMIN"),
-    controller.deleteUser
+  "/:id",
+  protect,
+  authorize("SUPER_ADMIN"),
+  controller.deleteUser
 );
+
+// ======================================
+// User Details
+// (Keep LAST because :id matches everything)
+// ======================================
 
 router.get(
-    "/stats",
-    protect,
-    authorize("SUPER_ADMIN", "MANAGER"),
-    controller.getUserStats
+  "/:id",
+  protect,
+  controller.getUserById
 );
-
-// Get user by ID (Any logged-in user)
-router.get(
-    "/:id",
-    protect,
-    controller.getUserById
-);
-
-
 
 module.exports = router;

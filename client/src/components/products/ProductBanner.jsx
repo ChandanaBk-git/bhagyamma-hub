@@ -1,29 +1,119 @@
-import { Box, Container, Typography } from "@mui/material";
+import {
+  Box,
+  Breadcrumbs,
+  Container,
+  Link,
+  Typography,
+} from "@mui/material";
+
+import { Link as RouterLink } from "react-router-dom";
 
 const ProductBanner = () => {
   return (
     <Box
       sx={{
-        py: 8,
-        background: "linear-gradient(135deg,#E8F5E9,#F1F8E9)",
+        width: "100%",
+
+        background:
+          "linear-gradient(135deg, #1B5E20 0%, #2E7D32 55%, #43A047 100%)",
+
+        color: "#fff",
+
+        py: {
+          xs: 4,
+          sm: 5,
+          md: 6,
+        },
       }}
     >
-      <Container maxWidth="lg">
+      <Container
+        maxWidth="xl"
+        sx={{
+          px: {
+            xs: 2,
+            sm: 3,
+            md: 4,
+          },
+        }}
+      >
+        <Breadcrumbs
+          sx={{
+            mb: 1.5,
+
+            "& .MuiBreadcrumbs-separator": {
+              color: "rgba(255,255,255,0.7)",
+            },
+          }}
+        >
+          <Link
+            component={RouterLink}
+            to="/"
+            underline="hover"
+            sx={{
+              color: "rgba(255,255,255,0.85)",
+
+              fontSize: {
+                xs: "0.8rem",
+                sm: "0.85rem",
+              },
+            }}
+          >
+            Home
+          </Link>
+
+          <Typography
+            sx={{
+              color: "#fff",
+
+              fontSize: {
+                xs: "0.8rem",
+                sm: "0.85rem",
+              },
+
+              fontWeight: 600,
+            }}
+          >
+            Products
+          </Typography>
+        </Breadcrumbs>
+
         <Typography
-          variant="h2"
-          fontWeight={700}
-          color="primary"
+          component="h1"
+          sx={{
+            fontWeight: 800,
+
+            fontSize: {
+              xs: "2rem",
+              sm: "2.5rem",
+              md: "3rem",
+            },
+
+            lineHeight: 1.2,
+          }}
         >
           Our Products
         </Typography>
 
         <Typography
-          variant="h6"
-          color="text.secondary"
-          sx={{ mt: 2 }}
+          sx={{
+            mt: 1.2,
+
+            maxWidth: 700,
+
+            color: "rgba(255,255,255,0.9)",
+
+            fontSize: {
+              xs: "0.85rem",
+              sm: "0.95rem",
+              md: "1rem",
+            },
+
+            lineHeight: 1.7,
+          }}
         >
-          Explore premium herbal and wellness products carefully selected
-          for your healthy lifestyle.
+          Discover our premium range of natural and
+          high-quality Bhagyamma Hub products, carefully
+          selected to support a healthier lifestyle.
         </Typography>
       </Container>
     </Box>

@@ -2,18 +2,17 @@ import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 
 import {
-  Alert,
-  Box,
-  Button,
-  Card,
-  CardContent,
-  Grid,
-  MenuItem,
-  Snackbar,
-  TextField,
+  Container,
   Typography,
+  Paper,
+  Alert,
+  Breadcrumbs,
+  Link,
 } from "@mui/material";
-import { getImageUrl } from "../../utils/imageUrl";
+
+import { Home } from "@mui/icons-material";
+
+import ProductForm from "../../components/products/ProductForm";
 
 import {
   getProductById,
@@ -22,295 +21,174 @@ import {
 
 const EditProduct = () => {
   const { id } = useParams();
+
   const navigate = useNavigate();
 
   const [loading, setLoading] = useState(false);
 
-  const [openSnackbar, setOpenSnackbar] = useState(false);
+  const [error, setError] = useState("");
 
-  const [formData, setFormData] = useState({
-    productName: "",
-    category: "",
-    brand: "",
-    description: "",
-    benefits: "",
-    ingredients: "",
-    mrp: "",
-    sellingPrice: "",
-    stock: "",
-    status: "Active",
-  });
+  const [product, setProduct] = useState(null);
 
-  const [images, setImages] = useState([]);
-  const [previewImages, setPreviewImages] = useState([]);
+useEffect(() => {
+  if (id) {
+    loadProduct();
+  }
+}, [id]);
 
-  useEffect(() => {
-    fetchProduct();
-  }, []);
+const loadProduct = async () => {
+  try {
+    setLoading(true);
 
-  const fetchProduct = async () => {
-    try {
-      const response = await getProductById(id);
+    const product = await getProductById(id);
 
-      const product = response.data;
+    console.log("Product:", product);
 
-      setFormData({
-        productName: product.productName,
-        category: product.category,
-        brand: product.brand,
-        description: product.description,
-        benefits: product.benefits,
-        ingredients: product.ingredients,
-        mrp: product.mrp,
-        sellingPrice: product.sellingPrice,
-        stock: product.stock,
-        status: product.status,
-      });
+    setProduct(product);
 
-      setPreviewImages(product.images || []);
-    } catch (error) {
-      console.error(error);
-    }
-  };
+  } catch (err) {
 
-  const handleChange = (e) => {
-    setFormData((prev) => ({
-      ...prev,
-      [e.target.name]: e.target.value,
-    }));
-  };
+    console.error(err);
 
-  const handleImageChange = (e) => {
-    const files = Array.from(e.target.files);
+    setError("Unable to load product.");
 
-    if (files.length > 3) {
-      alert("Maximum 3 images allowed.");
-      return;
-    }
+  } finally {
 
-    setImages(files);
+    setLoading(false);
 
-    const previews = files.map((file) =>
-      URL.createObjectURL(file)
-    );
+  }
+};
 
-    setPreviewImages(previews);
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-
+  const handleUpdate = async (formData) => {
     try {
       setLoading(true);
 
-      const data = new FormData();
+      await updateProduct(id, formData);
 
-      Object.keys(formData).forEach((key) => {
-        data.append(key, formData[key]);
-      });
+      alert("✅ Product Updated Successfully");
 
-      images.forEach((image) => {
-        data.append("images", image);
-      });
+      navigate("/admin/products");
 
-      await updateProduct(id, data);
+    } catch (err) {
 
-      setOpenSnackbar(true);
+      console.log(err);
 
-      setTimeout(() => {
-        navigate("/admin/products");
-      }, 1500);
+      setError(
+        err.response?.data?.message ||
+          "Unable to update product."
+      );
 
-    } catch (error) {
-      console.error(error);
-      alert("Unable to update product.");
     } finally {
+
       setLoading(false);
+
     }
   };
 
+  if (!product) {
+    return (
+      <Typography
+        sx={{
+          mt: 5,
+          textAlign: "center",
+        }}
+      >
+        Loading...
+      </Typography>
+    );
+  }
+
   return (
-    <Box
+    <Container
+      maxWidth="lg"
       sx={{
-        maxWidth: 1200,
-        mx: "auto",
-        mt: 4,
-        px: 2,
+        py: 4,
       }}
     >
-      <Card elevation={4}>
-        <CardContent>
-
-          <Typography
-            variant="h4"
-            color="success.main"
-            fontWeight="bold"
-            mb={4}
-          >
-            Edit Product
-          </Typography>
-
-          <Box component="form" onSubmit={handleSubmit}>
-
-            <Grid container spacing={3}>
-
-              <Grid item xs={12} md={6}>
-                <TextField
-                  fullWidth
-                  label="Product Name"
-                  name="productName"
-                  value={formData.productName}
-                  onChange={handleChange}
-                />
-              </Grid>
-
-              <Grid item xs={12} md={6}>
-                <TextField
-                  fullWidth
-                  label="Category"
-                  name="category"
-                  value={formData.category}
-                  onChange={handleChange}
-                />
-              </Grid>
-
-              <Grid item xs={12}>
-                <TextField
-                  fullWidth
-                  multiline
-                  rows={4}
-                  label="Description"
-                  name="description"
-                  value={formData.description}
-                  onChange={handleChange}
-                />
-              </Grid>
-
-              <Grid item xs={12} md={6}>
-                <TextField
-                  fullWidth
-                  type="number"
-                  label="MRP"
-                  name="mrp"
-                  value={formData.mrp}
-                  onChange={handleChange}
-                />
-              </Grid>
-
-              <Grid item xs={12} md={6}>
-                <TextField
-                  fullWidth
-                  type="number"
-                  label="Selling Price"
-                  name="sellingPrice"
-                  value={formData.sellingPrice}
-                  onChange={handleChange}
-                />
-              </Grid>
-
-              <Grid item xs={12} md={6}>
-                <TextField
-                  fullWidth
-                  type="number"
-                  label="Stock"
-                  name="stock"
-                  value={formData.stock}
-                  onChange={handleChange}
-                />
-              </Grid>
-
-              <Grid item xs={12} md={6}>
-                <TextField
-                  select
-                  fullWidth
-                  label="Status"
-                  name="status"
-                  value={formData.status}
-                  onChange={handleChange}
-                >
-                  <MenuItem value="Active">Active</MenuItem>
-                  <MenuItem value="Inactive">Inactive</MenuItem>
-                </TextField>
-              </Grid>
-
-              <Grid item xs={12}>
-                <Button
-                  variant="contained"
-                  component="label"
-                >
-                  Change Images
-
-                  <input
-                    hidden
-                    type="file"
-                    multiple
-                    accept="image/*"
-                    onChange={handleImageChange}
-                  />
-                </Button>
-              </Grid>
-
-              <Grid item xs={12}>
-                <Grid container spacing={2}>
-
-                  {previewImages.map((image, index) => (
-
-                    <Grid item key={index}>
-
-                      <img
-                        src={
-                          image.startsWith("/uploads")
-                            ? `src={getImageUrl(image)}`
-                            : image
-                        }
-                        alt=""
-                        width={140}
-                        height={140}
-                        style={{
-                          borderRadius: 10,
-                          objectFit: "cover",
-                        }}
-                      />
-
-                    </Grid>
-
-                  ))}
-
-                </Grid>
-              </Grid>
-
-              <Grid item xs={12}>
-
-                <Button
-                  variant="contained"
-                  color="success"
-                  type="submit"
-                  disabled={loading}
-                >
-                  {loading
-                    ? "Updating..."
-                    : "Update Product"}
-                </Button>
-
-              </Grid>
-
-            </Grid>
-
-          </Box>
-
-        </CardContent>
-      </Card>
-
-      <Snackbar
-        open={openSnackbar}
-        autoHideDuration={3000}
+      <Breadcrumbs
+        sx={{
+          mb: 2,
+        }}
       >
-        <Alert severity="success" variant="filled">
-          Product Updated Successfully
-        </Alert>
-      </Snackbar>
+        <Link
+          underline="hover"
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            cursor: "pointer",
+          }}
+          onClick={() =>
+            navigate("/admin/dashboard")
+          }
+        >
+          <Home
+            sx={{
+              mr: 0.5,
+              fontSize: 18,
+            }}
+          />
 
-    </Box>
+          Dashboard
+
+        </Link>
+
+        <Link
+          underline="hover"
+          sx={{
+            cursor: "pointer",
+          }}
+          onClick={() =>
+            navigate("/admin/products")
+          }
+        >
+          Products
+        </Link>
+
+        <Typography>
+          Edit Product
+        </Typography>
+      </Breadcrumbs>
+
+      <Typography
+        variant="h4"
+        fontWeight={700}
+        mb={3}
+      >
+        Edit Product
+      </Typography>
+
+      {error && (
+        <Alert
+          severity="error"
+          sx={{
+            mb: 3,
+          }}
+        >
+          {error}
+        </Alert>
+      )}
+
+      <Paper
+        elevation={3}
+        sx={{
+          p: {
+            xs: 2,
+            md: 4,
+          },
+          borderRadius: 4,
+        }}
+      >
+        <ProductForm
+          mode="edit"
+          initialValues={product}
+          loading={loading}
+          onSubmit={handleUpdate}
+          onCancel={() =>
+            navigate("/admin/products")
+          }
+        />
+      </Paper>
+    </Container>
   );
 };
 

@@ -28,17 +28,43 @@ const productValidation = [
     .optional()
     .trim(),
 
-  body("mrp")
-    .notEmpty()
-    .withMessage("MRP is required")
-    .isFloat({ min: 0 })
-    .withMessage("MRP must be greater than or equal to 0"),
+  body("usage")
+    .optional()
+    .trim(),
 
-  body("sellingPrice")
+  body("storage")
+    .optional()
+    .trim(),
+
+  body("weight")
+    .optional()
+    .trim(),
+
+  body("quantity")
+    .optional()
+    .trim(),
+
+  body("shelfLife")
+    .optional()
+    .trim(),
+
+  body("manufacturer")
+    .optional()
+    .trim(),
+
+  body("countryOfOrigin")
+    .optional()
+    .trim(),
+
+  body("sku")
+    .optional()
+    .trim(),
+
+  body("price")
     .notEmpty()
-    .withMessage("Selling Price is required")
+    .withMessage("Price is required")
     .isFloat({ min: 0 })
-    .withMessage("Selling Price must be greater than or equal to 0"),
+    .withMessage("Price must be greater than or equal to 0"),
 
   body("status")
     .optional()

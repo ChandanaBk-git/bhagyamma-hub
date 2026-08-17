@@ -37,30 +37,23 @@ const ProductList = () => {
   const [filteredProducts, setFilteredProducts] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  const fetchProducts = async () => {
-    try {
-      setLoading(true);
+const fetchProducts = async () => {
+  try {
+    setLoading(true);
 
-const response = await getProducts();
+    const productList = await getProducts();
 
-console.log("API Response:", response);
-console.log("response.data:", response.data);
-console.log("response.message:", response.message);
+    console.log("Products:", productList);
 
-const productList = Array.isArray(response.data)
-  ? response.data
-  : [];
+    setProducts(productList);
+    setFilteredProducts(productList);
 
-console.log("Product List:", productList);
-
-setProducts(productList);
-setFilteredProducts(productList);
-    } catch (error) {
-      console.error(error);
-    } finally {
-      setLoading(false);
-    }
-  };
+  } catch (error) {
+    console.error(error);
+  } finally {
+    setLoading(false);
+  }
+};
 
   useEffect(() => {
     fetchProducts();
@@ -131,20 +124,16 @@ setFilteredProducts(productList);
 
         <Table>
 
-          <TableHead>
-
-            <TableRow>
-              <TableCell>Image</TableCell>
-              <TableCell>Name</TableCell>
-              <TableCell>Category</TableCell>
-              <TableCell>MRP</TableCell>
-              <TableCell>Price</TableCell>
-              <TableCell>Stock</TableCell>
-              <TableCell>Status</TableCell>
-              <TableCell align="center">Actions</TableCell>
-            </TableRow>
-
-          </TableHead>
+<TableHead>
+  <TableRow>
+    <TableCell>Image</TableCell>
+    <TableCell>Name</TableCell>
+    <TableCell>Category</TableCell>
+    <TableCell>Price</TableCell>
+    <TableCell>Status</TableCell>
+    <TableCell align="center">Actions</TableCell>
+  </TableRow>
+</TableHead>
 
           <TableBody>
 
@@ -173,14 +162,9 @@ setFilteredProducts(productList);
 
                 <TableCell>{product.category}</TableCell>
 
-                <TableCell>₹ {product.mrp}</TableCell>
-
-                <TableCell>
-                  ₹ {product.sellingPrice}
-                </TableCell>
-
-                <TableCell>{product.stock}</TableCell>
-
+<TableCell>
+  ₹ {product.price}
+</TableCell>
                 <TableCell>
                   <Chip
                     label={product.status}

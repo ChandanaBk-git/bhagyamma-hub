@@ -28,6 +28,8 @@ const protect = (req, res, next) => {
 
         req.user = decoded;
 
+        console.log(req.user);
+
         console.log("Decoded JWT:", decoded);
 
         next();

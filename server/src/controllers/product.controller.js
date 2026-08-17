@@ -26,33 +26,45 @@ const createProduct = asyncHandler(async (req, res) => {
     description: req.body.description,
     benefits: req.body.benefits,
     ingredients: req.body.ingredients,
-    mrp: Number(req.body.mrp),
-    sellingPrice: Number(req.body.sellingPrice),
+
+    usage: req.body.usage,
+    storage: req.body.storage,
+    weight: req.body.weight,
+    quantity: req.body.quantity,
+    shelfLife: req.body.shelfLife,
+    manufacturer: req.body.manufacturer,
+    countryOfOrigin: req.body.countryOfOrigin,
+
+    price: Number(req.body.price),
+
     status: req.body.status,
     images,
   });
 
-  return res
-    .status(201)
-    .json(new ApiResponse(
-  201,
-  "Product created successfully.",
-  product
-));
+  return res.status(201).json(
+    new ApiResponse(
+      201,
+      "Product created successfully.",
+      product
+    )
+  );
 });
 
 // =======================================
 // Get All Products
 // =======================================
 const getAllProducts = asyncHandler(async (req, res) => {
-  const products = await ProductService.getAllProducts();
+  const products = await ProductService.getAllProducts({
+    activeOnly: req.query.active === "true",
+    status: req.query.status,
+  });
 
   return res.status(200).json(
-new ApiResponse(
-  200,
-  "Products fetched successfully.",
-  products
-)
+    new ApiResponse(
+      200,
+      "Products fetched successfully.",
+      products
+    )
   );
 });
 
@@ -60,19 +72,21 @@ new ApiResponse(
 // Get Product By ID
 // =======================================
 const getProductById = asyncHandler(async (req, res) => {
-  const product = await ProductService.getProductById(req.params.id);
+  const product = await ProductService.getProductById(
+    req.params.id
+  );
 
   if (!product) {
     throw new ApiError(404, "Product not found.");
   }
 
-return res.status(200).json(
-  new ApiResponse(
-    200,
-    "Product fetched successfully.",
-    product
-  )
-);
+  return res.status(200).json(
+    new ApiResponse(
+      200,
+      "Product fetched successfully.",
+      product
+    )
+  );
 });
 
 // =======================================
@@ -89,9 +103,7 @@ const updateProduct = asyncHandler(async (req, res) => {
     );
   }
 
-  updatedData.mrp = Number(updatedData.mrp);
-  updatedData.sellingPrice = Number(updatedData.sellingPrice);
-  updatedData.stock = Number(updatedData.stock);
+  updatedData.price = Number(updatedData.price);
 
   const product = await ProductService.updateProduct(
     req.params.id,
@@ -115,7 +127,9 @@ const updateProduct = asyncHandler(async (req, res) => {
 // Delete Product
 // =======================================
 const deleteProduct = asyncHandler(async (req, res) => {
-  const product = await ProductService.deleteProduct(req.params.id);
+  const product = await ProductService.deleteProduct(
+    req.params.id
+  );
 
   if (!product) {
     throw new ApiError(404, "Product not found.");

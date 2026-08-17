@@ -1,6 +1,6 @@
 const User = require("../models/user.model");
 const Wallet = require("../models/wallet.model");
-const Commission = require("../models/commission.model");
+const Commission = require("../models/commissionTransaction.model");
 const Product = require("../models/product");
 // ============================================
 // DASHBOARD
