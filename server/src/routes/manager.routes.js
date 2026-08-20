@@ -1,30 +1,62 @@
 const express = require("express");
+
 const router = express.Router();
 
-const managerController = require("../controllers/manager.controller");
+const managerController =
+    require("../controllers/manager.controller");
 
-// ✅ Correct import
 const {
     protect,
     authorize,
 } = require("../middleware/auth.middleware");
 
-// Authentication
+
+/*
+=========================================================
+MANAGER AUTHENTICATION
+=========================================================
+*/
+
 router.use(protect);
 
-// Manager only
-router.use(authorize("MANAGER"));
 
-// Dashboard
+/*
+=========================================================
+MANAGER ROLE ONLY
+=========================================================
+*/
+
+router.use(
+    authorize("MANAGER")
+);
+
+
+/*
+=========================================================
+DASHBOARD
+=========================================================
+*/
+
 router.get(
     "/dashboard",
     managerController.getDashboard
 );
 
-// Members
+
+/*
+=========================================================
+MEMBERS
+=========================================================
+*/
+
 router.get(
     "/members",
     managerController.getMembers
+);
+
+router.get(
+    "/members/:id/details",
+    managerController.getMemberDetails
 );
 
 router.get(
@@ -32,16 +64,68 @@ router.get(
     managerController.getMemberById
 );
 
-// Referral Tree
+
+/*
+=========================================================
+MANAGER JOINING COMMISSION
+=========================================================
+
+This is the commission earned by the manager when
+members joined the manager's referral chain.
+
+GET:
+
+/api/v1/manager/commission
+
+Returns ONLY:
+
+memberId
+name
+commissionPercent
+commissionAmount
+=========================================================
+*/
+
+router.get(
+    "/commission",
+    managerController.getCommissionPage
+);
+
+
+/*
+=========================================================
+PRODUCTS
+=========================================================
+*/
+
+router.get(
+    "/products",
+    managerController.getManagerProducts
+);
+
+
+/*
+=========================================================
+REFERRAL TREE
+=========================================================
+*/
+
 router.get(
     "/referral-tree",
     managerController.getReferralTree
 );
 
-// Profile
+
+/*
+=========================================================
+PROFILE
+=========================================================
+*/
+
 router.get(
     "/profile",
     managerController.getProfile
 );
+
 
 module.exports = router;

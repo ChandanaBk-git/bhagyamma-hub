@@ -11,9 +11,21 @@ const createWallet = async (data) => {
 const saveWallet = async (wallet) => {
   return await wallet.save();
 };
+const findWalletsByUsers =
+  async (
+    userIds
+  ) => {
 
+    return await Wallet.find({
+      user: {
+        $in: userIds,
+      },
+    }).lean();
+
+  };
 module.exports = {
   findWalletByUser,
   createWallet,
   saveWallet,
+  findWalletsByUsers,
 };

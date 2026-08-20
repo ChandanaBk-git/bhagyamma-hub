@@ -24,6 +24,7 @@ import {
   PhoneOutlined,
   LockOutlined,
   GroupsOutlined,
+  QrCode2,
 } from "@mui/icons-material";
 
 import {
@@ -36,23 +37,20 @@ import { register } from "../../services/auth.service";
 const RegisterForm = () => {
   const navigate = useNavigate();
 
-  const [formData, setFormData] =
-    useState({
-      name: "",
-      email: "",
-      mobile: "",
-      password: "",
-      confirmPassword: "",
-      referralCode: "",
-    });
+  const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    mobile: "",
+    password: "",
+    confirmPassword: "",
+    referralCode: "",
+  });
 
   const [showPassword, setShowPassword] =
     useState(false);
 
-  const [
-    showConfirmPassword,
-    setShowConfirmPassword,
-  ] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] =
+    useState(false);
 
   const [loading, setLoading] =
     useState(false);
@@ -93,6 +91,28 @@ const RegisterForm = () => {
 
     setError("");
     setSuccess("");
+  };
+
+  /* =====================================================
+     OPTIONAL REGISTRATION PAYMENT
+
+     Payment is NOT mandatory.
+
+     This only opens the existing payment scanner.
+  ===================================================== */
+
+  const handleRegistrationPayment = () => {
+    setError("");
+    setSuccess("");
+
+    navigate("/payment/scan", {
+      state: {
+        amount: 2000,
+        purpose: "Registration Fee",
+        description:
+          "Optional Bhagyamma Hub registration fee",
+      },
+    });
   };
 
   /* =====================================================
@@ -238,15 +258,11 @@ const RegisterForm = () => {
       };
 
       const response =
-        await register(
-          payload
-        );
+        await register(payload);
 
       /*
-       * Registration creates the account.
-       *
-       * We intentionally do NOT use
-       * mobile OTP here.
+       * Registration is independent
+       * from the optional ₹2,000 payment.
        */
 
       const token =
@@ -256,11 +272,6 @@ const RegisterForm = () => {
       const user =
         response?.data?.user ||
         response?.user;
-
-      /*
-       * Store login session if backend
-       * returns JWT.
-       */
 
       if (token) {
         localStorage.setItem(
@@ -282,11 +293,6 @@ const RegisterForm = () => {
           "Registration successful."
       );
 
-      /*
-       * Give the user a moment to
-       * see the success message.
-       */
-
       setTimeout(() => {
         navigate(
           "/login",
@@ -295,6 +301,7 @@ const RegisterForm = () => {
           }
         );
       }, 1500);
+
     } catch (err) {
       console.error(
         "REGISTRATION ERROR:",
@@ -307,6 +314,7 @@ const RegisterForm = () => {
           err?.message ||
           "Registration failed. Please try again."
       );
+
     } finally {
       setLoading(false);
     }
@@ -352,7 +360,10 @@ const RegisterForm = () => {
           overflow: "hidden",
         }}
       >
-        {/* HEADER */}
+
+        {/* =================================================
+            HEADER
+        ================================================= */}
 
         <Box
           sx={{
@@ -437,7 +448,10 @@ const RegisterForm = () => {
             },
           }}
         >
-          {/* ERROR */}
+
+          {/* =================================================
+              ERROR
+          ================================================= */}
 
           {error && (
             <Alert
@@ -451,7 +465,9 @@ const RegisterForm = () => {
             </Alert>
           )}
 
-          {/* SUCCESS */}
+          {/* =================================================
+              SUCCESS
+          ================================================= */}
 
           {success && (
             <Alert
@@ -465,18 +481,23 @@ const RegisterForm = () => {
             </Alert>
           )}
 
+          {/* =================================================
+              REGISTRATION FORM
+          ================================================= */}
+
           <Box
             component="form"
-            onSubmit={
-              handleSubmit
-            }
+            onSubmit={handleSubmit}
             noValidate
           >
             <Grid
               container
               spacing={2.2}
             >
-              {/* NAME */}
+
+              {/* =================================================
+                  FULL NAME
+              ================================================= */}
 
               <Grid
                 item
@@ -486,12 +507,8 @@ const RegisterForm = () => {
                   fullWidth
                   label="Full Name"
                   name="name"
-                  value={
-                    formData.name
-                  }
-                  onChange={
-                    handleChange
-                  }
+                  value={formData.name}
+                  onChange={handleChange}
                   autoComplete="name"
                   required
                   InputProps={{
@@ -504,7 +521,9 @@ const RegisterForm = () => {
                 />
               </Grid>
 
-              {/* EMAIL */}
+              {/* =================================================
+                  EMAIL
+              ================================================= */}
 
               <Grid
                 item
@@ -516,12 +535,8 @@ const RegisterForm = () => {
                   label="Email Address"
                   name="email"
                   type="email"
-                  value={
-                    formData.email
-                  }
-                  onChange={
-                    handleChange
-                  }
+                  value={formData.email}
+                  onChange={handleChange}
                   autoComplete="email"
                   required
                   InputProps={{
@@ -534,7 +549,9 @@ const RegisterForm = () => {
                 />
               </Grid>
 
-              {/* MOBILE */}
+              {/* =================================================
+                  MOBILE
+              ================================================= */}
 
               <Grid
                 item
@@ -545,19 +562,14 @@ const RegisterForm = () => {
                   fullWidth
                   label="Mobile Number"
                   name="mobile"
-                  value={
-                    formData.mobile
-                  }
-                  onChange={
-                    handleChange
-                  }
+                  value={formData.mobile}
+                  onChange={handleChange}
                   autoComplete="tel"
+                  required
                   inputProps={{
                     maxLength: 10,
-                    inputMode:
-                      "numeric",
+                    inputMode: "numeric",
                   }}
-                  required
                   InputProps={{
                     startAdornment: (
                       <InputAdornment position="start">
@@ -568,7 +580,9 @@ const RegisterForm = () => {
                 />
               </Grid>
 
-              {/* REFERRAL */}
+              {/* =================================================
+                  REFERRAL CODE
+              ================================================= */}
 
               <Grid
                 item
@@ -639,7 +653,9 @@ const RegisterForm = () => {
                 </Box>
               </Grid>
 
-              {/* PASSWORD */}
+              {/* =================================================
+                  PASSWORD
+              ================================================= */}
 
               <Grid
                 item
@@ -681,11 +697,6 @@ const RegisterForm = () => {
                             )
                           }
                           edge="end"
-                          aria-label={
-                            showPassword
-                              ? "Hide password"
-                              : "Show password"
-                          }
                         >
                           {showPassword ? (
                             <VisibilityOff />
@@ -699,7 +710,9 @@ const RegisterForm = () => {
                 />
               </Grid>
 
-              {/* CONFIRM PASSWORD */}
+              {/* =================================================
+                  CONFIRM PASSWORD
+              ================================================= */}
 
               <Grid
                 item
@@ -740,11 +753,6 @@ const RegisterForm = () => {
                             )
                           }
                           edge="end"
-                          aria-label={
-                            showConfirmPassword
-                              ? "Hide password"
-                              : "Show password"
-                          }
                         >
                           {showConfirmPassword ? (
                             <VisibilityOff />
@@ -758,7 +766,84 @@ const RegisterForm = () => {
                 />
               </Grid>
 
-              {/* REGISTER */}
+              {/* =================================================
+                  OPTIONAL PAYMENT
+                  PAYMENT BUTTON BEFORE CREATE ACCOUNT
+              ================================================= */}
+
+              <Grid
+                item
+                xs={12}
+              >
+                <Button
+                  fullWidth
+                  type="button"
+                  variant="outlined"
+                  color="success"
+                  size="large"
+                  onClick={
+                    handleRegistrationPayment
+                  }
+                  startIcon={
+                    <QrCode2 />
+                  }
+                  sx={{
+                    py: 1.35,
+
+                    borderRadius: 2.5,
+
+                    textTransform:
+                      "none",
+
+                    fontSize: 15,
+
+                    fontWeight: 700,
+
+                    borderWidth: 1.5,
+
+                    "&:hover": {
+                      borderWidth: 1.5,
+                    },
+                  }}
+                >
+                  Pay Registration Fee ₹2,000
+
+                  <Box
+                    component="span"
+                    sx={{
+                      ml: 0.5,
+
+                      fontSize: 12,
+
+                      fontWeight: 600,
+
+                      opacity: 0.75,
+                    }}
+                  >
+                    (Optional)
+                  </Box>
+                </Button>
+
+                <Typography
+                  align="center"
+                  color="text.secondary"
+                  sx={{
+                    mt: 1,
+
+                    fontSize: 12,
+
+                    lineHeight: 1.5,
+                  }}
+                >
+                  Registration payment is
+                  optional. You can register
+                  without paying this fee.
+                </Typography>
+              </Grid>
+
+              {/* =================================================
+                  CREATE ACCOUNT
+              ================================================= */}
 
               <Grid
                 item
@@ -803,8 +888,13 @@ const RegisterForm = () => {
                   )}
                 </Button>
               </Grid>
+
             </Grid>
           </Box>
+
+          {/* =================================================
+              LOGIN
+          ================================================= */}
 
           <Divider
             sx={{
@@ -844,6 +934,7 @@ const RegisterForm = () => {
               Login
             </Button>
           </Stack>
+
         </CardContent>
       </Card>
     </Box>

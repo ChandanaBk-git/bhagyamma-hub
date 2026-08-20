@@ -1,12 +1,18 @@
 import { Routes, Route } from "react-router-dom";
 
-// ================= Layouts =================
+// =====================================================
+// LAYOUTS
+// =====================================================
+
 import MainLayout from "../layouts/MainLayout";
 import AdminLayout from "../layouts/AdminLayout";
 import ManagerLayout from "../layouts/ManagerLayout";
 import MemberLayout from "../layouts/MemberLayout";
 
-// ================= Public Pages =================
+// =====================================================
+// PUBLIC PAGES
+// =====================================================
+
 import Home from "../pages/Home/Home";
 import About from "../pages/About/About";
 import Contact from "../pages/Contact/Contact";
@@ -15,18 +21,30 @@ import Cart from "../pages/Cart/Cart";
 import Checkout from "../pages/Checkout/Checkout";
 import Orders from "../pages/Orders/Orders";
 
-// ================= Product =================
+// =====================================================
+// PRODUCT
+// =====================================================
+
 import ProductDetails from "../components/products/ProductDetails";
 
-// ================= Payment =================
+// =====================================================
+// PAYMENT
+// =====================================================
+
 import PaymentScanner from "../pages/Payment/PaymentScanner";
 
-// ================= Auth =================
+// =====================================================
+// AUTH
+// =====================================================
+
 import Login from "../pages/Auth/Login";
 import Register from "../pages/Auth/Register";
 import VerifyOtp from "../pages/Auth/VerifyOtp";
 
-// ================= Member =================
+// =====================================================
+// MEMBER
+// =====================================================
+
 import MemberDashboard from "../pages/Member/Dashboard";
 import MemberProfile from "../pages/Member/Profile";
 import MemberNetwork from "../pages/Member/Network";
@@ -40,7 +58,10 @@ import MemberWelcomeKit from "../pages/Member/WelcomeKit";
 import MemberReports from "../pages/Member/Reports";
 import MemberSettings from "../pages/Member/Settings";
 
-// ================= Admin =================
+// =====================================================
+// ADMIN
+// =====================================================
+
 import Dashboard from "../pages/Admin/Dashboard";
 import ProductList from "../pages/Admin/ProductList";
 import AddProduct from "../pages/Admin/AddProduct";
@@ -51,69 +72,134 @@ import Reports from "../pages/Admin/Reports";
 import ReferralTreePage from "../pages/Admin/ReferralTreePage";
 import AdminOrders from "../pages/Admin/Orders";
 
-// ================= Manager =================
+// =====================================================
+// MANAGER
+// =====================================================
+
 import ManagerDashboard from "../pages/manager/Dashboard";
 import ManagerMembers from "../pages/manager/Members";
 import ManagerProfile from "../pages/manager/Profile";
 import ManagerReferralTreePage from "../pages/manager/ReferralTreePage";
 import ManagerOrders from "../pages/manager/Orders";
+import ManagerProducts from "../pages/manager/Products";
+import Commissions from "../pages/manager/Commissions";
+import ManagerMemberDetails from "../pages/manager/MemberDetails";
 
-// ================= Error =================
+// =====================================================
+// ERROR
+// =====================================================
+
 import NotFound from "../pages/NotFound/NotFound";
 
-// ================= PhonePe =================
+// =====================================================
+// PHONEPE
+// =====================================================
+
 import PhonePeCallback from "../pages/Checkout/PhonePeCallback";
+
+// =====================================================
+// AUTH PROTECTION
+// =====================================================
+
+import ProtectedRoute from "../components/auth/ProtectedRoute";
 
 
 const AppRoutes = () => {
+
   return (
+
     <Routes>
 
       {/* =====================================================
           PUBLIC WEBSITE
+          
+          Public users use MainLayout.
+          This is the GREEN/normal public website layout.
       ===================================================== */}
 
-      <Route element={<MainLayout />}>
+      <Route
+        element={
+          <MainLayout />
+        }
+      >
 
-        {/* Public Home */}
+        {/* HOME */}
+
         <Route
           path="/"
-          element={<Home />}
+          element={
+            <Home />
+          }
         />
+
+
+        {/* ABOUT */}
 
         <Route
           path="/about"
-          element={<About />}
+          element={
+            <About />
+          }
         />
+
+
+        {/* PRODUCTS */}
 
         <Route
           path="/products"
-          element={<Products />}
+          element={
+            <Products />
+          }
         />
+
+
+        {/* PRODUCT DETAILS */}
 
         <Route
           path="/products/:id"
-          element={<ProductDetails />}
+          element={
+            <ProductDetails />
+          }
         />
+
+
+        {/* CART */}
 
         <Route
           path="/cart"
-          element={<Cart />}
+          element={
+            <Cart />
+          }
         />
+
+
+        {/* ORDERS */}
 
         <Route
           path="/orders"
-          element={<Orders />}
+          element={
+            <Orders />
+          }
         />
+
+
+        {/* CHECKOUT */}
 
         <Route
           path="/checkout"
-          element={<Checkout />}
+          element={
+            <Checkout />
+          }
         />
+
+
+        {/* CONTACT */}
 
         <Route
           path="/contact"
-          element={<Contact />}
+          element={
+            <Contact />
+          }
         />
 
       </Route>
@@ -125,17 +211,25 @@ const AppRoutes = () => {
 
       <Route
         path="/login"
-        element={<Login />}
+        element={
+          <Login />
+        }
       />
+
 
       <Route
         path="/register"
-        element={<Register />}
+        element={
+          <Register />
+        }
       />
+
 
       <Route
         path="/verify-otp"
-        element={<VerifyOtp />}
+        element={
+          <VerifyOtp />
+        }
       />
 
 
@@ -145,312 +239,577 @@ const AppRoutes = () => {
 
       <Route
         path="/payment/scan"
-        element={<PaymentScanner />}
+        element={
+          <PaymentScanner />
+        }
       />
+
 
       <Route
         path="/payment/phonepe/callback"
-        element={<PhonePeCallback />}
+        element={
+          <PhonePeCallback />
+        }
       />
 
 
       {/* =====================================================
           MEMBER AREA
-
-          IMPORTANT:
-          Everything inside this Route uses MemberLayout.
-
+          
+          Everything inside /member uses MemberLayout.
+          
           Therefore:
-          GREEN SIDEBAR + MEMBER TOPBAR remain visible
-          while the content changes.
+          
+          /member
+          /member/home
+          /member/dashboard
+          /member/products
+          etc.
+          
+          all keep the GREEN MEMBER SIDEBAR.
       ===================================================== */}
 
       <Route
-        path="/member"
-        element={<MemberLayout />}
+        element={
+          <ProtectedRoute
+            allowedRoles={[
+              "MEMBER",
+            ]}
+          />
+        }
       >
 
-        {/* -------------------------------------------------
-            MEMBER DEFAULT
-            /member
-            ------------------------------------------------- */}
-
         <Route
-          index
-          element={<MemberDashboard />}
-        />
+          path="/member"
+          element={
+            <MemberLayout />
+          }
+        >
+
+          {/* =================================================
+              MEMBER DEFAULT
+              
+              /member
+          ================================================= */}
+
+          <Route
+            index
+            element={
+              <MemberDashboard />
+            }
+          />
 
 
-        {/* -------------------------------------------------
-            MEMBER HOME
-            /member/home
+          {/* =================================================
+              MEMBER HOME
+              
+              /member/home
+              
+              IMPORTANT:
+              This is NOT the public "/".
+              It stays inside MemberLayout.
+          ================================================= */}
 
-            Same Home page content as public website,
-            but MemberLayout remains around it.
-            ------------------------------------------------- */}
-
-        <Route
-          path="home"
-          element={<Home />}
-        />
-
-
-        {/* -------------------------------------------------
-            MEMBER DASHBOARD
-            /member/dashboard
-            ------------------------------------------------- */}
-
-        <Route
-          path="dashboard"
-          element={<MemberDashboard />}
-        />
+          <Route
+            path="home"
+            element={
+              <Home />
+            }
+          />
 
 
-        {/* -------------------------------------------------
-            MEMBER PROFILE
-            /member/profile
-            ------------------------------------------------- */}
+          {/* =================================================
+              MEMBER DASHBOARD
+              
+              /member/dashboard
+          ================================================= */}
 
-        <Route
-          path="profile"
-          element={<MemberProfile />}
-        />
-
-
-        {/* -------------------------------------------------
-            MEMBER NETWORK
-            /member/network
-            ------------------------------------------------- */}
-
-        <Route
-          path="network"
-          element={<MemberNetwork />}
-        />
+          <Route
+            path="dashboard"
+            element={
+              <MemberDashboard />
+            }
+          />
 
 
-        {/* -------------------------------------------------
-            MEMBER PRODUCTS
-            /member/products
-            ------------------------------------------------- */}
+          {/* =================================================
+              MEMBER PROFILE
+          ================================================= */}
 
-        <Route
-          path="products"
-          element={<MemberProducts />}
-        />
-
-
-        {/* -------------------------------------------------
-            MEMBER ORDERS
-            /member/orders
-            ------------------------------------------------- */}
-
-        <Route
-          path="orders"
-          element={<MemberOrders />}
-        />
+          <Route
+            path="profile"
+            element={
+              <MemberProfile />
+            }
+          />
 
 
-        {/* -------------------------------------------------
-            MEMBER COMMISSION
-            /member/commission
-            ------------------------------------------------- */}
+          {/* =================================================
+              MEMBER NETWORK
+          ================================================= */}
 
-        <Route
-          path="commission"
-          element={<MemberCommission />}
-        />
-
-
-        {/* -------------------------------------------------
-            MEMBER SELLING POINTS
-            /member/selling-points
-            ------------------------------------------------- */}
-
-        <Route
-          path="selling-points"
-          element={<MemberSellingPoints />}
-        />
+          <Route
+            path="network"
+            element={
+              <MemberNetwork />
+            }
+          />
 
 
-        {/* -------------------------------------------------
-            MEMBER WALLET
-            /member/wallet
-            ------------------------------------------------- */}
+          {/* =================================================
+              MEMBER PRODUCTS
+          ================================================= */}
 
-        <Route
-          path="wallet"
-          element={<MemberWallet />}
-        />
-
-
-        {/* -------------------------------------------------
-            MEMBER WITHDRAW
-            /member/withdraw
-            ------------------------------------------------- */}
-
-        <Route
-          path="withdraw"
-          element={<MemberWithdraw />}
-        />
+          <Route
+            path="products"
+            element={
+              <MemberProducts />
+            }
+          />
 
 
-        {/* -------------------------------------------------
-            MEMBER WELCOME KIT
-            /member/welcome-kit
-            ------------------------------------------------- */}
+          {/* =================================================
+              MEMBER ORDERS
+          ================================================= */}
 
-        <Route
-          path="welcome-kit"
-          element={<MemberWelcomeKit />}
-        />
-
-
-        {/* -------------------------------------------------
-            MEMBER REPORTS
-            /member/reports
-            ------------------------------------------------- */}
-
-        <Route
-          path="reports"
-          element={<MemberReports />}
-        />
+          <Route
+            path="orders"
+            element={
+              <MemberOrders />
+            }
+          />
 
 
-        {/* -------------------------------------------------
-            MEMBER SETTINGS
-            /member/settings
-            ------------------------------------------------- */}
+          {/* =================================================
+              MEMBER COMMISSION
+          ================================================= */}
 
-        <Route
-          path="settings"
-          element={<MemberSettings />}
-        />
-
-
-        {/* -------------------------------------------------
-            MEMBER CART
-            /member/cart
-            ------------------------------------------------- */}
-
-        <Route
-          path="cart"
-          element={<Cart />}
-        />
+          <Route
+            path="commission"
+            element={
+              <MemberCommission />
+            }
+          />
 
 
-        {/* -------------------------------------------------
-            MEMBER CHECKOUT
-            /member/checkout
-            ------------------------------------------------- */}
+          {/* =================================================
+              MEMBER SELLING POINTS
+          ================================================= */}
 
-        <Route
-          path="checkout"
-          element={<Checkout />}
-        />
+          <Route
+            path="selling-points"
+            element={
+              <MemberSellingPoints />
+            }
+          />
+
+
+          {/* =================================================
+              MEMBER WALLET
+          ================================================= */}
+
+          <Route
+            path="wallet"
+            element={
+              <MemberWallet />
+            }
+          />
+
+
+          {/* =================================================
+              MEMBER WITHDRAW
+          ================================================= */}
+
+          <Route
+            path="withdraw"
+            element={
+              <MemberWithdraw />
+            }
+          />
+
+
+          {/* =================================================
+              MEMBER WELCOME KIT
+          ================================================= */}
+
+          <Route
+            path="welcome-kit"
+            element={
+              <MemberWelcomeKit />
+            }
+          />
+
+
+          {/* =================================================
+              MEMBER REPORTS
+          ================================================= */}
+
+          <Route
+            path="reports"
+            element={
+              <MemberReports />
+            }
+          />
+
+
+          {/* =================================================
+              MEMBER SETTINGS
+          ================================================= */}
+
+          <Route
+            path="settings"
+            element={
+              <MemberSettings />
+            }
+          />
+
+
+          {/* =================================================
+              MEMBER CART
+          ================================================= */}
+
+          <Route
+            path="cart"
+            element={
+              <Cart />
+            }
+          />
+
+
+          {/* =================================================
+              MEMBER CHECKOUT
+          ================================================= */}
+
+          <Route
+            path="checkout"
+            element={
+              <Checkout />
+            }
+          />
+
+        </Route>
 
       </Route>
 
 
       {/* =====================================================
-          ADMIN
+          ADMIN AREA
       ===================================================== */}
 
       <Route
-        path="/admin"
-        element={<AdminLayout />}
+        element={
+          <ProtectedRoute
+            allowedRoles={[
+              "ADMIN",
+            ]}
+          />
+        }
       >
 
         <Route
-          index
-          element={<Dashboard />}
-        />
+          path="/admin"
+          element={
+            <AdminLayout />
+          }
+        >
 
-        <Route
-          path="dashboard"
-          element={<Dashboard />}
-        />
+          {/* =================================================
+              ADMIN DEFAULT
+          ================================================= */}
 
-        <Route
-          path="orders"
-          element={<AdminOrders />}
-        />
+          <Route
+            index
+            element={
+              <Dashboard />
+            }
+          />
 
-        <Route
-          path="products"
-          element={<ProductList />}
-        />
 
-        <Route
-          path="products/add"
-          element={<AddProduct />}
-        />
+          {/* =================================================
+              ADMIN DASHBOARD
+          ================================================= */}
 
-        <Route
-          path="products/edit/:id"
-          element={<EditProduct />}
-        />
+          <Route
+            path="dashboard"
+            element={
+              <Dashboard />
+            }
+          />
 
-        <Route
-          path="members"
-          element={<Members />}
-        />
 
-        <Route
-          path="members/:id"
-          element={<EditMember />}
-        />
+          {/* =================================================
+              ADMIN ORDERS
+          ================================================= */}
 
-        <Route
-          path="referral-tree"
-          element={<ReferralTreePage />}
-        />
+          <Route
+            path="orders"
+            element={
+              <AdminOrders />
+            }
+          />
 
-        <Route
-          path="reports"
-          element={<Reports />}
-        />
+
+          {/* =================================================
+              ADMIN PRODUCTS
+          ================================================= */}
+
+          <Route
+            path="products"
+            element={
+              <ProductList />
+            }
+          />
+
+
+          <Route
+            path="products/add"
+            element={
+              <AddProduct />
+            }
+          />
+
+
+          <Route
+            path="products/edit/:id"
+            element={
+              <EditProduct />
+            }
+          />
+
+
+          {/* =================================================
+              ADMIN MEMBERS
+          ================================================= */}
+
+          <Route
+            path="members"
+            element={
+              <Members />
+            }
+          />
+
+
+          <Route
+            path="members/:id"
+            element={
+              <EditMember />
+            }
+          />
+
+
+          {/* =================================================
+              ADMIN REFERRAL TREE
+          ================================================= */}
+
+          <Route
+            path="referral-tree"
+            element={
+              <ReferralTreePage />
+            }
+          />
+
+
+          {/* =================================================
+              ADMIN REPORTS
+          ================================================= */}
+
+          <Route
+            path="reports"
+            element={
+              <Reports />
+            }
+          />
+
+        </Route>
 
       </Route>
 
 
       {/* =====================================================
-          MANAGER
+          MANAGER AREA
+          
+          IMPORTANT:
+          
+          EVERYTHING inside /manager uses ManagerLayout.
+          
+          Therefore the SIDEBAR REMAINS BLUE.
       ===================================================== */}
 
       <Route
-        path="/manager"
-        element={<ManagerLayout />}
+        element={
+          <ProtectedRoute
+            allowedRoles={[
+              "MANAGER",
+            ]}
+          />
+        }
       >
 
         <Route
-          index
-          element={<ManagerDashboard />}
-        />
+          path="/manager"
+          element={
+            <ManagerLayout />
+          }
+        >
 
-        <Route
-          path="dashboard"
-          element={<ManagerDashboard />}
-        />
+          {/* =================================================
+              MANAGER DEFAULT
+              
+              /manager
+              
+              Opens Manager Dashboard.
+          ================================================= */}
 
-        <Route
-          path="members"
-          element={<ManagerMembers />}
-        />
+          <Route
+            index
+            element={
+              <ManagerDashboard />
+            }
+          />
 
-        <Route
-          path="orders"
-          element={<ManagerOrders />}
-        />
 
-        <Route
-          path="profile"
-          element={<ManagerProfile />}
-        />
+          {/* =================================================
+              MANAGER DASHBOARD
+              
+              /manager/dashboard
+          ================================================= */}
 
-        <Route
-          path="referral-tree"
-          element={<ManagerReferralTreePage />}
-        />
+          <Route
+            path="dashboard"
+            element={
+              <ManagerDashboard />
+            }
+          />
+
+
+          {/* =================================================
+              MANAGER HOME
+              
+              /manager/home
+              
+              IMPORTANT:
+              
+              DO NOT navigate the manager to "/".
+              
+              "/":
+                  MainLayout
+              
+              "/manager/home":
+                  ManagerLayout
+              
+              Therefore this page keeps the BLUE
+              manager sidebar.
+          ================================================= */}
+
+          <Route
+            path="home"
+            element={
+              <Home />
+            }
+          />
+
+
+          {/* =================================================
+              MANAGER MEMBERS
+              
+              /manager/members
+          ================================================= */}
+
+          <Route
+            path="members"
+            element={
+              <ManagerMembers />
+            }
+          />
+
+
+          {/* =================================================
+              MANAGER MEMBER DETAILS
+              
+              /manager/members/:id/details
+          ================================================= */}
+
+          <Route
+            path="members/:id/details"
+            element={
+              <ManagerMemberDetails />
+            }
+          />
+
+
+          {/* =================================================
+              MANAGER ORDERS
+              
+              /manager/orders
+          ================================================= */}
+
+          <Route
+            path="orders"
+            element={
+              <ManagerOrders />
+            }
+          />
+
+
+          {/* =================================================
+              MANAGER COMMISSION
+              
+              /manager/commissions
+              
+              IMPORTANT:
+              This must be RELATIVE.
+          ================================================= */}
+
+          <Route
+            path="commissions"
+            element={
+              <Commissions />
+            }
+          />
+
+
+          {/* =================================================
+              MANAGER PRODUCTS
+              
+              /manager/products
+          ================================================= */}
+
+          <Route
+            path="products"
+            element={
+              <ManagerProducts />
+            }
+          />
+
+
+          {/* =================================================
+              MANAGER REFERRAL TREE
+              
+              /manager/referral-tree
+          ================================================= */}
+
+          <Route
+            path="referral-tree"
+            element={
+              <ManagerReferralTreePage />
+            }
+          />
+
+
+          {/* =================================================
+              MANAGER PROFILE
+              
+              /manager/profile
+          ================================================= */}
+
+          <Route
+            path="profile"
+            element={
+              <ManagerProfile />
+            }
+          />
+
+        </Route>
 
       </Route>
 
@@ -461,11 +820,15 @@ const AppRoutes = () => {
 
       <Route
         path="*"
-        element={<NotFound />}
+        element={
+          <NotFound />
+        }
       />
 
     </Routes>
+
   );
+
 };
 
 

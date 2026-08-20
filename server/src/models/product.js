@@ -2,6 +2,10 @@ const mongoose = require("mongoose");
 
 const productSchema = new mongoose.Schema(
   {
+    // =================================================
+    // BASIC PRODUCT INFORMATION
+    // =================================================
+
     productName: {
       type: String,
       required: true,
@@ -50,6 +54,21 @@ const productSchema = new mongoose.Schema(
       trim: true,
     },
 
+
+    // =================================================
+    // PRODUCT QUANTITY / PACK SIZE
+    // =================================================
+
+    /*
+      Example:
+      "100 ml"
+      "500 g"
+      "1 bottle"
+
+      IMPORTANT:
+      This is NOT inventory stock.
+    */
+
     weight: {
       type: String,
       default: "",
@@ -62,11 +81,17 @@ const productSchema = new mongoose.Schema(
       trim: true,
     },
 
+
     shelfLife: {
       type: String,
       default: "",
       trim: true,
     },
+
+
+    // =================================================
+    // MANUFACTURING INFORMATION
+    // =================================================
 
     manufacturer: {
       type: String,
@@ -80,38 +105,97 @@ const productSchema = new mongoose.Schema(
       trim: true,
     },
 
+
+    // =================================================
+    // SKU
+    // =================================================
+
     sku: {
       type: String,
       default: "",
       trim: true,
     },
 
-price: {
-    type: Number,
-    required: true,
-    min: 0,
-},
+
+    // =================================================
+    // PRICE
+    // =================================================
+
+    price: {
+      type: Number,
+      required: true,
+      min: 0,
+    },
+
+
+    // =================================================
+    // INVENTORY STOCK
+    // =================================================
+
+    /*
+      This is the actual number of units available
+      for sale.
+
+      Example:
+
+      stock = 50
+
+      After selling 3:
+
+      stock = 47
+    */
+
+    stock: {
+      type: Number,
+      default: 0,
+      min: 0,
+    },
+
+
+    // =================================================
+    // PRODUCT IMAGES
+    // =================================================
 
     images: {
       type: [String],
+
       validate: {
         validator: function (value) {
           return value.length <= 3;
         },
-        message: "Maximum 3 images are allowed.",
+
+        message:
+          "Maximum 3 images are allowed.",
       },
+
       default: [],
     },
 
+
+    // =================================================
+    // STATUS
+    // =================================================
+
     status: {
       type: String,
-      enum: ["Active", "Inactive"],
+
+      enum: [
+        "Active",
+        "Inactive",
+      ],
+
       default: "Active",
     },
   },
+
   {
     timestamps: true,
   }
 );
 
-module.exports = mongoose.model("Product", productSchema);
+
+module.exports =
+  mongoose.model(
+    "Product",
+    productSchema
+  );

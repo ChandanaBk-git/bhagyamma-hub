@@ -1,91 +1,446 @@
-const managerService = require("../services/manager.service");
-const asyncHandler = require("../utils/asyncHandler");
-const ApiResponse = require("../utils/ApiResponse");
+const managerService =
+    require("../services/manager.service");
 
-// ==========================================
-// Dashboard
-// ==========================================
+const ApiError =
+    require("../utils/ApiError");
 
-const getDashboard = asyncHandler(async (req, res) => {
-  const dashboard = await managerService.getDashboard(req.user.id);
 
-  return res.status(200).json(
-    new ApiResponse(
-      200,
-      "Dashboard fetched successfully.",
-      dashboard
-    )
-  );
-});
+/*
+=========================================================
+GET MANAGER ID
+=========================================================
+*/
 
-// ==========================================
-// Members
-// ==========================================
+const getManagerId = (req) => {
 
-const getMembers = asyncHandler(async (req, res) => {
-  const members = await managerService.getMembers(req.user.id);
+    const managerId =
+        req.user?.id ||
+        req.user?._id ||
+        req.user?.userId;
 
-  return res.status(200).json(
-    new ApiResponse(
-      200,
-      "Members fetched successfully.",
-      members
-    )
-  );
-});
+    if (!managerId) {
 
-// ==========================================
-// Member Details
-// ==========================================
+        throw new ApiError(
+            401,
+            "Manager ID not found in authentication token."
+        );
+    }
 
-const getMemberById = asyncHandler(async (req, res) => {
-  const member = await managerService.getMemberById(req.params.id);
+    return String(managerId);
+};
 
-  return res.status(200).json(
-    new ApiResponse(
-      200,
-      "Member fetched successfully.",
-      member
-    )
-  );
-});
 
-// ==========================================
-// Referral Tree
-// ==========================================
+/*
+=========================================================
+DASHBOARD
+=========================================================
+*/
 
-const getReferralTree = asyncHandler(async (req, res) => {
-  const tree = await managerService.getReferralTree(req.user.id);
+const getDashboard = async (
+    req,
+    res,
+    next
+) => {
 
-  return res.status(200).json(
-    new ApiResponse(
-      200,
-      "Referral Tree fetched successfully.",
-      tree
-    )
-  );
-});
+    try {
 
-// ==========================================
-// Profile
-// ==========================================
+        const managerId =
+            getManagerId(req);
 
-const getProfile = asyncHandler(async (req, res) => {
-  const profile = await managerService.getProfile(req.user.id);
+        const data =
+            await managerService.getDashboard(
+                managerId
+            );
 
-  return res.status(200).json(
-    new ApiResponse(
-      200,
-      "Profile fetched successfully.",
-      profile
-    )
-  );
-});
+        return res.status(200).json({
+            success: true,
+            data,
+        });
+
+    } catch (error) {
+
+        console.error(
+            "MANAGER DASHBOARD ERROR:",
+            error
+        );
+
+        next(error);
+    }
+};
+
+
+/*
+=========================================================
+MEMBERS
+=========================================================
+*/
+
+const getMembers = async (
+    req,
+    res,
+    next
+) => {
+
+    try {
+
+        const managerId =
+            getManagerId(req);
+
+        const members =
+            await managerService.getMembers(
+                managerId
+            );
+
+        return res.status(200).json({
+            success: true,
+            data: members,
+        });
+
+    } catch (error) {
+
+        console.error(
+            "MANAGER MEMBERS ERROR:",
+            error
+        );
+
+        next(error);
+    }
+};
+
+
+/*
+=========================================================
+BASIC MEMBER
+=========================================================
+*/
+
+const getMemberById = async (
+    req,
+    res,
+    next
+) => {
+
+    try {
+
+        const managerId =
+            getManagerId(req);
+
+        const memberId =
+            req.params.id;
+
+        if (!memberId) {
+
+            throw new ApiError(
+                400,
+                "Member ID is required."
+            );
+        }
+
+        const member =
+            await managerService.getMemberById(
+                managerId,
+                memberId
+            );
+
+        if (!member) {
+
+            throw new ApiError(
+                404,
+                "Member not found."
+            );
+        }
+
+        return res.status(200).json({
+            success: true,
+            data: member,
+        });
+
+    } catch (error) {
+
+        console.error(
+            "MANAGER MEMBER ERROR:",
+            error
+        );
+
+        next(error);
+    }
+};
+
+
+/*
+=========================================================
+COMPLETE MEMBER DETAILS
+=========================================================
+*/
+
+const getMemberDetails = async (
+    req,
+    res,
+    next
+) => {
+
+    try {
+
+        const managerId =
+            getManagerId(req);
+
+        const memberId =
+            req.params.id;
+
+        if (!memberId) {
+
+            throw new ApiError(
+                400,
+                "Member ID is required."
+            );
+        }
+
+        const data =
+            await managerService.getMemberDetails(
+                managerId,
+                memberId
+            );
+
+        if (!data) {
+
+            throw new ApiError(
+                404,
+                "Member not found."
+            );
+        }
+
+        return res.status(200).json({
+            success: true,
+            data,
+        });
+
+    } catch (error) {
+
+        console.error(
+            "MANAGER MEMBER DETAILS ERROR:",
+            error
+        );
+
+        next(error);
+    }
+};
+
+
+/*
+=========================================================
+MANAGER JOINING COMMISSION
+=========================================================
+
+This is NOT payment commission.
+
+This is the commission earned by the manager because
+members joined his referral chain.
+
+Response:
+
+{
+    memberId,
+    name,
+    commissionPercent,
+    commissionAmount
+}
+=========================================================
+*/
+
+const getCommissionPage = async (
+    req,
+    res,
+    next
+) => {
+
+    try {
+
+        const managerId =
+            getManagerId(req);
+
+        console.log(
+            "=========================================="
+        );
+
+        console.log(
+            "MANAGER JOINING COMMISSION"
+        );
+
+        console.log(
+            "MANAGER ID:",
+            managerId
+        );
+
+        const data =
+            await managerService.getCommissionPage(
+                managerId
+            );
+
+        console.log(
+            "JOINING COMMISSION DATA:",
+            data
+        );
+
+        console.log(
+            "=========================================="
+        );
+
+        return res.status(200).json({
+            success: true,
+            data,
+        });
+
+    } catch (error) {
+
+        console.error(
+            "MANAGER JOINING COMMISSION ERROR:",
+            error
+        );
+
+        next(error);
+    }
+};
+
+
+/*
+=========================================================
+REFERRAL TREE
+=========================================================
+*/
+
+const getReferralTree = async (
+    req,
+    res,
+    next
+) => {
+
+    try {
+
+        const managerId =
+            getManagerId(req);
+
+        const data =
+            await managerService.getReferralTree(
+                managerId
+            );
+
+        return res.status(200).json({
+            success: true,
+            data,
+        });
+
+    } catch (error) {
+
+        console.error(
+            "MANAGER REFERRAL TREE ERROR:",
+            error
+        );
+
+        next(error);
+    }
+};
+
+
+/*
+=========================================================
+PROFILE
+=========================================================
+*/
+
+const getProfile = async (
+    req,
+    res,
+    next
+) => {
+
+    try {
+
+        const managerId =
+            getManagerId(req);
+
+        const data =
+            await managerService.getProfile(
+                managerId
+            );
+
+        return res.status(200).json({
+            success: true,
+            data,
+        });
+
+    } catch (error) {
+
+        console.error(
+            "MANAGER PROFILE ERROR:",
+            error
+        );
+
+        next(error);
+    }
+};
+
+
+/*
+=========================================================
+PRODUCTS
+=========================================================
+*/
+
+const getManagerProducts = async (
+    req,
+    res,
+    next
+) => {
+
+    try {
+
+        const managerId =
+            getManagerId(req);
+
+        const products =
+            await managerService.getManagerProducts(
+                managerId
+            );
+
+        return res.status(200).json({
+            success: true,
+            data: products,
+        });
+
+    } catch (error) {
+
+        console.error(
+            "MANAGER PRODUCTS ERROR:",
+            error
+        );
+
+        next(error);
+    }
+};
+
+
+/*
+=========================================================
+EXPORT
+=========================================================
+*/
 
 module.exports = {
-  getDashboard,
-  getMembers,
-  getMemberById,
-  getReferralTree,
-  getProfile,
+
+    getDashboard,
+
+    getMembers,
+
+    getMemberById,
+
+    getMemberDetails,
+
+    getCommissionPage,
+
+    getReferralTree,
+
+    getProfile,
+
+    getManagerProducts,
+
 };

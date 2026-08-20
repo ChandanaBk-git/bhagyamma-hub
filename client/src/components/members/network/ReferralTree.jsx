@@ -261,7 +261,11 @@ const ReferralTree = ({ data = [] }) => {
               filteredMembers.map((member) => (
 
                 <ReferralNode
-                  key={member._id}
+key={
+  member._id ||
+  member.id ||
+  member.userId
+}
                   member={member}
                   onSelect={setSelectedMember}
                   expandAll={expandAll}

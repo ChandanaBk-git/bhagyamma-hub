@@ -31,6 +31,29 @@ const updateStatus = (id, status) =>
         { new: true }
     );
 
+const findByReceivers =
+  (userIds) =>
+    Commission.find({
+      receiver: {
+        $in: userIds,
+      },
+    })
+      .populate(
+        "receiver",
+        "name userId referralCode"
+      )
+      .populate(
+        "fromUser",
+        "name userId referralCode"
+      )
+      .populate(
+        "order",
+        "orderNumber finalAmount status paymentStatus"
+      )
+      .sort({
+        createdAt: -1,
+      });
+
 module.exports = {
     create,
     bulkCreate,
@@ -38,4 +61,5 @@ module.exports = {
     findById,
     findByUser,
     updateStatus,
+    findByReceivers,
 };

@@ -1,27 +1,90 @@
 import { Navigate, Outlet } from "react-router-dom";
+
 import useAuth from "../../hooks/useAuth";
 
-const ProtectedRoute = ({ allowedRoles = [] }) => {
-  const { user, loading, isAuthenticated } = useAuth();
 
-  if (loading) {
-    return <div>Loading...</div>;
-  }
+const ProtectedRoute = ({
+    allowedRoles = [],
+}) => {
 
-  // User not logged in
-  if (!isAuthenticated) {
-    return <Navigate to="/login" replace />;
-  }
+    const {
+        user,
+        loading,
+        isAuthenticated,
+    } = useAuth();
 
-  // Role check
-  if (
-    allowedRoles.length > 0 &&
-    !allowedRoles.includes(user?.role)
-  ) {
-    return <Navigate to="/" replace />;
-  }
 
-  return <Outlet />;
+    /*
+    =====================================================
+    AUTH LOADING
+    =====================================================
+    */
+
+    if (loading) {
+
+        return (
+            <div
+                style={{
+                    minHeight: "100vh",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                }}
+            >
+                Loading...
+            </div>
+        );
+
+    }
+
+
+    /*
+    =====================================================
+    NOT AUTHENTICATED
+    =====================================================
+    */
+
+    if (!isAuthenticated) {
+
+        return (
+            <Navigate
+                to="/login"
+                replace
+            />
+        );
+
+    }
+
+
+    /*
+    =====================================================
+    ROLE CHECK
+    =====================================================
+    */
+
+    if (
+        allowedRoles.length > 0 &&
+        !allowedRoles.includes(user?.role)
+    ) {
+
+        return (
+            <Navigate
+                to="/"
+                replace
+            />
+        );
+
+    }
+
+
+    /*
+    =====================================================
+    AUTHORIZED
+    =====================================================
+    */
+
+    return <Outlet />;
 };
+
 
 export default ProtectedRoute;

@@ -1,8 +1,15 @@
 const jwt = require("jsonwebtoken");
 const ApiError = require("../utils/ApiError");
 
-const protect = (req, res, next) => {
+/*
+=========================================================
+AUTHENTICATION MIDDLEWARE
+=========================================================
+Verifies JWT and attaches the authenticated user to req.user.
+=========================================================
+*/
 
+const protect = (req, res, next) => {
     const authHeader = req.headers.authorization;
 
     if (
@@ -17,35 +24,76 @@ const protect = (req, res, next) => {
         );
     }
 
-    const token = authHeader.split(" ")[1];
+    const token = authHeader
+        .split(" ")[1];
+
+    if (!token) {
+        return next(
+            new ApiError(
+                401,
+                "Authentication token missing"
+            )
+        );
+    }
 
     try {
-
         const decoded = jwt.verify(
             token,
             process.env.JWT_SECRET
         );
 
-        req.user = decoded;
+        /*
+        Expected JWT payload:
 
-        console.log(req.user);
+        {
+            id,
+            userId,
+            role
+        }
+        */
 
-        console.log("Decoded JWT:", decoded);
+        if (!decoded?.id) {
+            return next(
+                new ApiError(
+                    401,
+                    "Invalid authentication token"
+                )
+            );
+        }
+
+        req.user = {
+            id: decoded.id,
+            userId: decoded.userId,
+            role: decoded.role,
+        };
 
         next();
 
     } catch (error) {
 
-        next(
+        return next(
             new ApiError(
                 401,
                 "Invalid or expired token"
             )
         );
-
     }
-
 };
+
+
+/*
+=========================================================
+ROLE AUTHORIZATION
+=========================================================
+Usage:
+
+authorize("MANAGER")
+
+or
+
+authorize("SUPER_ADMIN")
+=========================================================
+*/
 
 const authorize = (...roles) => {
 
@@ -60,7 +108,20 @@ const authorize = (...roles) => {
             );
         }
 
-        if (!roles.includes(req.user.role)) {
+        if (!req.user.role) {
+            return next(
+                new ApiError(
+                    403,
+                    "User role not found"
+                )
+            );
+        }
+
+        if (
+            !roles.includes(
+                req.user.role
+            )
+        ) {
             return next(
                 new ApiError(
                     403,
@@ -70,10 +131,9 @@ const authorize = (...roles) => {
         }
 
         next();
-
     };
-
 };
+
 
 module.exports = {
     protect,

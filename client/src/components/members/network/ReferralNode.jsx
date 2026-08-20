@@ -522,10 +522,11 @@ const ReferralNode = ({
             {children.map((child) => (
 
               <ReferralNode
-                key={
-                  child._id ||
-                  child.userId
-                }
+key={
+  member._id ||
+  member.id ||
+  member.userId
+}
 
                 member={child}
 
