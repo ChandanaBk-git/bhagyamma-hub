@@ -2,7 +2,11 @@ const ProductService = require("../services/product.service");
 const asyncHandler = require("../utils/asyncHandler");
 const ApiResponse = require("../utils/ApiResponse");
 const ApiError = require("../utils/ApiError");
+const cloudinary = require("../config/cloudinary");
 
+// =======================================
+// Create Product
+// =======================================
 // =======================================
 // Create Product
 // =======================================
@@ -14,9 +18,27 @@ const createProduct = asyncHandler(async (req, res) => {
   const images = [];
 
   if (req.files && req.files.length > 0) {
-    req.files.forEach((file) => {
-      images.push(`/uploads/products/${file.filename}`);
-    });
+    for (const file of req.files) {
+      const result = await new Promise((resolve, reject) => {
+        const uploadStream = cloudinary.uploader.upload_stream(
+          {
+            folder: "bhagyamma-hub/products",
+            resource_type: "image",
+          },
+          (error, result) => {
+            if (error) {
+              reject(error);
+            } else {
+              resolve(result);
+            }
+          }
+        );
+
+        uploadStream.end(file.buffer);
+      });
+
+      images.push(result.secure_url);
+    }
   }
 
   const product = await ProductService.createProduct({
@@ -37,7 +59,8 @@ const createProduct = asyncHandler(async (req, res) => {
 
     price: Number(req.body.price),
 
-    status: req.body.status,
+    status: req.body.status || "Active",
+
     images,
   });
 
@@ -49,7 +72,6 @@ const createProduct = asyncHandler(async (req, res) => {
     )
   );
 });
-
 // =======================================
 // Get All Products
 // =======================================
@@ -98,9 +120,31 @@ const updateProduct = asyncHandler(async (req, res) => {
   };
 
   if (req.files && req.files.length > 0) {
-    updatedData.images = req.files.map(
-      (file) => `/uploads/products/${file.filename}`
-    );
+    const uploadedImages = [];
+
+    for (const file of req.files) {
+      const result = await new Promise((resolve, reject) => {
+        const uploadStream = cloudinary.uploader.upload_stream(
+          {
+            folder: "bhagyamma-hub/products",
+            resource_type: "image",
+          },
+          (error, result) => {
+            if (error) {
+              reject(error);
+            } else {
+              resolve(result);
+            }
+          }
+        );
+
+        uploadStream.end(file.buffer);
+      });
+
+      uploadedImages.push(result.secure_url);
+    }
+
+    updatedData.images = uploadedImages;
   }
 
   updatedData.price = Number(updatedData.price);
@@ -122,7 +166,6 @@ const updateProduct = asyncHandler(async (req, res) => {
     )
   );
 });
-
 // =======================================
 // Delete Product
 // =======================================

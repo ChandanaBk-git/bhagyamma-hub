@@ -14,7 +14,6 @@ import {
 
 import MenuIcon from "@mui/icons-material/Menu";
 import NotificationsNoneIcon from "@mui/icons-material/NotificationsNone";
-import AccountCircleIcon from "@mui/icons-material/AccountCircle";
 
 
 const Navbar = ({

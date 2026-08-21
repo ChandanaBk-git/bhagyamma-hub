@@ -1,4 +1,4 @@
-import { Routes, Route } from "react-router-dom";
+import { Routes, Route, Navigate } from "react-router-dom";
 
 // =====================================================
 // LAYOUTS
@@ -32,6 +32,7 @@ import ProductDetails from "../components/products/ProductDetails";
 // =====================================================
 
 import PaymentScanner from "../pages/Payment/PaymentScanner";
+import PhonePeCallback from "../pages/Checkout/PhonePeCallback";
 
 // =====================================================
 // AUTH
@@ -64,14 +65,11 @@ import MemberSettings from "../pages/Member/Settings";
 
 import Dashboard from "../pages/Admin/Dashboard";
 import AdminProfile from "../pages/Admin/Profile";
-
 import ProductList from "../pages/Admin/ProductList";
 import AddProduct from "../pages/Admin/AddProduct";
 import EditProduct from "../pages/Admin/EditProduct";
-
 import Members from "../pages/Admin/Members";
 import EditMember from "../pages/Admin/EditMember";
-
 import Reports from "../pages/Admin/Reports";
 import ReferralTreePage from "../pages/Admin/ReferralTreePage";
 import AdminOrders from "../pages/Admin/Orders";
@@ -94,12 +92,6 @@ import ManagerMemberDetails from "../pages/manager/MemberDetails";
 // =====================================================
 
 import NotFound from "../pages/NotFound/NotFound";
-
-// =====================================================
-// PHONEPE
-// =====================================================
-
-import PhonePeCallback from "../pages/Checkout/PhonePeCallback";
 
 // =====================================================
 // AUTH PROTECTION
@@ -134,6 +126,13 @@ const AppRoutes = () => {
         <Route
           path="/about"
           element={<About />}
+        />
+
+        {/* CONTACT */}
+
+        <Route
+          path="/contact"
+          element={<Contact />}
         />
 
         {/* PRODUCTS */}
@@ -171,18 +170,25 @@ const AppRoutes = () => {
           element={<Checkout />}
         />
 
-        {/* CONTACT */}
+        {/* PAYMENT SCANNER */}
 
         <Route
-          path="/contact"
-          element={<Contact />}
+          path="/payment"
+          element={<PaymentScanner />}
+        />
+
+        {/* PHONEPE CALLBACK */}
+
+        <Route
+          path="/payment/phonepe/callback"
+          element={<PhonePeCallback />}
         />
 
       </Route>
 
 
       {/* =====================================================
-          AUTHENTICATION
+          AUTH
       ===================================================== */}
 
       <Route
@@ -200,143 +206,150 @@ const AppRoutes = () => {
         element={<VerifyOtp />}
       />
 
-      {/* PHONEPE CALLBACK */}
-
-      <Route
-        path="/checkout/phonepe-callback"
-        element={<PhonePeCallback />}
-      />
-
-      {/* PAYMENT SCANNER */}
-
-      <Route
-        path="/payment-scanner"
-        element={<PaymentScanner />}
-      />
-
 
       {/* =====================================================
           MEMBER AREA
+          GREEN SIDEBAR
       ===================================================== */}
 
       <Route
-        path="/member"
-        element={<MemberLayout />}
+        element={
+          <ProtectedRoute
+            allowedRoles={["MEMBER"]}
+          />
+        }
       >
 
-        {/* MEMBER HOME */}
-
         <Route
-          index
-          element={<MemberDashboard />}
-        />
+          path="/member"
+          element={<MemberLayout />}
+        >
 
-        {/* DASHBOARD */}
+          {/* MEMBER HOME */}
 
-        <Route
-          path="dashboard"
-          element={<MemberDashboard />}
-        />
+          <Route
+            index
+            element={<MemberDashboard />}
+          />
 
-        {/* PROFILE */}
+          {/* DASHBOARD */}
 
-        <Route
-          path="profile"
-          element={<MemberProfile />}
-        />
+          <Route
+            path="dashboard"
+            element={<MemberDashboard />}
+          />
 
-        {/* NETWORK */}
+          {/* PROFILE */}
 
-        <Route
-          path="network"
-          element={<MemberNetwork />}
-        />
+          <Route
+            path="profile"
+            element={<MemberProfile />}
+          />
 
-        {/* PRODUCTS */}
+          {/* NETWORK */}
 
-        <Route
-          path="products"
-          element={<MemberProducts />}
-        />
+          <Route
+            path="network"
+            element={<MemberNetwork />}
+          />
 
-        {/* ORDERS */}
+          {/* PRODUCTS */}
 
-        <Route
-          path="orders"
-          element={<MemberOrders />}
-        />
+          <Route
+            path="products"
+            element={<MemberProducts />}
+          />
 
-        {/* COMMISSION */}
+          {/* ORDERS */}
 
-        <Route
-          path="commission"
-          element={<MemberCommission />}
-        />
+          <Route
+            path="orders"
+            element={<MemberOrders />}
+          />
 
-        {/* SELLING POINTS */}
+          {/* COMMISSION */}
 
-        <Route
-          path="selling-points"
-          element={<MemberSellingPoints />}
-        />
+          <Route
+            path="commission"
+            element={<MemberCommission />}
+          />
 
-        {/* WALLET */}
+          {/* SELLING POINTS */}
 
-        <Route
-          path="wallet"
-          element={<MemberWallet />}
-        />
+          <Route
+            path="selling-points"
+            element={<MemberSellingPoints />}
+          />
 
-        {/* WITHDRAW */}
+          {/* WALLET */}
 
-        <Route
-          path="withdraw"
-          element={<MemberWithdraw />}
-        />
+          <Route
+            path="wallet"
+            element={<MemberWallet />}
+          />
 
-        {/* WELCOME KIT */}
+          {/* WITHDRAW */}
 
-        <Route
-          path="welcome-kit"
-          element={<MemberWelcomeKit />}
-        />
+          <Route
+            path="withdraw"
+            element={<MemberWithdraw />}
+          />
 
-        {/* REPORTS */}
+          {/* WELCOME KIT */}
 
-        <Route
-          path="reports"
-          element={<MemberReports />}
-        />
+          <Route
+            path="welcome-kit"
+            element={<MemberWelcomeKit />}
+          />
 
-        {/* SETTINGS */}
+          {/* REPORTS */}
 
-        <Route
-          path="settings"
-          element={<MemberSettings />}
-        />
+          <Route
+            path="reports"
+            element={<MemberReports />}
+          />
 
-        {/* MEMBER CART */}
+          {/* SETTINGS */}
 
-        <Route
-          path="cart"
-          element={<Cart />}
-        />
+          <Route
+            path="settings"
+            element={<MemberSettings />}
+          />
 
-        {/* MEMBER CHECKOUT */}
+          {/* CART */}
 
-        <Route
-          path="checkout"
-          element={<Checkout />}
-        />
+          <Route
+            path="cart"
+            element={<Cart />}
+          />
+
+          {/* CHECKOUT */}
+
+          <Route
+            path="checkout"
+            element={<Checkout />}
+          />
+
+          {/* UNKNOWN MEMBER PAGE */}
+
+          <Route
+            path="*"
+            element={
+              <Navigate
+                to="/member"
+                replace
+              />
+            }
+          />
+
+        </Route>
 
       </Route>
 
 
       {/* =====================================================
           ADMIN AREA
-          
-          IMPORTANT:
-          Both ADMIN and SUPER_ADMIN are allowed.
+          RED SIDEBAR
       ===================================================== */}
 
       <Route
@@ -355,135 +368,93 @@ const AppRoutes = () => {
           element={<AdminLayout />}
         >
 
-          {/* =================================================
-              ADMIN DEFAULT
-          ================================================= */}
+          {/* ADMIN HOME */}
 
           <Route
             index
             element={<Dashboard />}
           />
 
-
-          {/* =================================================
-              ADMIN DASHBOARD
-              
-              /admin/dashboard
-          ================================================= */}
+          {/* DASHBOARD */}
 
           <Route
             path="dashboard"
             element={<Dashboard />}
           />
 
-
-          {/* =================================================
-              ADMIN PROFILE
-              
-              /admin/profile
-              
-              THIS WAS MISSING.
-          ================================================= */}
+          {/* PROFILE */}
 
           <Route
             path="profile"
             element={<AdminProfile />}
           />
 
-
-          {/* =================================================
-              ADMIN ORDERS
-              
-              /admin/orders
-          ================================================= */}
+          {/* ORDERS */}
 
           <Route
             path="orders"
             element={<AdminOrders />}
           />
 
-
-          {/* =================================================
-              ADMIN PRODUCTS
-              
-              /admin/products
-          ================================================= */}
+          {/* PRODUCTS */}
 
           <Route
             path="products"
             element={<ProductList />}
           />
 
-
-          {/* =================================================
-              ADD PRODUCT
-              
-              /admin/products/add
-          ================================================= */}
+          {/* ADD PRODUCT */}
 
           <Route
             path="products/add"
             element={<AddProduct />}
           />
 
-
-          {/* =================================================
-              EDIT PRODUCT
-              
-              /admin/products/edit/:id
-          ================================================= */}
+          {/* EDIT PRODUCT */}
 
           <Route
             path="products/edit/:id"
             element={<EditProduct />}
           />
 
-
-          {/* =================================================
-              ADMIN MEMBERS
-              
-              /admin/members
-          ================================================= */}
+          {/* MEMBERS */}
 
           <Route
             path="members"
             element={<Members />}
           />
 
-
-          {/* =================================================
-              EDIT MEMBER
-              
-              /admin/members/:id
-          ================================================= */}
+          {/* EDIT MEMBER */}
 
           <Route
             path="members/:id"
             element={<EditMember />}
           />
 
-
-          {/* =================================================
-              ADMIN REFERRAL TREE
-              
-              /admin/referral-tree
-          ================================================= */}
+          {/* REFERRAL TREE */}
 
           <Route
             path="referral-tree"
             element={<ReferralTreePage />}
           />
 
-
-          {/* =================================================
-              ADMIN REPORTS
-              
-              /admin/reports
-          ================================================= */}
+          {/* REPORTS */}
 
           <Route
             path="reports"
             element={<Reports />}
+          />
+
+          {/* UNKNOWN ADMIN PAGE */}
+
+          <Route
+            path="*"
+            element={
+              <Navigate
+                to="/admin"
+                replace
+              />
+            }
           />
 
         </Route>
@@ -493,83 +464,145 @@ const AppRoutes = () => {
 
       {/* =====================================================
           MANAGER AREA
-          
-          DO NOT MODIFY THE EXISTING MANAGER ROUTING.
+          BLUE SIDEBAR
       ===================================================== */}
 
       <Route
-        path="/manager"
-        element={<ManagerLayout />}
+        element={
+          <ProtectedRoute
+            allowedRoles={["MANAGER"]}
+          />
+        }
       >
 
-        {/* MANAGER HOME */}
-
         <Route
-          index
-          element={<ManagerDashboard />}
-        />
+          path="/manager"
+          element={<ManagerLayout />}
+        >
 
-        {/* DASHBOARD */}
+          {/* Redirect the manager area root to its canonical dashboard URL. */}
 
-        <Route
-          path="dashboard"
-          element={<ManagerDashboard />}
-        />
+          <Route
+            index
+            element={
+              <Navigate
+                to="/manager/dashboard"
+                replace
+              />
+            }
+          />
 
-        {/* MEMBERS */}
 
-        <Route
-          path="members"
-          element={<ManagerMembers />}
-        />
+          {/* =================================================
+              MANAGER DASHBOARD
 
-        {/* MEMBER DETAILS */}
+              /manager/dashboard
+          ================================================= */}
 
-        <Route
-          path="members/:id/details"
-          element={<ManagerMemberDetails />}
-        />
+          <Route
+            path="dashboard"
+            element={<ManagerDashboard />}
+          />
 
-        {/* ORDERS */}
+          {/* =================================================
+              MANAGER MEMBERS
 
-        <Route
-          path="orders"
-          element={<ManagerOrders />}
-        />
+              /manager/members
+          ================================================= */}
 
-        {/* PRODUCTS */}
+          <Route
+            path="members"
+            element={<ManagerMembers />}
+          />
 
-        <Route
-          path="products"
-          element={<ManagerProducts />}
-        />
+          {/* =================================================
+              MANAGER MEMBER DETAILS
 
-        {/* COMMISSIONS */}
+              /manager/members/:id/details
+          ================================================= */}
 
-        <Route
-          path="commissions"
-          element={<Commissions />}
-        />
+          <Route
+            path="members/:id/details"
+            element={<ManagerMemberDetails />}
+          />
 
-        {/* PROFILE */}
+          {/* =================================================
+              MANAGER ORDERS
 
-        <Route
-          path="profile"
-          element={<ManagerProfile />}
-        />
+              /manager/orders
+          ================================================= */}
 
-        {/* REFERRAL TREE */}
+          <Route
+            path="orders"
+            element={<ManagerOrders />}
+          />
 
-        <Route
-          path="referral-tree"
-          element={<ManagerReferralTreePage />}
-        />
+          {/* =================================================
+              MANAGER PRODUCTS
+
+              /manager/products
+          ================================================= */}
+
+          <Route
+            path="products"
+            element={<ManagerProducts />}
+          />
+
+          {/* =================================================
+              MANAGER COMMISSIONS
+
+              /manager/commissions
+          ================================================= */}
+
+          <Route
+            path="commissions"
+            element={<Commissions />}
+          />
+
+          {/* =================================================
+              MANAGER PROFILE
+
+              /manager/profile
+          ================================================= */}
+
+          <Route
+            path="profile"
+            element={<ManagerProfile />}
+          />
+
+          {/* =================================================
+              MANAGER REFERRAL TREE
+
+              /manager/referral-tree
+          ================================================= */}
+
+          <Route
+            path="referral-tree"
+            element={<ManagerReferralTreePage />}
+          />
+
+          {/* =================================================
+              UNKNOWN MANAGER PAGE
+
+              Send back to the manager dashboard.
+          ================================================= */}
+
+          <Route
+            path="*"
+            element={
+              <Navigate
+                to="/manager/dashboard"
+                replace
+              />
+            }
+          />
+
+        </Route>
 
       </Route>
 
-
       {/* =====================================================
-          404
+          GLOBAL 404
       ===================================================== */}
 
       <Route

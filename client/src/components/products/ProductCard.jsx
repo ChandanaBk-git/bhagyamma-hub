@@ -16,12 +16,10 @@ import {
 
 import ShoppingCartRoundedIcon from "@mui/icons-material/ShoppingCartRounded";
 import VisibilityRoundedIcon from "@mui/icons-material/VisibilityRounded";
-
+import { getImageUrl } from "../../utils/imageUrl";   
 import { useCart } from "../../context/CartContext";
 
-const BACKEND_URL = (
-  import.meta.env.VITE_API_URL || ""
-).replace("/api/v1", "");
+
 
 const ProductCard = ({
   product,
@@ -36,10 +34,9 @@ const ProductCard = ({
       message: "",
     });
 
-  const image =
-    product?.images?.length > 0
-      ? `${BACKEND_URL}${product.images[0]}`
-      : "/images/no-image.png";
+const image = getImageUrl(
+  product?.images?.[0]
+);
 
   const handleAddToCart =
     async () => {

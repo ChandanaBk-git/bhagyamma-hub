@@ -65,7 +65,7 @@ const Sidebar = () => {
   {
     title: "Home",
     icon: <HomeIcon />,
-    path: "/manager/home",
+    path: "/",
   },
 
   {
@@ -265,11 +265,12 @@ const Sidebar = () => {
             item
           ) => (
 
-            <ListItemButton
-              key={item.path}
-              component={NavLink}
-              to={item.path}
-              sx={{
+<ListItemButton
+  key={item.path}
+  component={NavLink}
+  to={item.path}
+  end={item.path === "/"}
+  sx={{
                 minHeight: 48,
 
                 mx: 0,

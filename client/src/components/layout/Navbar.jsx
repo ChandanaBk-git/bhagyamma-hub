@@ -51,11 +51,38 @@ const navItems = [
   },
 ];
 
+const getProfilePath = () => {
+  let user = {};
+
+  try {
+    user = JSON.parse(
+      localStorage.getItem("user") ||
+        sessionStorage.getItem("user") ||
+        "{}"
+    );
+  } catch (error) {
+    console.error("Unable to read the logged-in user:", error);
+  }
+
+  const role = String(user?.role || "").toUpperCase();
+
+  if (role === "MANAGER") {
+    return "/manager/profile";
+  }
+
+  if (role === "ADMIN" || role === "SUPER_ADMIN") {
+    return "/admin/profile";
+  }
+
+  return "/member/profile";
+};
+
 const Navbar = () => {
   const navigate = useNavigate();
 
   const [mobileOpen, setMobileOpen] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const profilePath = getProfilePath();
 
   /* =====================================================
      LOGIN STATUS
@@ -448,7 +475,7 @@ const Navbar = () => {
                 <>
                   <Button
                     component={NavLink}
-                    to="/member/profile"
+                    to={profilePath}
                     startIcon={
                       <PersonOutline />
                     }
@@ -708,7 +735,7 @@ const Navbar = () => {
                 <ListItem disablePadding>
                   <ListItemButton
                     component={NavLink}
-                    to="/member/profile"
+                    to={profilePath}
                     onClick={closeDrawer}
                   >
                     <PersonOutline

@@ -30,33 +30,35 @@ const getAuthHeaders = () => {
 // =====================================================
 // GET ALL PRODUCTS
 // =====================================================
-
-export const getProducts = async () => {
+export const getProducts = async (activeOnly = true) => {
   try {
-    const response = await API.get(
-      "/products?active=true"
+    const endpoint = activeOnly
+      ? "/products?active=true"
+      : "/products";
+
+    const response = await API.get(endpoint);
+
+    console.log(
+      "PRODUCT API RESPONSE:",
+      response.data
     );
 
     return response.data?.data || [];
 
   } catch (error) {
-
     console.error(
       "Get Products Error:",
-      error
+      error.response?.data || error
     );
 
     throw (
       error.response?.data || {
         success: false,
-        message:
-          "Unable to fetch products.",
+        message: "Unable to fetch products.",
       }
     );
-
   }
 };
-
 
 // =====================================================
 // GET PRODUCT BY ID

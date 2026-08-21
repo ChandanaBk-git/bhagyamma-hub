@@ -19,52 +19,43 @@ import { Link } from "react-router-dom";
 import { getProducts } from "../../services/product.service";
 import { getImageUrl } from "../../utils/imageUrl";
 
+const FALLBACK_IMAGE = "/images/no-image.png";
+
 const ProductPreview = () => {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  // =====================================================
-  // LOAD PRODUCTS
-  // =====================================================
-
   useEffect(() => {
+    const loadProducts = async () => {
+      try {
+        setLoading(true);
+        setError("");
+
+        const data = await getProducts();
+
+        console.log("=================================");
+        console.log("HOME PRODUCTS RESPONSE:", data);
+        console.log("=================================");
+
+        setProducts(Array.isArray(data) ? data : []);
+      } catch (err) {
+        console.error("HOME PRODUCTS ERROR:", err);
+
+        setError(
+          err?.response?.data?.message ||
+            err?.message ||
+            "Unable to load products."
+        );
+
+        setProducts([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
     loadProducts();
   }, []);
-
-  const loadProducts = async () => {
-    try {
-      setLoading(true);
-      setError("");
-
-      const data = await getProducts();
-
-      console.log("HOME PRODUCTS:", data);
-
-      // getProducts() returns the actual product array
-      setProducts(
-        Array.isArray(data) ? data : []
-      );
-    } catch (err) {
-      console.error(
-        "HOME PRODUCTS ERROR:",
-        err
-      );
-
-      setError(
-        err?.message ||
-          "Unable to load products."
-      );
-
-      setProducts([]);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // =====================================================
-  // LOADING
-  // =====================================================
 
   if (loading) {
     return (
@@ -80,7 +71,6 @@ const ProductPreview = () => {
             align="center"
             fontWeight={700}
             color="primary"
-            gutterBottom
           >
             Featured Products
           </Typography>
@@ -99,10 +89,6 @@ const ProductPreview = () => {
     );
   }
 
-  // =====================================================
-  // UI
-  // =====================================================
-
   return (
     <Box
       sx={{
@@ -116,9 +102,7 @@ const ProductPreview = () => {
     >
       <Container maxWidth="xl">
 
-        {/* =================================================
-            HEADER
-        ================================================= */}
+        {/* HEADER */}
 
         <Typography
           variant="h3"
@@ -144,13 +128,10 @@ const ProductPreview = () => {
             mb: 6,
           }}
         >
-          Discover our premium Ayurvedic and
-          herbal wellness products.
+          Discover our premium Ayurvedic and herbal wellness products.
         </Typography>
 
-        {/* =================================================
-            ERROR
-        ================================================= */}
+        {/* ERROR */}
 
         {error && (
           <Typography
@@ -162,9 +143,7 @@ const ProductPreview = () => {
           </Typography>
         )}
 
-        {/* =================================================
-            NO PRODUCTS
-        ================================================= */}
+        {/* EMPTY */}
 
         {!error && products.length === 0 && (
           <Typography
@@ -175,9 +154,7 @@ const ProductPreview = () => {
           </Typography>
         )}
 
-        {/* =================================================
-            PRODUCT GRID
-        ================================================= */}
+        {/* PRODUCTS */}
 
         {products.length > 0 && (
           <Grid
@@ -188,268 +165,240 @@ const ProductPreview = () => {
               md: 4,
             }}
           >
-            {products
-              .slice(0, 6)
-              .map((product) => {
+            {products.slice(0, 6).map((product) => {
 
-                const imageUrl =
-                  product.images?.length > 0
-                    ? getImageUrl(
-                        product.images[0]
-                      )
-                    : "/images/no-image.png";
+              const rawImage =
+                product?.images?.[0] || "";
 
-                return (
-                  <Grid
-                    key={product._id}
-                    size={{
-                      xs: 12,
-                      sm: 6,
-                      md: 4,
-                      lg: 2,
+              const imageUrl =
+                getImageUrl(rawImage);
+
+              console.log(
+                "================================="
+              );
+
+              console.log(
+                "PRODUCT:",
+                product?.productName
+              );
+
+              console.log(
+                "RAW IMAGE:",
+                rawImage
+              );
+
+              console.log(
+                "FINAL IMAGE URL:",
+                imageUrl
+              );
+
+              return (
+                <Grid
+                  key={product?._id}
+                  size={{
+                    xs: 12,
+                    sm: 6,
+                    md: 4,
+                    lg: 2,
+                  }}
+                >
+                  <Card
+                    sx={{
+                      height: "100%",
+                      minHeight: 480,
+                      borderRadius: 4,
+                      overflow: "hidden",
+                      display: "flex",
+                      flexDirection: "column",
+                      boxShadow:
+                        "0 5px 18px rgba(0,0,0,0.12)",
                     }}
                   >
-                    <Card
-                      sx={{
-                        height: "100%",
-                        minHeight: 480,
-                        borderRadius: 4,
-                        overflow: "hidden",
 
+                    {/* IMAGE */}
+
+                    <Box
+                      sx={{
+                        width: "100%",
+                        height: {
+                          xs: 220,
+                          sm: 230,
+                          md: 220,
+                        },
+                        bgcolor: "#F5F5F5",
+                        overflow: "hidden",
+                      }}
+                    >
+                      <CardMedia
+                        component="img"
+                        src={imageUrl}
+                        alt={
+                          product?.productName ||
+                          "Product"
+                        }
+                        onLoad={() => {
+                          console.log(
+                            "IMAGE LOADED:",
+                            imageUrl
+                          );
+                        }}
+                        onError={(event) => {
+                          console.error(
+                            "IMAGE FAILED:",
+                            imageUrl
+                          );
+
+                          // Prevent infinite fallback loop
+                          if (
+                            event.currentTarget.src.endsWith(
+                              FALLBACK_IMAGE
+                            )
+                          ) {
+                            return;
+                          }
+
+                          event.currentTarget.src =
+                            FALLBACK_IMAGE;
+                        }}
+                        sx={{
+                          width: "100%",
+                          height: "100%",
+                          objectFit: "cover",
+                          display: "block",
+                        }}
+                      />
+                    </Box>
+
+                    {/* CONTENT */}
+
+                    <CardContent
+                      sx={{
+                        flexGrow: 1,
                         display: "flex",
                         flexDirection: "column",
-
-                        boxShadow:
-                          "0 5px 18px rgba(0,0,0,0.12)",
-
-                        transition:
-                          "transform .25s, box-shadow .25s",
-
-                        "&:hover": {
-                          transform:
-                            "translateY(-6px)",
-
-                          boxShadow:
-                            "0 12px 30px rgba(0,0,0,0.18)",
-                        },
+                        p: 2,
                       }}
                     >
 
-                      {/* =================================
-                          PRODUCT IMAGE
-                      ================================= */}
+                      {/* CATEGORY */}
 
-                      <CardMedia
-                        component="img"
-                        image={imageUrl}
-                        alt={
-                          product.productName ||
-                          "Product"
-                        }
+                      <Box
                         sx={{
-                          height: {
-                            xs: 220,
-                            sm: 230,
-                            md: 220,
-                          },
-
-                          width: "100%",
-
-                          objectFit: "cover",
-
-                          bgcolor: "#F5F5F5",
-                        }}
-                      />
-
-                      {/* =================================
-                          PRODUCT CONTENT
-                      ================================= */}
-
-                      <CardContent
-                        sx={{
-                          flexGrow: 1,
-
-                          display: "flex",
-
-                          flexDirection:
-                            "column",
-
-                          p: 2,
+                          mb: 1.5,
+                          minHeight: 30,
                         }}
                       >
-
-                        {/* CATEGORY */}
-
-                        <Box
-                          sx={{
-                            mb: 1.5,
-                            minHeight: 30,
-                          }}
-                        >
-                          {product.category && (
-                            <Chip
-                              label={
-                                product.category
-                              }
-                              size="small"
-                              color="success"
-                              sx={{
-                                fontWeight: 500,
-                                maxWidth:
-                                  "100%",
-                              }}
-                            />
-                          )}
-                        </Box>
-
-                        {/* PRODUCT NAME */}
-
-                        <Typography
-                          variant="h6"
-                          fontWeight={700}
-                          sx={{
-                            fontSize: {
-                              xs: "1rem",
-                              sm: "1.05rem",
-                            },
-
-                            lineHeight: 1.45,
-
-                            minHeight: 58,
-
-                            overflow: "hidden",
-
-                            display:
-                              "-webkit-box",
-
-                            WebkitLineClamp: 2,
-
-                            WebkitBoxOrient:
-                              "vertical",
-                          }}
-                        >
-                          {
-                            product.productName
-                          }
-                        </Typography>
-
-                        {/* BRAND */}
-
-                        {product.brand && (
-                          <Typography
-                            variant="body2"
-                            color="text.secondary"
+                        {product?.category && (
+                          <Chip
+                            label={product.category}
+                            size="small"
+                            color="success"
                             sx={{
-                              mt: 0.5,
-
-                              overflow:
-                                "hidden",
-
-                              textOverflow:
-                                "ellipsis",
-
-                              whiteSpace:
-                                "nowrap",
+                              fontWeight: 500,
                             }}
-                          >
-                            {product.brand}
-                          </Typography>
+                          />
                         )}
+                      </Box>
 
-                        {/* DESCRIPTION */}
+                      {/* NAME */}
 
+                      <Typography
+                        variant="h6"
+                        fontWeight={700}
+                        sx={{
+                          lineHeight: 1.45,
+                          minHeight: 58,
+                          overflow: "hidden",
+                          display: "-webkit-box",
+                          WebkitLineClamp: 2,
+                          WebkitBoxOrient: "vertical",
+                        }}
+                      >
+                        {product?.productName}
+                      </Typography>
+
+                      {/* BRAND */}
+
+                      {product?.brand && (
                         <Typography
                           variant="body2"
                           color="text.secondary"
                           sx={{
-                            mt: 1,
-
-                            lineHeight: 1.5,
-
-                            minHeight: 48,
-
+                            mt: 0.5,
                             overflow: "hidden",
-
-                            display:
-                              "-webkit-box",
-
-                            WebkitLineClamp: 2,
-
-                            WebkitBoxOrient:
-                              "vertical",
+                            textOverflow: "ellipsis",
+                            whiteSpace: "nowrap",
                           }}
                         >
-                          {product.description ||
-                            "Premium quality product from Bhagyamma Hub."}
+                          {product.brand}
                         </Typography>
+                      )}
 
-                        {/* PRICE */}
+                      {/* DESCRIPTION */}
 
-                        <Typography
-                          variant="h6"
-                          color="success.main"
-                          fontWeight={700}
-                          sx={{
-                            mt: 2,
-                            fontSize:
-                              "1.35rem",
-                          }}
-                        >
-                          ₹
-                          {product.sellingPrice ??
-                            product.price ??
-                            0}
-                        </Typography>
+                      <Typography
+                        variant="body2"
+                        color="text.secondary"
+                        sx={{
+                          mt: 1,
+                          lineHeight: 1.5,
+                          minHeight: 48,
+                          overflow: "hidden",
+                          display: "-webkit-box",
+                          WebkitLineClamp: 2,
+                          WebkitBoxOrient: "vertical",
+                        }}
+                      >
+                        {product?.description ||
+                          "Premium quality product from Bhagyamma Hub."}
+                      </Typography>
 
-                        {/* PUSH BUTTON TO BOTTOM */}
+                      {/* PRICE */}
 
-                        <Box
-                          sx={{
-                            flexGrow: 1,
-                          }}
-                        />
+                      <Typography
+                        variant="h6"
+                        color="success.main"
+                        fontWeight={700}
+                        sx={{
+                          mt: 2,
+                          fontSize: "1.35rem",
+                        }}
+                      >
+                        ₹
+                        {product?.sellingPrice ??
+                          product?.price ??
+                          0}
+                      </Typography>
 
-                        {/* =================================
-                            VIEW DETAILS ONLY
-                        ================================= */}
+                      <Box sx={{ flexGrow: 1 }} />
 
-                        <Button
-                          component={Link}
-                          to={`/products/${product._id}`}
-                          variant="outlined"
-                          color="success"
-                          fullWidth
-                          sx={{
-                            mt: 2,
-                            py: 1.1,
-                            borderRadius: 2,
+                      {/* DETAILS */}
 
-                            textTransform:
-                              "none",
-
-                            fontWeight: 600,
-
-                            borderWidth: 1.5,
-
-                            "&:hover": {
-                              borderWidth: 1.5,
-                            },
-                          }}
-                        >
-                          View Details
-                        </Button>
-
-                      </CardContent>
-                    </Card>
-                  </Grid>
-                );
-              })}
+                      <Button
+                        component={Link}
+                        to={`/products/${product._id}`}
+                        variant="outlined"
+                        color="success"
+                        fullWidth
+                        sx={{
+                          mt: 2,
+                          py: 1.1,
+                          borderRadius: 2,
+                          textTransform: "none",
+                          fontWeight: 600,
+                        }}
+                      >
+                        View Details
+                      </Button>
+                    </CardContent>
+                  </Card>
+                </Grid>
+              );
+            })}
           </Grid>
         )}
 
-        {/* =================================================
-            VIEW ALL PRODUCTS
-        ================================================= */}
+        {/* VIEW ALL */}
 
         <Stack
           alignItems="center"
@@ -466,12 +415,8 @@ const ProductPreview = () => {
             sx={{
               px: 5,
               py: 1.4,
-
               borderRadius: 3,
-
-              textTransform:
-                "none",
-
+              textTransform: "none",
               fontWeight: 700,
             }}
           >

@@ -41,7 +41,7 @@ const fetchProducts = async () => {
   try {
     setLoading(true);
 
-    const productList = await getProducts();
+    const productList = await getProducts(false);
 
     console.log("Products:", productList);
 
