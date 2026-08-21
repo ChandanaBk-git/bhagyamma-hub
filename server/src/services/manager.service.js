@@ -1866,14 +1866,44 @@ const getMemberDetails = async (
 
 };
 
-
 // =====================================================
-// REFERRAL TREE
+// GET MANAGER REFERRAL TREE
+// =====================================================
+//
+// PURPOSE:
+//
+// 1. Manager is the ROOT node.
+// 2. Manager display name = "Bhagyamma Hub".
+// 3. Manager userId remains unchanged.
+// 4. Manager referralCode remains unchanged.
+// 5. Level 1 members keep their real names.
+// 6. Level 2+ members keep their real names.
+// 7. Member wallet balance remains unchanged.
+// 8. Member selling points remain unchanged.
+// 9. Referral relationships remain unchanged.
+//
+// IMPORTANT:
+//
+// Manager root:
+// - NO walletBalance
+// - NO sellingPoints
+// - NO lifetimePurchase
+//
+// Members:
+// - walletBalance
+// - wallet details
+// - sellingPoints
+// - lifetimePurchase
+//
 // =====================================================
 
 const getReferralTree = async (
   managerId
 ) => {
+
+  // ===================================================
+  // GET MANAGER
+  // ===================================================
 
   const manager =
     await User.findById(
@@ -1881,9 +1911,11 @@ const getReferralTree = async (
     )
       .select(
         [
+          "_id",
           "name",
           "userId",
           "mobile",
+          "email",
           "role",
           "referralCode",
           "isActive",
@@ -1895,14 +1927,20 @@ const getReferralTree = async (
       .lean();
 
 
-  if (
-    !manager
-  ) {
+  // ===================================================
+  // MANAGER NOT FOUND
+  // ===================================================
+
+  if (!manager) {
 
     return null;
 
   }
 
+
+  // ===================================================
+  // GET ALL USERS
+  // ===================================================
 
   const users =
     await User.find()
@@ -1926,12 +1964,20 @@ const getReferralTree = async (
       .lean();
 
 
+  // ===================================================
+  // GET MANAGER NETWORK
+  // ===================================================
+
   const managerMembers =
     getManagerMembers(
       users,
       managerId
     );
 
+
+  // ===================================================
+  // MANAGED MEMBER IDS
+  // ===================================================
 
   const managedIds =
     new Set(
@@ -1943,6 +1989,10 @@ const getReferralTree = async (
       )
     );
 
+
+  // ===================================================
+  // GET MEMBER WALLETS
+  // ===================================================
 
   const wallets =
     managerMembers.length > 0
@@ -1957,6 +2007,10 @@ const getReferralTree = async (
         }).lean()
       : [];
 
+
+  // ===================================================
+  // WALLET MAP
+  // ===================================================
 
   const walletMap =
     new Map();
@@ -1982,6 +2036,22 @@ const getReferralTree = async (
   );
 
 
+  // ===================================================
+  // CHILDREN MAP
+  // ===================================================
+  //
+  // sponsorId -> members
+  //
+  // Example:
+  //
+  // Manager
+  //   |
+  //   +-- Member A
+  //        |
+  //        +-- Member B
+  //
+  // ===================================================
+
   const childrenMap =
     new Map();
 
@@ -1997,9 +2067,7 @@ const getReferralTree = async (
           : null;
 
 
-      if (
-        !sponsorId
-      ) {
+      if (!sponsorId) {
 
         return;
 
@@ -2021,15 +2089,25 @@ const getReferralTree = async (
 
 
       childrenMap
-        .get(sponsorId)
-        .push(member);
+        .get(
+          sponsorId
+        )
+        .push(
+          member
+        );
 
     }
   );
 
 
+  // ===================================================
+  // SORT CHILDREN
+  // ===================================================
+
   childrenMap.forEach(
-    (children) => {
+    (
+      children
+    ) => {
 
       children.sort(
         (
@@ -2048,13 +2126,30 @@ const getReferralTree = async (
   );
 
 
+  // ===================================================
+  // BUILD MEMBER NODE
+  // ===================================================
+  //
+  // IMPORTANT:
+  //
+  // Wallet + Selling Points are kept ONLY here.
+  //
+  // This function is used for:
+  //
+  // Level 1 members
+  // Level 2 members
+  // Level 3 members
+  // Level 4+ members
+  //
+  // ===================================================
+
   const buildMemberNode =
     (
       member,
       level
     ) => {
 
-      const id =
+      const memberId =
         String(
           member._id
         );
@@ -2062,17 +2157,21 @@ const getReferralTree = async (
 
       const wallet =
         walletMap.get(
-          id
+          memberId
         );
 
 
       const children =
         childrenMap.get(
-          id
+          memberId
         ) || [];
 
 
       return {
+
+        // ---------------------------------------------
+        // BASIC MEMBER INFORMATION
+        // ---------------------------------------------
 
         _id:
           member._id,
@@ -2093,63 +2192,101 @@ const getReferralTree = async (
           member.mobile || "",
 
         role:
-          member.role || "MEMBER",
+          member.role ||
+          "MEMBER",
 
         referralCode:
           member.referralCode || "",
 
         sponsorId:
-          member.sponsorId || null,
+          member.sponsorId ||
+          null,
 
         managerId:
-          member.managerId || null,
+          member.managerId ||
+          null,
 
         isActive:
           member.isActive !== false,
 
+
+        // ---------------------------------------------
+        // MEMBER SELLING POINTS
+        // ---------------------------------------------
+
         sellingPoints:
-          money(
-            member.sellingPoints
+          Number(
+            member.sellingPoints || 0
           ),
+
+
+        // ---------------------------------------------
+        // MEMBER PURCHASE
+        // ---------------------------------------------
 
         lifetimePurchase:
-          money(
-            member.lifetimePurchase
+          Number(
+            member.lifetimePurchase || 0
           ),
 
+
+        // ---------------------------------------------
+        // MEMBER WALLET BALANCE
+        // ---------------------------------------------
+
         walletBalance:
-          money(
-            wallet?.balance
+          Number(
+            wallet?.balance || 0
           ),
+
+
+        // ---------------------------------------------
+        // COMPLETE MEMBER WALLET
+        // ---------------------------------------------
 
         wallet: {
 
           balance:
-            money(
-              wallet?.balance
+            Number(
+              wallet?.balance || 0
             ),
 
           totalCommission:
-            money(
-              wallet?.totalCommission
+            Number(
+              wallet?.totalCommission || 0
             ),
 
           totalBonus:
-            money(
-              wallet?.totalBonus
+            Number(
+              wallet?.totalBonus || 0
             ),
 
           totalWithdrawn:
-            money(
-              wallet?.totalWithdrawn
+            Number(
+              wallet?.totalWithdrawn || 0
             ),
 
         },
 
+
+        // ---------------------------------------------
+        // DATE
+        // ---------------------------------------------
+
         createdAt:
           member.createdAt,
 
+
+        // ---------------------------------------------
+        // LEVEL
+        // ---------------------------------------------
+
         level,
+
+
+        // ---------------------------------------------
+        // CHILDREN
+        // ---------------------------------------------
 
         children:
           children
@@ -2174,11 +2311,33 @@ const getReferralTree = async (
     };
 
 
+  // ===================================================
+  // MANAGER ID
+  // ===================================================
+
   const managerIdString =
     String(
       manager._id
     );
 
+
+  // ===================================================
+  // DIRECT MEMBERS
+  // ===================================================
+  //
+  // A member is directly under the manager when:
+  //
+  // 1. managerId === manager
+  //
+  // OR
+  //
+  // 2. sponsorId === manager
+  //
+  // OR
+  //
+  // 3. member has no sponsor inside this network
+  //
+  // ===================================================
 
   const directMembers =
     managerMembers.filter(
@@ -2221,6 +2380,10 @@ const getReferralTree = async (
     );
 
 
+  // ===================================================
+  // REMOVE DUPLICATES
+  // ===================================================
+
   const uniqueDirectMembers =
     Array.from(
       new Map(
@@ -2236,6 +2399,10 @@ const getReferralTree = async (
     );
 
 
+  // ===================================================
+  // SORT DIRECT MEMBERS
+  // ===================================================
+
   uniqueDirectMembers.sort(
     (
       a,
@@ -2250,6 +2417,40 @@ const getReferralTree = async (
   );
 
 
+  // ===================================================
+  // BUILD MANAGER CHILDREN
+  // ===================================================
+
+  const managerChildren =
+    uniqueDirectMembers.map(
+      (
+        member
+      ) =>
+        buildMemberNode(
+          member,
+          1
+        )
+    );
+
+
+  // ===================================================
+  // RETURN MANAGER TREE
+  // ===================================================
+  //
+  // IMPORTANT:
+  //
+  // DO NOT ADD:
+  //
+  // sellingPoints
+  // lifetimePurchase
+  // walletBalance
+  //
+  // to this manager object.
+  //
+  // Those belong only to members.
+  //
+  // ===================================================
+
   return {
 
     _id:
@@ -2261,14 +2462,22 @@ const getReferralTree = async (
     userId:
       manager.userId || "",
 
+    // ---------------------------------------------
+    // DISPLAY NAME ONLY FOR MANAGER
+    // ---------------------------------------------
+
     name:
-      manager.name || "",
+      "Bhagyamma Hub",
 
     mobile:
       manager.mobile || "",
 
+    email:
+      manager.email || "",
+
     role:
-      manager.role || "MANAGER",
+      manager.role ||
+      "MANAGER",
 
     referralCode:
       manager.referralCode || "",
@@ -2276,36 +2485,23 @@ const getReferralTree = async (
     isActive:
       manager.isActive !== false,
 
-    sellingPoints:
-      money(
-        manager.sellingPoints
-      ),
-
-    lifetimePurchase:
-      money(
-        manager.lifetimePurchase
-      ),
-
-    walletBalance:
-      0,
+    // ---------------------------------------------
+    // MANAGER LEVEL
+    // ---------------------------------------------
 
     level:
       0,
 
+    // ---------------------------------------------
+    // MANAGER CHILDREN
+    // ---------------------------------------------
+
     children:
-      uniqueDirectMembers.map(
-        (member) =>
-          buildMemberNode(
-            member,
-            1
-          )
-      ),
+      managerChildren,
 
   };
 
 };
-
-
 // =====================================================
 // PROFILE
 // =====================================================

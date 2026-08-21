@@ -892,16 +892,6 @@ const Profile = () => {
           md={3}
         >
 
-          <StatCard
-            icon={
-              <Badge />
-            }
-            title="Lifetime Purchase"
-            value={money(
-              lifetimePurchase
-            )}
-            subtitle="Recorded purchase value"
-          />
 
         </Grid>
 

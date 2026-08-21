@@ -217,11 +217,19 @@ const ReferralNode = ({
   ] = useState(true);
 
 
+  /* =======================================================
+     LAYER STYLE
+  ======================================================= */
+
   const layer =
     getLayerStyle(
       level
     );
 
+
+  /* =======================================================
+     CHILDREN
+  ======================================================= */
 
   const children =
     Array.isArray(
@@ -234,6 +242,29 @@ const ReferralNode = ({
   const hasChildren =
     children.length > 0;
 
+
+  /* =======================================================
+     MANAGER CHECK
+  ======================================================= */
+
+  const isManager =
+    level === 0 ||
+    String(
+      node?.role || ""
+    ).toUpperCase() === "MANAGER";
+
+
+  /* =======================================================
+     MEMBER FINANCIAL DATA
+     
+     IMPORTANT:
+     
+     These are used ONLY for members.
+     
+     Manager does not need:
+     - Wallet
+     - Selling Points
+  ======================================================= */
 
   const walletBalance =
     Number(
@@ -249,6 +280,10 @@ const ReferralNode = ({
     );
 
 
+  /* =======================================================
+     CARD
+  ======================================================= */
+
   return (
 
     <Box
@@ -258,10 +293,6 @@ const ReferralNode = ({
         boxSizing: "border-box",
       }}
     >
-
-      {/* =================================================
-          MEMBER CARD
-      ================================================= */}
 
       <Paper
         elevation={0}
@@ -304,7 +335,8 @@ const ReferralNode = ({
           sx={{
             display: "flex",
 
-            alignItems: "flex-start",
+            alignItems:
+              "flex-start",
 
             gap: 1.2,
 
@@ -312,7 +344,9 @@ const ReferralNode = ({
           }}
         >
 
-          {/* MEMBER ICON */}
+          {/* =================================================
+              PERSON ICON
+          ================================================= */}
 
           <Box
             sx={{
@@ -332,9 +366,11 @@ const ReferralNode = ({
 
               display: "flex",
 
-              alignItems: "center",
+              alignItems:
+                "center",
 
-              justifyContent: "center",
+              justifyContent:
+                "center",
 
               backgroundColor:
                 `${layer.border}18`,
@@ -356,7 +392,9 @@ const ReferralNode = ({
           </Box>
 
 
-          {/* MEMBER INFORMATION */}
+          {/* =================================================
+              MEMBER / MANAGER INFORMATION
+          ================================================= */}
 
           <Box
             sx={{
@@ -366,31 +404,30 @@ const ReferralNode = ({
             }}
           >
 
-            {/* LEVEL BADGE */}
+            {/* =================================================
+                ROLE / LEVEL BADGE
+            ================================================= */}
 
             <Chip
               label={
-                level === 0
+                isManager
                   ? "Manager"
                   : `Level ${level}`
               }
               size="small"
               sx={{
-                height: 22,
-
-                mb: 0.6,
+                height: 24,
 
                 backgroundColor:
-                  layer.badge,
+                  isManager
+                    ? "#111827"
+                    : layer.badge,
 
-                color: "#fff",
+                color: "#FFFFFF",
 
-                fontSize: {
-                  xs: 9,
-                  sm: 10,
-                },
+                fontSize: 10,
 
-                fontWeight: 700,
+                fontWeight: 800,
 
                 "& .MuiChip-label": {
                   px: 1,
@@ -399,20 +436,22 @@ const ReferralNode = ({
             />
 
 
-            {/* NAME */}
+            {/* =================================================
+                NAME
+            ================================================= */}
 
             <Typography
               sx={{
+                mt: 0.45,
+
                 fontSize: {
-                  xs: 14,
-                  sm: 16,
+                  xs: 16,
+                  sm: 18,
                 },
 
                 fontWeight: 800,
 
                 color: "#172033",
-
-                lineHeight: 1.25,
 
                 overflow: "hidden",
 
@@ -423,16 +462,22 @@ const ReferralNode = ({
                   "nowrap",
               }}
             >
-              {node?.name ||
-                "Unnamed Member"}
+              {isManager
+                ? "Bhagyamma Hub"
+                : (
+                    node?.name ||
+                    "Unknown Member"
+                  )}
             </Typography>
 
 
-            {/* USER ID */}
+            {/* =================================================
+                USER ID
+            ================================================= */}
 
             <Typography
               sx={{
-                mt: 0.3,
+                mt: 0.15,
 
                 fontSize: {
                   xs: 11,
@@ -442,24 +487,19 @@ const ReferralNode = ({
                 color: "#64748B",
 
                 fontWeight: 600,
-
-                overflow: "hidden",
-
-                textOverflow:
-                  "ellipsis",
-
-                whiteSpace:
-                  "nowrap",
               }}
             >
               {node?.userId ||
-                "No ID"}
+                node?.memberId ||
+                "-"}
             </Typography>
 
           </Box>
 
 
-          {/* EXPAND BUTTON */}
+          {/* =================================================
+              EXPAND / COLLAPSE BUTTON
+          ================================================= */}
 
           {hasChildren && (
 
@@ -470,7 +510,6 @@ const ReferralNode = ({
                     !previous
                 )
               }
-              variant="text"
               sx={{
                 minWidth: 36,
 
@@ -480,12 +519,12 @@ const ReferralNode = ({
 
                 p: 0,
 
-                flexShrink: 0,
+                borderRadius: "50%",
 
                 color:
-                  layer.border,
+                  layer.text,
 
-                borderRadius: 2,
+                flexShrink: 0,
 
                 "&:hover": {
                   backgroundColor:
@@ -507,146 +546,243 @@ const ReferralNode = ({
         </Box>
 
 
-        <Divider
-          sx={{
-            my: 1.4,
-            borderColor:
-              `${layer.border}25`,
-          }}
-        />
+        {/* =================================================
+            FINANCIAL INFORMATION
+
+            IMPORTANT:
+            Manager DOES NOT get this section.
+
+            Members ONLY get:
+            - Wallet
+            - Selling Points
+            - Status
+        ================================================= */}
+
+        {!isManager && (
+
+          <>
+
+            <Divider
+              sx={{
+                my: 1.4,
+
+                borderColor:
+                  `${layer.border}25`,
+              }}
+            />
+
+
+            <Box
+              sx={{
+                display: "grid",
+
+                gridTemplateColumns: {
+                  xs: "1fr 1fr",
+                  sm: "repeat(3, 1fr)",
+                },
+
+                gap: 1,
+              }}
+            >
+
+              {/* =================================================
+                  WALLET
+              ================================================= */}
+
+              <Box
+                sx={{
+                  minWidth: 0,
+                }}
+              >
+
+                <Typography
+                  sx={{
+                    fontSize: 10,
+
+                    color: "#64748B",
+
+                    fontWeight: 600,
+                  }}
+                >
+                  Wallet
+                </Typography>
+
+                <Typography
+                  sx={{
+                    mt: 0.25,
+
+                    fontSize: {
+                      xs: 12,
+                      sm: 14,
+                    },
+
+                    color: "#166534",
+
+                    fontWeight: 800,
+
+                    overflow: "hidden",
+
+                    textOverflow:
+                      "ellipsis",
+
+                    whiteSpace:
+                      "nowrap",
+                  }}
+                >
+                  {formatCurrency(
+                    walletBalance
+                  )}
+                </Typography>
+
+              </Box>
+
+
+              {/* =================================================
+                  SELLING POINTS
+              ================================================= */}
+
+              <Box
+                sx={{
+                  minWidth: 0,
+                }}
+              >
+
+                <Typography
+                  sx={{
+                    fontSize: 10,
+
+                    color: "#64748B",
+
+                    fontWeight: 600,
+                  }}
+                >
+                  Selling Points
+                </Typography>
+
+                <Typography
+                  sx={{
+                    mt: 0.25,
+
+                    fontSize: {
+                      xs: 12,
+                      sm: 14,
+                    },
+
+                    color: "#92400E",
+
+                    fontWeight: 800,
+                  }}
+                >
+                  {sellingPoints}
+                </Typography>
+
+              </Box>
+
+
+              {/* =================================================
+                  STATUS
+              ================================================= */}
+
+              <Box
+                sx={{
+                  minWidth: 0,
+
+                  gridColumn: {
+                    xs: "1 / -1",
+                    sm: "auto",
+                  },
+                }}
+              >
+
+                <Typography
+                  sx={{
+                    fontSize: 10,
+
+                    color: "#64748B",
+
+                    fontWeight: 600,
+                  }}
+                >
+                  Status
+                </Typography>
+
+
+                <Box
+                  sx={{
+                    display: "flex",
+
+                    alignItems:
+                      "center",
+
+                    gap: 0.5,
+
+                    mt: 0.25,
+                  }}
+                >
+
+                  <Circle
+                    sx={{
+                      fontSize: 8,
+
+                      color:
+                        node?.isActive !== false
+                          ? "#16A34A"
+                          : "#94A3B8",
+                    }}
+                  />
+
+
+                  <Typography
+                    sx={{
+                      fontSize: {
+                        xs: 11,
+                        sm: 12,
+                      },
+
+                      fontWeight: 700,
+
+                      color:
+                        node?.isActive !== false
+                          ? "#166534"
+                          : "#64748B",
+                    }}
+                  >
+                    {node?.isActive !== false
+                      ? "Active"
+                      : "Inactive"}
+                  </Typography>
+
+                </Box>
+
+              </Box>
+
+            </Box>
+
+          </>
+
+        )}
 
 
         {/* =================================================
-            FINANCIAL INFORMATION
+            MANAGER STATUS
+
+            Manager still needs Status,
+            but without Wallet/Selling Points.
         ================================================= */}
 
-        <Box
-          sx={{
-            display: "grid",
+        {isManager && (
 
-            gridTemplateColumns: {
-              xs: "1fr 1fr",
-              sm: "repeat(3, 1fr)",
-            },
+          <>
 
-            gap: 1,
-          }}
-        >
-
-          {/* WALLET */}
-
-          <Box
-            sx={{
-              minWidth: 0,
-            }}
-          >
-
-            <Typography
+            <Divider
               sx={{
-                fontSize: 10,
+                my: 1.4,
 
-                color: "#64748B",
-
-                fontWeight: 600,
+                borderColor:
+                  `${layer.border}25`,
               }}
-            >
-              Wallet
-            </Typography>
+            />
 
-            <Typography
-              sx={{
-                mt: 0.25,
-
-                fontSize: {
-                  xs: 12,
-                  sm: 14,
-                },
-
-                color: "#166534",
-
-                fontWeight: 800,
-
-                overflow: "hidden",
-
-                textOverflow:
-                  "ellipsis",
-
-                whiteSpace:
-                  "nowrap",
-              }}
-            >
-              {formatCurrency(
-                walletBalance
-              )}
-            </Typography>
-
-          </Box>
-
-
-          {/* SELLING POINTS */}
-
-          <Box
-            sx={{
-              minWidth: 0,
-            }}
-          >
-
-            <Typography
-              sx={{
-                fontSize: 10,
-
-                color: "#64748B",
-
-                fontWeight: 600,
-              }}
-            >
-              Selling Points
-            </Typography>
-
-            <Typography
-              sx={{
-                mt: 0.25,
-
-                fontSize: {
-                  xs: 12,
-                  sm: 14,
-                },
-
-                color: "#92400E",
-
-                fontWeight: 800,
-              }}
-            >
-              {sellingPoints}
-            </Typography>
-
-          </Box>
-
-
-          {/* STATUS */}
-
-          <Box
-            sx={{
-              minWidth: 0,
-
-              gridColumn: {
-                xs: "1 / -1",
-                sm: "auto",
-              },
-            }}
-          >
-
-            <Typography
-              sx={{
-                fontSize: 10,
-
-                color: "#64748B",
-
-                fontWeight: 600,
-              }}
-            >
-              Status
-            </Typography>
 
             <Box
               sx={{
@@ -654,48 +790,79 @@ const ReferralNode = ({
 
                 alignItems: "center",
 
-                gap: 0.5,
+                justifyContent:
+                  "space-between",
 
-                mt: 0.25,
+                gap: 2,
               }}
             >
 
-              <Circle
-                sx={{
-                  fontSize: 8,
+              <Box>
 
-                  color:
-                    node?.isActive !== false
-                      ? "#16A34A"
-                      : "#94A3B8",
-                }}
-              />
+                <Typography
+                  sx={{
+                    fontSize: 10,
 
-              <Typography
-                sx={{
-                  fontSize: {
-                    xs: 11,
-                    sm: 12,
-                  },
+                    color: "#64748B",
 
-                  fontWeight: 700,
+                    fontWeight: 600,
+                  }}
+                >
+                  Status
+                </Typography>
 
-                  color:
-                    node?.isActive !== false
-                      ? "#166534"
-                      : "#64748B",
-                }}
-              >
-                {node?.isActive !== false
-                  ? "Active"
-                  : "Inactive"}
-              </Typography>
+
+                <Box
+                  sx={{
+                    display: "flex",
+
+                    alignItems:
+                      "center",
+
+                    gap: 0.5,
+
+                    mt: 0.25,
+                  }}
+                >
+
+                  <Circle
+                    sx={{
+                      fontSize: 8,
+
+                      color:
+                        node?.isActive !== false
+                          ? "#16A34A"
+                          : "#94A3B8",
+                    }}
+                  />
+
+
+                  <Typography
+                    sx={{
+                      fontSize: 12,
+
+                      fontWeight: 700,
+
+                      color:
+                        node?.isActive !== false
+                          ? "#166534"
+                          : "#64748B",
+                    }}
+                  >
+                    {node?.isActive !== false
+                      ? "Active"
+                      : "Inactive"}
+                  </Typography>
+
+                </Box>
+
+              </Box>
 
             </Box>
 
-          </Box>
+          </>
 
-        </Box>
+        )}
 
 
         {/* =================================================
@@ -710,7 +877,8 @@ const ReferralNode = ({
 
               display: "flex",
 
-              alignItems: "center",
+              alignItems:
+                "center",
 
               justifyContent:
                 "space-between",
@@ -787,7 +955,8 @@ const ReferralNode = ({
 
               display: "flex",
 
-              flexDirection: "column",
+              flexDirection:
+                "column",
 
               gap: 1.2,
             }}
@@ -825,7 +994,6 @@ const ReferralNode = ({
   );
 
 };
-
 
 /* =========================================================
    MAIN PAGE
