@@ -17,13 +17,22 @@ import { useNavigate } from "react-router-dom";
 const PaymentScannerCard = () => {
   const navigate = useNavigate();
 
-  const handleOpenScanner = () => {
-    // =====================================================
-    // ₹2,000 REGISTRATION PAYMENT
-    // This is NOT the normal order payment scanner.
-    // =====================================================
+  // =====================================================
+  // OPEN ₹2,000 MEMBERSHIP PAYMENT SCANNER
+  //
+  // IMPORTANT:
+  // This scanner belongs to the MEMBER DASHBOARD.
+  // =====================================================
 
-    navigate("/membership-payment");
+  const handleOpenScanner = () => {
+    navigate(
+      "/membership-payment",
+      {
+        state: {
+          from: "member-dashboard",
+        },
+      }
+    );
   };
 
   return (
@@ -138,7 +147,6 @@ const PaymentScannerCard = () => {
             </Box>
 
           </Stack>
-
 
           {/* =================================================
               BUTTON

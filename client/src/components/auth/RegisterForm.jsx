@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import {
   Alert,
@@ -29,22 +29,68 @@ import {
 
 import {
   Link,
+  useLocation,
   useNavigate,
 } from "react-router-dom";
 
 import { register } from "../../services/auth.service";
 
+// =====================================================
+// TEMPORARY REGISTRATION FORM STORAGE
+// =====================================================
+
+const REGISTRATION_STORAGE_KEY =
+  "bhagyamma_registration_form";
+
 const RegisterForm = () => {
   const navigate = useNavigate();
+  const location = useLocation();
 
-  const [formData, setFormData] = useState({
-    name: "",
-    email: "",
-    mobile: "",
-    password: "",
-    confirmPassword: "",
-    referralCode: "",
-  });
+  // =====================================================
+  // INITIAL FORM DATA
+  // =====================================================
+
+  const getInitialFormData = () => {
+    try {
+      const savedData =
+        sessionStorage.getItem(
+          REGISTRATION_STORAGE_KEY
+        );
+
+      if (savedData) {
+        const parsedData =
+          JSON.parse(savedData);
+
+        return {
+          name: parsedData?.name || "",
+          email: parsedData?.email || "",
+          mobile: parsedData?.mobile || "",
+          password: parsedData?.password || "",
+          confirmPassword:
+            parsedData?.confirmPassword || "",
+          referralCode:
+            parsedData?.referralCode || "",
+        };
+      }
+    } catch (error) {
+      console.error(
+        "Unable to restore registration form:",
+        error
+      );
+    }
+
+    return {
+      name: "",
+      email: "",
+      mobile: "",
+      password: "",
+      confirmPassword: "",
+      referralCode: "",
+    };
+  };
+
+  const [formData, setFormData] =
+    useState(getInitialFormData);
 
   const [showPassword, setShowPassword] =
     useState(false);
@@ -61,9 +107,45 @@ const RegisterForm = () => {
   const [success, setSuccess] =
     useState("");
 
-  /* =====================================================
-     HANDLE INPUT
-  ===================================================== */
+  // =====================================================
+  // RESTORE FORM WHEN RETURNING FROM PAYMENT SCANNER
+  // =====================================================
+
+  useEffect(() => {
+    try {
+      const savedData =
+        sessionStorage.getItem(
+          REGISTRATION_STORAGE_KEY
+        );
+
+      if (!savedData) {
+        return;
+      }
+
+      const parsedData =
+        JSON.parse(savedData);
+
+      setFormData({
+        name: parsedData?.name || "",
+        email: parsedData?.email || "",
+        mobile: parsedData?.mobile || "",
+        password: parsedData?.password || "",
+        confirmPassword:
+          parsedData?.confirmPassword || "",
+        referralCode:
+          parsedData?.referralCode || "",
+      });
+    } catch (error) {
+      console.error(
+        "Unable to restore registration data:",
+        error
+      );
+    }
+  }, [location.key]);
+
+  // =====================================================
+  // HANDLE INPUT
+  // =====================================================
 
   const handleChange = (e) => {
     const {
@@ -93,24 +175,52 @@ const RegisterForm = () => {
     setSuccess("");
   };
 
-  /* =====================================================
-     OPTIONAL REGISTRATION PAYMENT
+  // =====================================================
+  // SAVE REGISTRATION FORM TEMPORARILY
+  // =====================================================
 
-     Payment is NOT mandatory.
+  const saveRegistrationForm = () => {
+    try {
+      sessionStorage.setItem(
+        REGISTRATION_STORAGE_KEY,
+        JSON.stringify(formData)
+      );
+    } catch (error) {
+      console.error(
+        "Unable to save registration form:",
+        error
+      );
+    }
+  };
 
-     This only opens the existing payment scanner.
-  ===================================================== */
+  // =====================================================
+  // OPTIONAL REGISTRATION PAYMENT
+  //
+  // IMPORTANT:
+  // This is only the ₹2,000 membership payment.
+  // It is NOT product payment.
+  // =====================================================
 
-const handleRegistrationPayment = () => {
-  setError("");
-  setSuccess("");
+  const handleRegistrationPayment = () => {
+    setError("");
+    setSuccess("");
 
-  navigate("/membership-payment");
-};
+    // Save everything entered so far.
+    saveRegistrationForm();
 
-  /* =====================================================
-     VALIDATION
-  ===================================================== */
+    navigate(
+      "/membership-payment",
+      {
+        state: {
+          from: "register",
+        },
+      }
+    );
+  };
+
+  // =====================================================
+  // VALIDATION
+  // =====================================================
 
   const validateForm = () => {
     const name =
@@ -205,9 +315,9 @@ const handleRegistrationPayment = () => {
     return "";
   };
 
-  /* =====================================================
-     REGISTER
-  ===================================================== */
+  // =====================================================
+  // REGISTER
+  // =====================================================
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -253,11 +363,6 @@ const handleRegistrationPayment = () => {
       const response =
         await register(payload);
 
-      /*
-       * Registration is independent
-       * from the optional ₹2,000 payment.
-       */
-
       const token =
         response?.data?.token ||
         response?.token;
@@ -279,6 +384,17 @@ const handleRegistrationPayment = () => {
           JSON.stringify(user)
         );
       }
+
+      // =================================================
+      // REGISTRATION SUCCESS
+      //
+      // Remove temporary form data only after
+      // successful registration.
+      // =================================================
+
+      sessionStorage.removeItem(
+        REGISTRATION_STORAGE_KEY
+      );
 
       setSuccess(
         response?.data?.message ||
@@ -488,9 +604,7 @@ const handleRegistrationPayment = () => {
               spacing={2.2}
             >
 
-              {/* =================================================
-                  FULL NAME
-              ================================================= */}
+              {/* FULL NAME */}
 
               <Grid
                 item
@@ -514,9 +628,7 @@ const handleRegistrationPayment = () => {
                 />
               </Grid>
 
-              {/* =================================================
-                  EMAIL
-              ================================================= */}
+              {/* EMAIL */}
 
               <Grid
                 item
@@ -542,9 +654,7 @@ const handleRegistrationPayment = () => {
                 />
               </Grid>
 
-              {/* =================================================
-                  MOBILE
-              ================================================= */}
+              {/* MOBILE */}
 
               <Grid
                 item
@@ -573,9 +683,7 @@ const handleRegistrationPayment = () => {
                 />
               </Grid>
 
-              {/* =================================================
-                  REFERRAL CODE
-              ================================================= */}
+              {/* REFERRAL CODE */}
 
               <Grid
                 item
@@ -646,9 +754,7 @@ const handleRegistrationPayment = () => {
                 </Box>
               </Grid>
 
-              {/* =================================================
-                  PASSWORD
-              ================================================= */}
+              {/* PASSWORD */}
 
               <Grid
                 item
@@ -703,9 +809,7 @@ const handleRegistrationPayment = () => {
                 />
               </Grid>
 
-              {/* =================================================
-                  CONFIRM PASSWORD
-              ================================================= */}
+              {/* CONFIRM PASSWORD */}
 
               <Grid
                 item
@@ -760,8 +864,7 @@ const handleRegistrationPayment = () => {
               </Grid>
 
               {/* =================================================
-                  OPTIONAL PAYMENT
-                  PAYMENT BUTTON BEFORE CREATE ACCOUNT
+                  OPTIONAL ₹2,000 REGISTRATION PAYMENT
               ================================================= */}
 
               <Grid
@@ -834,9 +937,7 @@ const handleRegistrationPayment = () => {
                 </Typography>
               </Grid>
 
-              {/* =================================================
-                  CREATE ACCOUNT
-              ================================================= */}
+              {/* CREATE ACCOUNT */}
 
               <Grid
                 item
@@ -885,9 +986,7 @@ const handleRegistrationPayment = () => {
             </Grid>
           </Box>
 
-          {/* =================================================
-              LOGIN
-          ================================================= */}
+          {/* LOGIN */}
 
           <Divider
             sx={{

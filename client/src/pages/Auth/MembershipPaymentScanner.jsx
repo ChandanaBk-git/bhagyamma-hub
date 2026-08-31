@@ -5,7 +5,6 @@ import {
   Button,
   Container,
   Paper,
-  Stack,
   Typography,
 } from "@mui/material";
 
@@ -15,89 +14,67 @@ import {
   ArrowBack,
 } from "@mui/icons-material";
 
-import { useNavigate } from "react-router-dom";
-
-// =====================================================
-// QR IMAGE
-// =====================================================
-//
-// Change this import ONLY if your scanner image has
-// a different filename/path.
-//
-// Example:
-// src/assets/images/BhagyaScanner.png
-//
+import {
+  useLocation,
+  useNavigate,
+} from "react-router-dom";
 
 import BhagyaScanner from "../../assets/images/BhagyaScanner.png";
 
-
 // =====================================================
 // MEMBERSHIP PAYMENT SCANNER
-// =====================================================
 //
-// This page is ONLY for:
+// ONLY FOR ₹2,000 REGISTRATION / MEMBERSHIP PAYMENT
 //
-// ₹2,000 Registration / Membership Payment
+// Two entry points:
 //
-// Flow:
+// 1. Register
+//    /register
+//       ↓
+//    /membership-payment
+//       ↓
+//    Back → /register
 //
-// Register
-//    ↓
-// /membership-payment
-//    ↓
-// QR Scanner
-//    ↓
-// Pay ₹2,000
-//    ↓
-// Take Screenshot
-//    ↓
-// WhatsApp
-//    ↓
-// Admin Verification
-//
-// This page does NOT handle:
-// - Product orders
-// - Cart
-// - Order ID
-// - Delivery
-// - PhonePe order payment
-// - Order verification
-//
+// 2. Member Dashboard
+//    /member/dashboard
+//       ↓
+//    /membership-payment
+//       ↓
+//    Back → /member/dashboard
 // =====================================================
 
 const MembershipPaymentScanner = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+
+  // =====================================================
+  // DETERMINE WHERE SCANNER WAS OPENED FROM
+  // =====================================================
+
+  const openedFrom =
+    location.state?.from;
 
   // =====================================================
   // WHATSAPP NUMBER
   // =====================================================
-  //
-  // IMPORTANT:
-  // Replace this number if your actual Bhagyamma Hub
-  // WhatsApp number is different.
-  //
-  // Format:
-  // Country code + number
-  // WITHOUT +
-  // WITHOUT spaces
-  //
-  const whatsappNumber = "916363645068";
 
+  const whatsappNumber =
+    "916363645068";
 
   // =====================================================
   // WHATSAPP MESSAGE
   // =====================================================
 
-  const whatsappMessage = encodeURIComponent(
-    `Hello Bhagyamma Hub,
+  const whatsappMessage =
+    encodeURIComponent(
+      `Hello Bhagyamma Hub,
 
 I have completed my ₹2,000 registration payment.
 
 I am sending the payment screenshot for verification.
 
 Please verify my registration payment.`
-  );
-
+    );
 
   // =====================================================
   // WHATSAPP URL
@@ -105,7 +82,6 @@ Please verify my registration payment.`
 
   const whatsappUrl =
     `https://wa.me/${whatsappNumber}?text=${whatsappMessage}`;
-
 
   // =====================================================
   // OPEN WHATSAPP
@@ -119,24 +95,75 @@ Please verify my registration payment.`
     );
   };
 
-
   // =====================================================
-  // BACK TO REGISTRATION
+  // BACK
   // =====================================================
 
   const handleBack = () => {
-    navigate("/register");
-  };
+    // ---------------------------------------------------
+    // IF OPENED FROM CREATE ACCOUNT
+    // ---------------------------------------------------
 
+    if (openedFrom === "register") {
+      navigate(
+        "/register",
+        {
+          replace: true,
+          state: {
+            restoreRegistration: true,
+          },
+        }
+      );
+
+      return;
+    }
+
+    // ---------------------------------------------------
+    // IF OPENED FROM MEMBER DASHBOARD
+    // ---------------------------------------------------
+
+    if (
+      openedFrom === "member-dashboard"
+    ) {
+      navigate(
+        "/member/dashboard",
+        {
+          replace: true,
+        }
+      );
+
+      return;
+    }
+
+    // ---------------------------------------------------
+    // FALLBACK
+    //
+    // If somebody directly opens:
+    // /membership-payment
+    //
+    // Don't send them to registration.
+    // Send them to member dashboard.
+    // ---------------------------------------------------
+
+    navigate(
+      "/member/dashboard",
+      {
+        replace: true,
+      }
+    );
+  };
 
   return (
     <Box
       sx={{
         minHeight: "100vh",
+
         bgcolor: "#F5F7F6",
 
         display: "flex",
+
         alignItems: "center",
+
         justifyContent: "center",
 
         px: {
@@ -165,7 +192,9 @@ Please verify my registration payment.`
           elevation={3}
           sx={{
             borderRadius: 4,
+
             overflow: "hidden",
+
             bgcolor: "#FFFFFF",
           }}
         >
@@ -201,15 +230,14 @@ Please verify my registration payment.`
             }}
           >
 
-            {/* =================================================
-                BACK BUTTON
-            ================================================= */}
+            {/* BACK */}
 
             <Button
               startIcon={
                 <ArrowBack
                   sx={{
-                    fontSize: "19px !important",
+                    fontSize:
+                      "19px !important",
                   }}
                 />
               }
@@ -251,10 +279,7 @@ Please verify my registration payment.`
               Back
             </Button>
 
-
-            {/* =================================================
-                ICON
-            ================================================= */}
+            {/* ICON */}
 
             <QrCode2
               sx={{
@@ -272,10 +297,7 @@ Please verify my registration payment.`
               }}
             />
 
-
-            {/* =================================================
-                TITLE
-            ================================================= */}
+            {/* TITLE */}
 
             <Typography
               variant="h5"
@@ -290,10 +312,7 @@ Please verify my registration payment.`
               Registration Payment
             </Typography>
 
-
-            {/* =================================================
-                SUBTITLE
-            ================================================= */}
+            {/* SUBTITLE */}
 
             <Typography
               sx={{
@@ -312,9 +331,8 @@ Please verify my registration payment.`
 
           </Box>
 
-
           {/* =================================================
-              MAIN CONTENT
+              CONTENT
           ================================================= */}
 
           <Box
@@ -328,9 +346,7 @@ Please verify my registration payment.`
             }}
           >
 
-            {/* =================================================
-                REGISTRATION FEE LABEL
-            ================================================= */}
+            {/* FEE */}
 
             <Typography
               color="text.secondary"
@@ -338,11 +354,6 @@ Please verify my registration payment.`
             >
               Registration Fee
             </Typography>
-
-
-            {/* =================================================
-                AMOUNT
-            ================================================= */}
 
             <Typography
               sx={{
@@ -363,10 +374,7 @@ Please verify my registration payment.`
               ₹2,000
             </Typography>
 
-
-            {/* =================================================
-                QR CODE
-            ================================================= */}
+            {/* QR CODE */}
 
             <Box
               sx={{
@@ -377,7 +385,6 @@ Please verify my registration payment.`
                 justifyContent: "center",
               }}
             >
-
               <Box
                 sx={{
                   width: {
@@ -398,7 +405,6 @@ Please verify my registration payment.`
                     "0 6px 20px rgba(0,0,0,0.08)",
                 }}
               >
-
                 <Box
                   component="img"
                   src={BhagyaScanner}
@@ -413,15 +419,10 @@ Please verify my registration payment.`
                     objectFit: "contain",
                   }}
                 />
-
               </Box>
-
             </Box>
 
-
-            {/* =================================================
-                SCAN INSTRUCTION
-            ================================================= */}
+            {/* INSTRUCTION */}
 
             <Typography
               sx={{
@@ -437,7 +438,6 @@ Please verify my registration payment.`
             >
               Scan and pay ₹2,000
             </Typography>
-
 
             <Typography
               variant="body2"
@@ -458,10 +458,7 @@ Please verify my registration payment.`
               or any UPI application.
             </Typography>
 
-
-            {/* =================================================
-                PAYMENT PROOF MESSAGE
-            ================================================= */}
+            {/* PAYMENT PROOF */}
 
             <Box
               sx={{
@@ -480,14 +477,12 @@ Please verify my registration payment.`
                 borderRadius: 3,
               }}
             >
-
               <Typography
                 fontWeight={800}
                 color="#2E7D32"
               >
                 Payment completed?
               </Typography>
-
 
               <Typography
                 variant="body2"
@@ -503,13 +498,9 @@ Please verify my registration payment.`
                 it to Bhagyamma Hub on
                 WhatsApp for verification.
               </Typography>
-
             </Box>
 
-
-            {/* =================================================
-                WHATSAPP BUTTON
-            ================================================= */}
+            {/* WHATSAPP */}
 
             <Button
               fullWidth
@@ -544,11 +535,6 @@ Please verify my registration payment.`
               Send Payment Screenshot on WhatsApp
             </Button>
 
-
-            {/* =================================================
-                WHATSAPP NUMBER
-            ================================================= */}
-
             <Typography
               variant="caption"
               color="text.secondary"
@@ -561,10 +547,7 @@ Please verify my registration payment.`
               WhatsApp: +91 6363645068
             </Typography>
 
-
-            {/* =================================================
-                BACK BUTTON AT BOTTOM
-            ================================================= */}
+            {/* BOTTOM BACK */}
 
             <Button
               startIcon={<ArrowBack />}
@@ -579,7 +562,9 @@ Please verify my registration payment.`
                 fontWeight: 700,
               }}
             >
-              Back to Registration
+              {openedFrom === "register"
+                ? "Back to Registration"
+                : "Back to Dashboard"}
             </Button>
 
           </Box>
