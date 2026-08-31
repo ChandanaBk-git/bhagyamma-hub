@@ -13,9 +13,32 @@ import {
   clearCart,
 } from "../services/cart.service";
 
+/* =========================================================
+   CART CONTEXT
+========================================================= */
+
 const CartContext = createContext();
 
+/* =========================================================
+   CONSTANTS
+========================================================= */
+
 const GUEST_CART_KEY = "bhagyamma_guest_cart";
+
+/*
+ * IMPORTANT:
+ * Delivery is ALWAYS ₹50 when cart has products.
+ *
+ * It is NOT FREE for orders above ₹500.
+ *
+ * Selling points are calculated separately from the
+ * product subtotal and NEVER include this ₹50.
+ */
+const DELIVERY_CHARGE = 50;
+
+/* =========================================================
+   AUTH
+========================================================= */
 
 const getAuthToken = () => {
   return (
@@ -28,55 +51,155 @@ const isLoggedIn = () => {
   return Boolean(getAuthToken());
 };
 
+/* =========================================================
+   NORMALIZE PRODUCT ID
+========================================================= */
+
+const getProductId = (item) => {
+  return String(
+    item?.product?._id ||
+      item?.productId?._id ||
+      item?.productId ||
+      item?._id ||
+      ""
+  );
+};
+
+/* =========================================================
+   CALCULATE PRODUCT TOTALS
+========================================================= */
+
 const calculateTotals = (items = []) => {
   const totalItems = items.reduce(
-    (sum, item) => sum + Number(item.quantity || 0),
+    (sum, item) =>
+      sum + Number(item?.quantity || 0),
     0
   );
 
+  /*
+   * IMPORTANT:
+   *
+   * totalAmount = PRODUCT SUBTOTAL ONLY.
+   *
+   * Delivery charge is NOT included here.
+   * This is important because selling points
+   * must be calculated from product amount only.
+   */
+
   const totalAmount = items.reduce(
     (sum, item) => {
-      const price = Number(item.price || 0);
-      const quantity = Number(item.quantity || 0);
+      const price = Number(
+        item?.price ??
+          item?.product?.price ??
+          0
+      );
+
+      const quantity = Number(
+        item?.quantity || 0
+      );
 
       return sum + price * quantity;
     },
     0
   );
 
+  /*
+   * Delivery:
+   *
+   * ₹50 when cart has products.
+   * ₹0 when cart is empty.
+   */
+
+  const deliveryCharge =
+    totalItems > 0
+      ? DELIVERY_CHARGE
+      : 0;
+
+  const grandTotal =
+    totalAmount + deliveryCharge;
+
   return {
     totalItems,
     totalAmount,
+    subtotal: totalAmount,
+    deliveryCharge,
+    grandTotal,
   };
 };
+
+/* =========================================================
+   BUILD GUEST CART
+========================================================= */
 
 const buildGuestCart = (items = []) => {
-  const totals = calculateTotals(items);
+  const normalizedItems = Array.isArray(items)
+    ? items
+    : [];
+
+  const totals = calculateTotals(
+    normalizedItems
+  );
 
   return {
-    items,
+    items: normalizedItems,
+
+    /*
+     * Product quantity
+     */
     totalItems: totals.totalItems,
+
+    totalQuantity: totals.totalItems,
+
+    /*
+     * PRODUCT SUBTOTAL ONLY
+     */
     totalAmount: totals.totalAmount,
+
+    subtotal: totals.subtotal,
+
+    /*
+     * DELIVERY
+     */
+    deliveryCharge:
+      totals.deliveryCharge,
+
+    /*
+     * FINAL PAYABLE AMOUNT
+     */
+    grandTotal:
+      totals.grandTotal,
   };
 };
+
+/* =========================================================
+   READ GUEST CART
+========================================================= */
 
 const readGuestCart = () => {
   try {
-    const storedCart = localStorage.getItem(
-      GUEST_CART_KEY
-    );
+    const storedCart =
+      localStorage.getItem(
+        GUEST_CART_KEY
+      );
 
     if (!storedCart) {
       return buildGuestCart([]);
     }
 
-    const parsedCart = JSON.parse(storedCart);
+    const parsedCart =
+      JSON.parse(storedCart);
 
-    if (!Array.isArray(parsedCart?.items)) {
+    if (
+      !Array.isArray(
+        parsedCart?.items
+      )
+    ) {
       return buildGuestCart([]);
     }
 
-    return buildGuestCart(parsedCart.items);
+    return buildGuestCart(
+      parsedCart.items
+    );
   } catch (error) {
     console.error(
       "Read Guest Cart Error:",
@@ -87,175 +210,254 @@ const readGuestCart = () => {
   }
 };
 
+/* =========================================================
+   WRITE GUEST CART
+========================================================= */
+
 const writeGuestCart = (cart) => {
-  const normalizedCart = buildGuestCart(
-    cart?.items || []
-  );
+  const normalizedCart =
+    buildGuestCart(
+      cart?.items || []
+    );
 
   localStorage.setItem(
     GUEST_CART_KEY,
-    JSON.stringify(normalizedCart)
+    JSON.stringify(
+      normalizedCart
+    )
   );
 
   window.dispatchEvent(
-    new CustomEvent("guest-cart-updated", {
-      detail: normalizedCart,
-    })
+    new CustomEvent(
+      "guest-cart-updated",
+      {
+        detail:
+          normalizedCart,
+      }
+    )
   );
 
   return normalizedCart;
 };
 
+/* =========================================================
+   CLEAR GUEST STORAGE
+========================================================= */
+
 const clearGuestCartStorage = () => {
-  localStorage.removeItem(GUEST_CART_KEY);
+  localStorage.removeItem(
+    GUEST_CART_KEY
+  );
 
   window.dispatchEvent(
-    new CustomEvent("guest-cart-updated", {
-      detail: buildGuestCart([]),
-    })
+    new CustomEvent(
+      "guest-cart-updated",
+      {
+        detail:
+          buildGuestCart([]),
+      }
+    )
   );
 };
 
-const normalizeServerCart = (serverCart) => {
+/* =========================================================
+   NORMALIZE SERVER CART
+========================================================= */
+
+const normalizeServerCart = (
+  serverCart
+) => {
   if (!serverCart) {
     return buildGuestCart([]);
   }
 
-  const items = Array.isArray(serverCart.items)
-    ? serverCart.items
-        .map((item) => {
-          const product =
-            item.product ||
-            item.productId ||
-            null;
+  const rawItems =
+    Array.isArray(
+      serverCart.items
+    )
+      ? serverCart.items
+      : [];
 
-          if (!product) {
-            return null;
-          }
+  const items = rawItems
+    .map((item) => {
+      const product =
+        item?.product ||
+        (
+          item?.productId &&
+          typeof item.productId ===
+            "object"
+            ? item.productId
+            : null
+        );
 
-          const price = Number(
-            item.price ??
-              product.price ??
-              0
-          );
+      const productId =
+        item?.productId?._id ||
+        item?.productId ||
+        product?._id ||
+        "";
 
-          const quantity = Number(
-            item.quantity || 0
-          );
+      /*
+       * Ignore invalid items only.
+       */
+      if (!productId) {
+        return null;
+      }
 
-          return {
-            ...item,
+      const price = Number(
+        item?.price ??
+          product?.price ??
+          0
+      );
 
-            product,
+      const quantity = Number(
+        item?.quantity || 0
+      );
 
-            productId:
-              item.productId ||
-              product._id,
+      return {
+        ...item,
 
-            price,
+        product,
 
-            quantity,
+        productId,
 
-            total:
-              Number(
-                item.total ??
-                  price * quantity
-              ),
-          };
-        })
-        .filter(Boolean)
-    : [];
+        price,
 
-  const totals = calculateTotals(items);
+        quantity,
+
+        total:
+          Number(
+            item?.total ??
+              price * quantity
+          ),
+      };
+    })
+    .filter(Boolean);
+
+  const totals =
+    calculateTotals(items);
 
   return {
     ...serverCart,
 
     items,
 
-    totalItems: Number(
-      serverCart.totalItems ??
-        serverCart.totalQuantity ??
-        totals.totalItems
-    ),
+    /*
+     * PRODUCT TOTALS
+     */
+    totalItems:
+      totals.totalItems,
 
-    totalAmount: Number(
-      serverCart.totalAmount ??
-        serverCart.subtotal ??
-        totals.totalAmount
-    ),
+    totalQuantity:
+      totals.totalItems,
+
+    totalAmount:
+      totals.totalAmount,
+
+    subtotal:
+      totals.subtotal,
+
+    /*
+     * DELIVERY
+     */
+    deliveryCharge:
+      totals.deliveryCharge,
+
+    /*
+     * PAYABLE
+     */
+    grandTotal:
+      totals.grandTotal,
   };
 };
 
-export const CartProvider = ({ children }) => {
-  const [cart, setCart] = useState(() => {
-    if (isLoggedIn()) {
-      return null;
-    }
+/* =========================================================
+   PROVIDER
+========================================================= */
 
-    return readGuestCart();
-  });
-
-  const [loading, setLoading] = useState(false);
-
-  /*
-  ==========================================================
-  MERGE GUEST CART INTO MEMBER CART
-  ==========================================================
-  */
-
-  const mergeGuestCart = async () => {
-    if (!isLoggedIn()) {
-      return;
-    }
-
-    const guestCart = readGuestCart();
-
-    if (!guestCart.items.length) {
-      return;
-    }
-
-    let mergedSuccessfully = true;
-
-    for (const item of guestCart.items) {
-      try {
-        const productId =
-          item.product?._id ||
-          item.productId;
-
-        if (!productId) {
-          continue;
-        }
-
-        await addCartItem(
-          productId,
-          Number(item.quantity || 1)
-        );
-      } catch (error) {
-        mergedSuccessfully = false;
-
-        console.error(
-          "Guest Cart Merge Error:",
-          error?.response?.data ||
-            error
-        );
+export const CartProvider = ({
+  children,
+}) => {
+  const [cart, setCart] =
+    useState(() => {
+      if (isLoggedIn()) {
+        return null;
       }
-    }
 
-    if (mergedSuccessfully) {
-      clearGuestCartStorage();
-    }
-  };
+      return readGuestCart();
+    });
 
-  /*
-  ==========================================================
-  LOAD CART
-  ==========================================================
-  */
+  const [loading, setLoading] =
+    useState(false);
+
+  /* =======================================================
+     MERGE GUEST CART
+  ======================================================= */
+
+  const mergeGuestCart =
+    async () => {
+      if (!isLoggedIn()) {
+        return;
+      }
+
+      const guestCart =
+        readGuestCart();
+
+      if (
+        !guestCart.items.length
+      ) {
+        return;
+      }
+
+      let mergedSuccessfully =
+        true;
+
+      for (
+        const item of
+          guestCart.items
+      ) {
+        try {
+          const productId =
+            getProductId(item);
+
+          if (!productId) {
+            continue;
+          }
+
+          await addCartItem(
+            productId,
+            Number(
+              item.quantity || 1
+            )
+          );
+        } catch (error) {
+          mergedSuccessfully =
+            false;
+
+          console.error(
+            "Guest Cart Merge Error:",
+            error?.response?.data ||
+              error
+          );
+        }
+      }
+
+      if (
+        mergedSuccessfully
+      ) {
+        clearGuestCartStorage();
+      }
+    };
+
+  /* =======================================================
+     LOAD CART
+  ======================================================= */
 
   const loadCart = async () => {
     if (!isLoggedIn()) {
-      setCart(readGuestCart());
+      setCart(
+        readGuestCart()
+      );
+
       return;
     }
 
@@ -264,30 +466,40 @@ export const CartProvider = ({ children }) => {
 
       await mergeGuestCart();
 
-      const data = await getCart();
+      const data =
+        await getCart();
 
-      setCart(
-        normalizeServerCart(data)
-      );
+      const normalized =
+        normalizeServerCart(
+          data
+        );
+
+      setCart(normalized);
     } catch (error) {
       console.error(
         "Load Cart Error:",
         error
       );
 
+      /*
+       * IMPORTANT:
+       * Never destroy an existing cart
+       * because of a temporary API error.
+       */
+
       setCart(
-        normalizeServerCart(null)
+        (previous) =>
+          previous ||
+          buildGuestCart([])
       );
     } finally {
       setLoading(false);
     }
   };
 
-  /*
-  ==========================================================
-  ADD TO GUEST CART
-  ==========================================================
-  */
+  /* =======================================================
+     ADD TO GUEST CART
+  ======================================================= */
 
   const addToGuestCart = (
     product,
@@ -297,9 +509,10 @@ export const CartProvider = ({ children }) => {
       return {
         success: false,
         requiresLogin: false,
-        error: new Error(
-          "Product details are required."
-        ),
+        error:
+          new Error(
+            "Product details are required."
+          ),
       };
     }
 
@@ -315,9 +528,10 @@ export const CartProvider = ({ children }) => {
       return {
         success: false,
         requiresLogin: false,
-        error: new Error(
-          "Quantity must be at least 1."
-        ),
+        error:
+          new Error(
+            "Quantity must be at least 1."
+          ),
       };
     }
 
@@ -326,54 +540,32 @@ export const CartProvider = ({ children }) => {
 
     const existingIndex =
       currentCart.items.findIndex(
-        (item) => {
-          const existingProductId =
-            item.product?._id ||
-            item.productId;
-
-          return (
-            existingProductId?.toString() ===
-            product._id.toString()
-          );
-        }
+        (item) =>
+          getProductId(item) ===
+          String(product._id)
       );
 
     const items = [
       ...currentCart.items,
     ];
 
-    /*
-    ----------------------------------------------------------
-    EXISTING PRODUCT
-    ----------------------------------------------------------
-    */
-
-    if (existingIndex >= 0) {
+    if (
+      existingIndex >= 0
+    ) {
       const existingItem =
-        items[existingIndex];
+        items[
+          existingIndex
+        ];
 
       const newQuantity =
         Number(
           existingItem.quantity || 0
-        ) + numericQuantity;
+        ) +
+        numericQuantity;
 
-      if (
-        product.stock !==
-          undefined &&
-        product.stock !== null &&
-        newQuantity >
-          Number(product.stock)
-      ) {
-        return {
-          success: false,
-          requiresLogin: false,
-          error: new Error(
-            "Insufficient stock."
-          ),
-        };
-      }
-
-      items[existingIndex] = {
+      items[
+        existingIndex
+      ] = {
         ...existingItem,
 
         product,
@@ -392,33 +584,10 @@ export const CartProvider = ({ children }) => {
         total:
           Number(
             product.price || 0
-          ) * newQuantity,
+          ) *
+          newQuantity,
       };
-    }
-
-    /*
-    ----------------------------------------------------------
-    NEW PRODUCT
-    ----------------------------------------------------------
-    */
-
-    else {
-      if (
-        product.stock !==
-          undefined &&
-        product.stock !== null &&
-        numericQuantity >
-          Number(product.stock)
-      ) {
-        return {
-          success: false,
-          requiresLogin: false,
-          error: new Error(
-            "Insufficient stock."
-          ),
-        };
-      }
-
+    } else {
       items.push({
         product,
 
@@ -436,7 +605,8 @@ export const CartProvider = ({ children }) => {
         total:
           Number(
             product.price || 0
-          ) * numericQuantity,
+          ) *
+          numericQuantity,
       });
     }
 
@@ -445,39 +615,32 @@ export const CartProvider = ({ children }) => {
         items,
       });
 
-    setCart(updatedCart);
+    setCart(
+      updatedCart
+    );
 
     return {
       success: true,
       requiresLogin: false,
-      cart: updatedCart,
+      cart:
+        updatedCart,
     };
   };
 
-  /*
-  ==========================================================
-  ADD TO CART
-  ==========================================================
-  */
+  /* =======================================================
+     ADD TO CART
+  ======================================================= */
 
   const addToCart = async (
     productOrId,
     quantity = 1
   ) => {
-    /*
-    Guest
-    */
-
     if (!isLoggedIn()) {
       return addToGuestCart(
         productOrId,
         quantity
       );
     }
-
-    /*
-    Member
-    */
 
     try {
       const productId =
@@ -490,9 +653,10 @@ export const CartProvider = ({ children }) => {
         return {
           success: false,
           requiresLogin: false,
-          error: new Error(
-            "Product ID is required."
-          ),
+          error:
+            new Error(
+              "Product ID is required."
+            ),
         };
       }
 
@@ -507,12 +671,15 @@ export const CartProvider = ({ children }) => {
           data
         );
 
-      setCart(normalizedCart);
+      setCart(
+        normalizedCart
+      );
 
       return {
         success: true,
         requiresLogin: false,
-        cart: normalizedCart,
+        cart:
+          normalizedCart,
       };
     } catch (error) {
       console.error(
@@ -528,11 +695,9 @@ export const CartProvider = ({ children }) => {
     }
   };
 
-  /*
-  ==========================================================
-  UPDATE QUANTITY
-  ==========================================================
-  */
+  /* =======================================================
+     UPDATE QUANTITY
+  ======================================================= */
 
   const updateQuantity = async (
     productId,
@@ -550,9 +715,9 @@ export const CartProvider = ({ children }) => {
       return;
     }
 
-    /*
-    Guest
-    */
+    /* ---------------------------------------------------
+       GUEST
+    --------------------------------------------------- */
 
     if (!isLoggedIn()) {
       const currentCart =
@@ -560,16 +725,9 @@ export const CartProvider = ({ children }) => {
 
       const index =
         currentCart.items.findIndex(
-          (item) => {
-            const id =
-              item.product?._id ||
-              item.productId;
-
-            return (
-              id?.toString() ===
-              productId.toString()
-            );
-          }
+          (item) =>
+            getProductId(item) ===
+            String(productId)
         );
 
       if (index === -1) {
@@ -578,18 +736,6 @@ export const CartProvider = ({ children }) => {
 
       const item =
         currentCart.items[index];
-
-      const stock =
-        item.product?.stock;
-
-      if (
-        stock !== undefined &&
-        stock !== null &&
-        numericQuantity >
-          Number(stock)
-      ) {
-        return;
-      }
 
       const items = [
         ...currentCart.items,
@@ -604,7 +750,8 @@ export const CartProvider = ({ children }) => {
         total:
           Number(
             item.price || 0
-          ) * numericQuantity,
+          ) *
+          numericQuantity,
       };
 
       const updatedCart =
@@ -612,14 +759,16 @@ export const CartProvider = ({ children }) => {
           items,
         });
 
-      setCart(updatedCart);
+      setCart(
+        updatedCart
+      );
 
       return;
     }
 
-    /*
-    Member
-    */
+    /* ---------------------------------------------------
+       MEMBER
+    --------------------------------------------------- */
 
     try {
       const data =
@@ -628,48 +777,39 @@ export const CartProvider = ({ children }) => {
           numericQuantity
         );
 
-      setCart(
+      const normalizedCart =
         normalizeServerCart(
           data
-        )
+        );
+
+      setCart(
+        normalizedCart
       );
     } catch (error) {
       console.error(
         "Update Cart Error:",
-        error
+        error?.response?.data ||
+          error
       );
     }
   };
 
-  /*
-  ==========================================================
-  REMOVE ITEM
-  ==========================================================
-  */
+  /* =======================================================
+     REMOVE ITEM
+  ======================================================= */
 
   const removeItem = async (
     productId
   ) => {
-    /*
-    Guest
-    */
-
     if (!isLoggedIn()) {
       const currentCart =
         readGuestCart();
 
       const items =
         currentCart.items.filter(
-          (item) => {
-            const id =
-              item.product?._id ||
-              item.productId;
-
-            return (
-              id?.toString() !==
-              productId.toString()
-            );
-          }
+          (item) =>
+            getProductId(item) !==
+            String(productId)
         );
 
       const updatedCart =
@@ -677,14 +817,12 @@ export const CartProvider = ({ children }) => {
           items,
         });
 
-      setCart(updatedCart);
+      setCart(
+        updatedCart
+      );
 
       return;
     }
-
-    /*
-    Member
-    */
 
     try {
       const data =
@@ -700,22 +838,17 @@ export const CartProvider = ({ children }) => {
     } catch (error) {
       console.error(
         "Remove Cart Error:",
-        error
+        error?.response?.data ||
+          error
       );
     }
   };
 
-  /*
-  ==========================================================
-  CLEAR CART
-  ==========================================================
-  */
+  /* =======================================================
+     CLEAR CART
+  ======================================================= */
 
   const clearAll = async () => {
-    /*
-    Guest
-    */
-
     if (!isLoggedIn()) {
       clearGuestCartStorage();
 
@@ -725,10 +858,6 @@ export const CartProvider = ({ children }) => {
 
       return;
     }
-
-    /*
-    Member
-    */
 
     try {
       const data =
@@ -749,11 +878,9 @@ export const CartProvider = ({ children }) => {
     }
   };
 
-  /*
-  ==========================================================
-  AUTH / CART EVENTS
-  ==========================================================
-  */
+  /* =======================================================
+     EVENTS
+  ======================================================= */
 
   useEffect(() => {
     loadCart();
@@ -768,16 +895,15 @@ export const CartProvider = ({ children }) => {
       );
     };
 
-    const handleGuestCartUpdate = (
-      event
-    ) => {
-      if (!isLoggedIn()) {
-        setCart(
-          event.detail ||
-            readGuestCart()
-        );
-      }
-    };
+    const handleGuestCartUpdate =
+      (event) => {
+        if (!isLoggedIn()) {
+          setCart(
+            event.detail ||
+              readGuestCart()
+          );
+        }
+      };
 
     window.addEventListener(
       "auth-login",
@@ -812,22 +938,42 @@ export const CartProvider = ({ children }) => {
     };
   }, []);
 
+  /* =======================================================
+     PROVIDER
+========================================================= */
+
   return (
     <CartContext.Provider
       value={{
         cart,
+
         loading,
+
         loadCart,
+
         addToCart,
+
         updateQuantity,
+
         removeItem,
+
         clearAll,
+
+        /*
+         * Expose the fixed delivery charge
+         * in case another page needs it.
+         */
+        DELIVERY_CHARGE,
       }}
     >
       {children}
     </CartContext.Provider>
   );
 };
+
+/* =========================================================
+   HOOK
+========================================================= */
 
 export const useCart = () => {
   return useContext(

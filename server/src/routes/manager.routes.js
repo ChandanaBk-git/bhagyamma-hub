@@ -67,22 +67,19 @@ router.get(
 
 /*
 =========================================================
-MANAGER JOINING COMMISSION
+SELLING POINTS
 =========================================================
+*/
 
-This is the commission earned by the manager when
-members joined the manager's referral chain.
+router.get(
+    "/selling-points",
+    managerController.getSellingPoints
+);
 
-GET:
 
-/api/v1/manager/commission
-
-Returns ONLY:
-
-memberId
-name
-commissionPercent
-commissionAmount
+/*
+=========================================================
+COMMISSION
 =========================================================
 */
 

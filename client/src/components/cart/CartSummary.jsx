@@ -12,22 +12,56 @@ import {
   useNavigate,
 } from "react-router-dom";
 
+const DELIVERY_CHARGE = 50;
+
 const CartSummary = ({ cart }) => {
   const navigate = useNavigate();
   const location = useLocation();
 
   const isMemberCart =
-    location.pathname.startsWith("/member/");
+    location.pathname.startsWith(
+      "/member/"
+    );
 
+  /*
+   * PRODUCT SUBTOTAL ONLY
+   */
+  const subtotal = Number(
+    cart?.totalAmount ??
+      cart?.subtotal ??
+      0
+  );
+
+  /*
+   * FIXED DELIVERY
+   *
+   * ₹50 whenever cart contains products.
+   * Never FREE because of subtotal.
+   */
   const deliveryCharge =
-    cart.totalAmount >= 500 ? 0 : 50;
+    cart?.items?.length > 0
+      ? DELIVERY_CHARGE
+      : 0;
 
+  /*
+   * FINAL AMOUNT
+   *
+   * Product subtotal + delivery.
+   */
   const grandTotal =
-    cart.totalAmount + deliveryCharge;
+    subtotal + deliveryCharge;
+
+  const totalItems = Number(
+    cart?.totalItems ??
+      cart?.totalQuantity ??
+      0
+  );
 
   const handleCheckout = () => {
     if (isMemberCart) {
-      navigate("/member/checkout");
+      navigate(
+        "/member/checkout"
+      );
     } else {
       navigate("/checkout");
     }
@@ -63,7 +97,8 @@ const CartSummary = ({ cart }) => {
       <Divider sx={{ mb: 2 }} />
 
       <Stack spacing={2}>
-        {/* Total Items */}
+
+        {/* TOTAL ITEMS */}
 
         <Box
           display="flex"
@@ -74,11 +109,11 @@ const CartSummary = ({ cart }) => {
           </Typography>
 
           <Typography>
-            {cart.totalItems}
+            {totalItems}
           </Typography>
         </Box>
 
-        {/* Subtotal */}
+        {/* PRODUCT SUBTOTAL */}
 
         <Box
           display="flex"
@@ -89,11 +124,11 @@ const CartSummary = ({ cart }) => {
           </Typography>
 
           <Typography>
-            ₹{cart.totalAmount}
+            ₹{subtotal}
           </Typography>
         </Box>
 
-        {/* Delivery */}
+        {/* DELIVERY */}
 
         <Box
           display="flex"
@@ -104,21 +139,15 @@ const CartSummary = ({ cart }) => {
           </Typography>
 
           <Typography
-            color={
-              deliveryCharge === 0
-                ? "success.main"
-                : "text.primary"
-            }
+            color="success.main"
           >
-            {deliveryCharge === 0
-              ? "FREE"
-              : `₹${deliveryCharge}`}
+            ₹{deliveryCharge}
           </Typography>
         </Box>
 
         <Divider />
 
-        {/* Grand Total */}
+        {/* GRAND TOTAL */}
 
         <Box
           display="flex"
@@ -140,7 +169,7 @@ const CartSummary = ({ cart }) => {
           </Typography>
         </Box>
 
-        {/* Checkout */}
+        {/* CHECKOUT */}
 
         <Button
           variant="contained"
@@ -151,13 +180,17 @@ const CartSummary = ({ cart }) => {
             mt: 2,
             py: 1.3,
             fontWeight: 700,
-            textTransform: "none",
+            textTransform:
+              "none",
             borderRadius: 2,
           }}
-          onClick={handleCheckout}
+          onClick={
+            handleCheckout
+          }
         >
           Proceed To Checkout
         </Button>
+
       </Stack>
     </Paper>
   );

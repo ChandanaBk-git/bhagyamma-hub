@@ -1,7 +1,10 @@
 const orderRepository = require("../repositories/order.repository");
 const cartRepository = require("../repositories/cart.repository");
 const ApiError = require("../utils/ApiError");
+const orderService =
+  require("./order.service");
 
+  
 // =====================================================
 // CREATE PAYMENT
 // =====================================================
@@ -220,6 +223,17 @@ const verifyPayment = async (
     order.paymentStatus = "FAILED";
 
     await order.save();
+
+    // =================================================
+// PROCESS SELLING POINTS ONLY AFTER PAYMENT
+// =================================================
+
+const orderService =
+  require("./order.service");
+
+await orderService.processOrderSellingPoints(
+  order._id
+);
 
     return {
       success: false,

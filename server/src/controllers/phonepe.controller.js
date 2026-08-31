@@ -4,7 +4,8 @@ const ApiError = require("../utils/ApiError");
 
 const orderRepository = require("../repositories/order.repository");
 const cartRepository = require("../repositories/cart.repository");
-
+const orderService =
+  require("../services/order.service");
 const phonepeService = require("../services/phonepe.service");
 
 /* ==========================================
@@ -195,7 +196,13 @@ const verifyPhonePePayment =
               transactionId,
           }
         );
+// ==========================================
+// PROCESS SELLING POINTS AFTER PAID PAYMENT
+// ==========================================
 
+await orderService.processOrderSellingPoints(
+  order._id
+);
       /*
        * Clear cart ONLY after successful
        * payment verification.

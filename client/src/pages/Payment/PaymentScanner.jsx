@@ -1,385 +1,651 @@
+import React, {
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
+
 import {
   Alert,
   Box,
   Button,
-  Card,
-  CardContent,
-  Chip,
+  CircularProgress,
   Container,
   Divider,
+  Paper,
   Stack,
   Typography,
 } from "@mui/material";
 
 import {
-  ArrowBack,
   CheckCircle,
-  WhatsApp,
+  InfoOutlined,
   Payment,
-  ShoppingBag,
-  VerifiedRounded,
+  WhatsApp,
 } from "@mui/icons-material";
 
 import {
   useLocation,
   useNavigate,
+  useParams,
 } from "react-router-dom";
 
-import { useState } from "react";
+import API from "../../api";
+
+import { useCart } from "../../context/CartContext";
 
 import BhagyaScanner from "../../assets/images/BhagyaScanner.png";
 
-/*
-=========================================================
-WHATSAPP NUMBER
-=========================================================
 
-Actual number:
-6363645068
+/* =========================================================
+   HELPERS
+========================================================= */
 
-India country code:
-91
+const formatCurrency = (value) => {
+  const amount = Number(value);
 
-WhatsApp format:
-916363645068
-=========================================================
-*/
+  if (!Number.isFinite(amount)) {
+    return "₹0";
+  }
 
-const WHATSAPP_NUMBER = "916363645068";
+  return `₹${amount.toLocaleString("en-IN")}`;
+};
+
+
+const getOrderDataFromResponse = (response) => {
+  if (!response) {
+    return null;
+  }
+
+  if (response?.data?.data) {
+    return response.data.data;
+  }
+
+  if (response?.data) {
+    return response.data;
+  }
+
+  return null;
+};
+
+
+/* =========================================================
+   COMPONENT
+========================================================= */
 
 const PaymentScanner = () => {
   const navigate = useNavigate();
 
   const location = useLocation();
 
-  /*
-  ========================================================
-  STATE
-  ========================================================
-  */
-
-  const [whatsappOpened, setWhatsappOpened] =
-    useState(false);
-
-  const [confirmed, setConfirmed] =
-    useState(false);
+  const params = useParams();
 
 
-  /*
-  ========================================================
-  PAYMENT DATA
-  ========================================================
-  */
+  /* =======================================================
+     CART CONTEXT
 
-  const state = location.state || {};
+     IMPORTANT:
+     clearAll() clears the backend cart AND updates
+     React CartContext state.
 
-  const amount = Number(
-    state.amount || 0
+     This fixes the old-cart-items problem.
+  ======================================================= */
+
+  const {
+    clearAll,
+  } = useCart();
+
+
+  /* =======================================================
+     ORDER STATE
+  ======================================================= */
+
+  const [order, setOrder] = useState(
+    location?.state?.order || null
   );
 
+  const [loading, setLoading] = useState(
+    !location?.state?.order
+  );
+
+  const [error, setError] = useState("");
+
+  const [clearingCart, setClearingCart] =
+    useState(false);
+
+  const [paymentCompleted, setPaymentCompleted] =
+    useState(false);
+
+
+  /* =======================================================
+     ORDER ID
+  ======================================================= */
+
   const orderId =
-    state.orderId || null;
+    params?.id ||
+    params?.orderId ||
+    location?.state?.orderId ||
+    location?.state?.id ||
+    location?.state?.order?._id ||
+    null;
+
 
   const orderNumber =
-    state.orderNumber || null;
+    order?.orderNumber ||
+    location?.state?.orderNumber ||
+    "";
 
-  const isMember =
-    state.isMember === true;
+
+  /* =======================================================
+     LOAD ORDER
+  ======================================================= */
+
+  useEffect(() => {
+    let mounted = true;
 
 
-  /*
-  ========================================================
-  WHATSAPP MESSAGE
-  ========================================================
-  */
+    const loadOrder = async () => {
+
+      /* ---------------------------------------------------
+         ORDER ALREADY PASSED FROM CHECKOUT
+      --------------------------------------------------- */
+
+      if (location?.state?.order) {
+
+        if (mounted) {
+
+          setOrder(
+            location.state.order
+          );
+
+          setLoading(false);
+        }
+
+        return;
+      }
+
+
+      /* ---------------------------------------------------
+         ORDER ID MISSING
+      --------------------------------------------------- */
+
+      if (!orderId) {
+
+        if (mounted) {
+
+          setError(
+            "Order information is missing. Please return to your orders and try again."
+          );
+
+          setLoading(false);
+        }
+
+        return;
+      }
+
+
+      /* ---------------------------------------------------
+         FETCH ORDER
+      --------------------------------------------------- */
+
+      try {
+
+        setLoading(true);
+
+        setError("");
+
+        const response =
+          await API.get(
+            `/orders/${orderId}`
+          );
+
+        const fetchedOrder =
+          getOrderDataFromResponse(
+            response
+          );
+
+        if (!fetchedOrder) {
+
+          throw new Error(
+            "Order details were not returned by the server."
+          );
+        }
+
+        if (mounted) {
+
+          setOrder(
+            fetchedOrder
+          );
+        }
+
+      } catch (err) {
+
+        console.error(
+          "PAYMENT SCANNER ORDER ERROR:",
+          err
+        );
+
+        if (mounted) {
+
+          setError(
+            err?.response?.data?.message ||
+            err?.message ||
+            "Unable to load order details."
+          );
+        }
+
+      } finally {
+
+        if (mounted) {
+
+          setLoading(false);
+        }
+      }
+    };
+
+
+    loadOrder();
+
+
+    return () => {
+      mounted = false;
+    };
+
+  }, [
+    orderId,
+    location?.state?.order,
+  ]);
+
+
+  /* =======================================================
+     ORDER VALUES
+  ======================================================= */
+
+  const subtotal = useMemo(() => {
+
+    if (!order) {
+      return 0;
+    }
+
+    return Number(
+      order.subtotal ??
+      order.subTotal ??
+      0
+    );
+
+  }, [order]);
+
+
+  const deliveryCharge = useMemo(() => {
+
+    if (!order) {
+      return 0;
+    }
+
+    return Number(
+      order.deliveryCharge ??
+      order.deliveryCharges ??
+      order.shippingCharge ??
+      0
+    );
+
+  }, [order]);
+
+
+  const discount = useMemo(() => {
+
+    if (!order) {
+      return 0;
+    }
+
+    return Number(
+      order.discount ?? 0
+    );
+
+  }, [order]);
+
+
+  /* =======================================================
+     FINAL AMOUNT
+  ======================================================= */
+
+  const finalAmount = useMemo(() => {
+
+    if (!order) {
+      return 0;
+    }
+
+    const savedFinalAmount =
+      Number(
+        order.finalAmount
+      );
+
+    if (
+      Number.isFinite(
+        savedFinalAmount
+      ) &&
+      savedFinalAmount >= 0
+    ) {
+
+      return savedFinalAmount;
+    }
+
+    const calculated =
+      subtotal -
+      discount +
+      deliveryCharge;
+
+    return calculated >= 0
+      ? calculated
+      : 0;
+
+  }, [
+    order,
+    subtotal,
+    discount,
+    deliveryCharge,
+  ]);
+
+
+  /* =======================================================
+     PAYMENT STATUS
+  ======================================================= */
+
+  const paymentStatus =
+    String(
+      order?.paymentStatus ||
+      "PENDING"
+    ).toUpperCase();
+
+
+  /* =======================================================
+     WHATSAPP
+  ======================================================= */
+
+  const whatsappNumber =
+    "916363645068";
+
+
+  const whatsappMessage =
+    `Hello Bhagyamma Hub,%0A%0A` +
+    `I have completed payment for order ${orderNumber}.%0A` +
+    `Order Amount: ${formatCurrency(finalAmount)}.%0A%0A` +
+    `I am sending the payment screenshot for verification.`;
+
+
+  const whatsappUrl =
+    `https://wa.me/${whatsappNumber}?text=${whatsappMessage}`;
+
 
   const handleWhatsApp = () => {
-
-    const message = [
-      "Hello Bhagyamma Hub,",
-      "",
-      "I have completed the payment.",
-      "",
-      orderNumber
-        ? `Order Number: ${orderNumber}`
-        : "",
-      orderId
-        ? `Order ID: ${orderId}`
-        : "",
-      amount
-        ? `Amount Paid: ₹${amount.toLocaleString(
-            "en-IN"
-          )}`
-        : "",
-      "",
-      "I am sending the payment screenshot for verification.",
-    ]
-      .filter(Boolean)
-      .join("\n");
-
-
-    /*
-    ======================================================
-    WHATSAPP URL
-    ======================================================
-    */
-
-    const whatsappUrl =
-      `https://wa.me/${WHATSAPP_NUMBER}` +
-      `?text=${encodeURIComponent(
-        message
-      )}`;
-
-
-    /*
-    ======================================================
-    OPEN WHATSAPP
-    ======================================================
-    */
 
     window.open(
       whatsappUrl,
       "_blank",
       "noopener,noreferrer"
     );
-
-
-    /*
-    ======================================================
-    ENABLE CONFIRM BUTTON
-    ======================================================
-    */
-
-    setWhatsappOpened(true);
-
   };
 
 
-  /*
-  ========================================================
-  CONFIRM ORDER
-  ========================================================
-  */
+  /* =======================================================
+     PAYMENT COMPLETED
+     
+     IMPORTANT FIX
+     
+     OLD CODE:
+     
+       await API.delete("/cart");
+     
+     Problem:
+       Backend cart may be cleared, but CartContext
+       still contains old products.
+     
+     NEW CODE:
+     
+       await clearAll();
+     
+     This uses the existing CartContext clear function,
+     which updates the backend AND React state.
+  ======================================================= */
 
-  const handleConfirmOrder = () => {
+  const handlePaymentCompleted =
+    async () => {
 
-    /*
-    ------------------------------------------------------
-    User must first open WhatsApp
-    ------------------------------------------------------
-    */
-
-    if (!whatsappOpened) {
-      return;
-    }
-
-
-    /*
-    ------------------------------------------------------
-    Mark as submitted in frontend
-    ------------------------------------------------------
-    */
-
-    setConfirmed(true);
-
-
-    /*
-    ------------------------------------------------------
-    Store payment submission locally
-    ------------------------------------------------------
-    
-    IMPORTANT:
-    This is only a frontend acknowledgement.
-
-    It does NOT mark payment as Paid in MongoDB.
-    ------------------------------------------------------
-    */
-
-    if (orderId) {
-
-      localStorage.setItem(
-        `payment_submitted_${orderId}`,
-        JSON.stringify({
-          orderId,
-          orderNumber,
-          amount,
-          submittedAt:
-            new Date().toISOString(),
-        })
-      );
-
-    }
-
-
-    /*
-    ------------------------------------------------------
-    Navigate to orders
-    ------------------------------------------------------
-    */
-
-    navigate(
-      "/orders",
-      {
-        state: {
-          paymentSubmitted: true,
-          orderId,
-          orderNumber,
-        },
+      if (clearingCart) {
+        return;
       }
-    );
-
-  };
 
 
-  /*
-  ========================================================
-  BACK
-  ========================================================
-  */
+      if (!order) {
 
-  const handleBack = () => {
+        setError(
+          "Order details are not available."
+        );
 
-    navigate(
-      isMember
-        ? "/member/cart"
-        : "/cart"
-    );
-
-  };
+        return;
+      }
 
 
-  /*
-  ========================================================
-  INVALID PAYMENT PAGE
-  ========================================================
-  */
+      setClearingCart(true);
 
-  if (!amount && !orderId) {
+      setError("");
+
+
+      try {
+
+        /* =================================================
+           STEP 1
+           CLEAR SERVER + FRONTEND CART
+        ================================================= */
+
+        await clearAll();
+
+
+        /* =================================================
+           STEP 2
+           EXTRA STORAGE CLEANUP
+
+           This is only a safety cleanup for any old
+           cart values stored in browser storage.
+        ================================================= */
+
+        try {
+
+          localStorage.removeItem(
+            "cart"
+          );
+
+          localStorage.removeItem(
+            "cartItems"
+          );
+
+          sessionStorage.removeItem(
+            "cart"
+          );
+
+          sessionStorage.removeItem(
+            "cartItems"
+          );
+
+        } catch (storageError) {
+
+          console.warn(
+            "Cart storage cleanup warning:",
+            storageError
+          );
+        }
+
+
+        /* =================================================
+           STEP 3
+           MARK FRONTEND PAYMENT STEP COMPLETE
+        ================================================= */
+
+        setPaymentCompleted(
+          true
+        );
+
+
+        /* =================================================
+           STEP 4
+           GO TO ORDERS
+
+           CartContext is already empty before navigation.
+        ================================================= */
+
+        setTimeout(() => {
+
+          navigate(
+            "/member/orders",
+            {
+              replace: true,
+            }
+          );
+
+        }, 1000);
+
+      } catch (err) {
+
+        console.error(
+          "PAYMENT COMPLETED / CLEAR CART ERROR:",
+          err
+        );
+
+
+        setError(
+          err?.response?.data?.message ||
+          err?.message ||
+          "Unable to clear the cart. Please try again."
+        );
+
+        setClearingCart(false);
+      }
+    };
+
+
+  /* =======================================================
+     LOADING
+  ======================================================= */
+
+  if (loading) {
 
     return (
-
       <Box
         sx={{
           minHeight: "100vh",
 
-          bgcolor: "#F5F7F5",
+          bgcolor: "#F5F7F6",
 
-          py: {
-            xs: 3,
-            sm: 6,
-          },
+          display: "flex",
+
+          alignItems: "center",
+
+          justifyContent: "center",
         }}
       >
 
-        <Container maxWidth="sm">
+        <Stack
+          spacing={2}
+          alignItems="center"
+        >
 
-          <Card
-            elevation={0}
+          <CircularProgress
             sx={{
-              borderRadius: 4,
+              color: "#2E7D32",
+            }}
+          />
 
-              border:
-                "1px solid #E0E0E0",
+          <Typography
+            color="text.secondary"
+          >
+            Loading payment details...
+          </Typography>
+
+        </Stack>
+
+      </Box>
+    );
+  }
+
+
+  /* =======================================================
+     ERROR WITHOUT ORDER
+  ======================================================= */
+
+  if (
+    error &&
+    !order
+  ) {
+
+    return (
+      <Box
+        sx={{
+          minHeight: "100vh",
+
+          bgcolor: "#F5F7F6",
+
+          py: 6,
+        }}
+      >
+
+        <Container
+          maxWidth="sm"
+        >
+
+          <Alert
+            severity="error"
+            sx={{
+              borderRadius: 3,
             }}
           >
+            {error}
+          </Alert>
 
-            <CardContent
-              sx={{
-                p: {
-                  xs: 3,
-                  sm: 4,
-                },
 
-                textAlign:
-                  "center",
-              }}
-            >
+          <Button
+            fullWidth
+            variant="contained"
+            onClick={() =>
+              navigate(-1)
+            }
+            sx={{
+              mt: 3,
 
-              <ShoppingBag
-                sx={{
-                  fontSize: 60,
+              py: 1.4,
 
-                  color:
-                    "#9E9E9E",
+              borderRadius: 3,
 
-                  mb: 2,
-                }}
-              />
+              bgcolor: "#2E7D32",
 
-              <Typography
-                variant="h5"
-                fontWeight={800}
-                gutterBottom
-              >
-                Payment Page Not Available
-              </Typography>
+              textTransform: "none",
 
-              <Typography
-                color="text.secondary"
-                sx={{
-                  mb: 3,
-                }}
-              >
-                Please return to your cart
-                and start checkout again.
-              </Typography>
-
-              <Button
-                fullWidth
-                variant="contained"
-                color="success"
-                startIcon={
-                  <ArrowBack />
-                }
-                onClick={
-                  handleBack
-                }
-                sx={{
-                  textTransform:
-                    "none",
-
-                  fontWeight:
-                    700,
-
-                  py: 1.3,
-                }}
-              >
-                Back to Cart
-              </Button>
-
-            </CardContent>
-
-          </Card>
+              fontWeight: 700,
+            }}
+          >
+            Go Back
+          </Button>
 
         </Container>
 
       </Box>
-
     );
-
   }
 
 
-  /*
-  ========================================================
-  PAYMENT PAGE
-  ========================================================
-  */
+  /* =======================================================
+     MAIN UI
+  ======================================================= */
 
   return (
 
     <Box
       sx={{
-        minHeight:
-          "100vh",
+        minHeight: "100vh",
 
-        bgcolor:
-          "#F5F7F5",
+        bgcolor: "#F5F7F6",
 
         py: {
-          xs: 2,
-          sm: 4,
-          md: 6,
+          xs: 3,
+          sm: 5,
         },
       }}
     >
@@ -388,51 +654,37 @@ const PaymentScanner = () => {
         maxWidth="md"
       >
 
-        {/* =================================================
-            BACK BUTTON
-        ================================================= */}
+        {/* TOP ACCENT */}
 
-        <Button
-          startIcon={
-            <ArrowBack />
-          }
-          onClick={
-            handleBack
-          }
+        <Box
           sx={{
-            mb: 2,
-
-            color:
-              "#2E7D32",
-
-            textTransform:
-              "none",
-
-            fontWeight:
-              700,
-          }}
-        >
-          Back to Cart
-        </Button>
-
-
-        {/* =================================================
-            MAIN CARD
-        ================================================= */}
-
-        <Card
-          elevation={0}
-          sx={{
-            borderRadius: {
-              xs: 2.5,
-              sm: 4,
+            width: {
+              xs: 90,
+              sm: 110,
             },
 
-            overflow:
-              "hidden",
+            height: 8,
 
-            border:
-              "1px solid #C8E6C9",
+            bgcolor: "#2E7D32",
+
+            borderRadius: 5,
+
+            mx: "auto",
+
+            mb: 2,
+          }}
+        />
+
+
+        <Paper
+          elevation={4}
+          sx={{
+            overflow: "hidden",
+
+            borderRadius: {
+              xs: 3,
+              sm: 4,
+            },
           }}
         >
 
@@ -442,13 +694,16 @@ const PaymentScanner = () => {
 
           <Box
             sx={{
-              bgcolor:
-                "#2E7D32",
+              bgcolor: "#2E7D32",
 
-              color:
-                "#fff",
+              color: "#fff",
 
-              p: {
+              px: {
+                xs: 2.5,
+                sm: 4,
+              },
+
+              py: {
                 xs: 2.5,
                 sm: 3,
               },
@@ -457,44 +712,75 @@ const PaymentScanner = () => {
 
             <Stack
               direction="row"
-              spacing={1.5}
+              justifyContent="space-between"
               alignItems="center"
+              spacing={2}
             >
-
-              <Payment />
 
               <Box>
 
-                <Typography
-                  variant="h5"
-                  fontWeight={800}
-                  sx={{
-                    fontSize: {
-                      xs: "1.3rem",
-                      sm: "1.7rem",
-                    },
-                  }}
+                <Stack
+                  direction="row"
+                  alignItems="center"
+                  spacing={1}
                 >
-                  Scan & Pay
-                </Typography>
+
+                  <Payment />
+
+                  <Typography
+                    variant="h5"
+                    fontWeight={800}
+                  >
+                    Scan & Pay
+                  </Typography>
+
+                </Stack>
+
 
                 <Typography
+                  variant="body2"
                   sx={{
-                    opacity:
-                      0.9,
-
                     mt: 0.5,
 
-                    fontSize: {
-                      xs: "0.8rem",
-                      sm: "0.95rem",
-                    },
+                    opacity: 0.9,
                   }}
                 >
-                  Complete your UPI payment
-                  using the QR code below.
+                  Complete your payment using any
+                  supported UPI app.
                 </Typography>
 
+              </Box>
+
+
+              <Box
+                sx={{
+                  bgcolor:
+                    paymentStatus === "PAID"
+                      ? "#DFF5E2"
+                      : "#FF9800",
+
+                  color:
+                    paymentStatus === "PAID"
+                      ? "#2E7D32"
+                      : "#111",
+
+                  px: 1.5,
+
+                  py: 0.7,
+
+                  borderRadius: 3,
+
+                  fontSize: 12,
+
+                  fontWeight: 700,
+
+                  whiteSpace:
+                    "nowrap",
+                }}
+              >
+                {paymentStatus === "PAID"
+                  ? "Payment Verified"
+                  : "Payment Pending"}
               </Box>
 
             </Stack>
@@ -506,97 +792,72 @@ const PaymentScanner = () => {
               CONTENT
           ================================================= */}
 
-          <CardContent
+          <Box
             sx={{
               p: {
-                xs: 2,
-                sm: 3,
+                xs: 2.5,
+                sm: 4,
               },
             }}
           >
 
-            {/* =================================================
-                ORDER INFORMATION
-            ================================================= */}
+            {/* ORDER NUMBER */}
 
-            <Stack
-              direction={{
-                xs: "column",
-                sm: "row",
-              }}
-              justifyContent="space-between"
-              alignItems={{
-                xs: "flex-start",
-                sm: "center",
-              }}
-              spacing={1.5}
+            <Box
               sx={{
-                mb: 3,
+                mb: 2,
               }}
             >
 
-              <Box>
-
-                {orderNumber && (
-
-                  <>
-
-                    <Typography
-                      variant="body2"
-                      color="text.secondary"
-                    >
-                      Order Number
-                    </Typography>
-
-                    <Typography
-                      fontWeight={800}
-                    >
-                      {orderNumber}
-                    </Typography>
-
-                  </>
-
-                )}
-
-              </Box>
+              <Typography
+                variant="caption"
+                color="text.secondary"
+              >
+                Order Number
+              </Typography>
 
 
-              <Chip
-                label={
-                  confirmed
-                    ? "Screenshot Submitted"
-                    : "Payment Pending"
-                }
-                color={
-                  confirmed
-                    ? "success"
-                    : "warning"
-                }
+              <Typography
+                fontWeight={800}
+              >
+                {orderNumber ||
+                  order?.orderNumber ||
+                  "Order"}
+              </Typography>
+
+            </Box>
+
+
+            {/* ERROR */}
+
+            {error && (
+              <Alert
+                severity="error"
                 sx={{
-                  fontWeight:
-                    700,
+                  mb: 2,
+
+                  borderRadius: 3,
                 }}
-              />
+              >
+                {error}
+              </Alert>
+            )}
 
-            </Stack>
 
-
-            {/* =================================================
-                INFORMATION
-            ================================================= */}
+            {/* INFORMATION */}
 
             <Alert
               severity="info"
+              icon={<InfoOutlined />}
               sx={{
-                mb: 3,
+                mb: 2,
 
-                borderRadius:
-                  2,
+                borderRadius: 3,
               }}
             >
-              Scan the QR code using
-              PhonePe, Google Pay, Paytm,
-              BHIM or another UPI app.
+              Scan the QR code below using
+              PhonePe, Google Pay, Paytm, BHIM
+              or another UPI app.
             </Alert>
 
 
@@ -606,401 +867,53 @@ const PaymentScanner = () => {
 
             <Box
               sx={{
-                textAlign:
-                  "center",
+                border:
+                  "1px solid #9BD39E",
 
-                mb: 3,
+                bgcolor: "#EAF7EB",
+
+                borderRadius: 4,
+
+                px: 2,
+
+                py: {
+                  xs: 3,
+                  sm: 3.5,
+                },
+
+                textAlign: "center",
+
+                mb: 2,
               }}
             >
 
               <Typography
+                variant="body2"
                 color="text.secondary"
-                fontWeight={600}
               >
                 Amount to Pay
               </Typography>
 
+
               <Typography
                 sx={{
-                  fontSize: {
-                    xs: "2.3rem",
-                    sm: "3rem",
-                  },
-
-                  fontWeight:
-                    900,
-
-                  color:
-                    "#2E7D32",
-                }}
-              >
-                ₹
-                {amount.toLocaleString(
-                  "en-IN"
-                )}
-              </Typography>
-
-            </Box>
-
-
-            {/* =================================================
-                BHAGYA SCANNER
-            ================================================= */}
-
-            <Box
-              sx={{
-                display:
-                  "flex",
-
-                justifyContent:
-                  "center",
-
-                width:
-                  "100%",
-              }}
-            >
-
-              <Box
-                sx={{
-                  width: {
-                    xs: 280,
-                    sm: 360,
-                  },
-
-                  maxWidth:
-                    "100%",
-
-                  bgcolor:
-                    "#fff",
-
-                  p: {
-                    xs: 1,
-                    sm: 1.5,
-                  },
-
-                  borderRadius:
-                    3,
-
-                  border:
-                    "2px solid #E0E0E0",
-
-                  boxShadow:
-                    "0 10px 30px rgba(0,0,0,.08)",
-                }}
-              >
-
-                <img
-                  src={
-                    BhagyaScanner
-                  }
-                  alt="Bhagyamma Hub PhonePe Payment QR"
-                  style={{
-                    width:
-                      "100%",
-
-                    height:
-                      "auto",
-
-                    display:
-                      "block",
-                  }}
-                />
-
-              </Box>
-
-            </Box>
-
-
-            <Typography
-              textAlign="center"
-              color="text.secondary"
-              sx={{
-                mt: 2,
-
-                fontSize:
-                  "0.85rem",
-              }}
-            >
-              Scan the QR code using
-              your UPI application and
-              complete the payment.
-            </Typography>
-
-
-            <Divider
-              sx={{
-                my: 3,
-              }}
-            />
-
-
-            {/* =================================================
-                STEP INSTRUCTIONS
-            ================================================= */}
-
-            <Typography
-              variant="h6"
-              fontWeight={800}
-              sx={{
-                mb: 2,
-              }}
-            >
-              After completing payment
-            </Typography>
-
-
-            <Stack spacing={1.5}>
-
-              {/* STEP 1 */}
-
-              <Box
-                sx={{
-                  display:
-                    "flex",
-
-                  gap:
-                    1.5,
-
-                  alignItems:
-                    "flex-start",
-                }}
-              >
-
-                <CheckCircle
-                  sx={{
-                    color:
-                      "#2E7D32",
-
-                    flexShrink:
-                      0,
-                  }}
-                />
-
-                <Typography>
-                  Pay the exact amount shown
-                  above.
-                </Typography>
-
-              </Box>
-
-
-              {/* STEP 2 */}
-
-              <Box
-                sx={{
-                  display:
-                    "flex",
-
-                  gap:
-                    1.5,
-
-                  alignItems:
-                    "flex-start",
-                }}
-              >
-
-                <CheckCircle
-                  sx={{
-                    color:
-                      "#2E7D32",
-
-                    flexShrink:
-                      0,
-                  }}
-                />
-
-                <Typography>
-                  Take a screenshot after
-                  the payment is successful.
-                </Typography>
-
-              </Box>
-
-
-              {/* STEP 3 */}
-
-              <Box
-                sx={{
-                  display:
-                    "flex",
-
-                  gap:
-                    1.5,
-
-                  alignItems:
-                    "flex-start",
-                }}
-              >
-
-                <CheckCircle
-                  sx={{
-                    color:
-                      "#2E7D32",
-
-                    flexShrink:
-                      0,
-                  }}
-                />
-
-                <Typography>
-                  Send the payment screenshot
-                  to Bhagyamma Hub on
-                  WhatsApp.
-                </Typography>
-
-              </Box>
-
-            </Stack>
-
-
-            {/* =================================================
-                WHATSAPP NUMBER CARD
-            ================================================= */}
-
-            <Box
-              sx={{
-                mt: 3,
-
-                p: 2,
-
-                bgcolor:
-                  "#E8F5E9",
-
-                border:
-                  "1px solid #A5D6A7",
-
-                borderRadius:
-                  2,
-              }}
-            >
-
-              <Typography
-                textAlign="center"
-                fontWeight={800}
-                color="#1B5E20"
-              >
-                Send Screenshot To
-              </Typography>
-
-              <Typography
-                textAlign="center"
-                fontWeight={900}
-                sx={{
-                  fontSize:
-                    "1.15rem",
-
                   mt: 0.5,
 
-                  letterSpacing:
-                    0.5,
+                  fontSize: {
+                    xs: 38,
+                    sm: 46,
+                  },
+
+                  lineHeight: 1.1,
+
+                  fontWeight: 900,
+
+                  color: "#2E7D32",
                 }}
               >
-                +91 6363645068
-              </Typography>
-
-            </Box>
-
-
-            {/* =================================================
-                WHATSAPP BUTTON
-            ================================================= */}
-
-            <Button
-              fullWidth
-              variant="contained"
-              size="large"
-              startIcon={
-                <WhatsApp />
-              }
-              onClick={
-                handleWhatsApp
-              }
-              sx={{
-                mt: 2,
-
-                py: 1.5,
-
-                borderRadius:
-                  2.5,
-
-                bgcolor:
-                  "#25D366",
-
-                color:
-                  "#fff",
-
-                "&:hover": {
-                  bgcolor:
-                    "#1DA851",
-                },
-
-                textTransform:
-                  "none",
-
-                fontWeight:
-                  800,
-
-                fontSize: {
-                  xs: "0.9rem",
-                  sm: "1rem",
-                },
-              }}
-            >
-              Send Payment Screenshot
-              on WhatsApp
-            </Button>
-
-
-            <Typography
-              textAlign="center"
-              color="text.secondary"
-              sx={{
-                mt: 1,
-
-                fontSize:
-                  "0.8rem",
-              }}
-            >
-              WhatsApp will open with
-              your order details already
-              filled in.
-            </Typography>
-
-
-            {/* =================================================
-                CONFIRMATION BOX
-            ================================================= */}
-
-            <Box
-              sx={{
-                mt: 3,
-
-                p: {
-                  xs: 2,
-                  sm: 2.5,
-                },
-
-                borderRadius:
-                  3,
-
-                bgcolor:
-                  "#F1F8E9",
-
-                border:
-                  "1px solid #C5E1A5",
-              }}
-            >
-
-              <Typography
-                fontWeight={800}
-                sx={{
-                  mb: 0.8,
-
-                  color:
-                    "#33691E",
-                }}
-              >
-                Have you sent the screenshot?
+                {formatCurrency(
+                  finalAmount
+                )}
               </Typography>
 
 
@@ -1008,135 +921,523 @@ const PaymentScanner = () => {
                 variant="body2"
                 color="text.secondary"
                 sx={{
-                  lineHeight:
-                    1.6,
-
-                  mb: 2,
+                  mt: 1,
                 }}
               >
-                First send the payment
-                screenshot to
-                <strong>
-                  {" "}+91 6363645068
-                </strong>
-                {" "}through WhatsApp.
-                Then confirm your order
-                below.
+                Pay this exact amount
               </Typography>
-
-
-              <Button
-                fullWidth
-                variant="contained"
-                color="success"
-                startIcon={
-                  <VerifiedRounded />
-                }
-                disabled={
-                  !whatsappOpened
-                }
-                onClick={
-                  handleConfirmOrder
-                }
-                sx={{
-                  py: 1.4,
-
-                  borderRadius:
-                    2.2,
-
-                  textTransform:
-                    "none",
-
-                  fontWeight:
-                    800,
-
-                  fontSize: {
-                    xs: "0.85rem",
-                    sm: "0.95rem",
-                  },
-                }}
-              >
-                {whatsappOpened
-                  ? "I've Sent the Screenshot — Confirm Order"
-                  : "Send Screenshot on WhatsApp First"}
-              </Button>
-
-
-              {!whatsappOpened && (
-
-                <Typography
-                  textAlign="center"
-                  color="text.secondary"
-                  sx={{
-                    mt: 1,
-
-                    fontSize:
-                      "0.75rem",
-                  }}
-                >
-                  The confirmation button
-                  becomes available after
-                  opening WhatsApp.
-                </Typography>
-
-              )}
 
             </Box>
 
 
             {/* =================================================
-                PAYMENT VERIFICATION WARNING
+                PAYMENT BREAKDOWN
+            ================================================= */}
+
+            <Box
+              sx={{
+                bgcolor: "#FAFAFA",
+
+                borderRadius: 3,
+
+                px: 2,
+
+                py: 1.5,
+
+                mb: 2,
+              }}
+            >
+
+              <Stack
+                spacing={1.2}
+              >
+
+                <Stack
+                  direction="row"
+                  justifyContent="space-between"
+                >
+
+                  <Typography
+                    variant="body2"
+                  >
+                    Product Subtotal
+                  </Typography>
+
+
+                  <Typography
+                    variant="body2"
+                    fontWeight={700}
+                  >
+                    {formatCurrency(
+                      subtotal
+                    )}
+                  </Typography>
+
+                </Stack>
+
+
+                {discount > 0 && (
+
+                  <Stack
+                    direction="row"
+                    justifyContent="space-between"
+                  >
+
+                    <Typography
+                      variant="body2"
+                    >
+                      Discount
+                    </Typography>
+
+
+                    <Typography
+                      variant="body2"
+                      fontWeight={700}
+                      color="error.main"
+                    >
+                      -{formatCurrency(
+                        discount
+                      )}
+                    </Typography>
+
+                  </Stack>
+
+                )}
+
+
+                <Stack
+                  direction="row"
+                  justifyContent="space-between"
+                >
+
+                  <Typography
+                    variant="body2"
+                  >
+                    Delivery Charges
+                  </Typography>
+
+
+                  <Typography
+                    variant="body2"
+                    fontWeight={700}
+                  >
+                    {deliveryCharge === 0
+                      ? "FREE"
+                      : formatCurrency(
+                          deliveryCharge
+                        )}
+                  </Typography>
+
+                </Stack>
+
+
+                <Divider />
+
+
+                <Stack
+                  direction="row"
+                  justifyContent="space-between"
+                >
+
+                  <Typography
+                    variant="body2"
+                    fontWeight={800}
+                  >
+                    Total Payment
+                  </Typography>
+
+
+                  <Typography
+                    variant="body2"
+                    fontWeight={900}
+                    color="#2E7D32"
+                  >
+                    {formatCurrency(
+                      finalAmount
+                    )}
+                  </Typography>
+
+                </Stack>
+
+              </Stack>
+
+            </Box>
+
+
+            {/* =================================================
+                QR CODE
+            ================================================= */}
+
+            <Box
+              sx={{
+                textAlign: "center",
+
+                py: 2,
+              }}
+            >
+
+              <Box
+                sx={{
+                  width: {
+                    xs: 230,
+                    sm: 280,
+                  },
+
+                  mx: "auto",
+
+                  p: 1.5,
+
+                  bgcolor: "#fff",
+
+                  border:
+                    "1px solid #E0E0E0",
+
+                  borderRadius: 4,
+
+                  boxShadow:
+                    "0 5px 20px rgba(0,0,0,.08)",
+                }}
+              >
+
+                <Box
+                  component="img"
+                  src={BhagyaScanner}
+                  alt="Bhagyamma Hub UPI QR Code"
+                  sx={{
+                    width: "100%",
+
+                    height: "auto",
+
+                    display: "block",
+
+                    objectFit: "contain",
+                  }}
+                />
+
+              </Box>
+
+
+              <Typography
+                variant="caption"
+                color="text.secondary"
+                sx={{
+                  display: "block",
+
+                  mt: 1.5,
+                }}
+              >
+                Scan this QR code with your
+                UPI payment application.
+              </Typography>
+
+            </Box>
+
+
+            <Divider
+              sx={{
+                my: 2,
+              }}
+            />
+
+
+            {/* =================================================
+                AFTER PAYMENT
+            ================================================= */}
+
+            <Typography
+              variant="h6"
+              fontWeight={800}
+              sx={{
+                mb: 1.5,
+              }}
+            >
+              After completing payment
+            </Typography>
+
+
+            <Stack
+              spacing={1}
+              sx={{
+                mb: 2,
+              }}
+            >
+
+              <Stack
+                direction="row"
+                spacing={1}
+                alignItems="center"
+              >
+
+                <CheckCircle
+                  sx={{
+                    color: "#2E7D32",
+
+                    fontSize: 18,
+                  }}
+                />
+
+                <Typography
+                  variant="body2"
+                >
+                  Pay exactly{" "}
+                  <strong>
+                    {formatCurrency(
+                      finalAmount
+                    )}
+                  </strong>
+                  .
+                </Typography>
+
+              </Stack>
+
+
+              <Stack
+                direction="row"
+                spacing={1}
+                alignItems="center"
+              >
+
+                <CheckCircle
+                  sx={{
+                    color: "#2E7D32",
+
+                    fontSize: 18,
+                  }}
+                />
+
+                <Typography
+                  variant="body2"
+                >
+                  Take a screenshot showing
+                  the successful payment.
+                </Typography>
+
+              </Stack>
+
+
+              <Stack
+                direction="row"
+                spacing={1}
+                alignItems="center"
+              >
+
+                <CheckCircle
+                  sx={{
+                    color: "#2E7D32",
+
+                    fontSize: 18,
+                  }}
+                />
+
+                <Typography
+                  variant="body2"
+                >
+                  Send the screenshot to
+                  Bhagyamma Hub through
+                  WhatsApp.
+                </Typography>
+
+              </Stack>
+
+            </Stack>
+
+
+            {/* =================================================
+                WHATSAPP
+            ================================================= */}
+
+            <Button
+              fullWidth
+              variant="contained"
+              startIcon={<WhatsApp />}
+              onClick={handleWhatsApp}
+              sx={{
+                py: 1.5,
+
+                borderRadius: 3,
+
+                bgcolor: "#25D366",
+
+                color: "#fff",
+
+                fontWeight: 800,
+
+                textTransform: "none",
+
+                "&:hover": {
+                  bgcolor: "#1EBE5D",
+                },
+              }}
+            >
+              Send Payment Screenshot on WhatsApp
+            </Button>
+
+
+            <Typography
+              variant="caption"
+              color="text.secondary"
+              sx={{
+                display: "block",
+
+                textAlign: "center",
+
+                mt: 1,
+              }}
+            >
+              WhatsApp: +91 6363645068
+            </Typography>
+
+
+            {/* =================================================
+                PENDING
             ================================================= */}
 
             <Alert
               severity="warning"
               sx={{
-                mt: 3,
+                mt: 2,
 
-                borderRadius:
-                  2,
+                borderRadius: 3,
               }}
             >
-              Your payment is not automatically
-              verified. Bhagyamma Hub will
-              manually verify the screenshot
-              before marking the payment as
-              completed.
+              Your payment will remain pending
+              until Bhagyamma Hub manually
+              verifies the payment.
             </Alert>
 
 
             {/* =================================================
-                FINAL NOTE
+                BEFORE COMPLETION
+            ================================================= */}
+
+            {!paymentCompleted && (
+
+              <Alert
+                severity="info"
+                sx={{
+                  mt: 1.5,
+
+                  borderRadius: 3,
+                }}
+              >
+                Your cart will be cleared after
+                you confirm that payment has been
+                completed.
+              </Alert>
+
+            )}
+
+
+            {/* =================================================
+                PAYMENT COMPLETED
+            ================================================= */}
+
+            {!paymentCompleted ? (
+
+              <Button
+                fullWidth
+                variant="contained"
+                startIcon={
+                  clearingCart ? (
+
+                    <CircularProgress
+                      size={18}
+                      sx={{
+                        color: "#fff",
+                      }}
+                    />
+
+                  ) : (
+
+                    <CheckCircle />
+
+                  )
+                }
+                onClick={
+                  handlePaymentCompleted
+                }
+                disabled={
+                  clearingCart
+                }
+                sx={{
+                  mt: 2,
+
+                  py: 1.5,
+
+                  borderRadius: 3,
+
+                  bgcolor: "#2E7D32",
+
+                  color: "#fff",
+
+                  fontWeight: 800,
+
+                  textTransform: "none",
+
+                  "&:hover": {
+                    bgcolor: "#256628",
+                  },
+
+                  "&:disabled": {
+                    bgcolor: "#A5C9A7",
+
+                    color: "#fff",
+                  },
+                }}
+              >
+                {clearingCart
+                  ? "Clearing Cart..."
+                  : "Payment Completed"}
+              </Button>
+
+            ) : (
+
+              <Alert
+                severity="success"
+                sx={{
+                  mt: 2,
+
+                  borderRadius: 3,
+
+                  fontWeight: 600,
+                }}
+              >
+                Payment submitted successfully.
+                Your cart has been cleared and your
+                order is pending verification.
+              </Alert>
+
+            )}
+
+
+            {/* =================================================
+                SECURITY
             ================================================= */}
 
             <Typography
-              textAlign="center"
               variant="caption"
               color="text.secondary"
               sx={{
-                display:
-                  "block",
+                display: "block",
+
+                textAlign: "center",
 
                 mt: 2,
-
-                lineHeight:
-                  1.5,
               }}
             >
-              Please keep your payment
-              screenshot until your order
-              has been verified.
+              Your order details are securely
+              processed.
             </Typography>
 
-          </CardContent>
+          </Box>
 
-        </Card>
+        </Paper>
 
       </Container>
 
     </Box>
-
   );
 };
+
 
 export default PaymentScanner;

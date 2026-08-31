@@ -1,19 +1,54 @@
-const express = require("express");
+const express =
+  require("express");
 
-const router = express.Router();
+const router =
+  express.Router();
 
-const { protect } =
-require("../middleware/auth.middleware");
+
+// ============================================================
+// AUTH
+// ============================================================
+
+const {
+  protect,
+} =
+  require("../middleware/auth.middleware");
+
+
+// ============================================================
+// CONTROLLER
+// ============================================================
 
 const controller =
-require("../controllers/commissionHistory.controller");
+  require("../controllers/commissionHistory.controller");
 
-console.log("Commission History Controller:", controller);
+
+// ============================================================
+// GET MY COMMISSION HISTORY
+// ============================================================
+//
+// LEGACY COMPATIBILITY ROUTE.
+//
+// It uses the EXACT SAME repository as:
+//
+// /commission/my
+//
+// ============================================================
 
 router.get(
-    "/my",
-    protect,
-    controller.getMyHistory
+
+  "/my",
+
+  protect,
+
+  controller.getMyHistory
+
 );
 
-module.exports = router;
+
+// ============================================================
+// EXPORT
+// ============================================================
+
+module.exports =
+  router;

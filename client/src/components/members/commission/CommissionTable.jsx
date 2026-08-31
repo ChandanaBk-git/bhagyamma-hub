@@ -34,8 +34,7 @@ const CommissionTable = ({
             md: "28px",
           },
 
-          border:
-            "1px solid #E8F5E9",
+          border: "1px solid #E8F5E9",
 
           backgroundColor: "#FFFFFF",
 
@@ -126,7 +125,7 @@ const CommissionTable = ({
   }
 
   // =====================================================
-  // HISTORY
+  // COMMISSION HISTORY
   // =====================================================
 
   return (
@@ -144,8 +143,7 @@ const CommissionTable = ({
           md: "28px",
         },
 
-        border:
-          "1px solid #E8F5E9",
+        border: "1px solid #E8F5E9",
 
         backgroundColor: "#FFFFFF",
 
@@ -240,8 +238,7 @@ const CommissionTable = ({
 
               backgroundColor: "#FFFFFF",
 
-              border:
-                "1px solid #EEEEEE",
+              border: "1px solid #EEEEEE",
 
               transition:
                 "background-color .2s ease, transform .2s ease",
@@ -257,7 +254,7 @@ const CommissionTable = ({
             }}
           >
             {/* =================================================
-                TOP SECTION
+                USER + COMMISSION AMOUNT
             ================================================= */}
 
             <Stack
@@ -364,7 +361,7 @@ const CommissionTable = ({
                 </Box>
               </Stack>
 
-              {/* AMOUNT */}
+              {/* COMMISSION AMOUNT */}
 
               <Typography
                 fontWeight={700}
@@ -392,7 +389,7 @@ const CommissionTable = ({
             </Stack>
 
             {/* =================================================
-                CHIPS
+                LEVEL / PERCENTAGE / STATUS
             ================================================= */}
 
             <Stack
@@ -408,14 +405,22 @@ const CommissionTable = ({
                 color="primary"
               />
 
-              <Chip
-                size="small"
-                label={`${item?.percentage ?? 0}%`}
-                sx={{
-                  bgcolor: "#FFF3E0",
-                  color: "#EF6C00",
-                }}
-              />
+<Chip
+  size="small"
+  label={`${Number(
+    item?.percentage ??
+      item?.commissionPercent ??
+      item?.commissionPercentage ??
+      item?.commissionRate ??
+      item?.percent ??
+      item?.rate ??
+      0
+  )}%`}
+  sx={{
+    bgcolor: "#FFF3E0",
+    color: "#EF6C00",
+  }}
+/>
 
               <Chip
                 size="small"
@@ -425,40 +430,13 @@ const CommissionTable = ({
             </Stack>
 
             {/* =================================================
-                JOINING AMOUNT
-            ================================================= */}
-
-            <Typography
-              mt={2}
-              color="text.secondary"
-              sx={{
-                fontSize: {
-                  xs: "0.8rem",
-                  sm: "0.88rem",
-                },
-              }}
-            >
-              Joining Amount :{" "}
-              <Box
-                component="span"
-                fontWeight={700}
-                color="#333"
-              >
-                ₹
-                {Number(
-                  item?.joiningAmount || 0
-                ).toLocaleString("en-IN")}
-              </Box>
-            </Typography>
-
-            {/* =================================================
                 DATE
             ================================================= */}
 
             <Typography
               color="text.secondary"
               sx={{
-                mt: 0.5,
+                mt: 1.5,
 
                 fontSize: {
                   xs: "0.8rem",
@@ -466,7 +444,7 @@ const CommissionTable = ({
                 },
               }}
             >
-              Earned On :{" "}
+              Earned On:{" "}
               {item?.createdAt
                 ? new Date(
                     item.createdAt

@@ -36,16 +36,24 @@ import {
 } from "../../services/order.service";
 
 
+/* ============================================================
+   ORDER STATUSES
+   These must match the backend.
+============================================================ */
+
 const ORDER_STATUSES = [
   "PLACED",
   "CONFIRMED",
   "PACKED",
   "SHIPPED",
-  "OUT_FOR_DELIVERY",
   "DELIVERED",
   "CANCELLED",
 ];
 
+
+/* ============================================================
+   PAYMENT STATUSES
+============================================================ */
 
 const PAYMENT_STATUSES = [
   "PENDING",
@@ -54,6 +62,10 @@ const PAYMENT_STATUSES = [
   "REFUNDED",
 ];
 
+
+/* ============================================================
+   ADMIN ORDERS
+============================================================ */
 
 const AdminOrders = () => {
 
@@ -73,239 +85,404 @@ const AdminOrders = () => {
     useState(false);
 
 
+  /* ==========================================================
+     LOAD ORDERS
+  ========================================================== */
+
   useEffect(() => {
-
     loadOrders();
-
   }, []);
 
 
-  const loadOrders =
-    async () => {
+  const loadOrders = async () => {
 
-      try {
+    try {
 
-        setLoading(true);
+      setLoading(true);
 
-        setError("");
+      setError("");
 
-        const data =
-          await getAdminOrders();
-
-        setOrders(
-          Array.isArray(data)
-            ? data
-            : []
-        );
-
-      } catch (err) {
-
-        console.error(
-          "ADMIN ORDERS:",
-          err
-        );
-
-        setError(
-          err?.response?.data?.message ||
-          "Unable to load orders."
-        );
-
-      } finally {
-
-        setLoading(false);
-
-      }
-
-    };
+      const response =
+        await getAdminOrders();
 
 
-  const handlePaymentStatus =
-    async (
-      orderId,
-      paymentStatus
-    ) => {
+      console.log(
+        "======================================"
+      );
 
-      try {
+      console.log(
+        "ADMIN ORDERS RESPONSE:",
+        response
+      );
 
-        setUpdating(true);
-
-        const updated =
-          await updatePaymentStatus(
-            orderId,
-            paymentStatus
-          );
+      console.log(
+        "======================================"
+      );
 
 
-        setOrders(
-          (previous) =>
-            previous.map(
-              (order) =>
-                order._id ===
-                orderId
-                  ? {
-                      ...order,
-                      ...updated,
-                    }
-                  : order
-            )
-        );
+      /*
+       * Backend can return either:
+       *
+       * 1. Array
+       *
+       * [
+       *   {...},
+       *   {...}
+       * ]
+       *
+       * OR
+       *
+       * 2. Paginated object
+       *
+       * {
+       *   orders: [...],
+       *   pagination: {...}
+       * }
+       *
+       * Support both.
+       */
+
+      let adminOrders = [];
 
 
-        setSelectedOrder(
-          (previous) =>
-            previous?._id ===
-            orderId
-              ? {
-                  ...previous,
-                  ...updated,
-                }
-              : previous
-        );
-
-      } catch (err) {
-
-        console.error(
-          err
-        );
-
-        setError(
-          err?.response?.data?.message ||
-          "Unable to update payment status."
-        );
-
-      } finally {
-
-        setUpdating(false);
-
-      }
-
-    };
-
-
-  const handleOrderStatus =
-    async (
-      orderId,
-      status
-    ) => {
-
-      try {
-
-        setUpdating(true);
-
-        const updated =
-          await updateOrderStatus(
-            orderId,
-            status
-          );
-
-
-        setOrders(
-          (previous) =>
-            previous.map(
-              (order) =>
-                order._id ===
-                orderId
-                  ? {
-                      ...order,
-                      ...updated,
-                    }
-                  : order
-            )
-        );
-
-
-        setSelectedOrder(
-          (previous) =>
-            previous?._id ===
-            orderId
-              ? {
-                  ...previous,
-                  ...updated,
-                }
-              : previous
-        );
-
-      } catch (err) {
-
-        console.error(
-          err
-        );
-
-        setError(
-          err?.response?.data?.message ||
-          "Unable to update order status."
-        );
-
-      } finally {
-
-        setUpdating(false);
-
-      }
-
-    };
-
-
-  const statusColor =
-    (status) => {
-
-      switch (
-        String(
-          status || ""
-        ).toUpperCase()
+      if (
+        Array.isArray(response)
       ) {
 
-        case "DELIVERED":
-          return "success";
+        adminOrders =
+          response;
 
-        case "CANCELLED":
-          return "error";
-
-        case "SHIPPED":
-        case "OUT_FOR_DELIVERY":
-          return "info";
-
-        case "CONFIRMED":
-        case "PACKED":
-          return "primary";
-
-        default:
-          return "warning";
-
-      }
-
-    };
-
-
-  const paymentColor =
-    (status) => {
-
-      switch (
-        String(
-          status || ""
-        ).toUpperCase()
+      } else if (
+        Array.isArray(
+          response?.orders
+        )
       ) {
 
-        case "PAID":
-          return "success";
+        adminOrders =
+          response.orders;
 
-        case "FAILED":
-        case "REFUNDED":
-          return "error";
+      } else if (
+        Array.isArray(
+          response?.data
+        )
+      ) {
 
-        default:
-          return "warning";
+        adminOrders =
+          response.data;
+
+      } else if (
+        Array.isArray(
+          response?.data?.orders
+        )
+      ) {
+
+        adminOrders =
+          response.data.orders;
 
       }
 
-    };
+
+      console.log(
+        "ADMIN ORDERS ARRAY:",
+        adminOrders
+      );
+
+      console.log(
+        "ADMIN ORDER COUNT:",
+        adminOrders.length
+      );
 
 
-  const formatDate =
-    (date) => {
+      setOrders(
+        adminOrders
+      );
 
-      if (!date) {
-        return "-";
-      }
+
+    } catch (err) {
+
+      console.error(
+        "ADMIN ORDERS ERROR:",
+        err
+      );
+
+
+      const message =
+        err?.response?.data?.message ||
+        err?.message ||
+        "Unable to load orders.";
+
+
+      setError(
+        message
+      );
+
+
+    } finally {
+
+      setLoading(false);
+
+    }
+
+  };
+
+
+  /* ==========================================================
+     UPDATE PAYMENT STATUS
+  ========================================================== */
+
+  const handlePaymentStatus = async (
+    orderId,
+    paymentStatus
+  ) => {
+
+    try {
+
+      setUpdating(true);
+
+      setError("");
+
+
+      const response =
+        await updatePaymentStatus(
+          orderId,
+          paymentStatus
+        );
+
+
+      console.log(
+        "PAYMENT STATUS RESPONSE:",
+        response
+      );
+
+
+      /*
+       * Depending on the service implementation,
+       * the returned order may be:
+       *
+       * response
+       * response.data
+       * response.data.data
+       */
+
+      const updatedOrder =
+        response?.data?.data ||
+        response?.data ||
+        response;
+
+
+      setOrders(
+        (previous) =>
+          previous.map(
+            (order) =>
+              order._id === orderId
+                ? {
+                    ...order,
+                    ...updatedOrder,
+                  }
+                : order
+          )
+      );
+
+
+      setSelectedOrder(
+        (previous) =>
+          previous?._id === orderId
+            ? {
+                ...previous,
+                ...updatedOrder,
+              }
+            : previous
+      );
+
+
+    } catch (err) {
+
+      console.error(
+        "UPDATE PAYMENT STATUS ERROR:",
+        err
+      );
+
+
+      setError(
+        err?.response?.data?.message ||
+        err?.message ||
+        "Unable to update payment status."
+      );
+
+
+    } finally {
+
+      setUpdating(false);
+
+    }
+
+  };
+
+
+  /* ==========================================================
+     UPDATE ORDER STATUS
+  ========================================================== */
+
+  const handleOrderStatus = async (
+    orderId,
+    status
+  ) => {
+
+    try {
+
+      setUpdating(true);
+
+      setError("");
+
+
+      const response =
+        await updateOrderStatus(
+          orderId,
+          status
+        );
+
+
+      console.log(
+        "ORDER STATUS RESPONSE:",
+        response
+      );
+
+
+      const updatedOrder =
+        response?.data?.data ||
+        response?.data ||
+        response;
+
+
+      setOrders(
+        (previous) =>
+          previous.map(
+            (order) =>
+              order._id === orderId
+                ? {
+                    ...order,
+                    ...updatedOrder,
+                  }
+                : order
+          )
+      );
+
+
+      setSelectedOrder(
+        (previous) =>
+          previous?._id === orderId
+            ? {
+                ...previous,
+                ...updatedOrder,
+              }
+            : previous
+      );
+
+
+    } catch (err) {
+
+      console.error(
+        "UPDATE ORDER STATUS ERROR:",
+        err
+      );
+
+
+      setError(
+        err?.response?.data?.message ||
+        err?.message ||
+        "Unable to update order status."
+      );
+
+
+    } finally {
+
+      setUpdating(false);
+
+    }
+
+  };
+
+
+  /* ==========================================================
+     ORDER STATUS COLOR
+  ========================================================== */
+
+  const statusColor = (
+    status
+  ) => {
+
+    switch (
+      String(
+        status || ""
+      ).toUpperCase()
+    ) {
+
+      case "DELIVERED":
+        return "success";
+
+      case "CANCELLED":
+        return "error";
+
+      case "SHIPPED":
+        return "info";
+
+      case "CONFIRMED":
+      case "PACKED":
+        return "primary";
+
+      case "PLACED":
+      default:
+        return "warning";
+
+    }
+
+  };
+
+
+  /* ==========================================================
+     PAYMENT STATUS COLOR
+  ========================================================== */
+
+  const paymentColor = (
+    status
+  ) => {
+
+    switch (
+      String(
+        status || ""
+      ).toUpperCase()
+    ) {
+
+      case "PAID":
+        return "success";
+
+      case "FAILED":
+      case "REFUNDED":
+        return "error";
+
+      case "PENDING":
+      default:
+        return "warning";
+
+    }
+
+  };
+
+
+  /* ==========================================================
+     FORMAT DATE
+  ========================================================== */
+
+  const formatDate = (
+    date
+  ) => {
+
+    if (!date) {
+      return "-";
+    }
+
+
+    try {
 
       return new Date(
         date
@@ -313,27 +490,50 @@ const AdminOrders = () => {
         "en-IN"
       );
 
-    };
+    } catch {
 
+      return "-";
+
+    }
+
+  };
+
+
+  /* ==========================================================
+     LOADING
+  ========================================================== */
 
   if (loading) {
 
     return (
+
       <Box
         display="flex"
         justifyContent="center"
+        alignItems="center"
         py={8}
       >
+
         <CircularProgress />
+
       </Box>
+
     );
 
   }
 
 
+  /* ==========================================================
+     MAIN UI
+  ========================================================== */
+
   return (
 
     <Box>
+
+      {/* ======================================================
+          PAGE TITLE
+      ====================================================== */}
 
       <Typography
         variant="h4"
@@ -344,6 +544,10 @@ const AdminOrders = () => {
       </Typography>
 
 
+      {/* ======================================================
+          ERROR
+      ====================================================== */}
+
       {error && (
 
         <Alert
@@ -351,12 +555,19 @@ const AdminOrders = () => {
           sx={{
             mb: 2,
           }}
+          onClose={() =>
+            setError("")
+          }
         >
           {error}
         </Alert>
 
       )}
 
+
+      {/* ======================================================
+          NO ORDERS
+      ====================================================== */}
 
       {orders.length === 0 ? (
 
@@ -377,6 +588,10 @@ const AdminOrders = () => {
         </Card>
 
       ) : (
+
+        /* ====================================================
+           ORDERS LIST
+        ==================================================== */
 
         <Stack spacing={2}>
 
@@ -403,7 +618,9 @@ const AdminOrders = () => {
                     spacing={2}
                   >
 
-                    {/* CUSTOMER */}
+                    {/* ======================================
+                        CUSTOMER
+                    ====================================== */}
 
                     <Box>
 
@@ -411,13 +628,16 @@ const AdminOrders = () => {
                         variant="h6"
                         fontWeight="bold"
                       >
-                        {order.orderNumber}
+                        {order.orderNumber ||
+                          "Order"}
                       </Typography>
+
 
                       <Typography>
                         {order.customerName ||
                           "Customer"}
                       </Typography>
+
 
                       <Typography
                         color="text.secondary"
@@ -426,10 +646,12 @@ const AdminOrders = () => {
                           "-"}
                       </Typography>
 
+
                       <Chip
                         size="small"
                         label={
-                          order.orderType
+                          order.orderType ||
+                          "ORDER"
                         }
                         sx={{
                           mt: 1,
@@ -439,7 +661,9 @@ const AdminOrders = () => {
                     </Box>
 
 
-                    {/* AMOUNT */}
+                    {/* ======================================
+                        AMOUNT
+                    ====================================== */}
 
                     <Box>
 
@@ -450,6 +674,7 @@ const AdminOrders = () => {
                         Amount
                       </Typography>
 
+
                       <Typography
                         variant="h6"
                         fontWeight="bold"
@@ -458,7 +683,7 @@ const AdminOrders = () => {
                         ₹
                         {Number(
                           order.finalAmount ||
-                            0
+                          0
                         ).toLocaleString(
                           "en-IN"
                         )}
@@ -467,7 +692,9 @@ const AdminOrders = () => {
                     </Box>
 
 
-                    {/* PAYMENT */}
+                    {/* ======================================
+                        PAYMENT
+                    ====================================== */}
 
                     <Box>
 
@@ -478,12 +705,14 @@ const AdminOrders = () => {
                         Payment
                       </Typography>
 
+
                       <Box>
 
                         <Chip
                           size="small"
                           label={
-                            order.paymentStatus
+                            order.paymentStatus ||
+                            "PENDING"
                           }
                           color={
                             paymentColor(
@@ -497,7 +726,9 @@ const AdminOrders = () => {
                     </Box>
 
 
-                    {/* ORDER STATUS */}
+                    {/* ======================================
+                        ORDER STATUS
+                    ====================================== */}
 
                     <Box>
 
@@ -508,12 +739,14 @@ const AdminOrders = () => {
                         Order Status
                       </Typography>
 
+
                       <Box>
 
                         <Chip
                           size="small"
                           label={
-                            order.status
+                            order.status ||
+                            "PLACED"
                           }
                           color={
                             statusColor(
@@ -527,7 +760,9 @@ const AdminOrders = () => {
                     </Box>
 
 
-                    {/* ACTION */}
+                    {/* ======================================
+                        VIEW DETAILS
+                    ====================================== */}
 
                     <Box
                       display="flex"
@@ -564,9 +799,9 @@ const AdminOrders = () => {
       )}
 
 
-      {/* ==================================================
-          ADMIN DETAILS DIALOG
-      ================================================== */}
+      {/* ======================================================
+          ADMIN ORDER DETAILS DIALOG
+      ====================================================== */}
 
       <Dialog
         open={
@@ -587,73 +822,115 @@ const AdminOrders = () => {
 
           <>
 
+            {/* ==================================================
+                TITLE
+            ================================================== */}
+
             <DialogTitle>
+
               Order Details
+
             </DialogTitle>
 
+
+            {/* ==================================================
+                CONTENT
+            ================================================== */}
 
             <DialogContent>
 
               <Stack spacing={2}>
+
+
+                {/* ==============================================
+                    ORDER NUMBER
+                ============================================== */}
 
                 <Typography
                   variant="h6"
                   fontWeight="bold"
                 >
                   {
-                    selectedOrder.orderNumber
+                    selectedOrder.orderNumber ||
+                    "-"
                   }
                 </Typography>
 
 
+                {/* ==============================================
+                    CUSTOMER
+                ============================================== */}
+
                 <Typography>
+
                   Customer:{" "}
+
                   <strong>
                     {
-                      selectedOrder.customerName
+                      selectedOrder.customerName ||
+                      "-"
                     }
                   </strong>
+
                 </Typography>
 
 
                 <Typography>
+
                   Mobile:{" "}
+
                   {
                     selectedOrder.customerMobile ||
                     "-"
                   }
+
                 </Typography>
 
 
                 <Typography>
+
                   Email:{" "}
+
                   {
                     selectedOrder.customerEmail ||
                     "-"
                   }
+
                 </Typography>
 
 
                 <Typography>
+
                   Order Type:{" "}
+
                   {
-                    selectedOrder.orderType
+                    selectedOrder.orderType ||
+                    "-"
                   }
+
                 </Typography>
 
 
                 <Typography>
+
                   Date:{" "}
+
                   {
                     formatDate(
-                      selectedOrder.createdAt
+                      selectedOrder.createdAt ||
+                      selectedOrder.placedAt
                     )
                   }
+
                 </Typography>
 
 
                 <Divider />
 
+
+                {/* ==============================================
+                    DELIVERY DETAILS
+                ============================================== */}
 
                 <Typography
                   variant="h6"
@@ -664,41 +941,80 @@ const AdminOrders = () => {
 
 
                 <Typography>
+
+                  {
+                    selectedOrder.deliveryDetails
+                      ?.name ||
+                    selectedOrder.customerName ||
+                    "-"
+                  }
+
+                </Typography>
+
+
+                <Typography>
+
+                  Mobile:{" "}
+
+                  {
+                    selectedOrder.deliveryDetails
+                      ?.mobile ||
+                    selectedOrder.customerMobile ||
+                    "-"
+                  }
+
+                </Typography>
+
+
+                <Typography>
+
                   {
                     selectedOrder.deliveryDetails
                       ?.address ||
                     "-"
                   }
+
                 </Typography>
 
 
                 <Typography>
+
                   {
                     selectedOrder.deliveryDetails
                       ?.city ||
                     "-"
                   }
+
                   {" - "}
+
                   {
                     selectedOrder.deliveryDetails
                       ?.state ||
                     "-"
                   }
+
                 </Typography>
 
 
                 <Typography>
+
                   Pincode:{" "}
+
                   {
                     selectedOrder.deliveryDetails
                       ?.pincode ||
                     "-"
                   }
+
                 </Typography>
 
 
                 <Divider />
 
+
+                {/* ==============================================
+                    ORDER ITEMS
+                ============================================== */}
 
                 <Typography
                   variant="h6"
@@ -708,69 +1024,199 @@ const AdminOrders = () => {
                 </Typography>
 
 
-                {selectedOrder.items?.map(
-                  (
-                    item,
-                    index
-                  ) => (
+                {Array.isArray(
+                  selectedOrder.items
+                ) &&
+                selectedOrder.items.length > 0 ? (
 
-                    <Box
-                      key={
-                        item._id ||
-                        index
-                      }
-                      sx={{
-                        p: 1.5,
-                        bgcolor:
-                          "#F7F7F7",
-                        borderRadius: 2,
-                      }}
-                    >
+                  selectedOrder.items.map(
+                    (
+                      item,
+                      index
+                    ) => (
 
-                      <Typography
-                        fontWeight="bold"
-                      >
-                        {
-                          item.productName ||
-                          item.productId
-                            ?.productName ||
-                          "Product"
+                      <Box
+                        key={
+                          item._id ||
+                          index
                         }
-                      </Typography>
-
-                      <Typography
-                        variant="body2"
+                        sx={{
+                          p: 1.5,
+                          bgcolor:
+                            "#F7F7F7",
+                          borderRadius: 2,
+                        }}
                       >
-                        Quantity:{" "}
-                        {
-                          item.quantity
-                        }
-                      </Typography>
 
-                      <Typography
-                        variant="body2"
-                      >
-                        Price: ₹
-                        {
-                          Number(
-                            item.price ||
+                        <Typography
+                          fontWeight="bold"
+                        >
+
+                          {
+                            item.productName ||
+                            item.productId?.productName ||
+                            item.productId?.name ||
+                            item.name ||
+                            "Product"
+                          }
+
+                        </Typography>
+
+
+                        <Typography
+                          variant="body2"
+                        >
+
+                          Quantity:{" "}
+
+                          {
+                            item.quantity ||
+                            0
+                          }
+
+                        </Typography>
+
+
+                        <Typography
+                          variant="body2"
+                        >
+
+                          Price: ₹
+
+                          {
+                            Number(
+                              item.price ||
                               0
-                          ).toLocaleString(
-                            "en-IN"
-                          )
-                        }
-                      </Typography>
+                            ).toLocaleString(
+                              "en-IN"
+                            )
+                          }
 
-                    </Box>
+                        </Typography>
+
+
+                        <Typography
+                          variant="body2"
+                        >
+
+                          Total: ₹
+
+                          {
+                            Number(
+                              item.total ||
+                              (
+                                Number(
+                                  item.price ||
+                                  0
+                                ) *
+                                Number(
+                                  item.quantity ||
+                                  0
+                                )
+                              )
+                            ).toLocaleString(
+                              "en-IN"
+                            )
+                          }
+
+                        </Typography>
+
+                      </Box>
+
+                    )
 
                   )
+
+                ) : (
+
+                  <Typography
+                    color="text.secondary"
+                  >
+                    No item details available.
+                  </Typography>
+
                 )}
 
 
                 <Divider />
 
 
-                {/* PAYMENT CONTROL */}
+                {/* ==============================================
+                    ORDER TOTAL
+                ============================================== */}
+
+                <Typography>
+
+                  Subtotal: ₹
+
+                  {
+                    Number(
+                      selectedOrder.subtotal ||
+                      0
+                    ).toLocaleString(
+                      "en-IN"
+                    )
+                  }
+
+                </Typography>
+
+
+                <Typography>
+
+                  Delivery: ₹
+
+                  {
+                    Number(
+                      selectedOrder.deliveryCharge ||
+                      0
+                    ).toLocaleString(
+                      "en-IN"
+                    )
+                  }
+
+                </Typography>
+
+
+                <Typography
+                  variant="h6"
+                  fontWeight="bold"
+                  color="success.main"
+                >
+
+                  Final Amount: ₹
+
+                  {
+                    Number(
+                      selectedOrder.finalAmount ||
+                      0
+                    ).toLocaleString(
+                      "en-IN"
+                    )
+                  }
+
+                </Typography>
+
+
+                <Typography>
+
+                  Selling Points:{" "}
+
+                  {
+                    Number(
+                      selectedOrder.sellingPoints ||
+                      0
+                    )
+                  }
+
+                </Typography>
+
+
+                <Divider />
+
+
+                {/* ==============================================
+                    PAYMENT CONTROL
+                ============================================== */}
 
                 <FormControl
                   fullWidth
@@ -779,6 +1225,7 @@ const AdminOrders = () => {
                   <InputLabel>
                     Payment Status
                   </InputLabel>
+
 
                   <Select
                     label="Payment Status"
@@ -789,7 +1236,9 @@ const AdminOrders = () => {
                     disabled={
                       updating
                     }
-                    onChange={(event) =>
+                    onChange={(
+                      event
+                    ) =>
                       handlePaymentStatus(
                         selectedOrder._id,
                         event.target.value
@@ -803,10 +1252,16 @@ const AdminOrders = () => {
                       ) => (
 
                         <MenuItem
-                          key={status}
-                          value={status}
+                          key={
+                            status
+                          }
+                          value={
+                            status
+                          }
                         >
-                          {status}
+                          {
+                            status
+                          }
                         </MenuItem>
 
                       )
@@ -817,7 +1272,9 @@ const AdminOrders = () => {
                 </FormControl>
 
 
-                {/* ORDER STATUS CONTROL */}
+                {/* ==============================================
+                    ORDER STATUS CONTROL
+                ============================================== */}
 
                 <FormControl
                   fullWidth
@@ -826,6 +1283,7 @@ const AdminOrders = () => {
                   <InputLabel>
                     Order Status
                   </InputLabel>
+
 
                   <Select
                     label="Order Status"
@@ -836,7 +1294,9 @@ const AdminOrders = () => {
                     disabled={
                       updating
                     }
-                    onChange={(event) =>
+                    onChange={(
+                      event
+                    ) =>
                       handleOrderStatus(
                         selectedOrder._id,
                         event.target.value
@@ -850,10 +1310,16 @@ const AdminOrders = () => {
                       ) => (
 
                         <MenuItem
-                          key={status}
-                          value={status}
+                          key={
+                            status
+                          }
+                          value={
+                            status
+                          }
                         >
-                          {status}
+                          {
+                            status
+                          }
                         </MenuItem>
 
                       )
@@ -864,24 +1330,38 @@ const AdminOrders = () => {
                 </FormControl>
 
 
-                {selectedOrder.paymentStatus ===
+                {/* ==============================================
+                    PAID MESSAGE
+                ============================================== */}
+
+                {
+                  String(
+                    selectedOrder.paymentStatus ||
+                    ""
+                  ).toUpperCase() ===
                   "PAID" && (
 
-                  <Alert
-                    severity="success"
-                    icon={
-                      <CheckCircle />
-                    }
-                  >
-                    Payment received.
-                  </Alert>
+                    <Alert
+                      severity="success"
+                      icon={
+                        <CheckCircle />
+                      }
+                    >
+                      Payment received.
+                    </Alert>
 
-                )}
+                  )
+                }
+
 
               </Stack>
 
             </DialogContent>
 
+
+            {/* ==================================================
+                CLOSE
+            ================================================== */}
 
             <DialogActions>
 
@@ -906,6 +1386,7 @@ const AdminOrders = () => {
     </Box>
 
   );
+
 };
 
 

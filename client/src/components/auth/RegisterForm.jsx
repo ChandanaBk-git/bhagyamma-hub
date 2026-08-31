@@ -101,19 +101,12 @@ const RegisterForm = () => {
      This only opens the existing payment scanner.
   ===================================================== */
 
-  const handleRegistrationPayment = () => {
-    setError("");
-    setSuccess("");
+const handleRegistrationPayment = () => {
+  setError("");
+  setSuccess("");
 
-    navigate("/payment/scan", {
-      state: {
-        amount: 2000,
-        purpose: "Registration Fee",
-        description:
-          "Optional Bhagyamma Hub registration fee",
-      },
-    });
-  };
+  navigate("/membership-payment");
+};
 
   /* =====================================================
      VALIDATION

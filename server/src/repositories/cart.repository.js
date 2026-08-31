@@ -6,115 +6,126 @@ const Cart =
    FIND CART BY USER
 ========================================================= */
 
-const findCartByUser =
-  async (
-    userId
-  ) => {
+const findCartByUser = async (
+  userId
+) => {
 
-    return await Cart.findOne({
-      userId,
-    }).populate(
-      "items.productId"
-    );
+  if (!userId) {
+    return null;
+  }
 
-  };
+  return await Cart.findOne({
+    userId,
+  }).populate(
+    "items.productId"
+  );
+
+};
 
 
 /* =========================================================
    COMPATIBILITY METHOD
 ========================================================= */
 
-const findByUser =
-  async (
+const findByUser = async (
+  userId
+) => {
+
+  return await findCartByUser(
     userId
-  ) => {
+  );
 
-    return await findCartByUser(
-      userId
-    );
-
-  };
+};
 
 
 /* =========================================================
    CREATE CART
 ========================================================= */
 
-const createCart =
-  async (
+const createCart = async (
+  cartData
+) => {
+
+  return await Cart.create(
     cartData
-  ) => {
+  );
 
-    return await Cart.create(
-      cartData
-    );
-
-  };
+};
 
 
 /* =========================================================
    SAVE CART
 ========================================================= */
 
-const saveCart =
-  async (
-    cart
-  ) => {
+const saveCart = async (
+  cart
+) => {
 
-    return await cart.save();
+  if (!cart) {
+    return null;
+  }
 
-  };
+  return await cart.save();
+
+};
 
 
 /* =========================================================
    DELETE CART
 ========================================================= */
 
-const deleteCart =
-  async (
-    userId
-  ) => {
+const deleteCart = async (
+  userId
+) => {
 
-    return await Cart.findOneAndDelete(
-      {
-        userId,
-      }
-    );
+  if (!userId) {
+    return null;
+  }
 
-  };
+  return await Cart.findOneAndDelete({
+    userId,
+  });
+
+};
 
 
 /* =========================================================
    CLEAR CART
 ========================================================= */
 
-const clearCart =
-  async (
-    userId
-  ) => {
+const clearCart = async (
+  userId
+) => {
 
-    return await Cart.findOneAndUpdate(
-      {
-        userId,
+  if (!userId) {
+    return null;
+  }
+
+  return await Cart.findOneAndUpdate(
+    {
+      userId,
+    },
+
+    {
+      $set: {
+        items: [],
+        totalAmount: 0,
+        totalItems: 0,
       },
+    },
 
-      {
-        $set: {
-          items: [],
+    {
+      new: true,
+      runValidators: true,
+    }
+  );
 
-          totalItems: 0,
+};
 
-          totalAmount: 0,
-        },
-      },
 
-      {
-        new: true,
-      }
-    );
-
-  };
-
+/* =========================================================
+   EXPORTS
+========================================================= */
 
 module.exports = {
 

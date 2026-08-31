@@ -54,13 +54,14 @@ const productSchema = new mongoose.Schema(
       trim: true,
     },
 
-
     // =================================================
     // PRODUCT QUANTITY / PACK SIZE
     // =================================================
 
     /*
-      Example:
+      This is the product's pack/size information.
+
+      Examples:
       "100 ml"
       "500 g"
       "1 bottle"
@@ -81,13 +82,11 @@ const productSchema = new mongoose.Schema(
       trim: true,
     },
 
-
     shelfLife: {
       type: String,
       default: "",
       trim: true,
     },
-
 
     // =================================================
     // MANUFACTURING INFORMATION
@@ -105,7 +104,6 @@ const productSchema = new mongoose.Schema(
       trim: true,
     },
 
-
     // =================================================
     // SKU
     // =================================================
@@ -116,7 +114,6 @@ const productSchema = new mongoose.Schema(
       trim: true,
     },
 
-
     // =================================================
     // PRICE
     // =================================================
@@ -126,31 +123,6 @@ const productSchema = new mongoose.Schema(
       required: true,
       min: 0,
     },
-
-
-    // =================================================
-    // INVENTORY STOCK
-    // =================================================
-
-    /*
-      This is the actual number of units available
-      for sale.
-
-      Example:
-
-      stock = 50
-
-      After selling 3:
-
-      stock = 47
-    */
-
-    stock: {
-      type: Number,
-      default: 0,
-      min: 0,
-    },
-
 
     // =================================================
     // PRODUCT IMAGES
@@ -170,7 +142,6 @@ const productSchema = new mongoose.Schema(
 
       default: [],
     },
-
 
     // =================================================
     // STATUS
@@ -192,7 +163,6 @@ const productSchema = new mongoose.Schema(
     timestamps: true,
   }
 );
-
 
 module.exports =
   mongoose.model(

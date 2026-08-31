@@ -4,13 +4,13 @@ import {
   Button,
   Card,
   CardContent,
+  CircularProgress,
   Container,
   Divider,
   Grid,
   Stack,
   TextField,
   Typography,
-  CircularProgress,
 } from "@mui/material";
 
 import {
@@ -20,7 +20,11 @@ import {
   ShoppingBagOutlined,
 } from "@mui/icons-material";
 
-import { useEffect, useState } from "react";
+import {
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
 
 import {
   useNavigate,
@@ -28,30 +32,134 @@ import {
 
 import { useCart } from "../../context/CartContext";
 
-import { createOrder } from "../../services/order.service";
+import {
+  createOrder,
+} from "../../services/order.service";
 
 
 /* =========================================================
-   CHECKOUT PAGE
+   DELIVERY CONFIGURATION
+========================================================= */
+
+/*
+ * IMPORTANT:
+ *
+ * Delivery charge is ALWAYS ₹50
+ * when the cart contains products.
+ *
+ * There is NO FREE DELIVERY THRESHOLD.
+ *
+ * Selling points are calculated separately
+ * from PRODUCT SUBTOTAL ONLY.
+ */
+
+const DELIVERY_CHARGE = 50;
+
+
+/* =========================================================
+   HELPERS
+========================================================= */
+
+const getNumber = (value) => {
+  const number = Number(value);
+
+  return Number.isFinite(number)
+    ? number
+    : 0;
+};
+
+
+const getCartItems = (cart) => {
+  if (!cart) {
+    return [];
+  }
+
+  if (Array.isArray(cart.items)) {
+    return cart.items;
+  }
+
+  if (Array.isArray(cart.cartItems)) {
+    return cart.cartItems;
+  }
+
+  if (Array.isArray(cart.products)) {
+    return cart.products;
+  }
+
+  if (Array.isArray(cart)) {
+    return cart;
+  }
+
+  return [];
+};
+
+
+const getProduct = (item) => {
+  if (!item) {
+    return {};
+  }
+
+  return (
+    item.product ||
+    item.productId ||
+    item.productDetails ||
+    {}
+  );
+};
+
+
+const getProductName = (item) => {
+  const product =
+    getProduct(item);
+
+  return (
+    item?.productName ||
+    product?.productName ||
+    product?.name ||
+    "Product"
+  );
+};
+
+
+const getProductPrice = (item) => {
+  const product =
+    getProduct(item);
+
+  return getNumber(
+    item?.price ??
+      item?.productPrice ??
+      product?.price ??
+      product?.sellingPrice ??
+      0
+  );
+};
+
+
+const getQuantity = (item) => {
+  return Math.max(
+    1,
+    getNumber(
+      item?.quantity ??
+        item?.qty ??
+        item?.count ??
+        1
+    )
+  );
+};
+
+
+/* =========================================================
+   CHECKOUT COMPONENT
 ========================================================= */
 
 const Checkout = () => {
 
-  const navigate = useNavigate();
+  const navigate =
+    useNavigate();
 
 
   /* =======================================================
-     CART
-     
-     IMPORTANT:
-     Your CartContext exposes:
-     
-     cart
-     cart.items
-     cart.totalAmount
-     cart.totalItems
-     
-     It does NOT expose cartItems directly.
+     CART CONTEXT
   ======================================================= */
 
   const {
@@ -59,660 +167,973 @@ const Checkout = () => {
     loading: cartLoading,
   } = useCart();
 
-  const cartItems =
-    cart?.items || [];
 
-  const subtotal =
-    Number(
-      cart?.totalAmount || 0
-    );
+  /* =======================================================
+     CART ITEMS
+  ======================================================= */
+
+  const items = useMemo(
+    () => getCartItems(cart),
+    [cart]
+  );
 
 
   /* =======================================================
-     AUTH
+     SUBTOTAL
+     
+     PRODUCT PRICE × QUANTITY ONLY.
+     
+     DELIVERY IS NOT INCLUDED.
   ======================================================= */
 
-  const token =
-    localStorage.getItem("token") ||
-    sessionStorage.getItem("token");
+  const subtotal = useMemo(
+    () => {
 
-  const isLoggedIn =
-    Boolean(token);
+      return items.reduce(
+        (
+          total,
+          item
+        ) => {
 
+          const price =
+            getProductPrice(item);
 
-  /* =======================================================
-     USER
-  ======================================================= */
+          const quantity =
+            getQuantity(item);
 
-  let savedUser = {};
+          return (
+            total +
+            price * quantity
+          );
 
-  try {
-
-    savedUser =
-      JSON.parse(
-        localStorage.getItem("user") ||
-        sessionStorage.getItem("user") ||
-        "{}"
+        },
+        0
       );
 
-  } catch (error) {
+    },
+    [items]
+  );
 
-    console.error(
-      "User Parse Error:",
-      error
+
+  /* =======================================================
+     DELIVERY CHARGE
+     
+     FIXED ₹50 FOR EVERY NON-EMPTY CART.
+     
+     NO FREE DELIVERY THRESHOLD.
+  ======================================================= */
+
+  const deliveryCharge =
+    useMemo(
+      () => {
+
+        if (
+          items.length === 0 ||
+          subtotal <= 0
+        ) {
+          return 0;
+        }
+
+        return DELIVERY_CHARGE;
+
+      },
+      [
+        items.length,
+        subtotal,
+      ]
     );
 
-  }
+
+  /* =======================================================
+     FINAL AMOUNT
+     
+     CUSTOMER PAYMENT =
+     
+     PRODUCT SUBTOTAL + DELIVERY
+  ======================================================= */
+
+  const finalAmount =
+    useMemo(
+      () => {
+
+        return (
+          subtotal +
+          deliveryCharge
+        );
+
+      },
+      [
+        subtotal,
+        deliveryCharge,
+      ]
+    );
 
 
   /* =======================================================
      FORM
   ======================================================= */
 
-  const [formData, setFormData] =
-    useState({
+  const [
+    form,
+    setForm,
+  ] = useState({
 
-      name:
-        savedUser?.name || "",
+    name: "",
 
-      mobile:
-        savedUser?.mobile || "",
+    mobile: "",
 
-      email:
-        savedUser?.email || "",
+    email: "",
 
-      address:
-        savedUser?.address || "",
+    address: "",
 
-      city:
-        savedUser?.city || "",
+    city: "",
 
-      state:
-        savedUser?.state ||
-        "Karnataka",
+    state: "Karnataka",
 
-      pincode:
-        savedUser?.pincode || "",
+    pincode: "",
 
-    });
+  });
 
 
   /* =======================================================
-     STATE
+     STATES
   ======================================================= */
 
-  const [loading, setLoading] =
-    useState(false);
+  const [
+    loading,
+    setLoading,
+  ] = useState(true);
 
-  const [error, setError] =
-    useState("");
 
-  const [success, setSuccess] =
-    useState("");
+  const [
+    placingOrder,
+    setPlacingOrder,
+  ] = useState(false);
 
-  const [cartReady, setCartReady] =
-    useState(false);
+
+  const [
+    error,
+    setError,
+  ] = useState("");
+
+
+  const [
+    success,
+    setSuccess,
+  ] = useState("");
 
 
   /* =======================================================
-     DELIVERY CHARGE
+     LOAD USER INFORMATION
   ======================================================= */
 
-  const deliveryCharge = 50;
+  useEffect(
+    () => {
+
+      const loadUser =
+        async () => {
+
+          try {
+
+            const savedUser =
+              JSON.parse(
+                localStorage.getItem(
+                  "user"
+                ) ||
+                  sessionStorage.getItem(
+                    "user"
+                  ) ||
+                  "{}"
+              );
+
+
+            setForm(
+              (previous) => ({
+
+                ...previous,
+
+                name:
+                  savedUser?.name ||
+                  savedUser?.fullName ||
+                  previous.name,
+
+                mobile:
+                  savedUser?.mobile ||
+                  savedUser?.phone ||
+                  savedUser?.mobileNumber ||
+                  previous.mobile,
+
+                email:
+                  savedUser?.email ||
+                  previous.email,
+
+                address:
+                  savedUser?.address ||
+                  previous.address,
+
+                city:
+                  savedUser?.city ||
+                  previous.city,
+
+                state:
+                  savedUser?.state ||
+                  "Karnataka",
+
+                pincode:
+                  savedUser?.pincode ||
+                  savedUser?.pinCode ||
+                  previous.pincode,
+
+              })
+            );
+
+          } catch (err) {
+
+            console.log(
+              "USER DETAILS LOAD ERROR:",
+              err
+            );
+
+          } finally {
+
+            setLoading(false);
+
+          }
+
+        };
+
+
+      loadUser();
+
+    },
+    []
+  );
 
 
   /* =======================================================
-     GRAND TOTAL
+     HANDLE INPUT
   ======================================================= */
 
-  const grandTotal =
-    subtotal +
-    deliveryCharge;
+  const handleChange =
+    (event) => {
+
+      const {
+        name,
+        value,
+      } = event.target;
 
 
-  /* =======================================================
-     WAIT FOR CART
-     
-     This prevents Checkout from immediately
-     displaying "Cart Empty" while CartContext
-     is still loading the cart.
-  ======================================================= */
+      setForm(
+        (previous) => ({
 
-  useEffect(() => {
+          ...previous,
 
-    if (!cartLoading) {
+          [name]:
+            value,
 
-      setCartReady(true);
-
-    }
-
-  }, [
-    cartLoading,
-  ]);
+        })
+      );
 
 
-  /* =======================================================
-     FORM CHANGE
-  ======================================================= */
+      setError("");
 
-  const handleChange = (
-    event
-  ) => {
-
-    const {
-      name,
-      value,
-    } = event.target;
-
-    setFormData(
-      (previous) => ({
-        ...previous,
-        [name]: value,
-      })
-    );
-
-    setError("");
-
-  };
+    };
 
 
   /* =======================================================
      VALIDATE FORM
   ======================================================= */
 
-  const validateForm = () => {
-
-    const name =
-      formData.name.trim();
-
-    const mobile =
-      formData.mobile
-        .replace(/\D/g, "");
-
-    const email =
-      formData.email.trim();
-
-    const address =
-      formData.address.trim();
-
-    const city =
-      formData.city.trim();
-
-    const state =
-      formData.state.trim();
-
-    const pincode =
-      formData.pincode
-        .replace(/\D/g, "");
-
-
-    /* NAME */
-
-    if (!name) {
-
-      setError(
-        "Please enter your full name."
-      );
-
-      return false;
-
-    }
-
-
-    /* MOBILE */
-
-    if (
-      mobile.length !== 10
-    ) {
-
-      setError(
-        "Please enter a valid 10-digit mobile number."
-      );
-
-      return false;
-
-    }
-
-
-    /* EMAIL */
-
-    if (
-      email &&
-      !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(
-        email
-      )
-    ) {
-
-      setError(
-        "Please enter a valid email address."
-      );
-
-      return false;
-
-    }
-
-
-    /* ADDRESS */
-
-    if (!address) {
-
-      setError(
-        "Please enter your delivery address."
-      );
-
-      return false;
-
-    }
-
-
-    /* CITY */
-
-    if (!city) {
-
-      setError(
-        "Please enter your city."
-      );
-
-      return false;
-
-    }
-
-
-    /* STATE */
-
-    if (!state) {
-
-      setError(
-        "Please enter your state."
-      );
-
-      return false;
-
-    }
-
-
-    /* PINCODE */
-
-    if (
-      pincode.length !== 6
-    ) {
-
-      setError(
-        "Please enter a valid 6-digit pincode."
-      );
-
-      return false;
-
-    }
-
-
-    /* CART */
-
-    if (
-      !cartItems.length
-    ) {
-
-      setError(
-        "Your cart is empty."
-      );
-
-      return false;
-
-    }
-
-
-    return true;
-
-  };
-
-
-  /* =======================================================
-     BUILD ORDER ITEMS
-     
-     Backend expects:
-     
-     items: [
-       {
-         productId,
-         quantity
-       }
-     ]
-  ======================================================= */
-
-  const buildOrderItems = () => {
-
-    return cartItems.map(
-      (item) => {
-
-        const product =
-          item?.product ||
-          null;
-
-        const productId =
-          item?.productId ||
-          product?._id;
-
-        const quantity =
-          Number(
-            item?.quantity || 1
-          );
-
-        return {
-
-          productId,
-
-          quantity,
-
-        };
-
-      }
-    );
-
-  };
-
-
-  /* =======================================================
-     CREATE ORDER
-  ======================================================= */
-
-  const handlePlaceOrder = async (
-    event
-  ) => {
-
-    event.preventDefault();
-
-    setError("");
-
-    setSuccess("");
-
-
-    /* -----------------------------------------------------
-       VALIDATE
-    ----------------------------------------------------- */
-
-    if (
-      !validateForm()
-    ) {
-
-      return;
-
-    }
-
-
-    /* -----------------------------------------------------
-       BUILD ITEMS
-    ----------------------------------------------------- */
-
-    const items =
-      buildOrderItems();
-
-
-    /* -----------------------------------------------------
-       CHECK PRODUCT IDS
-    ----------------------------------------------------- */
-
-    const invalidItem =
-      items.find(
-        (item) =>
-          !item.productId
-      );
-
-
-    if (invalidItem) {
-
-      console.error(
-        "Invalid Cart Item:",
-        invalidItem,
-        cartItems
-      );
-
-      setError(
-        "One of the products in your cart is invalid. Please remove it and add it again."
-      );
-
-      return;
-
-    }
-
-
-    /* -----------------------------------------------------
-       START LOADING
-    ----------------------------------------------------- */
-
-    setLoading(true);
-
-
-    try {
-
-      const orderPayload = {
-
-        name:
-          formData.name.trim(),
-
-        mobile:
-          formData.mobile
-            .replace(/\D/g, ""),
-
-        email:
-          formData.email
-            .trim()
-            .toLowerCase(),
-
-        address:
-          formData.address.trim(),
-
-        city:
-          formData.city.trim(),
-
-        state:
-          formData.state.trim(),
-
-        pincode:
-          formData.pincode
-            .replace(/\D/g, ""),
-
-        deliveryCharge,
-
-        /*
-         * VERY IMPORTANT
-         *
-         * Guest backend requires items.
-         */
-
-        items,
-
-      };
-
-
-      console.log(
-        "Creating order:",
-        orderPayload
-      );
-
-
-      /* =================================================
-         CREATE ORDER
-         
-         order.service.js must decide:
-         
-         Member:
-         POST /orders
-         
-         Guest:
-         POST /orders/guest
-      ================================================= */
-
-      const response =
-        await createOrder(
-          orderPayload
-        );
-
-
-      console.log(
-        "Create Order Response:",
-        response
-      );
-
-
-      /* =================================================
-         GET ORDER FROM RESPONSE
-      ================================================= */
-
-      const order =
-        response?.data ||
-        response;
-
-
-      if (!order) {
-
-        throw new Error(
-          "Order created but order details were not returned."
-        );
-
-      }
-
-
-      /* =================================================
-         ORDER DETAILS
-      ================================================= */
-
-      const orderId =
-        order?._id ||
-        order?.id ||
-        null;
-
-      const orderNumber =
-        order?.orderNumber ||
-        null;
-
-      const amount =
-        Number(
-          order?.finalAmount ??
-          order?.totalAmount ??
-          grandTotal
-        );
-
-
-      console.log(
-        "Order Details:",
-        {
-          orderId,
-          orderNumber,
-          amount,
-        }
-      );
-
-
-      /* =================================================
-         SUCCESS
-      ================================================= */
-
-      setSuccess(
-        "Order created successfully. Opening payment scanner..."
-      );
-
-
-      /* =================================================
-         OPEN PAYMENT SCANNER
-      ================================================= */
-
-      navigate(
-        "/payment/scan",
-        {
-          state: {
-
-            orderId,
-
-            orderNumber,
-
-            amount,
-
-            isMember:
-              isLoggedIn,
-
-          },
-        }
-      );
-
-
-    } catch (error) {
-
-      console.error(
-        "CREATE ORDER ERROR:",
-        error
-      );
-
-
-      const status =
-        error?.response?.status;
-
-
-      const backendMessage =
-        error?.response?.data?.message ||
-        error?.response?.data?.error ||
-        error?.message;
-
-
-      /* =================================================
-         AUTH ERROR
-      ================================================= */
+  const validateForm =
+    () => {
 
       if (
-        status === 401
+        !form.name.trim()
+      ) {
+
+        return "Please enter your full name.";
+
+      }
+
+
+      const mobile =
+        form.mobile.replace(
+          /\D/g,
+          ""
+        );
+
+
+      if (
+        mobile.length !== 10
+      ) {
+
+        return "Please enter a valid 10-digit mobile number.";
+
+      }
+
+
+      if (
+        !form.address.trim()
+      ) {
+
+        return "Please enter your delivery address.";
+
+      }
+
+
+      if (
+        !form.city.trim()
+      ) {
+
+        return "Please enter your city.";
+
+      }
+
+
+      if (
+        !form.state.trim()
+      ) {
+
+        return "Please enter your state.";
+
+      }
+
+
+      const pincode =
+        form.pincode.replace(
+          /\D/g,
+          ""
+        );
+
+
+      if (
+        pincode.length !== 6
+      ) {
+
+        return "Please enter a valid 6-digit pincode.";
+
+      }
+
+
+      return "";
+
+    };
+
+
+  /* =======================================================
+     PLACE ORDER
+  ======================================================= */
+
+  const handlePlaceOrder =
+    async () => {
+
+      if (
+        placingOrder
+      ) {
+        return;
+      }
+
+
+      setError("");
+
+      setSuccess("");
+
+
+      /* ===================================================
+         CART VALIDATION
+      =================================================== */
+
+      if (
+        !items.length
       ) {
 
         setError(
-          "Authentication failed. Please refresh the page and try again."
+          "Your cart is empty. Please add products before checkout."
         );
 
-      } else {
+        return;
+
+      }
+
+
+      if (
+        subtotal <= 0
+      ) {
 
         setError(
-          backendMessage ||
-          "Unable to create your order. Please try again."
+          "Unable to calculate the cart amount. Please return to the cart and try again."
+        );
+
+        return;
+
+      }
+
+
+      /* ===================================================
+         FORM VALIDATION
+      =================================================== */
+
+      const validationError =
+        validateForm();
+
+
+      if (
+        validationError
+      ) {
+
+        setError(
+          validationError
+        );
+
+        return;
+
+      }
+
+
+      try {
+
+        setPlacingOrder(
+          true
+        );
+
+
+        /* =================================================
+           SAVE CART SNAPSHOT
+
+           DO NOT CLEAR CART HERE.
+
+           Cart must remain available until payment
+           is completed/verified according to your
+           payment flow.
+        ================================================= */
+
+        const cartSnapshot = {
+
+          items:
+            items.map(
+              (item) => ({
+
+                productId:
+                  item?.product?._id ||
+                  item?.productId?._id ||
+                  item?.productId ||
+                  item?._id,
+
+                productName:
+                  getProductName(
+                    item
+                  ),
+
+                price:
+                  getProductPrice(
+                    item
+                  ),
+
+                quantity:
+                  getQuantity(
+                    item
+                  ),
+
+              })
+            ),
+
+          /*
+           * PRODUCT AMOUNT ONLY
+           */
+          subtotal,
+
+          /*
+           * FIXED ₹50
+           */
+          deliveryCharge,
+
+          /*
+           * CUSTOMER PAYS THIS
+           */
+          finalAmount,
+
+        };
+
+
+        sessionStorage.setItem(
+          "bhagyamma_pending_cart",
+          JSON.stringify(
+            cartSnapshot
+          )
+        );
+
+
+        /* =================================================
+           ORDER ITEMS
+        ================================================= */
+
+        const orderItems =
+          items.map(
+            (item) => ({
+
+              productId:
+                item?.product?._id ||
+                item?.productId?._id ||
+                item?.productId ||
+                item?._id,
+
+              quantity:
+                getQuantity(item),
+
+            })
+          );
+
+
+        /* =================================================
+           ORDER PAYLOAD
+           
+           NO SELLING POINTS.
+           
+           Backend calculates SP independently
+           from PRODUCT SUBTOTAL.
+        ================================================= */
+
+        const orderPayload = {
+
+          customerName:
+            form.name.trim(),
+
+          customerMobile:
+            form.mobile.replace(
+              /\D/g,
+              ""
+            ),
+
+          customerEmail:
+            form.email
+              .trim()
+              .toLowerCase(),
+
+          paymentMethod:
+            "PHONEPE",
+
+          items:
+            orderItems,
+
+          deliveryDetails: {
+
+            name:
+              form.name.trim(),
+
+            mobile:
+              form.mobile.replace(
+                /\D/g,
+                ""
+              ),
+
+            address:
+              form.address.trim(),
+
+            city:
+              form.city.trim(),
+
+            state:
+              form.state.trim(),
+
+            pincode:
+              form.pincode.replace(
+                /\D/g,
+                ""
+              ),
+
+          },
+
+
+          /*
+           * IMPORTANT:
+           *
+           * Product subtotal
+           */
+          subtotal,
+
+
+          /*
+           * ALWAYS ₹50 for a non-empty order
+           */
+          deliveryCharge,
+
+
+          /*
+           * Customer payment amount
+           */
+          finalAmount,
+
+        };
+
+
+        console.log(
+          "======================================"
+        );
+
+        console.log(
+          "CREATING ORDER"
+        );
+
+        console.log(
+          "PRODUCT SUBTOTAL:",
+          subtotal
+        );
+
+        console.log(
+          "DELIVERY CHARGE:",
+          deliveryCharge
+        );
+
+        console.log(
+          "FINAL PAYMENT AMOUNT:",
+          finalAmount
+        );
+
+        console.log(
+          "ORDER PAYLOAD:",
+          orderPayload
+        );
+
+        console.log(
+          "======================================"
+        );
+
+
+        /* =================================================
+           CREATE ORDER
+        ================================================= */
+
+        const response =
+          await createOrder(
+            orderPayload
+          );
+
+
+        console.log(
+          "CREATE ORDER RESPONSE:",
+          response
+        );
+
+
+        /* =================================================
+           GET CREATED ORDER
+        ================================================= */
+
+        const order =
+          response?.data?.data ||
+          response?.data ||
+          response;
+
+
+        if (
+          !order
+        ) {
+
+          throw new Error(
+            "Order was created but order details were not returned."
+          );
+
+        }
+
+
+        /* =================================================
+           ORDER ID
+        ================================================= */
+
+        const orderId =
+          order?._id ||
+          order?.id;
+
+
+        if (
+          !orderId
+        ) {
+
+          throw new Error(
+            "Order ID was not returned by the server."
+          );
+
+        }
+
+
+        /* =================================================
+           ORDER NUMBER
+        ================================================= */
+
+        const orderNumber =
+          order?.orderNumber ||
+          "";
+
+
+        /* =================================================
+           SERVER SUBTOTAL
+        ================================================= */
+
+        const serverSubtotal =
+          getNumber(
+            order?.subtotal
+          ) ||
+          subtotal;
+
+
+        /* =================================================
+           SERVER DELIVERY
+           
+           If backend returns ₹50, use it.
+           
+           If backend does not return it,
+           fallback to ₹50.
+        ================================================= */
+
+        const serverDelivery =
+          getNumber(
+            order?.deliveryCharge
+          ) > 0
+            ? getNumber(
+                order?.deliveryCharge
+              )
+            : deliveryCharge;
+
+
+        /* =================================================
+           SERVER FINAL AMOUNT
+        ================================================= */
+
+        let serverFinalAmount =
+          getNumber(
+            order?.finalAmount
+          );
+
+
+        /*
+         * If backend doesn't return a valid final
+         * amount, calculate:
+         *
+         * subtotal + delivery
+         */
+        if (
+          serverFinalAmount <= 0
+        ) {
+
+          serverFinalAmount =
+            serverSubtotal +
+            serverDelivery;
+
+        }
+
+
+        /* =================================================
+           SAFETY CALCULATION
+        ================================================= */
+
+        const expectedAmount =
+          serverSubtotal +
+          serverDelivery;
+
+
+        /*
+         * Never allow scanner amount to be
+         * lower than subtotal + delivery.
+         */
+        if (
+          serverFinalAmount <
+          expectedAmount
+        ) {
+
+          serverFinalAmount =
+            expectedAmount;
+
+        }
+
+
+        if (
+          serverFinalAmount <= 0
+        ) {
+
+          throw new Error(
+            "Invalid payment amount returned by the server."
+          );
+
+        }
+
+
+        /* =================================================
+           PAYMENT DATA
+           
+           NO SELLING POINTS.
+           
+           Scanner gets ONLY payment information.
+        ================================================= */
+
+        const paymentData = {
+
+          orderId,
+
+          orderNumber,
+
+          /*
+           * Product subtotal
+           */
+          subtotal:
+            serverSubtotal,
+
+          /*
+           * Delivery
+           */
+          deliveryCharge:
+            serverDelivery,
+
+          /*
+           * Final customer payment
+           */
+          finalAmount:
+            serverFinalAmount,
+
+          /*
+           * Compatibility
+           */
+          amount:
+            serverFinalAmount,
+
+          paymentMethod:
+            order?.paymentMethod ||
+            "PHONEPE",
+
+          customerName:
+            order?.customerName ||
+            form.name,
+
+          customerMobile:
+            order?.customerMobile ||
+            form.mobile,
+
+          customerEmail:
+            order?.customerEmail ||
+            form.email,
+
+        };
+
+
+        console.log(
+          "======================================"
+        );
+
+        console.log(
+          "PAYMENT SCANNER DATA"
+        );
+
+        console.log(
+          paymentData
+        );
+
+        console.log(
+          "PAYMENT AMOUNT:",
+          serverFinalAmount
+        );
+
+        console.log(
+          "======================================"
+        );
+
+
+        /* =================================================
+           SAVE PENDING PAYMENT
+        ================================================= */
+
+        sessionStorage.setItem(
+          "bhagyamma_pending_payment",
+          JSON.stringify(
+            paymentData
+          )
+        );
+
+
+        setSuccess(
+          "Order created successfully. Opening payment scanner..."
+        );
+
+
+        /* =================================================
+           GO TO PAYMENT SCANNER
+        ================================================= */
+
+        navigate(
+          "/payment/scan",
+          {
+            state:
+              paymentData,
+          }
+        );
+
+      } catch (
+        err
+      ) {
+
+        console.error(
+          "======================================"
+        );
+
+        console.error(
+          "CREATE ORDER ERROR:",
+          err
+        );
+
+        console.error(
+          "BACKEND RESPONSE:",
+          err?.response?.data
+        );
+
+        console.error(
+          "======================================"
+        );
+
+
+        const message =
+          err?.response?.data?.message ||
+          err?.response?.data?.error ||
+          err?.message ||
+          "Unable to create the order. Please try again.";
+
+
+        setError(
+          message
+        );
+
+      } finally {
+
+        setPlacingOrder(
+          false
         );
 
       }
 
-    } finally {
-
-      setLoading(false);
-
-    }
-
-  };
+    };
 
 
   /* =======================================================
      BACK TO CART
+     
+     IMPORTANT:
+     NEVER CLEAR CART HERE.
   ======================================================= */
 
-  const handleBackToCart = () => {
-
-    if (isLoggedIn) {
+  const handleBackToCart =
+    () => {
 
       navigate(
         "/member/cart"
       );
 
-    } else {
-
-      navigate(
-        "/cart"
-      );
-
-    }
-
-  };
+    };
 
 
   /* =======================================================
-     CART LOADING
+     LOADING
   ======================================================= */
 
   if (
-    cartLoading &&
-    !cartReady
+    loading ||
+    cartLoading
   ) {
 
     return (
@@ -725,21 +1146,16 @@ const Checkout = () => {
           display:
             "flex",
 
-          justifyContent:
-            "center",
-
           alignItems:
             "center",
 
-          bgcolor:
-            "#F5F7F5",
+          justifyContent:
+            "center",
 
         }}
       >
 
-        <CircularProgress
-          color="success"
-        />
+        <CircularProgress />
 
       </Box>
 
@@ -753,8 +1169,7 @@ const Checkout = () => {
   ======================================================= */
 
   if (
-    cartReady &&
-    !cartItems.length
+    !items.length
   ) {
 
     return (
@@ -765,18 +1180,9 @@ const Checkout = () => {
             "80vh",
 
           bgcolor:
-            "#F5F7F5",
+            "#F5F7F6",
 
-          py: {
-            xs: 4,
-            sm: 6,
-          },
-
-          display:
-            "flex",
-
-          alignItems:
-            "flex-start",
+          py: 5,
 
         }}
       >
@@ -786,34 +1192,27 @@ const Checkout = () => {
         >
 
           <Card
-            elevation={0}
+            elevation={2}
             sx={{
-              borderRadius: 4,
+              borderRadius:
+                4,
 
               textAlign:
                 "center",
-
-              border:
-                "1px solid #E0E0E0",
-
-              boxShadow:
-                "0 8px 30px rgba(0,0,0,.06)",
 
             }}
           >
 
             <CardContent
               sx={{
-                p: {
-                  xs: 3,
-                  sm: 5,
-                },
+                p: 5,
               }}
             >
 
               <ShoppingBagOutlined
                 sx={{
-                  fontSize: 70,
+                  fontSize:
+                    70,
 
                   color:
                     "#9E9E9E",
@@ -823,28 +1222,30 @@ const Checkout = () => {
                 }}
               />
 
+
               <Typography
                 variant="h5"
                 fontWeight={800}
-                gutterBottom
               >
                 Your Cart is Empty
               </Typography>
 
+
               <Typography
                 color="text.secondary"
                 sx={{
+                  mt: 1,
                   mb: 3,
                 }}
               >
-                Add some products
-                before proceeding
-                to checkout.
+                Add products to your cart
+                before proceeding to
+                checkout.
               </Typography>
+
 
               <Button
                 variant="contained"
-                color="success"
                 onClick={() =>
                   navigate(
                     "/products"
@@ -854,12 +1255,10 @@ const Checkout = () => {
                   textTransform:
                     "none",
 
-                  fontWeight:
-                    700,
+                  borderRadius:
+                    2,
 
                   px: 4,
-
-                  borderRadius: 2,
 
                 }}
               >
@@ -880,7 +1279,7 @@ const Checkout = () => {
 
 
   /* =======================================================
-     MAIN CHECKOUT
+     MAIN PAGE
   ======================================================= */
 
   return (
@@ -891,7 +1290,7 @@ const Checkout = () => {
           "100vh",
 
         bgcolor:
-          "#F5F7F5",
+          "#F5F7F6",
 
         py: {
           xs: 2,
@@ -906,8 +1305,8 @@ const Checkout = () => {
         maxWidth="md"
       >
 
-        {/* =================================================
-            BACK TO CART
+        {/* ================================================
+            BACK
         ================================================= */}
 
         <Button
@@ -935,44 +1334,39 @@ const Checkout = () => {
         </Button>
 
 
-        {/* =================================================
-            HEADER
+        {/* ================================================
+            TITLE
         ================================================= */}
 
-        <Box
+        <Typography
+          variant="h4"
+          fontWeight={900}
+          sx={{
+            fontSize: {
+              xs: "1.8rem",
+              sm: "2.2rem",
+            },
+
+            mb: 0.5,
+
+          }}
+        >
+          Checkout
+        </Typography>
+
+
+        <Typography
+          color="text.secondary"
           sx={{
             mb: 3,
           }}
         >
-
-          <Typography
-            variant="h4"
-            fontWeight={900}
-            sx={{
-              fontSize: {
-                xs: "1.7rem",
-                sm: "2.1rem",
-              },
-            }}
-          >
-            Checkout
-          </Typography>
-
-          <Typography
-            color="text.secondary"
-            sx={{
-              mt: 0.5,
-            }}
-          >
-            Enter your delivery details
-            and continue to secure UPI
-            payment.
-          </Typography>
-
-        </Box>
+          Enter your delivery details
+          and continue to payment.
+        </Typography>
 
 
-        {/* =================================================
+        {/* ================================================
             ERROR
         ================================================= */}
 
@@ -991,7 +1385,7 @@ const Checkout = () => {
         )}
 
 
-        {/* =================================================
+        {/* ================================================
             SUCCESS
         ================================================= */}
 
@@ -1010,696 +1404,673 @@ const Checkout = () => {
         )}
 
 
-        {/* =================================================
-            GUEST MESSAGE
+        {/* ================================================
+            DELIVERY DETAILS
         ================================================= */}
 
-        {!isLoggedIn && (
+        <Card
+          elevation={1}
+          sx={{
+            borderRadius:
+              3,
 
-          <Alert
-            severity="info"
-            sx={{
-              mb: 2,
-              borderRadius: 2,
-            }}
-          >
-            You can continue as a guest.
-            Your mobile number is required
-            for order identification.
-          </Alert>
+            mb: 3,
 
-        )}
-
-
-        {/* =================================================
-            FORM
-        ================================================= */}
-
-        <Box
-          component="form"
-          onSubmit={
-            handlePlaceOrder
-          }
+          }}
         >
 
-          {/* =================================================
-              DELIVERY INFORMATION
-          ================================================= */}
-
-          <Card
-            elevation={0}
+          <CardContent
             sx={{
-              borderRadius: 3,
-
-              border:
-                "1px solid #E0E0E0",
-
-              mb: 3,
-
+              p: {
+                xs: 2,
+                sm: 3,
+              },
             }}
           >
 
-            <CardContent
+            <Typography
+              variant="h6"
+              fontWeight={800}
               sx={{
-                p: {
-                  xs: 2,
-                  sm: 3,
-                },
+                mb: 2,
               }}
             >
+              Delivery Information
+            </Typography>
 
-              <Typography
-                variant="h6"
-                fontWeight={800}
-                sx={{
-                  mb: 1.5,
-                }}
-              >
-                Delivery Information
-              </Typography>
 
-              <Divider
-                sx={{
-                  mb: 2.5,
-                }}
-              />
+            <Grid
+              container
+              spacing={2}
+            >
 
+              {/* NAME */}
 
               <Grid
-                container
-                spacing={2}
+                size={{
+                  xs: 12,
+                }}
               >
 
-                {/* NAME */}
-
-                <Grid
-                  item
-                  xs={12}
-                >
-
-                  <TextField
-                    fullWidth
-                    required
-                    label="Full Name"
-                    name="name"
-                    value={
-                      formData.name
-                    }
-                    onChange={
-                      handleChange
-                    }
-                    autoComplete="name"
-                  />
-
-                </Grid>
-
-
-                {/* MOBILE */}
-
-                <Grid
-                  item
-                  xs={12}
-                  sm={6}
-                >
-
-                  <TextField
-                    fullWidth
-                    required
-                    label="Mobile Number"
-                    name="mobile"
-                    value={
-                      formData.mobile
-                    }
-                    onChange={
-                      handleChange
-                    }
-                    inputProps={{
-                      maxLength: 10,
-                    }}
-                    autoComplete="tel"
-                  />
-
-                </Grid>
-
-
-                {/* EMAIL */}
-
-                <Grid
-                  item
-                  xs={12}
-                  sm={6}
-                >
-
-                  <TextField
-                    fullWidth
-                    label="Email Address"
-                    name="email"
-                    type="email"
-                    value={
-                      formData.email
-                    }
-                    onChange={
-                      handleChange
-                    }
-                    autoComplete="email"
-                  />
-
-                </Grid>
-
-
-                {/* ADDRESS */}
-
-                <Grid
-                  item
-                  xs={12}
-                >
-
-                  <TextField
-                    fullWidth
-                    required
-                    multiline
-                    minRows={3}
-                    label="Delivery Address"
-                    name="address"
-                    value={
-                      formData.address
-                    }
-                    onChange={
-                      handleChange
-                    }
-                    autoComplete="street-address"
-                  />
-
-                </Grid>
-
-
-                {/* CITY */}
-
-                <Grid
-                  item
-                  xs={12}
-                  sm={4}
-                >
-
-                  <TextField
-                    fullWidth
-                    required
-                    label="City"
-                    name="city"
-                    value={
-                      formData.city
-                    }
-                    onChange={
-                      handleChange
-                    }
-                    autoComplete="address-level2"
-                  />
-
-                </Grid>
-
-
-                {/* STATE */}
-
-                <Grid
-                  item
-                  xs={12}
-                  sm={4}
-                >
-
-                  <TextField
-                    fullWidth
-                    required
-                    label="State"
-                    name="state"
-                    value={
-                      formData.state
-                    }
-                    onChange={
-                      handleChange
-                    }
-                    autoComplete="address-level1"
-                  />
-
-                </Grid>
-
-
-                {/* PINCODE */}
-
-                <Grid
-                  item
-                  xs={12}
-                  sm={4}
-                >
-
-                  <TextField
-                    fullWidth
-                    required
-                    label="Pincode"
-                    name="pincode"
-                    value={
-                      formData.pincode
-                    }
-                    onChange={
-                      handleChange
-                    }
-                    inputProps={{
-                      maxLength: 6,
-                    }}
-                    autoComplete="postal-code"
-                  />
-
-                </Grid>
+                <TextField
+                  fullWidth
+                  required
+                  label="Full Name"
+                  name="name"
+                  value={
+                    form.name
+                  }
+                  onChange={
+                    handleChange
+                  }
+                />
 
               </Grid>
 
-            </CardContent>
 
-          </Card>
+              {/* MOBILE */}
+
+              <Grid
+                size={{
+                  xs: 12,
+                  sm: 6,
+                }}
+              >
+
+                <TextField
+                  fullWidth
+                  required
+                  label="Mobile Number"
+                  name="mobile"
+                  value={
+                    form.mobile
+                  }
+                  onChange={
+                    handleChange
+                  }
+                  inputProps={{
+                    maxLength:
+                      10,
+                  }}
+                />
+
+              </Grid>
 
 
-          {/* =================================================
-              ORDER SUMMARY
-          ================================================= */}
+              {/* EMAIL */}
 
-          <Card
-            elevation={0}
+              <Grid
+                size={{
+                  xs: 12,
+                  sm: 6,
+                }}
+              >
+
+                <TextField
+                  fullWidth
+                  label="Email Address"
+                  name="email"
+                  value={
+                    form.email
+                  }
+                  onChange={
+                    handleChange
+                  }
+                />
+
+              </Grid>
+
+
+              {/* ADDRESS */}
+
+              <Grid
+                size={{
+                  xs: 12,
+                }}
+              >
+
+                <TextField
+                  fullWidth
+                  required
+                  multiline
+                  minRows={3}
+                  label="Delivery Address"
+                  name="address"
+                  value={
+                    form.address
+                  }
+                  onChange={
+                    handleChange
+                  }
+                />
+
+              </Grid>
+
+
+              {/* CITY */}
+
+              <Grid
+                size={{
+                  xs: 12,
+                  sm: 4,
+                }}
+              >
+
+                <TextField
+                  fullWidth
+                  required
+                  label="City"
+                  name="city"
+                  value={
+                    form.city
+                  }
+                  onChange={
+                    handleChange
+                  }
+                />
+
+              </Grid>
+
+
+              {/* STATE */}
+
+              <Grid
+                size={{
+                  xs: 12,
+                  sm: 4,
+                }}
+              >
+
+                <TextField
+                  fullWidth
+                  required
+                  label="State"
+                  name="state"
+                  value={
+                    form.state
+                  }
+                  onChange={
+                    handleChange
+                  }
+                />
+
+              </Grid>
+
+
+              {/* PINCODE */}
+
+              <Grid
+                size={{
+                  xs: 12,
+                  sm: 4,
+                }}
+              >
+
+                <TextField
+                  fullWidth
+                  required
+                  label="Pincode"
+                  name="pincode"
+                  value={
+                    form.pincode
+                  }
+                  onChange={
+                    handleChange
+                  }
+                  inputProps={{
+                    maxLength:
+                      6,
+                  }}
+                />
+
+              </Grid>
+
+            </Grid>
+
+          </CardContent>
+
+        </Card>
+
+
+        {/* ================================================
+            ORDER SUMMARY
+        ================================================= */}
+
+        <Card
+          elevation={1}
+          sx={{
+            borderRadius:
+              3,
+          }}
+        >
+
+          <CardContent
             sx={{
-              borderRadius: 3,
-
-              border:
-                "1px solid #E0E0E0",
-
+              p: {
+                xs: 2,
+                sm: 3,
+              },
             }}
           >
 
-            <CardContent
+            <Typography
+              variant="h6"
+              fontWeight={800}
               sx={{
-                p: {
-                  xs: 2,
-                  sm: 3,
-                },
+                mb: 2,
               }}
             >
-
-              <Typography
-                variant="h6"
-                fontWeight={800}
-                sx={{
-                  mb: 1.5,
-                }}
-              >
-                Order Summary
-              </Typography>
-
-              <Divider
-                sx={{
-                  mb: 2,
-                }}
-              />
+              Order Summary
+            </Typography>
 
 
-              {/* PRODUCTS */}
+            <Divider
+              sx={{
+                mb: 2,
+              }}
+            />
 
-              <Stack
-                spacing={1.5}
-              >
 
-                {cartItems.map(
-                  (
-                    item,
-                    index
-                  ) => {
+            {/* PRODUCTS */}
 
-                    const product =
-                      item?.product ||
-                      {};
+            <Stack
+              spacing={1.5}
+            >
 
-                    const name =
-                      product?.productName ||
-                      product?.name ||
-                      item?.productName ||
-                      "Product";
+              {items.map(
+                (
+                  item,
+                  index
+                ) => {
 
-                    const quantity =
-                      Number(
-                        item?.quantity ||
-                        1
-                      );
+                  const name =
+                    getProductName(
+                      item
+                    );
 
-                    const price =
-                      Number(
-                        item?.price ??
-                        product?.price ??
-                        0
-                      );
+                  const price =
+                    getProductPrice(
+                      item
+                    );
 
-                    const total =
-                      price *
-                      quantity;
+                  const quantity =
+                    getQuantity(
+                      item
+                    );
 
-                    return (
+                  const itemTotal =
+                    price *
+                    quantity;
 
-                      <Box
-                        key={
-                          item?._id ||
-                          item?.productId ||
-                          index
-                        }
-                        sx={{
-                          display:
-                            "flex",
 
-                          justifyContent:
-                            "space-between",
+                  return (
 
-                          alignItems:
-                            "flex-start",
+                    <Box
+                      key={
+                        item?._id ||
+                        item?.productId?._id ||
+                        item?.productId ||
+                        item?.product?._id ||
+                        index
+                      }
+                      sx={{
+                        display:
+                          "flex",
 
-                          gap: 2,
+                        justifyContent:
+                          "space-between",
 
-                        }}
-                      >
+                        gap: 2,
 
-                        <Box
-                          sx={{
-                            minWidth: 0,
-                          }}
-                        >
+                      }}
+                    >
 
-                          <Typography
-                            fontWeight={600}
-                            sx={{
-                              wordBreak:
-                                "break-word",
-                            }}
-                          >
-                            {name}
-                          </Typography>
-
-                          <Typography
-                            variant="body2"
-                            color="text.secondary"
-                          >
-                            Qty:{" "}
-                            {quantity}
-                          </Typography>
-
-                        </Box>
+                      <Box>
 
                         <Typography
-                          fontWeight={700}
-                          sx={{
-                            whiteSpace:
-                              "nowrap",
-                          }}
+                          fontWeight={600}
+                        >
+                          {name}
+                        </Typography>
+
+
+                        <Typography
+                          variant="body2"
+                          color="text.secondary"
+                        >
+                          Qty:{" "}
+                          {quantity}
+                        </Typography>
+
+
+                        <Typography
+                          variant="body2"
+                          color="text.secondary"
                         >
                           ₹
-                          {total.toLocaleString(
+                          {price.toLocaleString(
                             "en-IN"
-                          )}
+                          )}{" "}
+                          each
                         </Typography>
 
                       </Box>
 
-                    );
 
-                  }
+                      <Typography
+                        fontWeight={700}
+                      >
+                        ₹
+                        {itemTotal.toLocaleString(
+                          "en-IN"
+                        )}
+                      </Typography>
+
+                    </Box>
+
+                  );
+
+                }
+              )}
+
+            </Stack>
+
+
+            <Divider
+              sx={{
+                my: 2,
+              }}
+            />
+
+
+            {/* SUBTOTAL */}
+
+            <Box
+              sx={{
+                display:
+                  "flex",
+
+                justifyContent:
+                  "space-between",
+
+                mb: 1.5,
+
+              }}
+            >
+
+              <Typography>
+                Subtotal
+              </Typography>
+
+
+              <Typography
+                fontWeight={600}
+              >
+                ₹
+                {subtotal.toLocaleString(
+                  "en-IN"
                 )}
+              </Typography>
 
-              </Stack>
+            </Box>
 
 
-              <Divider
+            {/* DELIVERY */}
+
+            <Box
+              sx={{
+                display:
+                  "flex",
+
+                justifyContent:
+                  "space-between",
+
+                mb: 2,
+
+              }}
+            >
+
+              <Typography>
+                Delivery Charges
+              </Typography>
+
+
+              <Typography
+                fontWeight={700}
                 sx={{
-                  my: 2,
-                }}
-              />
-
-
-              {/* SUBTOTAL */}
-
-              <Box
-                sx={{
-                  display:
-                    "flex",
-
-                  justifyContent:
-                    "space-between",
-
-                  mb: 1,
-                }}
-              >
-
-                <Typography>
-                  Subtotal
-                </Typography>
-
-                <Typography>
-                  ₹
-                  {subtotal.toLocaleString(
-                    "en-IN"
-                  )}
-                </Typography>
-
-              </Box>
-
-
-              {/* DELIVERY */}
-
-              <Box
-                sx={{
-                  display:
-                    "flex",
-
-                  justifyContent:
-                    "space-between",
-
-                  mb: 1,
+                  color:
+                    "#2E7D32",
                 }}
               >
+                ₹
+                {deliveryCharge.toLocaleString(
+                  "en-IN"
+                )}
+              </Typography>
 
-                <Typography>
-                  Delivery Charges
-                </Typography>
-
-                <Typography>
-                  ₹
-                  {deliveryCharge.toLocaleString(
-                    "en-IN"
-                  )}
-                </Typography>
-
-              </Box>
+            </Box>
 
 
-              <Divider
+            <Divider
+              sx={{
+                mb: 2,
+              }}
+            />
+
+
+            {/* GRAND TOTAL */}
+
+            <Box
+              sx={{
+                display:
+                  "flex",
+
+                justifyContent:
+                  "space-between",
+
+                alignItems:
+                  "center",
+
+                mb: 3,
+
+              }}
+            >
+
+              <Typography
+                fontWeight={900}
+              >
+                Grand Total
+              </Typography>
+
+
+              <Typography
+                fontWeight={900}
                 sx={{
-                  my: 2,
-                }}
-              />
+                  fontSize:
+                    "1.35rem",
 
-
-              {/* GRAND TOTAL */}
-
-              <Box
-                sx={{
-                  display:
-                    "flex",
-
-                  justifyContent:
-                    "space-between",
-
-                  alignItems:
-                    "center",
-
+                  color:
+                    "#2E7D32",
                 }}
               >
+                ₹
+                {finalAmount.toLocaleString(
+                  "en-IN"
+                )}
+              </Typography>
 
-                <Typography
-                  fontWeight={900}
-                >
-                  Grand Total
-                </Typography>
-
-                <Typography
-                  fontWeight={900}
-                  sx={{
-                    color:
-                      "#2E7D32",
-
-                    fontSize:
-                      "1.3rem",
-                  }}
-                >
-                  ₹
-                  {grandTotal.toLocaleString(
-                    "en-IN"
-                  )}
-                </Typography>
-
-              </Box>
+            </Box>
 
 
-              {/* =================================================
-                  PAYMENT INFORMATION
-              ================================================= */}
+            {/* ==========================================
+                PAYMENT INFO
+            =========================================== */}
 
-              <Box
-                sx={{
-                  mt: 2.5,
+            <Box
+              sx={{
+                p: 2,
 
-                  p: {
-                    xs: 1.5,
-                    sm: 2,
-                  },
+                bgcolor:
+                  "#EAF7EA",
 
-                  bgcolor:
-                    "#E8F5E9",
+                border:
+                  "1px solid #A5D6A7",
 
-                  border:
-                    "1px solid #A5D6A7",
+                borderRadius:
+                  2.5,
 
-                  borderRadius: 2,
+                mb: 2,
 
-                }}
-              >
-
-                <Stack
-                  direction="row"
-                  spacing={1}
-                  alignItems="flex-start"
-                >
-
-                  <QrCode2
-                    sx={{
-                      color:
-                        "#2E7D32",
-
-                      mt: 0.2,
-                    }}
-                  />
-
-                  <Box>
-
-                    <Typography
-                      fontWeight={800}
-                      color="#1B5E20"
-                    >
-                      UPI Scan & Pay
-                    </Typography>
-
-                    <Typography
-                      variant="body2"
-                      color="text.secondary"
-                      sx={{
-                        mt: 0.5,
-                      }}
-                    >
-                      After clicking the
-                      button below, your
-                      order will be created
-                      and you will be taken
-                      to the payment scanner.
-                    </Typography>
-
-                  </Box>
-
-                </Stack>
-
-              </Box>
-
-
-              {/* =================================================
-                  CONTINUE TO SCAN & PAY
-              ================================================= */}
-
-              <Button
-                type="submit"
-                fullWidth
-                variant="contained"
-                color="success"
-                size="large"
-                disabled={
-                  loading ||
-                  cartLoading ||
-                  !cartItems.length
-                }
-                startIcon={
-                  loading ? (
-                    <CircularProgress
-                      size={20}
-                      color="inherit"
-                    />
-                  ) : (
-                    <QrCode2 />
-                  )
-                }
-                sx={{
-                  mt: 2,
-
-                  py: 1.6,
-
-                  borderRadius: 2.5,
-
-                  textTransform:
-                    "none",
-
-                  fontWeight:
-                    800,
-
-                  fontSize: {
-                    xs: "0.9rem",
-                    sm: "1rem",
-                  },
-
-                }}
-              >
-
-                {loading
-                  ? "Creating Order..."
-                  : `Continue to Scan & Pay ₹${grandTotal.toLocaleString(
-                      "en-IN"
-                    )}`}
-
-              </Button>
-
-
-              {/* SECURITY */}
+              }}
+            >
 
               <Stack
                 direction="row"
-                spacing={0.8}
-                justifyContent="center"
-                alignItems="center"
-                sx={{
-                  mt: 1.5,
-                }}
+                spacing={1}
+                alignItems="flex-start"
               >
 
-                <LockOutlined
+                <QrCode2
                   sx={{
-                    fontSize: 16,
-
                     color:
-                      "text.secondary",
+                      "#2E7D32",
                   }}
                 />
 
-                <Typography
-                  variant="caption"
-                  color="text.secondary"
-                >
-                  Your order details are
-                  securely processed.
-                </Typography>
+
+                <Box>
+
+                  <Typography
+                    fontWeight={800}
+                    sx={{
+                      color:
+                        "#24752D",
+                    }}
+                  >
+                    UPI Scan & Pay
+                  </Typography>
+
+
+                  <Typography
+                    variant="body2"
+                    color="text.secondary"
+                    sx={{
+                      mt: 0.5,
+                    }}
+                  >
+                    Your order will be
+                    created and you will
+                    then be taken to the
+                    payment scanner.
+                  </Typography>
+
+                </Box>
 
               </Stack>
 
-            </CardContent>
+            </Box>
 
-          </Card>
 
-        </Box>
+            {/* ==========================================
+                PAYMENT BUTTON
+            =========================================== */}
+
+            <Button
+              fullWidth
+              variant="contained"
+              size="large"
+              disabled={
+                placingOrder ||
+                !items.length ||
+                finalAmount <= 0
+              }
+              onClick={
+                handlePlaceOrder
+              }
+              startIcon={
+                placingOrder ? (
+                  <CircularProgress
+                    size={20}
+                    color="inherit"
+                  />
+                ) : (
+                  <QrCode2 />
+                )
+              }
+              sx={{
+                py: 1.5,
+
+                borderRadius:
+                  2.5,
+
+                textTransform:
+                  "none",
+
+                fontWeight:
+                  800,
+
+                bgcolor:
+                  "#4CAF50",
+
+                "&:hover": {
+                  bgcolor:
+                    "#388E3C",
+                },
+
+              }}
+            >
+
+              {placingOrder
+
+                ? "Creating Order..."
+
+                : `Continue to Scan & Pay ₹${finalAmount.toLocaleString(
+                    "en-IN"
+                  )}`
+
+              }
+
+            </Button>
+
+
+            {/* ==========================================
+                SECURITY
+            =========================================== */}
+
+            <Stack
+              direction="row"
+              spacing={0.5}
+              justifyContent="center"
+              alignItems="center"
+              sx={{
+                mt: 1.5,
+              }}
+            >
+
+              <LockOutlined
+                sx={{
+                  fontSize:
+                    16,
+
+                  color:
+                    "text.secondary",
+                }}
+              />
+
+
+              <Typography
+                variant="caption"
+                color="text.secondary"
+              >
+                Your order details are
+                securely processed.
+              </Typography>
+
+            </Stack>
+
+          </CardContent>
+
+        </Card>
 
       </Container>
 
@@ -1708,5 +2079,6 @@ const Checkout = () => {
   );
 
 };
+
 
 export default Checkout;

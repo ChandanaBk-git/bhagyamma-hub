@@ -15,10 +15,37 @@ const withdrawRepository =
 
 
 // =====================================================
-// GET WALLET
+// CREATE EMPTY WALLET
 // =====================================================
 
-const getWallet = async (
+const createEmptyWallet = async (
+  userId
+) => {
+
+  return await repository.createWallet({
+    user: userId,
+
+    balance: 0,
+
+    totalCommission: 0,
+
+    totalBonus: 0,
+
+    totalWithdrawn: 0,
+
+    pendingWithdrawal: 0,
+
+    isActive: true,
+  });
+
+};
+
+
+// =====================================================
+// GET OR CREATE WALLET
+// =====================================================
+
+const getOrCreateWallet = async (
   userId
 ) => {
 
@@ -28,74 +55,93 @@ const getWallet = async (
     );
 
 
-  // ---------------------------------------------------
-  // CREATE WALLET IF NOT EXISTS
-  // ---------------------------------------------------
-
   if (!wallet) {
 
-    wallet =
-      await repository.createWallet({
+    try {
 
-        user:
-          userId,
+      wallet =
+        await createEmptyWallet(
+          userId
+        );
 
-        balance:
-          0,
+    } catch (error) {
 
-        totalCommission:
-          0,
+      // Another simultaneous request may have
+      // created the wallet first.
 
-        totalBonus:
-          0,
+      if (
+        error &&
+        error.code === 11000
+      ) {
 
-        totalWithdrawn:
-          0,
+        wallet =
+          await repository.findWalletByUser(
+            userId
+          );
 
-        pendingWithdrawal:
-          0,
+      } else {
 
-      });
+        throw error;
+
+      }
+
+    }
 
   }
 
 
-  // ---------------------------------------------------
-  // COMMISSION HISTORY
-  // ---------------------------------------------------
+  if (!wallet) {
 
-  const commissions =
-    await commissionRepository.findByUser(
+    throw new Error(
+      "Unable to create or find wallet."
+    );
+
+  }
+
+
+  return wallet;
+
+};
+
+
+// =====================================================
+// GET WALLET
+// =====================================================
+//
+// READ ONLY with respect to wallet money.
+//
+// It synchronizes pending withdrawal amount only.
+//
+// It does NOT:
+// - calculate SP
+// - create commission
+// - create bonus
+// - recalculate balance
+//
+// =====================================================
+
+const getWallet = async (
+  userId
+) => {
+
+  const wallet =
+    await getOrCreateWallet(
       userId
     );
 
 
-  const totalCommission =
-    commissions.reduce(
-      (
-        sum,
-        item
-      ) =>
-        sum +
-        Number(
-          item.commissionAmount || 0
-        ),
-      0
-    );
+  // ===================================================
+  // PENDING WITHDRAWAL
+  // ===================================================
 
-
-  // ---------------------------------------------------
-  // WITHDRAWAL HISTORY
-  // ---------------------------------------------------
-
-  const withdrawalHistory =
+  const withdrawals =
     await withdrawRepository.findByUser(
       userId
     );
 
 
   const pendingWithdrawal =
-    withdrawalHistory
+    withdrawals
       .filter(
         (item) =>
           String(
@@ -105,10 +151,10 @@ const getWallet = async (
       )
       .reduce(
         (
-          sum,
+          total,
           item
         ) =>
-          sum +
+          total +
           Number(
             item.amount || 0
           ),
@@ -116,29 +162,13 @@ const getWallet = async (
       );
 
 
-  // ---------------------------------------------------
-  // IMPORTANT
-  // ---------------------------------------------------
-  //
-  // DO NOT overwrite wallet.balance here.
-  //
-  // wallet.balance is the actual persisted
-  // available wallet balance.
-  //
-  // Previously this code did:
-  //
-  // wallet.balance = totalCommission;
-  //
-  // That was causing the wallet value to be
-  // incorrectly recalculated.
-  //
-  // ---------------------------------------------------
-
-  wallet.totalCommission =
-    totalCommission;
-
   wallet.pendingWithdrawal =
     pendingWithdrawal;
+
+
+  await repository.saveWallet(
+    wallet
+  );
 
 
   return wallet;
@@ -147,389 +177,563 @@ const getWallet = async (
 
 
 // =====================================================
-// CREDIT WALLET
+// FIND EXISTING CREDIT
+// =====================================================
+//
+// Used for idempotency.
+//
+// Example:
+//
+// JOINING:USER123:L1
+//
+// If this reference already exists,
+// DO NOT credit the wallet again.
+//
 // =====================================================
 
-const creditWallet = async (
+const findExistingCredit =
+  async (
+    userId,
+    reference
+  ) => {
 
-  userId,
+    if (
+      !userId ||
+      !reference
+    ) {
 
-  amount,
-
-  description,
-
-  reference = ""
-
-) => {
-
-  const creditAmount =
-    Number(
-      amount || 0
-    );
-
-
-  if (
-    !Number.isFinite(
-      creditAmount
-    ) ||
-    creditAmount <= 0
-  ) {
-
-    throw new Error(
-      "Invalid wallet credit amount"
-    );
-
-  }
-
-
-  console.log(
-    "===================================="
-  );
-
-  console.log(
-    "CREDIT WALLET"
-  );
-
-  console.log(
-    "User:",
-    userId
-  );
-
-  console.log(
-    "Amount:",
-    creditAmount
-  );
-
-  console.log(
-    "Description:",
-    description
-  );
-
-
-  // ---------------------------------------------------
-  // GET EXISTING WALLET
-  // ---------------------------------------------------
-
-  let wallet =
-    await repository.findWalletByUser(
-      userId
-    );
-
-
-  // ---------------------------------------------------
-  // CREATE IF NOT EXISTS
-  // ---------------------------------------------------
-
-  if (!wallet) {
-
-    wallet =
-      await repository.createWallet({
-
-        user:
-          userId,
-
-        balance:
-          0,
-
-        totalCommission:
-          0,
-
-        totalBonus:
-          0,
-
-        totalWithdrawn:
-          0,
-
-        pendingWithdrawal:
-          0,
-
-      });
-
-  }
-
-
-  console.log(
-    "Wallet Before Update:",
-    {
-
-      balance:
-        wallet.balance,
-
-      totalCommission:
-        wallet.totalCommission,
+      return null;
 
     }
-  );
 
 
-  // ---------------------------------------------------
-  // UPDATE BALANCE
-  // ---------------------------------------------------
-
-  wallet.balance =
-    Number(
-      wallet.balance || 0
-    ) +
-    creditAmount;
-
-
-  // ---------------------------------------------------
-  // UPDATE COMMISSION TOTAL
-  // ---------------------------------------------------
-
-  wallet.totalCommission =
-    Number(
-      wallet.totalCommission || 0
-    ) +
-    creditAmount;
-
-
-  // ---------------------------------------------------
-  // SAVE WALLET
-  // ---------------------------------------------------
-
-  await repository.saveWallet(
-    wallet
-  );
-
-
-  console.log(
-    "Wallet After Update:",
-    {
-
-      balance:
-        wallet.balance,
-
-      totalCommission:
-        wallet.totalCommission,
-
-    }
-  );
-
-
-  // ---------------------------------------------------
-  // SAVE TRANSACTION
-  // ---------------------------------------------------
-
-  const transaction =
-    await WalletTransaction.create({
-
-      wallet:
-        wallet._id,
+    return await WalletTransaction.findOne({
 
       userId,
+
+      reference,
 
       type:
         "CREDIT",
 
-      amount:
-        creditAmount,
+    }).sort({
 
-      balanceAfter:
-        wallet.balance,
+      createdAt: -1,
+
+    });
+
+  };
+
+
+// =====================================================
+// INTERNAL WALLET CREDIT
+// =====================================================
+//
+// ONLY COMMISSION and BONUS reach here.
+//
+// SP NEVER reaches wallet.
+//
+// =====================================================
+
+const creditWalletInternal =
+  async (
+    userId,
+    amount,
+    description,
+    reference = "",
+    type = "BONUS"
+  ) => {
+
+    const creditAmount =
+      Number(
+        amount || 0
+      );
+
+
+    // =================================================
+    // VALIDATE USER
+    // =================================================
+
+    if (!userId) {
+
+      throw new Error(
+        "User ID is required for wallet credit."
+      );
+
+    }
+
+
+    // =================================================
+    // VALIDATE AMOUNT
+    // =================================================
+
+    if (
+      !Number.isFinite(
+        creditAmount
+      ) ||
+      creditAmount <= 0
+    ) {
+
+      throw new Error(
+        "Invalid wallet credit amount"
+      );
+
+    }
+
+
+    // =================================================
+    // VALIDATE TYPE
+    // =================================================
+
+    if (
+      type !== "COMMISSION" &&
+      type !== "BONUS"
+    ) {
+
+      throw new Error(
+        `Invalid wallet credit type: ${type}`
+      );
+
+    }
+
+
+    // =================================================
+    // IDEMPOTENCY CHECK
+    // =================================================
+    //
+    // Only use this when a real reference exists.
+    //
+    // Commission:
+    //
+    // JOINING:<memberId>:L1
+    //
+    // Bonus:
+    //
+    // SUPERVISOR:<memberId>
+    //
+    // Same reference = same financial event.
+    //
+    // =================================================
+
+    if (
+      reference &&
+      String(
+        reference
+      ).trim()
+    ) {
+
+      const existingTransaction =
+        await findExistingCredit(
+          userId,
+          reference
+        );
+
+
+      if (
+        existingTransaction
+      ) {
+
+        console.log(
+          "WALLET CREDIT ALREADY PROCESSED"
+        );
+
+        console.log(
+          "User:",
+          userId.toString()
+        );
+
+        console.log(
+          "Reference:",
+          reference
+        );
+
+        return await repository.findWalletByUser(
+          userId
+        );
+
+      }
+
+    }
+
+
+    // =================================================
+    // GET WALLET
+    // =================================================
+
+    const wallet =
+      await getOrCreateWallet(
+        userId
+      );
+
+
+    // =================================================
+    // CREDIT BALANCE
+    // =================================================
+
+    wallet.balance =
+      Number(
+        wallet.balance || 0
+      ) +
+      creditAmount;
+
+
+    // =================================================
+    // COMMISSION
+    // =================================================
+
+    if (
+      type ===
+      "COMMISSION"
+    ) {
+
+      wallet.totalCommission =
+        Number(
+          wallet.totalCommission || 0
+        ) +
+        creditAmount;
+
+    }
+
+
+    // =================================================
+    // BONUS
+    // =================================================
+
+    if (
+      type ===
+      "BONUS"
+    ) {
+
+      wallet.totalBonus =
+        Number(
+          wallet.totalBonus || 0
+        ) +
+        creditAmount;
+
+    }
+
+
+    // =================================================
+    // SAVE WALLET
+    // =================================================
+
+    await repository.saveWallet(
+      wallet
+    );
+
+
+    // =================================================
+    // CREATE TRANSACTION
+    // =================================================
+
+    try {
+
+      await WalletTransaction.create({
+
+        wallet:
+          wallet._id,
+
+        userId,
+
+        type:
+          "CREDIT",
+
+        amount:
+          creditAmount,
+
+        balanceAfter:
+          wallet.balance,
+
+        description,
+
+        reference,
+
+      });
+
+    } catch (error) {
+
+      // =================================================
+      // DUPLICATE REFERENCE
+      // =================================================
+      //
+      // This can happen if two identical requests arrive
+      // at almost exactly the same time after the
+      // database unique index has been added.
+      //
+      // =================================================
+
+      if (
+        error &&
+        error.code === 11000 &&
+        reference
+      ) {
+
+        console.warn(
+          "DUPLICATE WALLET TRANSACTION BLOCKED:",
+          reference
+        );
+
+
+        // IMPORTANT:
+        //
+        // At this point the wallet may already have been
+        // changed by this request.
+        //
+        // Therefore the unique index is NOT sufficient
+        // by itself for true atomic financial safety.
+        //
+        // We throw instead of silently claiming success.
+        //
+
+        throw new Error(
+          "Duplicate wallet credit detected. Transaction requires review."
+        );
+
+      }
+
+
+      throw error;
+
+    }
+
+
+    return wallet;
+
+  };
+
+
+// =====================================================
+// CREDIT COMMISSION
+// =====================================================
+//
+// ONLY referral commission.
+//
+// Example:
+//
+// L1 = 20%
+// L2 = 5%
+// L3+ = 1%
+//
+// =====================================================
+
+const creditCommission =
+  async (
+    userId,
+    amount,
+    description,
+    reference = ""
+  ) => {
+
+    return await creditWalletInternal(
+
+      userId,
+
+      amount,
 
       description,
 
       reference,
 
-    });
+      "COMMISSION"
+
+    );
+
+  };
 
 
-  console.log(
-    "Transaction Saved:",
-    transaction._id
-  );
+// =====================================================
+// CREDIT BONUS
+// =====================================================
+//
+// Bonus/incentive only.
+//
+// Example:
+//
+// Supervisor milestone
+//      ↓
+// ₹1,000 bonus
+//
+// This is NOT commission.
+//
+// =====================================================
+
+const creditBonus =
+  async (
+    userId,
+    amount,
+    description,
+    reference = ""
+  ) => {
+
+    return await creditWalletInternal(
+
+      userId,
+
+      amount,
+
+      description,
+
+      reference,
+
+      "BONUS"
+
+    );
+
+  };
 
 
-  console.log(
-    "===================================="
-  );
+// =====================================================
+// LEGACY CREDIT
+// =====================================================
+//
+// Existing code may still call:
+//
+// creditWallet()
+//
+// Keep it for compatibility.
+//
+// New code should use:
+// creditCommission()
+// creditBonus()
+//
+// =====================================================
+
+const creditWallet =
+  async (
+    userId,
+    amount,
+    description,
+    reference = ""
+  ) => {
+
+    console.warn(
+      "WARNING: legacy creditWallet() used. Use creditCommission() or creditBonus()."
+    );
 
 
-  return wallet;
+    return await creditBonus(
 
-};
+      userId,
+
+      amount,
+
+      description,
+
+      reference
+
+    );
+
+  };
 
 
 // =====================================================
 // DEBIT WALLET
 // =====================================================
+//
+// Used for withdrawals.
+//
+// balance decreases.
+// totalWithdrawn increases.
+//
+// totalCommission and totalBonus remain unchanged.
+//
+// =====================================================
 
-const debitWallet = async (
+const debitWallet =
+  async (
+    userId,
+    amount,
+    description,
+    reference = ""
+  ) => {
 
-  userId,
-
-  amount,
-
-  description,
-
-  reference = ""
-
-) => {
-
-  const debitAmount =
-    Number(
-      amount || 0
-    );
+    const debitAmount =
+      Number(
+        amount || 0
+      );
 
 
-  if (
-    !Number.isFinite(
+    // =================================================
+    // VALIDATE
+    // =================================================
+
+    if (
+      !Number.isFinite(
+        debitAmount
+      ) ||
+      debitAmount <= 0
+    ) {
+
+      throw new Error(
+        "Invalid wallet debit amount"
+      );
+
+    }
+
+
+    // =================================================
+    // GET WALLET
+    // =================================================
+
+    const wallet =
+      await getOrCreateWallet(
+        userId
+      );
+
+
+    // =================================================
+    // CHECK BALANCE
+    // =================================================
+
+    if (
+      Number(
+        wallet.balance || 0
+      ) <
       debitAmount
-    ) ||
-    debitAmount <= 0
-  ) {
+    ) {
 
-    throw new Error(
-      "Invalid wallet debit amount"
-    );
-
-  }
-
-
-  console.log(
-    "===================================="
-  );
-
-  console.log(
-    "DEBIT WALLET"
-  );
-
-  console.log(
-    "User:",
-    userId
-  );
-
-  console.log(
-    "Amount:",
-    debitAmount
-  );
-
-
-  // ---------------------------------------------------
-  // GET WALLET DIRECTLY
-  // ---------------------------------------------------
-
-  let wallet =
-    await repository.findWalletByUser(
-      userId
-    );
-
-
-  // ---------------------------------------------------
-  // CREATE IF NOT EXISTS
-  // ---------------------------------------------------
-
-  if (!wallet) {
-
-    wallet =
-      await repository.createWallet({
-
-        user:
-          userId,
-
-        balance:
-          0,
-
-        totalCommission:
-          0,
-
-        totalBonus:
-          0,
-
-        totalWithdrawn:
-          0,
-
-        pendingWithdrawal:
-          0,
-
-      });
-
-  }
-
-
-  console.log(
-    "Wallet Before Debit:",
-    {
-
-      balance:
-        wallet.balance,
-
-      totalWithdrawn:
-        wallet.totalWithdrawn,
+      throw new Error(
+        "Insufficient Wallet Balance"
+      );
 
     }
-  );
 
 
-  // ---------------------------------------------------
-  // CHECK BALANCE
-  // ---------------------------------------------------
+    // =================================================
+    // DEBIT
+    // =================================================
 
-  if (
-    Number(
-      wallet.balance || 0
-    ) <
-    debitAmount
-  ) {
+    wallet.balance =
+      Number(
+        wallet.balance || 0
+      ) -
+      debitAmount;
 
-    throw new Error(
-      "Insufficient Wallet Balance"
+
+    // =================================================
+    // TOTAL WITHDRAWN
+    // =================================================
+
+    wallet.totalWithdrawn =
+      Number(
+        wallet.totalWithdrawn || 0
+      ) +
+      debitAmount;
+
+
+    // =================================================
+    // SAVE
+    // =================================================
+
+    await repository.saveWallet(
+      wallet
     );
 
-  }
 
+    // =================================================
+    // TRANSACTION
+    // =================================================
 
-  // ---------------------------------------------------
-  // DEBIT BALANCE
-  // ---------------------------------------------------
-
-  wallet.balance =
-    Number(
-      wallet.balance || 0
-    ) -
-    debitAmount;
-
-
-  // ---------------------------------------------------
-  // UPDATE WITHDRAWN
-  // ---------------------------------------------------
-
-  wallet.totalWithdrawn =
-    Number(
-      wallet.totalWithdrawn || 0
-    ) +
-    debitAmount;
-
-
-  // ---------------------------------------------------
-  // SAVE WALLET
-  // ---------------------------------------------------
-
-  await repository.saveWallet(
-    wallet
-  );
-
-
-  console.log(
-    "Wallet After Debit:",
-    {
-
-      balance:
-        wallet.balance,
-
-      totalWithdrawn:
-        wallet.totalWithdrawn,
-
-    }
-  );
-
-
-  // ---------------------------------------------------
-  // SAVE TRANSACTION
-  // ---------------------------------------------------
-
-  const transaction =
     await WalletTransaction.create({
 
       wallet:
@@ -553,227 +757,188 @@ const debitWallet = async (
     });
 
 
-  console.log(
-    "Transaction Saved:",
-    transaction._id
-  );
+    return wallet;
 
-
-  console.log(
-    "===================================="
-  );
-
-
-  return wallet;
-
-};
+  };
 
 
 // =====================================================
 // GET WALLET DETAILS
 // =====================================================
 
-const getWalletDetails = async (
-  userId
-) => {
+const getWalletDetails =
+  async (
+    userId
+  ) => {
 
-  const wallet =
-    await getWallet(
-      userId
-    );
-
-
-  const transactions =
-    await walletTransactionRepository
-      .getTransactions(
-        wallet._id
+    const wallet =
+      await getWallet(
+        userId
       );
 
 
-  return {
+    const transactions =
+      await walletTransactionRepository
+        .getTransactions(
+          wallet._id
+        );
 
-    wallet,
 
-    transactions,
+    return {
+
+      wallet,
+
+      transactions,
+
+    };
 
   };
 
-};
 
 // =====================================================
-// RECONCILE WALLET FROM PAID COMMISSIONS
+// RECONCILE EXISTING COMMISSIONS
+// =====================================================
+//
+// DO NOT call automatically.
+//
+// Existing financial data must be inspected first.
+//
 // =====================================================
 
-const reconcileWalletFromCommissions = async (
-  userId
-) => {
+const reconcileWalletFromCommissions =
+  async (
+    userId
+  ) => {
 
-  // ---------------------------------------------------
-  // GET WALLET
-  // ---------------------------------------------------
-
-  let wallet =
-    await repository.findWalletByUser(
-      userId
-    );
+    const wallet =
+      await getOrCreateWallet(
+        userId
+      );
 
 
-  if (!wallet) {
+    const commissions =
+      await commissionRepository.findByUser(
+        userId
+      );
 
-    wallet =
-      await repository.createWallet({
 
-        user:
-          userId,
+    const paidCommission =
+      commissions
+        .filter(
+          (item) =>
+            String(
+              item.status || ""
+            ).toUpperCase() ===
+            "PAID"
+        )
+        .reduce(
+          (
+            total,
+            item
+          ) =>
+            total +
+            Number(
+              item.commissionAmount || 0
+            ),
+          0
+        );
 
-        balance:
-          0,
 
-        totalCommission:
-          0,
+    const currentCommission =
+      Number(
+        wallet.totalCommission || 0
+      );
 
-        totalBonus:
-          0,
 
-        totalWithdrawn:
-          0,
+    const difference =
+      paidCommission -
+      currentCommission;
 
-        pendingWithdrawal:
-          0,
+
+    // =================================================
+    // ONLY POSITIVE DIFFERENCE
+    // =================================================
+
+    if (
+      difference > 0
+    ) {
+
+      wallet.balance =
+        Number(
+          wallet.balance || 0
+        ) +
+        difference;
+
+
+      wallet.totalCommission =
+        currentCommission +
+        difference;
+
+
+      await repository.saveWallet(
+        wallet
+      );
+
+
+      await WalletTransaction.create({
+
+        wallet:
+          wallet._id,
+
+        userId,
+
+        type:
+          "CREDIT",
+
+        amount:
+          difference,
+
+        balanceAfter:
+          wallet.balance,
+
+        description:
+          "Commission reconciliation",
+
+        reference:
+          `COMMISSION_RECONCILIATION:${userId}`,
 
       });
 
-  }
+    }
 
 
-  // ---------------------------------------------------
-  // GET PAID COMMISSIONS
-  // ---------------------------------------------------
+    return {
 
-  const commissions =
-    await commissionRepository.findByUser(
-      userId
-    );
+      wallet,
 
+      paidCommission,
 
-  const paidCommission =
-    commissions
-      .filter(
-        (item) =>
-          String(
-            item.status || ""
-          ).toUpperCase() ===
-          "PAID"
-      )
-      .reduce(
-        (
-          total,
-          item
-        ) =>
-          total +
-          Number(
-            item.commissionAmount || 0
-          ),
-        0
-      );
+      credited:
+        Math.max(
+          difference,
+          0
+        ),
 
-
-  // ---------------------------------------------------
-  // CURRENT WALLET
-  // ---------------------------------------------------
-
-  const currentBalance =
-    Number(
-      wallet.balance || 0
-    );
-
-
-  const currentCommission =
-    Number(
-      wallet.totalCommission || 0
-    );
-
-
-  // ---------------------------------------------------
-  // ONLY CREDIT THE DIFFERENCE
-  // ---------------------------------------------------
-
-  const balanceDifference =
-    paidCommission -
-    currentCommission;
-
-
-  if (
-    balanceDifference > 0
-  ) {
-
-    wallet.balance =
-      currentBalance +
-      balanceDifference;
-
-    wallet.totalCommission =
-      currentCommission +
-      balanceDifference;
-
-
-    await repository.saveWallet(
-      wallet
-    );
-
-
-    await WalletTransaction.create({
-
-      wallet:
-        wallet._id,
-
-      userId,
-
-      type:
-        "CREDIT",
-
-      amount:
-        balanceDifference,
-
-      balanceAfter:
-        wallet.balance,
-
-      description:
-        "Wallet reconciliation for existing paid commissions",
-
-      reference:
-        "COMMISSION_RECONCILIATION",
-
-    });
-
-  }
-
-
-  return {
-
-    wallet,
-
-    paidCommission,
-
-    credited:
-      Math.max(
-        balanceDifference,
-        0
-      ),
+    };
 
   };
 
-};
-
 
 // =====================================================
-// EXPORTS
+// EXPORT
 // =====================================================
 
 module.exports = {
 
   getWallet,
 
+  getOrCreateWallet,
+
   creditWallet,
+
+  creditCommission,
+
+  creditBonus,
 
   debitWallet,
 

@@ -362,12 +362,36 @@ const getDashboard = async (
   // ===================================================
 
   const managerCommissions =
-    await commissionRepository.findByReceivers(
+    await commissionRepository.findPaidByReceivers(
       [
         managerId,
       ]
     );
-
+console.log("==============================================");
+console.log("COMMISSION DEBUG");
+console.log("Manager ID:", managerId);
+console.log(
+  "Manager ID type:",
+  typeof managerId
+);
+console.log(
+  "Manager commission records:",
+  managerCommissions.length
+);
+console.log(
+  "Manager commission records:",
+  managerCommissions.map((item) => ({
+    id: item._id,
+    receiver: item.receiver,
+    fromUser: item.fromUser,
+    level: item.level,
+    percentage: item.percentage,
+    joiningAmount: item.joiningAmount,
+    commissionAmount: item.commissionAmount,
+    status: item.status,
+  }))
+);
+console.log("==============================================");
 
   const totalCommission =
     managerCommissions.reduce(

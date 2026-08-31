@@ -198,10 +198,10 @@ const getManagerOrders =
       res
     ) => {
 
-      const orders =
-        await orderService.getManagerOrders();
-
-
+const orders =
+  await orderService.getManagerOrders(
+    req.user.id
+  );
       return res
         .status(200)
         .json(

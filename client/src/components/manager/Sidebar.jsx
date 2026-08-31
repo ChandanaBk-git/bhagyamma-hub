@@ -22,6 +22,7 @@ import LogoutIcon from "@mui/icons-material/Logout";
 import Inventory2Icon from "@mui/icons-material/Inventory2";
 import AccountBalanceWalletIcon from "@mui/icons-material/AccountBalanceWallet";
 import HomeIcon from "@mui/icons-material/Home";
+import StarsIcon from "@mui/icons-material/Stars";
 
 const Sidebar = () => {
 
@@ -85,6 +86,11 @@ const Sidebar = () => {
     icon: <AccountBalanceWalletIcon />,
     path: "/manager/commissions",
   },
+  {
+  title: "Selling Points",
+  icon: <StarsIcon />,
+  path: "/manager/selling-points",
+},
 
   {
     title: "Products",
@@ -103,7 +109,7 @@ const Sidebar = () => {
     icon: <PersonIcon />,
     path: "/manager/profile",
   },
-
+  
 ];
 
 

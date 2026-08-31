@@ -24,869 +24,838 @@ import TrendingUpIcon from "@mui/icons-material/TrendingUp";
 
 import managerService from "../../services/manager.service";
 
-
 /* =========================================================
    FORMAT MONEY
 ========================================================= */
 
 const formatMoney = (value) => {
+  const amount = Number(value || 0);
 
-  const amount =
-    Number(value) || 0;
-
-  return `₹${amount.toLocaleString(
-    "en-IN",
-    {
-      maximumFractionDigits: 2,
-    }
-  )}`;
-
+  return `₹${amount.toLocaleString("en-IN", {
+    maximumFractionDigits: 2,
+  })}`;
 };
-
 
 /* =========================================================
-   GET MEMBER ID
-=========================================================
-
-Used ONLY internally for removing duplicate members.
-
-Member ID is NOT displayed.
+   SAFE NUMBER
 ========================================================= */
 
-const getMemberId = (item) => {
+const numberValue = (value) => {
+  const number = Number(value);
 
-  return (
-    item?.memberId ||
-    item?.userId ||
-    item?.member?.memberId ||
-    item?.member?.userId ||
-    item?.member?._id ||
-    item?.member?.id ||
-    item?.user?._id ||
-    item?.user?.id ||
-    item?.user?.userId ||
-    item?._id ||
-    item?.id ||
-    ""
-  );
-
+  return Number.isFinite(number)
+    ? number
+    : 0;
 };
 
+/* =========================================================
+   GET FROM USER
+========================================================= */
+
+const getFromUser = (transaction) => {
+  if (
+    transaction?.fromUser &&
+    typeof transaction.fromUser === "object"
+  ) {
+    return transaction.fromUser;
+  }
+
+  if (
+    transaction?.member &&
+    typeof transaction.member === "object"
+  ) {
+    return transaction.member;
+  }
+
+  if (
+    transaction?.user &&
+    typeof transaction.user === "object"
+  ) {
+    return transaction.user;
+  }
+
+  return null;
+};
 
 /* =========================================================
    GET MEMBER NAME
 ========================================================= */
 
-const getMemberName = (item) => {
+const getMemberName = (transaction) => {
+  const fromUser = getFromUser(transaction);
 
   return (
-    item?.memberName ||
-    item?.name ||
-    item?.fullName ||
-    item?.member_name ||
-    item?.member?.name ||
-    item?.member?.fullName ||
-    item?.member?.memberName ||
-    item?.user?.name ||
-    item?.user?.fullName ||
+    fromUser?.name ||
+    transaction?.memberName ||
+    transaction?.name ||
+    transaction?.fullName ||
     "-"
   );
-
 };
 
+/* =========================================================
+   GET MEMBER DATABASE ID
+========================================================= */
+
+const getMemberObjectId = (transaction) => {
+  const fromUser = getFromUser(transaction);
+
+  return (
+    fromUser?._id ||
+    fromUser?.id ||
+    transaction?.fromUser ||
+    transaction?.memberId ||
+    ""
+  );
+};
+
+/* =========================================================
+   GET MEMBER USER ID
+========================================================= */
+
+const getMemberUserId = (transaction) => {
+  const fromUser = getFromUser(transaction);
+
+  return (
+    fromUser?.userId ||
+    transaction?.memberUserId ||
+    transaction?.userId ||
+    ""
+  );
+};
 
 /* =========================================================
    GET COMMISSION PERCENTAGE
 ========================================================= */
 
-const getCommissionPercent = (item) => {
-
-  return (
-    Number(
-      item?.commissionPercent ??
-      item?.commissionPercentage ??
-      item?.percentage ??
-      item?.commissionRate ??
-      item?.percent ??
-      item?.rate ??
-      item?.member?.commissionPercent ??
-      item?.member?.commissionPercentage ??
+const getCommissionPercent = (transaction) => {
+  return numberValue(
+    transaction?.percentage ??
+      transaction?.commissionPercent ??
+      transaction?.commissionPercentage ??
+      transaction?.commissionRate ??
+      transaction?.percent ??
+      transaction?.rate ??
       0
-    ) || 0
   );
-
 };
-
 
 /* =========================================================
    GET COMMISSION AMOUNT
 ========================================================= */
 
-const getCommissionAmount = (item) => {
-
-  return (
-    Number(
-      item?.amount ??
-      item?.commissionAmount ??
-      item?.commission ??
-      item?.earnedCommission ??
-      item?.managerCommission ??
-      item?.managerCommissionAmount ??
-      item?.earnedAmount ??
+const getCommissionAmount = (transaction) => {
+  return numberValue(
+    transaction?.commissionAmount ??
+      transaction?.amount ??
+      transaction?.earnedCommission ??
+      transaction?.earnedAmount ??
+      transaction?.managerCommission ??
+      transaction?.managerCommissionAmount ??
       0
-    ) || 0
   );
-
 };
 
+/* =========================================================
+   GET LEVEL
+========================================================= */
+
+const getLevel = (transaction) => {
+  return numberValue(
+    transaction?.level ??
+      transaction?.commissionLevel ??
+      0
+  );
+};
 
 /* =========================================================
    NORMALIZE API RESPONSE
 ========================================================= */
 
 const normalizeResponse = (response) => {
-
   if (!response) {
     return {};
   }
 
-  return (
-    response?.data ??
-    response ??
-    {}
-  );
+  /*
+   * managerService may return:
+   *
+   * 1. response.data
+   * 2. { success, data }
+   * 3. direct array
+   * 4. direct object
+   */
 
+  if (
+    response?.success !== undefined &&
+    response?.data !== undefined
+  ) {
+    return response.data;
+  }
+
+  if (
+    response?.data !== undefined &&
+    (
+      Array.isArray(response.data) ||
+      typeof response.data === "object"
+    )
+  ) {
+    return response.data;
+  }
+
+  return response;
 };
 
-
 /* =========================================================
-   EXTRACT MEMBERS
+   EXTRACT TRANSACTIONS
 ========================================================= */
 
-const extractMembers = (data) => {
-
+const extractTransactions = (data) => {
   if (!data) {
     return [];
   }
 
+  /*
+   * Direct array
+   */
 
   if (Array.isArray(data)) {
     return data;
   }
 
+  /*
+   * New manager endpoint
+   *
+   * {
+   *   transactions: [...]
+   * }
+   */
 
-  if (Array.isArray(data.members)) {
-    return data.members;
+  if (Array.isArray(data.transactions)) {
+    return data.transactions;
   }
 
-
-  if (
-    Array.isArray(
-      data.networkCommission?.members
-    )
-  ) {
-
-    return data.networkCommission.members;
-
-  }
-
+  /*
+   * Compatibility
+   */
 
   if (Array.isArray(data.commissions)) {
     return data.commissions;
   }
 
-
   if (Array.isArray(data.records)) {
     return data.records;
   }
 
-
-  if (
-    Array.isArray(
-      data.networkCommission?.records
-    )
-  ) {
-
-    return data.networkCommission.records;
-
+  if (Array.isArray(data.data)) {
+    return data.data;
   }
-
-
-  if (
-    Array.isArray(
-      data.myCommission?.members
-    )
-  ) {
-
-    return data.myCommission.members;
-
-  }
-
 
   return [];
-
 };
 
-
 /* =========================================================
-   EXTRACT MANAGER COMMISSION
+   BUILD MEMBER ROWS
 =========================================================
 
-IMPORTANT FIX:
+IMPORTANT:
 
-Backend returns:
+Database:
 
-{
-    totalEarned: 2680,
-    members: [...]
-}
+Member A -> L1 -> ₹400
+Member A -> L2 -> ₹100
 
-So totalEarned MUST be checked first.
+Frontend:
+
+Member A -> L1,L2 -> 20% + 5% -> ₹500
+
+Each member is displayed ONCE.
+
+All database transactions are included in the amount.
 
 ========================================================= */
 
-const extractManagerCommission = (data) => {
+const buildMemberRows = (transactions) => {
+  const memberMap = new Map();
 
-  if (!data) {
-    return 0;
-  }
+  transactions.forEach((transaction) => {
+    const objectId =
+      getMemberObjectId(transaction);
 
+    const userId =
+      getMemberUserId(transaction);
 
-  /* -------------------------------------------------------
-     PRIMARY BACKEND VALUE
+    const name =
+      getMemberName(transaction);
 
-     Current backend:
+    const percentage =
+      getCommissionPercent(transaction);
 
-     totalEarned: 2680
-  ------------------------------------------------------- */
+    const amount =
+      getCommissionAmount(transaction);
 
-  const directValues = [
+    const level =
+      getLevel(transaction);
 
-    data.totalEarned,
+    /*
+     * IMPORTANT:
+     *
+     * Prefer MongoDB _id.
+     * Then BH userId.
+     * Then name only as final fallback.
+     */
 
-    data.managerCommission,
+    const key =
+      objectId
+        ? String(objectId)
+        : userId
+          ? String(userId)
+          : String(name || "")
+              .trim()
+              .toLowerCase();
 
-    data.totalManagerCommission,
-
-    data.totalCommissionEarned,
-
-    data.totalCommission,
-
-    data.earnedCommission,
-
-  ];
-
-
-  for (
-    const value
-    of directValues
-  ) {
-
-    if (
-      value !== undefined &&
-      value !== null &&
-      value !== "" &&
-      !Number.isNaN(
-        Number(value)
-      )
-    ) {
-
-      return Number(value);
-
+    if (!key) {
+      return;
     }
 
-  }
+    /*
+     * FIRST TRANSACTION FOR MEMBER
+     */
 
+    if (!memberMap.has(key)) {
+      memberMap.set(key, {
+        id: objectId
+          ? String(objectId)
+          : "",
 
-  /* -------------------------------------------------------
-     SUPPORT SUMMARY STRUCTURES
-  ------------------------------------------------------- */
+        userId:
+          userId
+            ? String(userId)
+            : "",
 
-  const summary =
-    data.summary ||
-    data.commissionSummary ||
-    data.networkCommission?.summary ||
-    data.myCommission?.summary ||
-    {};
+        name:
+          name || "-",
 
+        amount:
+          amount,
 
-  const summaryValues = [
+        percentages:
+          percentage > 0
+            ? [percentage]
+            : [],
 
-    summary.managerCommission,
+        levels:
+          level > 0
+            ? [level]
+            : [],
 
-    summary.totalManagerCommission,
+        transactionCount:
+          1,
+      });
 
-    summary.totalCommission,
-
-    summary.totalEarned,
-
-    summary.total,
-
-    summary.earned,
-
-    summary.amount,
-
-  ];
-
-
-  for (
-    const value
-    of summaryValues
-  ) {
-
-    if (
-      value !== undefined &&
-      value !== null &&
-      value !== "" &&
-      !Number.isNaN(
-        Number(value)
-      )
-    ) {
-
-      return Number(value);
-
+      return;
     }
 
-  }
+    /*
+     * EXISTING MEMBER
+     */
 
+    const existing =
+      memberMap.get(key);
 
-  return 0;
+    /*
+     * ADD ALL COMMISSION AMOUNTS
+     */
 
-};
+    existing.amount =
+      numberValue(existing.amount) +
+      amount;
 
+    /*
+     * COUNT ALL TRANSACTIONS
+     */
 
-/* =========================================================
-   BUILD UNIQUE MEMBERS
-=========================================================
+    existing.transactionCount =
+      numberValue(
+        existing.transactionCount
+      ) + 1;
 
-Each member appears ONLY ONCE.
+    /*
+     * KEEP ALL LEVELS
+     */
 
-If multiple commission transactions exist for the
-same member, their amounts are combined.
+    if (
+      level > 0 &&
+      !existing.levels.includes(level)
+    ) {
+      existing.levels.push(level);
+    }
 
-Example:
+    /*
+     * KEEP ALL COMMISSION PERCENTAGES
+     */
 
-Member A
-₹400
-
-Member A
-₹100
-
-Result:
-
-Member A
-₹500
-
-========================================================= */
-
-const buildUniqueMembers = (
-  records
-) => {
-
-  const memberMap =
-    new Map();
-
-
-  records.forEach(
-    (record) => {
-
-      const memberId =
-        String(
-          getMemberId(record) || ""
-        ).trim();
-
-
-      const memberName =
-        getMemberName(record);
-
-
-      const percentage =
-        getCommissionPercent(record);
-
-
-      const amount =
-        getCommissionAmount(record);
-
-
-      /*
-      Prefer member ID internally.
-
-      If unavailable, use member name.
-      */
-
-      const key =
-        memberId ||
-        String(
-          memberName
-        )
-          .trim()
-          .toLowerCase();
-
-
-      if (!key) {
-        return;
-      }
-
-
-      /* ---------------------------------------------------
-         FIRST RECORD
-      --------------------------------------------------- */
-
-      if (
-        !memberMap.has(key)
-      ) {
-
-        memberMap.set(
-          key,
-          {
-
-            name:
-              memberName || "-",
-
-            percent:
-              percentage,
-
-            amount:
-              amount,
-
-          }
-        );
-
-        return;
-
-      }
-
-
-      /* ---------------------------------------------------
-         DUPLICATE MEMBER
-      --------------------------------------------------- */
-
-      const existing =
-        memberMap.get(key);
-
-
-      /*
-      Combine commission amounts.
-      */
-
-      existing.amount =
-        Number(
-          existing.amount || 0
-        ) +
-        Number(
-          amount || 0
-        );
-
-
-      /*
-      Fill missing name.
-      */
-
-      if (
-        (
-          !existing.name ||
-          existing.name === "-"
-        ) &&
-        memberName &&
-        memberName !== "-"
-      ) {
-
-        existing.name =
-          memberName;
-
-      }
-
-
-      /*
-      Fill missing percentage.
-      */
-
-      if (
-        !existing.percent &&
+    if (
+      percentage > 0 &&
+      !existing.percentages.includes(
         percentage
-      ) {
-
-        existing.percent =
-          percentage;
-
-      }
-
+      )
+    ) {
+      existing.percentages.push(
+        percentage
+      );
     }
-  );
 
+    /*
+     * FILL MISSING NAME
+     */
+
+    if (
+      (!existing.name ||
+        existing.name === "-") &&
+      name &&
+      name !== "-"
+    ) {
+      existing.name =
+        name;
+    }
+
+    /*
+     * FILL MISSING USER ID
+     */
+
+    if (
+      !existing.userId &&
+      userId
+    ) {
+      existing.userId =
+        String(userId);
+    }
+  });
 
   return Array.from(
     memberMap.values()
   );
-
 };
 
+/* =========================================================
+   FORMAT PERCENTAGES
+========================================================= */
+
+const formatPercentages = (
+  percentages
+) => {
+  if (
+    !Array.isArray(percentages) ||
+    percentages.length === 0
+  ) {
+    return "0%";
+  }
+
+  return [...percentages]
+    .sort((a, b) => a - b)
+    .map(
+      (value) =>
+        `${value}%`
+    )
+    .join(" + ");
+};
+
+/* =========================================================
+   FORMAT LEVELS
+========================================================= */
+
+const formatLevels = (levels) => {
+  if (
+    !Array.isArray(levels) ||
+    levels.length === 0
+  ) {
+    return "-";
+  }
+
+  return [...levels]
+    .sort((a, b) => a - b)
+    .map(
+      (level) =>
+        `L${level}`
+    )
+    .join(", ");
+};
+
+/* =========================================================
+   GET STATUS
+========================================================= */
+
+const getStatus = (transaction) => {
+  return String(
+    transaction?.status || ""
+  )
+    .trim()
+    .toUpperCase();
+};
 
 /* =========================================================
    COMPONENT
 ========================================================= */
 
 const Commissions = () => {
-
   const [loading, setLoading] =
     useState(true);
-
 
   const [error, setError] =
     useState("");
 
+  const [transactions, setTransactions] =
+    useState([]);
 
   const [members, setMembers] =
     useState([]);
 
-
-  const [
-    managerCommission,
-    setManagerCommission,
-  ] = useState(0);
-
-
   const [search, setSearch] =
     useState("");
 
-
   /* =======================================================
-     LOAD COMMISSION
+     LOAD COMMISSIONS
   ======================================================= */
 
   useEffect(() => {
+    let mounted = true;
 
-    let mounted =
-      true;
-
-
-    const loadCommission =
+    const loadCommissions =
       async () => {
-
         try {
-
           setLoading(true);
-
           setError("");
 
-
           console.log(
-            "================================"
+            "================================================"
           );
 
           console.log(
-            "LOADING MANAGER COMMISSION"
+            "BHAGYAMMA HUB"
           );
 
+          console.log(
+            "LOADING MANAGER COMMISSION TRANSACTIONS"
+          );
+
+          console.log(
+            "SOURCE: CommissionTransaction"
+          );
+
+          console.log(
+            "================================================"
+          );
+
+          /*
+           * IMPORTANT
+           *
+           * DO NOT USE:
+           *
+           * managerService.getCommissionPage()
+           *
+           * That is the older commission page structure.
+           *
+           * USE:
+           *
+           * managerService.getManagerCommissions()
+           *
+           * Backend route:
+           *
+           * GET /api/v1/manager/commissions
+           *
+           * This returns commissions where:
+           *
+           * receiver = logged-in manager
+           */
 
           const response =
             await managerService
-              .getCommissionPage();
-
+              .getManagerCommissions();
 
           console.log(
-            "COMMISSION RESPONSE:",
+            "RAW MANAGER COMMISSION RESPONSE:",
             response
           );
-
 
           if (!mounted) {
             return;
           }
-
-
-          /* -------------------------------------------------
-             NORMALIZE
-          ------------------------------------------------- */
 
           const data =
             normalizeResponse(
               response
             );
 
-
           console.log(
-            "NORMALIZED COMMISSION DATA:",
+            "NORMALIZED DATA:",
             data
           );
 
+          /*
+           * GET ALL DATABASE TRANSACTIONS
+           */
 
-          /* -------------------------------------------------
-             MEMBERS
-          ------------------------------------------------- */
-
-          const rawMembers =
-            extractMembers(
+          const rawTransactions =
+            extractTransactions(
               data
             );
 
-
           console.log(
-            "RAW COMMISSION MEMBERS:",
-            rawMembers
+            "TOTAL DATABASE COMMISSION TRANSACTIONS:",
+            rawTransactions.length
           );
 
+          console.log(
+            "DATABASE COMMISSION TRANSACTIONS:",
+            rawTransactions
+          );
 
-          const uniqueMembers =
-            buildUniqueMembers(
-              rawMembers
+          /*
+           * BUILD UNIQUE MEMBER ROWS
+           */
+
+          const memberRows =
+            buildMemberRows(
+              rawTransactions
             );
-
 
           console.log(
             "UNIQUE MEMBERS:",
-            uniqueMembers
+            memberRows.length
           );
-
-
-          /* -------------------------------------------------
-             MANAGER TOTAL
-
-             THIS NOW READS:
-
-             data.totalEarned
-
-             Example:
-
-             2680
-          ------------------------------------------------- */
-
-          const totalManagerCommission =
-            extractManagerCommission(
-              data
-            );
-
 
           console.log(
-            "TOTAL MANAGER COMMISSION:",
-            totalManagerCommission
+            "MEMBER COMMISSION ROWS:",
+            memberRows
           );
-
 
           if (!mounted) {
             return;
           }
 
+          setTransactions(
+            rawTransactions
+          );
 
           setMembers(
-            uniqueMembers
+            memberRows
           );
-
-
-          setManagerCommission(
-            totalManagerCommission
-          );
-
 
         } catch (err) {
+          console.error(
+            "================================================"
+          );
 
           console.error(
-            "COMMISSION PAGE ERROR:",
+            "MANAGER COMMISSION PAGE ERROR:",
             err
           );
 
+          console.error(
+            "================================================"
+          );
 
           if (!mounted) {
             return;
           }
 
-
           setError(
             err?.response?.data?.message ||
-            err?.message ||
-            "Failed to load commission details."
+              err?.message ||
+              "Failed to load commission records."
           );
 
-
+          setTransactions([]);
           setMembers([]);
 
-          setManagerCommission(0);
-
         } finally {
-
           if (mounted) {
-
-            setLoading(
-              false
-            );
-
+            setLoading(false);
           }
-
         }
-
       };
 
-
-    loadCommission();
-
+    loadCommissions();
 
     return () => {
-
-      mounted =
-        false;
-
+      mounted = false;
     };
-
   }, []);
-
 
   /* =======================================================
      SEARCH
   ======================================================= */
 
   const filteredMembers =
-    useMemo(
-      () => {
+    useMemo(() => {
+      const value =
+        search
+          .trim()
+          .toLowerCase();
 
-        const value =
-          search
-            .trim()
-            .toLowerCase();
+      if (!value) {
+        return members;
+      }
 
-
-        if (!value) {
-          return members;
-        }
-
-
-        return members.filter(
-          (member) =>
+      return members.filter(
+        (member) => {
+          const name =
             String(
-              member.name
-            )
-              .toLowerCase()
-              .includes(value)
-        );
+              member.name || ""
+            ).toLowerCase();
 
-      },
-      [
-        members,
-        search,
-      ]
-    );
+          const userId =
+            String(
+              member.userId || ""
+            ).toLowerCase();
 
+          return (
+            name.includes(value) ||
+            userId.includes(value)
+          );
+        }
+      );
+    }, [members, search]);
 
   /* =======================================================
-     TABLE TOTAL
+     TOTAL COMMISSION
   ======================================================= */
 
-  const totalMemberCommission =
-    useMemo(
-      () => {
+  const totalCommission =
+    useMemo(() => {
+      return transactions.reduce(
+        (total, transaction) =>
+          total +
+          getCommissionAmount(
+            transaction
+          ),
+        0
+      );
+    }, [transactions]);
 
-        return members.reduce(
-          (
-            total,
-            member
-          ) => {
+  /* =======================================================
+     PAID COMMISSION
+  ======================================================= */
 
-            return (
-              total +
-              (
-                Number(
-                  member.amount
-                ) || 0
-              )
-            );
-
-          },
+  const paidCommission =
+    useMemo(() => {
+      return transactions
+        .filter((transaction) =>
+          [
+            "PAID",
+            "COMPLETED",
+            "CREDITED",
+            "SUCCESS",
+          ].includes(
+            getStatus(transaction)
+          )
+        )
+        .reduce(
+          (total, transaction) =>
+            total +
+            getCommissionAmount(
+              transaction
+            ),
           0
         );
+    }, [transactions]);
 
-      },
-      [members]
-    );
+  /* =======================================================
+     PENDING COMMISSION
+  ======================================================= */
 
+  const pendingCommission =
+    useMemo(() => {
+      return Math.max(
+        totalCommission -
+          paidCommission,
+        0
+      );
+    }, [
+      totalCommission,
+      paidCommission,
+    ]);
+
+  /* =======================================================
+     DISPLAYED MEMBER TOTAL
+  ======================================================= */
+
+  const displayedMemberTotal =
+    useMemo(() => {
+      return filteredMembers.reduce(
+        (total, member) =>
+          total +
+          numberValue(
+            member.amount
+          ),
+        0
+      );
+    }, [filteredMembers]);
 
   /* =======================================================
      LOADING
   ======================================================= */
 
   if (loading) {
-
     return (
-
       <Box
         sx={{
+          width: "100%",
           minHeight: "60vh",
-
           display: "flex",
-
           alignItems: "center",
-
           justifyContent: "center",
+          backgroundColor: "#f5f7fa",
         }}
       >
-
-        <CircularProgress />
-
+        <CircularProgress
+          color="success"
+        />
       </Box>
-
     );
-
   }
-
 
   /* =======================================================
      PAGE
   ======================================================= */
 
   return (
-
     <Box
       sx={{
         width: "100%",
-
         minHeight: "100vh",
-
-        backgroundColor:
-          "#f5f7fa",
-
+        backgroundColor: "#f5f7fa",
         padding: {
           xs: "16px",
           sm: "24px",
           md: "32px",
         },
-
-        boxSizing:
-          "border-box",
+        boxSizing: "border-box",
+        overflowX: "hidden",
       }}
     >
-
       {/* =================================================
           TITLE
       ================================================= */}
 
       <Box
         sx={{
-          marginBottom:
-            "24px",
+          marginBottom: "24px",
         }}
       >
-
         <Box
           sx={{
-            display:
-              "flex",
-
-            alignItems:
-              "center",
-
-            gap:
-              "10px",
-
-            marginBottom:
-              "8px",
+            display: "flex",
+            alignItems: "center",
+            gap: "10px",
+            marginBottom: "8px",
           }}
         >
-
           <TrendingUpIcon
             sx={{
-              color:
-                "#2e7d32",
-
-              fontSize:
-                "30px",
+              color: "#2e7d32",
+              fontSize: "30px",
             }}
           />
 
@@ -896,57 +865,43 @@ const Commissions = () => {
                 xs: "24px",
                 sm: "30px",
               },
-
-              fontWeight:
-                700,
-
-              color:
-                "#202124",
+              fontWeight: 700,
+              color: "#202124",
             }}
           >
             Commission
           </Typography>
-
         </Box>
-
 
         <Typography
           sx={{
-            color:
-              "#666",
-
-            fontSize:
-              "15px",
+            color: "#666",
+            fontSize: "15px",
           }}
         >
           Commission earned by the manager
           from each member.
         </Typography>
-
       </Box>
-
 
       {/* =================================================
           ERROR
       ================================================= */}
 
       {error && (
-
         <Alert
           severity="error"
           sx={{
-            marginBottom:
-              "20px",
+            marginBottom: "20px",
+            borderRadius: "12px",
           }}
         >
           {error}
         </Alert>
-
       )}
 
-
       {/* =================================================
-          MANAGER COMMISSION
+          MANAGER COMMISSION CARD
       ================================================= */}
 
       <Paper
@@ -954,60 +909,135 @@ const Commissions = () => {
         sx={{
           padding: {
             xs: "20px",
-            sm: "24px",
+            sm: "28px",
           },
-
-          borderRadius:
-            "20px",
-
-          marginBottom:
-            "24px",
-
-          backgroundColor:
-            "#fff",
-
+          borderRadius: "20px",
+          marginBottom: "24px",
+          backgroundColor: "#fff",
           boxShadow:
             "0 6px 20px rgba(0,0,0,0.07)",
         }}
       >
-
         <Typography
           sx={{
-            fontSize:
-              "14px",
-
-            color:
-              "#666",
-
-            marginBottom:
-              "8px",
+            fontSize: "14px",
+            color: "#666",
+            marginBottom: "8px",
           }}
         >
           Commission Earned by Manager
         </Typography>
 
-
         <Typography
           sx={{
             fontSize: {
-              xs: "28px",
-              sm: "32px",
+              xs: "30px",
+              sm: "36px",
             },
-
-            fontWeight:
-              700,
-
-            color:
-              "#2e7d32",
+            fontWeight: 800,
+            color: "#2e7d32",
+            lineHeight: 1.2,
           }}
         >
           {formatMoney(
-            managerCommission
+            totalCommission
           )}
         </Typography>
 
-      </Paper>
+        <Typography
+          sx={{
+            marginTop: "10px",
+            fontSize: "14px",
+            color: "#666",
+          }}
+        >
+          {transactions.length} commission
+          {transactions.length === 1
+            ? " transaction"
+            : " transactions"}
+        </Typography>
 
+        {/* OPTIONAL STATUS SUMMARY */}
+
+        <Box
+          sx={{
+            display: "flex",
+            flexWrap: "wrap",
+            gap: {
+              xs: "16px",
+              sm: "32px",
+            },
+            marginTop: "18px",
+          }}
+        >
+          <Box>
+            <Typography
+              sx={{
+                fontSize: "12px",
+                color: "#777",
+              }}
+            >
+              Paid
+            </Typography>
+
+            <Typography
+              sx={{
+                fontSize: "16px",
+                fontWeight: 700,
+                color: "#2e7d32",
+              }}
+            >
+              {formatMoney(
+                paidCommission
+              )}
+            </Typography>
+          </Box>
+
+          <Box>
+            <Typography
+              sx={{
+                fontSize: "12px",
+                color: "#777",
+              }}
+            >
+              Pending
+            </Typography>
+
+            <Typography
+              sx={{
+                fontSize: "16px",
+                fontWeight: 700,
+                color: "#ed6c02",
+              }}
+            >
+              {formatMoney(
+                pendingCommission
+              )}
+            </Typography>
+          </Box>
+
+          <Box>
+            <Typography
+              sx={{
+                fontSize: "12px",
+                color: "#777",
+              }}
+            >
+              Members
+            </Typography>
+
+            <Typography
+              sx={{
+                fontSize: "16px",
+                fontWeight: 700,
+                color: "#202124",
+              }}
+            >
+              {members.length}
+            </Typography>
+          </Box>
+        </Box>
+      </Paper>
 
       {/* =================================================
           MEMBER COMMISSION TABLE
@@ -1016,98 +1046,84 @@ const Commissions = () => {
       <Paper
         elevation={0}
         sx={{
-          width:
-            "100%",
-
-          borderRadius:
-            "20px",
-
-          overflow:
-            "hidden",
-
-          backgroundColor:
-            "#fff",
-
+          borderRadius: "20px",
+          backgroundColor: "#fff",
+          overflow: "hidden",
           boxShadow:
             "0 6px 20px rgba(0,0,0,0.07)",
         }}
       >
-
-        {/* TABLE HEADER */}
+        {/* HEADER */}
 
         <Box
           sx={{
             padding: {
-              xs: "18px",
-              sm: "24px",
+              xs: "20px 18px",
+              sm: "24px 26px",
             },
           }}
         >
-
           <Typography
             sx={{
-              fontSize:
-                "21px",
-
-              fontWeight:
-                700,
-
-              color:
-                "#202124",
-
-              marginBottom:
-                "5px",
+              fontSize: {
+                xs: "20px",
+                sm: "24px",
+              },
+              fontWeight: 700,
+              color: "#202124",
+              marginBottom: "6px",
             }}
           >
             Commission by Member
           </Typography>
 
-
           <Typography
             sx={{
-              fontSize:
-                "14px",
-
-              color:
-                "#777",
-
-              marginBottom:
-                "18px",
+              color: "#666",
+              fontSize: "14px",
+              marginBottom: "18px",
             }}
           >
             Each member is shown only once.
+            All commission transactions are
+            included.
           </Typography>
-
 
           {/* SEARCH */}
 
           <TextField
             fullWidth
-            size="small"
             value={search}
             onChange={(event) =>
               setSearch(
                 event.target.value
               )
             }
-            placeholder="Search member name..."
+            placeholder="Search member name or ID..."
+            variant="outlined"
+            size="small"
             InputProps={{
               startAdornment: (
                 <SearchIcon
                   sx={{
-                    color:
-                      "#777",
-
-                    marginRight:
-                      "8px",
+                    color: "#777",
+                    marginRight: "10px",
                   }}
                 />
               ),
             }}
+            sx={{
+              maxWidth: "100%",
+
+              "& .MuiOutlinedInput-root":
+                {
+                  borderRadius: "14px",
+                  backgroundColor:
+                    "#ffffff",
+                },
+            }}
           />
-
         </Box>
-
 
         {/* =================================================
             TABLE
@@ -1115,216 +1131,219 @@ const Commissions = () => {
 
         <TableContainer
           sx={{
-            width:
-              "100%",
-
-            overflowX:
-              "auto",
+            width: "100%",
+            overflowX: "auto",
           }}
         >
-
           <Table
             sx={{
-              minWidth:
-                "600px",
+              minWidth: "850px",
             }}
           >
-
             <TableHead>
-
               <TableRow
                 sx={{
                   backgroundColor:
                     "#f4f6f8",
                 }}
               >
+                {/* # */}
 
                 <TableCell
                   sx={{
-                    width:
-                      "70px",
-
-                    fontWeight:
-                      700,
-
-                    color:
-                      "#202124",
+                    width: "60px",
+                    fontWeight: 700,
+                    color: "#202124",
                   }}
                 >
                   #
                 </TableCell>
 
+                {/* MEMBER NAME */}
 
                 <TableCell
                   sx={{
-                    fontWeight:
-                      700,
-
-                    color:
-                      "#202124",
-
-                    minWidth:
-                      "250px",
+                    minWidth: "240px",
+                    fontWeight: 700,
+                    color: "#202124",
                   }}
                 >
                   Member Name
                 </TableCell>
 
+                {/* MEMBER ID */}
+
+                <TableCell
+                  sx={{
+                    minWidth: "130px",
+                    fontWeight: 700,
+                    color: "#202124",
+                  }}
+                >
+                  Member ID
+                </TableCell>
+
+                {/* LEVEL */}
 
                 <TableCell
                   align="center"
                   sx={{
-                    fontWeight:
-                      700,
+                    minWidth: "110px",
+                    fontWeight: 700,
+                    color: "#202124",
+                  }}
+                >
+                  Level
+                </TableCell>
 
-                    color:
-                      "#202124",
+                {/* COMMISSION */}
 
-                    minWidth:
-                      "150px",
+                <TableCell
+                  align="center"
+                  sx={{
+                    minWidth: "160px",
+                    fontWeight: 700,
+                    color: "#202124",
                   }}
                 >
                   Commission %
                 </TableCell>
 
+                {/* AMOUNT */}
 
                 <TableCell
                   align="right"
                   sx={{
-                    fontWeight:
-                      700,
-
-                    color:
-                      "#202124",
-
-                    minWidth:
-                      "150px",
+                    minWidth: "150px",
+                    fontWeight: 700,
+                    color: "#202124",
                   }}
                 >
                   Amount
                 </TableCell>
-
               </TableRow>
-
             </TableHead>
 
-
             <TableBody>
-
-              {filteredMembers.length === 0 ? (
-
+              {filteredMembers.length ===
+              0 ? (
                 <TableRow>
-
                   <TableCell
-                    colSpan={4}
+                    colSpan={6}
                     align="center"
                     sx={{
                       padding:
-                        "50px 20px",
-
-                      color:
-                        "#777",
+                        "55px 20px",
+                      color: "#777",
                     }}
                   >
-
                     {search
                       ? "No member found."
-                      : "No commission members found."
-                    }
-
+                      : "No commission records found."}
                   </TableCell>
-
                 </TableRow>
-
               ) : (
-
                 filteredMembers.map(
                   (
                     member,
                     index
                   ) => (
-
                     <TableRow
-                      key={`${member.name}-${index}`}
+                      key={
+                        member.id ||
+                        member.userId ||
+                        `${member.name}-${index}`
+                      }
                       hover
+                      sx={{
+                        "&:last-child td":
+                          {
+                            borderBottom: 0,
+                          },
+                      }}
                     >
-
                       {/* NUMBER */}
 
                       <TableCell
                         sx={{
-                          fontWeight:
-                            600,
-
-                          color:
-                            "#555",
+                          fontWeight: 600,
+                          color: "#555",
                         }}
                       >
                         {index + 1}
                       </TableCell>
 
-
-                      {/* MEMBER NAME */}
+                      {/* NAME */}
 
                       <TableCell
                         sx={{
-                          fontWeight:
-                            600,
-
-                          color:
-                            "#202124",
+                          fontWeight: 600,
+                          color: "#202124",
                         }}
                       >
                         {member.name}
                       </TableCell>
 
+                      {/* MEMBER ID */}
+
+                      <TableCell
+                        sx={{
+                          fontWeight: 600,
+                          color: "#555",
+                        }}
+                      >
+                        {member.userId ||
+                          "-"}
+                      </TableCell>
+
+                      {/* LEVEL */}
+
+                      <TableCell
+                        align="center"
+                        sx={{
+                          fontWeight: 600,
+                          color: "#555",
+                        }}
+                      >
+                        {formatLevels(
+                          member.levels
+                        )}
+                      </TableCell>
 
                       {/* COMMISSION % */}
 
                       <TableCell
                         align="center"
                         sx={{
-                          fontWeight:
-                            700,
-
-                          color:
-                            "#2e7d32",
+                          fontWeight: 700,
+                          color: "#2e7d32",
                         }}
                       >
-                        {member.percent}%
+                        {formatPercentages(
+                          member.percentages
+                        )}
                       </TableCell>
-
 
                       {/* AMOUNT */}
 
                       <TableCell
                         align="right"
                         sx={{
-                          fontWeight:
-                            700,
-
-                          color:
-                            "#202124",
+                          fontWeight: 700,
+                          color: "#202124",
                         }}
                       >
                         {formatMoney(
                           member.amount
                         )}
                       </TableCell>
-
                     </TableRow>
-
                   )
                 )
-
               )}
-
             </TableBody>
-
           </Table>
-
         </TableContainer>
-
 
         {/* =================================================
             FOOTER
@@ -1332,41 +1351,24 @@ const Commissions = () => {
 
         <Box
           sx={{
-            display:
-              "flex",
-
+            display: "flex",
             justifyContent:
               "space-between",
-
-            alignItems:
-              "center",
-
-            flexWrap:
-              "wrap",
-
-            gap:
-              "12px",
-
+            alignItems: "center",
+            flexWrap: "wrap",
+            gap: "12px",
             padding: {
-              xs:
-                "16px 18px",
-
-              sm:
-                "18px 24px",
+              xs: "16px 18px",
+              sm: "18px 24px",
             },
-
             borderTop:
               "1px solid #eeeeee",
           }}
         >
-
           <Typography
             sx={{
-              fontSize:
-                "14px",
-
-              color:
-                "#666",
+              fontSize: "14px",
+              color: "#666",
             }}
           >
             Showing{" "}
@@ -1380,34 +1382,42 @@ const Commissions = () => {
             members
           </Typography>
 
-
-          <Typography
+          <Box
             sx={{
-              fontSize:
-                "15px",
-
-              fontWeight:
-                700,
-
-              color:
-                "#2e7d32",
+              textAlign: {
+                xs: "left",
+                sm: "right",
+              },
             }}
           >
-            Total:{" "}
-            {formatMoney(
-              totalMemberCommission
-            )}
-          </Typography>
+            <Typography
+              sx={{
+                fontSize: "15px",
+                fontWeight: 700,
+                color: "#2e7d32",
+              }}
+            >
+              Total:{" "}
+              {formatMoney(
+                displayedMemberTotal
+              )}
+            </Typography>
 
+            <Typography
+              sx={{
+                fontSize: "12px",
+                color: "#777",
+                marginTop: "2px",
+              }}
+            >
+              Database transactions:{" "}
+              {transactions.length}
+            </Typography>
+          </Box>
         </Box>
-
       </Paper>
-
     </Box>
-
   );
-
 };
-
 
 export default Commissions;

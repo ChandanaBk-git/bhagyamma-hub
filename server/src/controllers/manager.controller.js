@@ -1,6 +1,9 @@
 const managerService =
     require("../services/manager.service");
 
+const sellingPointService =
+    require("../services/sellingPoint.service");
+
 const ApiError =
     require("../utils/ApiError");
 
@@ -24,9 +27,11 @@ const getManagerId = (req) => {
             401,
             "Manager ID not found in authentication token."
         );
+
     }
 
     return String(managerId);
+
 };
 
 
@@ -65,7 +70,9 @@ const getDashboard = async (
         );
 
         next(error);
+
     }
+
 };
 
 
@@ -104,7 +111,9 @@ const getMembers = async (
         );
 
         next(error);
+
     }
+
 };
 
 
@@ -134,6 +143,7 @@ const getMemberById = async (
                 400,
                 "Member ID is required."
             );
+
         }
 
         const member =
@@ -148,6 +158,7 @@ const getMemberById = async (
                 404,
                 "Member not found."
             );
+
         }
 
         return res.status(200).json({
@@ -163,7 +174,9 @@ const getMemberById = async (
         );
 
         next(error);
+
     }
+
 };
 
 
@@ -193,6 +206,7 @@ const getMemberDetails = async (
                 400,
                 "Member ID is required."
             );
+
         }
 
         const data =
@@ -207,6 +221,7 @@ const getMemberDetails = async (
                 404,
                 "Member not found."
             );
+
         }
 
         return res.status(200).json({
@@ -222,28 +237,15 @@ const getMemberDetails = async (
         );
 
         next(error);
+
     }
+
 };
 
 
 /*
 =========================================================
 MANAGER JOINING COMMISSION
-=========================================================
-
-This is NOT payment commission.
-
-This is the commission earned by the manager because
-members joined his referral chain.
-
-Response:
-
-{
-    memberId,
-    name,
-    commissionPercent,
-    commissionAmount
-}
 =========================================================
 */
 
@@ -298,7 +300,9 @@ const getCommissionPage = async (
         );
 
         next(error);
+
     }
+
 };
 
 
@@ -337,7 +341,9 @@ const getReferralTree = async (
         );
 
         next(error);
+
     }
+
 };
 
 
@@ -376,7 +382,9 @@ const getProfile = async (
         );
 
         next(error);
+
     }
+
 };
 
 
@@ -415,7 +423,93 @@ const getManagerProducts = async (
         );
 
         next(error);
+
     }
+
+};
+
+
+/*
+=========================================================
+MANAGER SELLING POINTS
+=========================================================
+
+Returns the manager's OWN:
+
+- Current Selling Points
+- Lifetime Purchase
+- Pending Carry Forward
+- Membership Status
+- Membership Activation
+- Supervisor Status
+- Target
+- Remaining SP
+- Progress
+- Complete Selling Point History
+
+IMPORTANT:
+This reads transactions belonging to req.user.
+It does NOT read member transactions.
+=========================================================
+*/
+
+const getSellingPoints = async (
+    req,
+    res,
+    next
+) => {
+
+    try {
+
+        const managerId =
+            getManagerId(req);
+
+        console.log(
+            "=========================================="
+        );
+
+        console.log(
+            "MANAGER SELLING POINTS"
+        );
+
+        console.log(
+            "MANAGER ID:",
+            managerId
+        );
+
+        const data =
+            await sellingPointService.getPoints(
+                managerId
+            );
+
+        console.log(
+            "MANAGER SELLING POINTS DATA:",
+            data
+        );
+
+        console.log(
+            "=========================================="
+        );
+
+        return res.status(200).json({
+
+            success: true,
+
+            data,
+
+        });
+
+    } catch (error) {
+
+        console.error(
+            "MANAGER SELLING POINTS ERROR:",
+            error
+        );
+
+        next(error);
+
+    }
+
 };
 
 
@@ -442,5 +536,7 @@ module.exports = {
     getProfile,
 
     getManagerProducts,
+
+    getSellingPoints,
 
 };

@@ -10,7 +10,7 @@ import {
   Stack,
   Typography,
 } from "@mui/material";
-
+import PaymentScannerCard from "../../components/members/dashboard/PaymentScannerCard";
 import {
   AccountCircle,
   CheckCircle,
@@ -901,6 +901,8 @@ const Dashboard = () => {
         <DashboardStats
           data={dashboard}
         />
+
+        <PaymentScannerCard />
 
         <SupervisorProgress
           summary={

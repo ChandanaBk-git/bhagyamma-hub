@@ -1,126 +1,154 @@
 import API from "../api";
 
-// =====================================================
-// GET CART
-// =====================================================
+
+/* =========================================================
+   GET CART
+========================================================= */
 
 export const getCart = async () => {
-  try {
-    const response = await API.get("/cart");
 
-    return response.data.data;
-  } catch (error) {
-    console.error(
-      "GET CART ERROR:",
-      error?.response?.data || error
+  const response =
+    await API.get(
+      "/cart"
     );
 
-    throw error;
-  }
+  return (
+    response?.data?.data ||
+    response?.data ||
+    null
+  );
+
 };
 
-// =====================================================
-// ADD TO CART
-// =====================================================
+
+/* =========================================================
+   ADD TO CART
+========================================================= */
 
 export const addToCart = async (
   productId,
   quantity = 1
 ) => {
-  try {
-    if (!productId) {
-      throw new Error(
-        "Product ID is required"
-      );
-    }
 
-    const response = await API.post(
+  if (!productId) {
+
+    throw new Error(
+      "Product ID is required."
+    );
+
+  }
+
+
+  const response =
+    await API.post(
       "/cart",
       {
-        productId,
-        quantity,
+        productId:
+          String(productId),
+
+        quantity:
+          Number(quantity),
       }
     );
 
-    return response.data.data;
-  } catch (error) {
-    console.error(
-      "ADD TO CART ERROR:",
-      error?.response?.data || error
-    );
 
-    throw error;
-  }
+  return (
+    response?.data?.data ||
+    response?.data ||
+    null
+  );
+
 };
 
-// =====================================================
-// UPDATE CART QUANTITY
-// =====================================================
+
+/* =========================================================
+   UPDATE CART QUANTITY
+========================================================= */
 
 export const updateCartQuantity = async (
   productId,
   quantity
 ) => {
-  try {
-    const response = await API.put(
+
+  if (!productId) {
+
+    throw new Error(
+      "Product ID is required."
+    );
+
+  }
+
+
+  const response =
+    await API.put(
       "/cart",
       {
-        productId,
-        quantity,
+        productId:
+          String(productId),
+
+        quantity:
+          Number(quantity),
       }
     );
 
-    return response.data.data;
-  } catch (error) {
-    console.error(
-      "UPDATE CART ERROR:",
-      error?.response?.data || error
-    );
 
-    throw error;
-  }
+  return (
+    response?.data?.data ||
+    response?.data ||
+    null
+  );
+
 };
 
-// =====================================================
-// REMOVE FROM CART
-// =====================================================
+
+/* =========================================================
+   REMOVE FROM CART
+========================================================= */
 
 export const removeFromCart = async (
   productId
 ) => {
-  try {
-    const response = await API.delete(
+
+  if (!productId) {
+
+    throw new Error(
+      "Product ID is required."
+    );
+
+  }
+
+
+  const response =
+    await API.delete(
       `/cart/${productId}`
     );
 
-    return response.data.data;
-  } catch (error) {
-    console.error(
-      "REMOVE CART ITEM ERROR:",
-      error?.response?.data || error
-    );
 
-    throw error;
-  }
+  return (
+    response?.data?.data ||
+    response?.data ||
+    null
+  );
+
 };
 
-// =====================================================
-// CLEAR CART
-// =====================================================
+
+/* =========================================================
+   CLEAR CART
+========================================================= */
 
 export const clearCart = async () => {
-  try {
-    const response = await API.delete(
+
+  const response =
+    await API.delete(
       "/cart"
     );
 
-    return response.data.data;
-  } catch (error) {
-    console.error(
-      "CLEAR CART ERROR:",
-      error?.response?.data || error
-    );
 
-    throw error;
-  }
+  return (
+    response?.data?.data ||
+    response?.data ||
+    null
+  );
+
 };

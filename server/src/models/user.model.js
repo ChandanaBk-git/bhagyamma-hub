@@ -194,14 +194,15 @@ const userSchema = new mongoose.Schema(
             ],
             default: "Pending",
         },
-        welcomeKitStatus: {
-            type: String,
-            enum: [
-                "Pending",
-                "Dispatched",
-            ],
-            default: "Pending",
-        },
+welcomeKitStatus: {
+    type: String,
+    enum: [
+        "Pending",
+        "Dispatched",
+        "Delivered",
+    ],
+    default: "Pending",
+},
         welcomeKitReceived: {
             type: Boolean,
             default: false,
@@ -219,15 +220,16 @@ const userSchema = new mongoose.Schema(
             ],
             default: "Pending",
         },
-        membershipActivationMethod: {
-            type: String,
-            enum: [
-                "WelcomeKit",
-                "ProductPurchase",
-                null,
-            ],
-            default: null,
-        },
+membershipActivationMethod: {
+    type: String,
+    enum: [
+        "WelcomeKit",
+        "MembershipPayment",
+        "ProductPurchase",
+        null,
+    ],
+    default: null,
+},
         membershipActivatedAt: {
             type: Date,
             default: null,

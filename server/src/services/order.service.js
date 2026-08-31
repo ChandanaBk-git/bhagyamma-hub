@@ -1,1129 +1,2861 @@
-const orderRepository = require("../repositories/order.repository");
+const mongoose = require("mongoose");
 
-const cartRepository = require("../repositories/cart.repository");
-
-const sellingPointService = require("./sellingPoint.service");
-
-const commissionService = require("./commission.service");
-
+const Order = require("../models/order.model");
+const OrderItem = require("../models/orderItem.model");
 const User = require("../models/user.model");
 
-const Product = require("../models/product");
+const cartService = require("./cart.service");
+const sellingPointService = require("./sellingPoint.service");
 
-const ApiError = require("../utils/ApiError");
+/* ==========================================================================
+   GENERATE ORDER NUMBER
+   ========================================================================== */
 
-/* ==========================================
-   Generate Order Number
-========================================== */
+const generateOrderNumber = async () => {
+    const lastOrder = await Order.findOne({})
+        .sort({ createdAt: -1 })
+        .select("orderNumber")
+        .lean();
 
-const generateOrderNumber =
-  (prefix = "ORD") => {
-    const timestamp =
-      Date.now();
+    let nextNumber = 1;
 
-    const random =
-      Math.floor(
-        1000 +
-          Math.random() *
-            9000
-      );
+    if (lastOrder?.orderNumber) {
+        const match =
+            String(lastOrder.orderNumber).match(/(\d+)$/);
 
-    return `${prefix}-${timestamp}-${random}`;
-  };
+        if (match) {
+            nextNumber =
+                Number(match[1]) + 1;
+        }
+    }
 
-/* ==========================================
-   Normalize Mobile
-========================================== */
-
-const normalizeMobile = (
-  mobile
-) => {
-  return String(
-    mobile || ""
-  ).replace(
-    /\D/g,
-    ""
-  );
+    return `BHORD${String(nextNumber).padStart(6, "0")}`;
 };
 
-/* ==========================================
-   MEMBER ORDER
-========================================== */
 
-const placeOrder = async (
-  userId,
-  payload = {}
-) => {
-  const cart =
-    await cartRepository.findByUser(
-      userId
+/* ==========================================================================
+   CALCULATE ORDER SELLING POINTS
+   ==========================================================================
+
+   ₹100 = 2 SP
+
+   ₹100  = 2 SP
+   ₹200  = 4 SP
+   ₹300  = 6 SP
+   ₹400  = 8 SP
+   ₹450  = 8 SP
+   ₹578  = 10 SP
+
+   IMPORTANT:
+   SP is calculated ONLY from product subtotal.
+
+   Delivery charges are NEVER included.
+   ========================================================================== */
+
+const calculateOrderSellingPoints = (amount) => {
+    const purchaseAmount =
+        Number(amount || 0);
+
+    if (purchaseAmount < 100) {
+        return 0;
+    }
+
+    return (
+        Math.floor(
+            purchaseAmount / 100
+        ) * 2
     );
-
-  if (
-    !cart ||
-    !cart.items ||
-    !cart.items.length
-  ) {
-    throw new ApiError(
-      400,
-      "Cart is empty"
-    );
-  }
-
-  /*
-  ========================================================
-  CALCULATE FROM SERVER CART
-  ========================================================
-  */
-
-  const subtotal =
-    cart.items.reduce(
-      (
-        sum,
-        item
-      ) =>
-        sum +
-        (Number(
-          item.price
-        ) || 0) *
-          (Number(
-            item.quantity
-          ) || 0),
-      0
-    );
-
-  const discount = 0;
-
-  const walletAmount = 0;
-
-  const deliveryCharge =
-    Number(
-      payload.deliveryCharge ||
-        0
-    );
-
-  const finalAmount =
-    subtotal -
-    discount -
-    walletAmount +
-    deliveryCharge;
-
-  if (
-    finalAmount <= 0
-  ) {
-    throw new ApiError(
-      400,
-      "Invalid order amount"
-    );
-  }
-
-  /*
-  ========================================================
-  DELIVERY DETAILS
-  ========================================================
-  */
-
-  const deliveryDetails =
-    {
-      name:
-        String(
-          payload.name ||
-            ""
-        ).trim(),
-
-      mobile:
-        normalizeMobile(
-          payload.mobile
-        ),
-
-      address:
-        String(
-          payload.address ||
-            ""
-        ).trim(),
-
-      city:
-        String(
-          payload.city ||
-            ""
-        ).trim(),
-
-      state:
-        String(
-          payload.state ||
-            ""
-        ).trim(),
-
-      pincode:
-        String(
-          payload.pincode ||
-            ""
-        ).replace(
-          /\D/g,
-          ""
-        ),
-    };
-
-  /*
-  ========================================================
-  CREATE MEMBER ORDER
-  ========================================================
-  */
-
-  const order =
-    await orderRepository.createOrder(
-      {
-        userId,
-
-        orderType:
-          "MEMBER",
-
-        customerName:
-          deliveryDetails.name,
-
-        customerMobile:
-          deliveryDetails.mobile,
-
-        customerEmail:
-          String(
-            payload.email ||
-              ""
-          )
-            .trim()
-            .toLowerCase(),
-
-        membershipLinked:
-          true,
-
-        linkedAt:
-          new Date(),
-
-        orderNumber:
-          generateOrderNumber(
-            "ORD"
-          ),
-
-        subtotal,
-
-        discount,
-
-        walletAmount,
-
-        deliveryCharge,
-
-        finalAmount,
-
-        sellingPoints: 0,
-
-        sellingPointsProcessed:
-          false,
-
-        sellingPointsProcessedAt:
-          null,
-
-        status:
-          "PLACED",
-
-        paymentStatus:
-          "PENDING",
-
-        paymentMethod:
-          "PHONEPE",
-
-        deliveryDetails,
-      }
-    );
-
-  /*
-  ========================================================
-  CREATE ORDER ITEMS
-  ========================================================
-  */
-
-  const orderItems =
-    cart.items.map(
-      (item) => ({
-        orderId:
-          order._id,
-
-        productId:
-          item.product?._id ||
-          item.productId ||
-          item.product,
-
-        productName:
-          item.product
-            ?.productName ||
-          "Product",
-
-        quantity:
-          Number(
-            item.quantity
-          ),
-
-        price:
-          Number(
-            item.price
-          ),
-
-        total:
-          Number(
-            item.price
-          ) *
-          Number(
-            item.quantity
-          ),
-      })
-    );
-
-  await orderRepository.createOrderItems(
-    orderItems
-  );
-
-  /*
-  IMPORTANT:
-  Do NOT clear the member cart here.
-  Payment verification handles that later.
-  */
-
-  return {
-    ...order.toObject(),
-
-    items:
-      orderItems,
-  };
 };
 
-/* ==========================================
-   GUEST ORDER
-========================================== */
 
-const placeGuestOrder =
-  async (
-    payload = {}
-  ) => {
-    /*
-    ========================================================
-    CUSTOMER DETAILS
-    ========================================================
-    */
+/* ==========================================================================
+   CREATE / PLACE ORDER
+   ========================================================================== */
 
-    const customerName =
-      String(
-        payload.name ||
-          payload.customerName ||
-          ""
-      ).trim();
+const createOrder = async (
+    userId,
+    orderData = {}
+) => {
+    try {
 
-    const customerMobile =
-      normalizeMobile(
-        payload.mobile ||
-          payload.customerMobile
-      );
+        const {
+            customerName = "",
+            customerMobile = "",
+            customerEmail = "",
+            deliveryDetails = {},
+            paymentMethod = "PHONEPE",
 
-    const customerEmail =
-      String(
-        payload.email ||
-          payload.customerEmail ||
-          ""
-      )
-        .trim()
-        .toLowerCase();
+            subtotal: guestSubtotal = 0,
+            discount: guestDiscount = 0,
+            walletAmount: guestWalletAmount = 0,
+            deliveryCharge: guestDeliveryCharge = 0,
 
-    const address =
-      String(
-        payload.address ||
-          ""
-      ).trim();
+            items: guestItems = [],
+        } = orderData;
 
-    const city =
-      String(
-        payload.city ||
-          ""
-      ).trim();
 
-    const state =
-      String(
-        payload.state ||
-          ""
-      ).trim();
+        /* ------------------------------------------------------------------
+           DETERMINE GUEST / MEMBER
+           ------------------------------------------------------------------ */
 
-    const pincode =
-      String(
-        payload.pincode ||
-          ""
-      ).replace(
-        /\D/g,
-        ""
-      );
+        const isGuest =
+            !userId ||
+            userId === null ||
+            userId === undefined;
 
-    /*
-    ========================================================
-    VALIDATE CUSTOMER DETAILS
-    ========================================================
-    */
+        const orderType =
+            isGuest
+                ? "GUEST"
+                : "MEMBER";
 
-    if (!customerName) {
-      throw new ApiError(
-        400,
-        "Customer name is required"
-      );
-    }
 
-    if (
-      customerMobile.length !==
-      10
-    ) {
-      throw new ApiError(
-        400,
-        "Valid 10-digit mobile number is required"
-      );
-    }
+        /* ------------------------------------------------------------------
+           GET MEMBER CART
+           ------------------------------------------------------------------ */
 
-    if (!address) {
-      throw new ApiError(
-        400,
-        "Delivery address is required"
-      );
-    }
+        let cart = null;
 
-    if (!city) {
-      throw new ApiError(
-        400,
-        "City is required"
-      );
-    }
+        if (!isGuest) {
 
-    if (!state) {
-      throw new ApiError(
-        400,
-        "State is required"
-      );
-    }
+            console.log(
+                "======================================"
+            );
 
-    if (
-      pincode.length !==
-      6
-    ) {
-      throw new ApiError(
-        400,
-        "Valid 6-digit pincode is required"
-      );
-    }
+            console.log(
+                "CREATE ORDER - MEMBER CART DEBUG"
+            );
 
-    /*
-    ========================================================
-    GUEST CART ITEMS
-    ========================================================
+            console.log(
+                "ORDER userId:",
+                userId
+            );
 
-    Phase 4 will send the localStorage cart here.
+            console.log(
+                "ORDER userId string:",
+                String(userId)
+            );
 
-    Expected:
 
-    items: [
-      {
-        productId,
-        quantity
-      }
-    ]
-    */
+            cart =
+                await cartService.getCart(
+                    userId
+                );
 
-    if (
-      !Array.isArray(
-        payload.items
-      ) ||
-      !payload.items.length
-    ) {
-      throw new ApiError(
-        400,
-        "Cart items are required"
-      );
-    }
 
-    /*
-    ========================================================
-    NORMALIZE ITEM QUANTITIES
-    ========================================================
-    */
+            console.log(
+                "CART FOUND:",
+                !!cart
+            );
 
-    const requestedItems =
-      payload.items.map(
-        (item) => ({
-          productId:
-            item.productId ||
-            item.product?._id ||
-            item.product,
+            console.log(
+                "CART ID:",
+                cart?._id
+            );
 
-          quantity:
-            Number(
-              item.quantity
-            ),
-        })
-      );
+            console.log(
+                "CART userId:",
+                cart?.userId
+            );
 
-    for (const item of requestedItems) {
-      if (!item.productId) {
-        throw new ApiError(
-          400,
-          "Product ID is required for every cart item"
-        );
-      }
+            console.log(
+                "CART userId string:",
+                cart?.userId
+                    ? String(cart.userId)
+                    : null
+            );
 
-      if (
-        !Number.isInteger(
-          item.quantity
-        ) ||
-        item.quantity < 1
-      ) {
-        throw new ApiError(
-          400,
-          "Invalid product quantity"
-        );
-      }
-    }
+            console.log(
+                "CART ITEMS:",
+                cart?.items
+            );
 
-    /*
-    ========================================================
-    FETCH PRODUCTS FROM DATABASE
-    ========================================================
+            console.log(
+                "CART ITEM COUNT:",
+                cart?.items?.length
+            );
 
-    IMPORTANT:
-    Never trust the guest browser for price.
+            console.log(
+                "CART TOTAL AMOUNT:",
+                cart?.totalAmount
+            );
 
-    The server retrieves the actual
-    product price from MongoDB.
-    */
+            console.log(
+                "CART TOTAL ITEMS:",
+                cart?.totalItems
+            );
 
-    const productIds =
-      requestedItems.map(
-        (item) =>
-          item.productId
-      );
+            console.log(
+                "======================================"
+            );
 
-    const products =
-      await Product.find({
-        _id: {
-          $in: productIds,
-        },
 
-        status: "Active",
-      });
+            if (!cart) {
+                throw new Error(
+                    "Cart not found"
+                );
+            }
 
-    if (
-      products.length !==
-      requestedItems.length
-    ) {
-      throw new ApiError(
-        400,
-        "One or more products are unavailable"
-      );
-    }
 
-    /*
-    ========================================================
-    CREATE PRODUCT MAP
-    ========================================================
-    */
-
-    const productMap =
-      new Map();
-
-    products.forEach(
-      (product) => {
-        productMap.set(
-          product._id.toString(),
-          product
-        );
-      }
-    );
-
-    /*
-    ========================================================
-    BUILD ORDER ITEMS
-    ========================================================
-    */
-
-    const orderItemsData =
-      [];
-
-    let subtotal = 0;
-
-    for (const item of requestedItems) {
-      const product =
-        productMap.get(
-          item.productId.toString()
-        );
-
-      if (!product) {
-        throw new ApiError(
-          400,
-          "Product not found"
-        );
-      }
-
-      const price =
-        Number(
-          product.price
-        );
-
-      const quantity =
-        Number(
-          item.quantity
-        );
-
-      const total =
-        price * quantity;
-
-      subtotal += total;
-
-      orderItemsData.push(
-        {
-          productId:
-            product._id,
-
-          productName:
-            product.productName,
-
-          quantity,
-
-          price,
-
-          total,
+            if (
+                !Array.isArray(
+                    cart.items
+                ) ||
+                cart.items.length === 0
+            ) {
+                throw new Error(
+                    "Cart is empty"
+                );
+            }
         }
-      );
-    }
 
-    /*
-    ========================================================
-    DELIVERY CHARGE
-    ========================================================
-    */
 
-    const discount = 0;
+        /* ------------------------------------------------------------------
+           CALCULATE PRICE
+           ------------------------------------------------------------------
 
-    const walletAmount = 0;
+           MEMBER:
 
-    const deliveryCharge =
-      Number(
-        payload.deliveryCharge ||
-          0
-      );
+           subtotal =
+           cart.totalAmount
 
-    const finalAmount =
-      subtotal -
-      discount -
-      walletAmount +
-      deliveryCharge;
+           delivery =
+           cart.deliveryCharge
 
-    if (
-      finalAmount <= 0
-    ) {
-      throw new ApiError(
-        400,
-        "Invalid order amount"
-      );
-    }
+           finalAmount =
+           subtotal
+           - discount
+           - wallet
+           + delivery
 
-    /*
-    ========================================================
-    CREATE GUEST ORDER
-    ========================================================
-    */
+           IMPORTANT:
+           Delivery is part of payment,
+           but NOT part of SP.
+           ------------------------------------------------------------------ */
 
-    const order =
-      await orderRepository.createOrder(
-        {
-          userId:
-            null,
+        let subtotal = 0;
+        let discount = 0;
+        let walletAmount = 0;
+        let deliveryCharge = 0;
 
-          orderType:
-            "GUEST",
 
-          customerName,
+        if (!isGuest) {
 
-          customerMobile,
+            subtotal =
+                Number(
+                    cart.totalAmount || 0
+                );
 
-          customerEmail,
+            discount =
+                Number(
+                    cart.discount || 0
+                );
 
-          membershipLinked:
-            false,
+            walletAmount =
+                Number(
+                    cart.walletAmount || 0
+                );
 
-          linkedAt:
-            null,
+deliveryCharge = 50;
 
-          orderNumber:
-            generateOrderNumber(
-              "GST"
-            ),
+        } else {
 
-          subtotal,
+            subtotal =
+                Number(
+                    guestSubtotal || 0
+                );
 
-          discount,
+            discount =
+                Number(
+                    guestDiscount || 0
+                );
 
-          walletAmount,
+            walletAmount =
+                Number(
+                    guestWalletAmount || 0
+                );
 
-          deliveryCharge,
-
-          finalAmount,
-
-          sellingPoints: 0,
-
-          sellingPointsProcessed:
-            false,
-
-          sellingPointsProcessedAt:
-            null,
-
-          status:
-            "PLACED",
-
-          paymentStatus:
-            "PENDING",
-
-          paymentMethod:
-            "PHONEPE",
-
-          deliveryDetails:
-            {
-              name:
-                customerName,
-
-              mobile:
-                customerMobile,
-
-              address,
-
-              city,
-
-              state,
-
-              pincode,
-            },
+            deliveryCharge =
+                Number(
+                    guestDeliveryCharge || 0
+                );
         }
-      );
 
-    /*
-    ========================================================
-    ATTACH ORDER ID TO ITEMS
-    ========================================================
-    */
 
-    const orderItems =
-      orderItemsData.map(
-        (item) => ({
-          ...item,
+        /* ------------------------------------------------------------------
+           FINAL PAYMENT AMOUNT
+           ------------------------------------------------------------------ */
 
-          orderId:
-            order._id,
-        })
-      );
+        const finalAmount =
+            Math.max(
+                0,
+                subtotal -
+                    discount -
+                    walletAmount +
+                    deliveryCharge
+            );
 
-    await orderRepository.createOrderItems(
-      orderItems
-    );
 
-    return {
-      ...order.toObject(),
+        /* ------------------------------------------------------------------
+           SELLING POINTS
+           ------------------------------------------------------------------
 
-      items:
-        orderItems,
-    };
-  };
+           VERY IMPORTANT:
 
-/* ==========================================
-   MEMBER ORDERS
-========================================== */
+           SP uses SUBTOTAL ONLY.
 
-const getMyOrders =
-  async (
-    userId
-  ) => {
-    const orders =
-      await orderRepository.getMyOrders(
-        userId
-      );
+           Example:
 
-    return await Promise.all(
-      orders.map(
-        async (order) => ({
-          ...order.toObject(),
+           Product subtotal = ₹450
+           Delivery          = ₹50
+           Customer pays     = ₹500
 
-          items:
-            await orderRepository.findByOrderId(
-              order._id
-            ),
-        })
-      )
-    );
-  };
+           SP:
 
-/* ==========================================
-   ORDER DETAILS
-========================================== */
+           ₹450 / ₹100
+           = 4 blocks
+           = 8 SP
 
-const getOrderById =
-  async (
-    orderId,
-    userId
-  ) => {
-    const order =
-      await orderRepository.findById(
-        orderId
-      );
+           NOT 10 SP.
 
-    if (!order) {
-      throw new ApiError(
-        404,
-        "Order not found"
-      );
-    }
+           ------------------------------------------------------------------ */
 
-    /*
-    Guest orders cannot be accessed
-    through this authenticated member
-    endpoint.
-    */
+        const sellingPoints =
+            calculateOrderSellingPoints(
+                subtotal
+            );
 
-    if (
-      !order.userId ||
-      order.userId._id
-        ?.toString() !==
-        userId.toString()
-    ) {
-      throw new ApiError(
-        403,
-        "Unauthorized"
-      );
-    }
 
-    return {
-      ...order.toObject(),
+        /* ------------------------------------------------------------------
+           ORDER NUMBER
+           ------------------------------------------------------------------ */
 
-      items:
-        await orderRepository.findByOrderId(
-          order._id
-        ),
-    };
-  };
+        const orderNumber =
+            await generateOrderNumber();
 
-/* ==========================================
-   ADMIN ORDERS
-========================================== */
 
-const getAllOrders =
-  async () => {
-    const orders =
-      await orderRepository.getAllOrders();
+        /* ------------------------------------------------------------------
+           CREATE ORDER
+           ------------------------------------------------------------------ */
 
-    return await Promise.all(
-      orders.map(
-        async (order) => ({
-          ...order.toObject(),
+        const order =
+            await Order.create({
 
-          items:
-            await orderRepository.findByOrderId(
-              order._id
-            ),
-        })
-      )
-    );
-  };
+                userId:
+                    isGuest
+                        ? null
+                        : userId,
 
-/* ==========================================
-   UPDATE ORDER STATUS
-========================================== */
+                orderType,
 
-const updateOrderStatus =
-  async (
-    orderId,
-    status
-  ) => {
-    const order =
-      await orderRepository.updateStatus(
-        orderId,
-        status
-      );
+                customerName:
+                    String(
+                        customerName || ""
+                    ).trim(),
 
-    if (!order) {
-      throw new ApiError(
-        404,
-        "Order not found"
-      );
-    }
+                customerMobile:
+                    String(
+                        customerMobile || ""
+                    ).trim(),
 
-    /*
-    ========================================================
-    SELLING POINT PROCESSING
-    ========================================================
-    */
+                customerEmail:
+                    String(
+                        customerEmail || ""
+                    ).trim(),
 
-    if (
-      order.paymentStatus ===
-        "PAID" &&
-      (
-        status ===
-          "SHIPPED" ||
-        status ===
-          "DELIVERED"
-      ) &&
-      !order.sellingPointsProcessed
-    ) {
-      /*
-      Guest orders must not receive
-      member selling points.
-      */
+                orderNumber,
 
-      if (
-        !order.userId
-      ) {
-        return {
-          ...order.toObject(),
+                subtotal,
 
-          items:
-            await orderRepository.findByOrderId(
-              order._id
-            ),
-        };
-      }
+                discount,
 
-      const user =
-        await User.findById(
-          order.userId
-        );
+                walletAmount,
 
-      if (user) {
-        const updatedUser =
-          await sellingPointService.updateSellingPoints(
-            user._id,
-            order.finalAmount,
-            order._id
-          );
+                deliveryCharge,
 
-        const orderSellingPoints =
-          Math.floor(
-            Number(
-              order.finalAmount ||
-                0
-            ) / 100
-          ) * 2;
+                finalAmount,
 
-        order.sellingPoints =
-          orderSellingPoints;
+                sellingPoints,
 
-        order.sellingPointsProcessed =
-          true;
+                sellingPointsProcessed:
+                    false,
 
-        order.sellingPointsProcessedAt =
-          new Date();
+                sellingPointsProcessedAt:
+                    null,
 
-        await order.save();
+                status:
+                    "PLACED",
+
+                paymentMethod,
+
+                paymentStatus:
+                    "PENDING",
+
+                phonePeOrderId:
+                    null,
+
+                phonePeTransactionId:
+                    null,
+
+                paidAt:
+                    null,
+
+                deliveryDetails: {
+
+                    name:
+                        deliveryDetails.name ||
+                        customerName ||
+                        "",
+
+                    mobile:
+                        deliveryDetails.mobile ||
+                        customerMobile ||
+                        "",
+
+                    address:
+                        deliveryDetails.address ||
+                        "",
+
+                    city:
+                        deliveryDetails.city ||
+                        "",
+
+                    state:
+                        deliveryDetails.state ||
+                        "",
+
+                    pincode:
+                        deliveryDetails.pincode ||
+                        "",
+                },
+
+                placedAt:
+                    new Date(),
+            });
+
+
+        /* ------------------------------------------------------------------
+           CREATE ORDER ITEMS
+           ------------------------------------------------------------------ */
+
+        let itemsToSave = [];
+
+
+        if (!isGuest) {
+
+            itemsToSave =
+                Array.isArray(
+                    cart?.items
+                )
+                    ? cart.items
+                    : [];
+
+        } else {
+
+            itemsToSave =
+                Array.isArray(
+                    guestItems
+                )
+                    ? guestItems
+                    : [];
+        }
+
 
         if (
-          updatedUser?.sponsorId
+            itemsToSave.length > 0
         ) {
-          await commissionService.distributeCommission(
-            updatedUser._id,
-            updatedUser.sponsorId,
-            order.finalAmount
-          );
+
+            const orderItems =
+                itemsToSave.map(
+                    (item) => {
+
+                        const quantity =
+                            Number(
+                                item.quantity || 1
+                            );
+
+                        const price =
+                            Number(
+                                item.price ||
+                                item.productId?.price ||
+                                0
+                            );
+
+                        const total =
+                            Number(
+                                item.total ||
+                                price * quantity
+                            );
+
+
+                        return {
+
+                            orderId:
+                                order._id,
+
+                            productId:
+                                item.productId?._id ||
+                                item.productId ||
+                                null,
+
+                            productName:
+                                item.productId?.name ||
+                                item.productId?.productName ||
+                                item.productName ||
+                                item.name ||
+                                "Product",
+
+                            quantity,
+
+                            price,
+
+                            total,
+                        };
+                    }
+                );
+
+
+            const validOrderItems =
+                orderItems.filter(
+                    (item) =>
+                        item.productId
+                );
+
+
+            if (
+                validOrderItems.length > 0
+            ) {
+
+                await OrderItem.insertMany(
+                    validOrderItems
+                );
+            }
         }
-      }
+
+
+        /* ------------------------------------------------------------------
+           IMPORTANT CART RULE
+           ------------------------------------------------------------------
+
+           DO NOT CLEAR THE CART HERE.
+
+           The customer has only CREATED the order.
+
+           Payment is still PENDING.
+
+           Therefore:
+
+           Checkout
+                ↓
+           Create Order
+                ↓
+           Cart remains
+                ↓
+           Scanner
+                ↓
+           Customer can go back
+                ↓
+           Cart still available
+
+           The cart must NOT disappear simply because
+           the order was created.
+
+           ------------------------------------------------------------------ */
+
+
+        console.log(
+            "======================================"
+        );
+
+        console.log(
+            "ORDER CREATED"
+        );
+
+        console.log(
+            "Order:",
+            order.orderNumber
+        );
+
+        console.log(
+            "Type:",
+            order.orderType
+        );
+
+        console.log(
+            "User:",
+            userId || "GUEST"
+        );
+
+        console.log(
+            "Product Subtotal: ₹",
+            subtotal
+        );
+
+        console.log(
+            "Delivery Charge: ₹",
+            deliveryCharge
+        );
+
+        console.log(
+            "Final Amount: ₹",
+            finalAmount
+        );
+
+        console.log(
+            "Order SP:",
+            sellingPoints
+        );
+
+        console.log(
+            "Payment Status:",
+            "PENDING"
+        );
+
+        console.log(
+            "CART WAS NOT CLEARED"
+        );
+
+        console.log(
+            "======================================"
+        );
+
+
+        return await Order.findById(
+            order._id
+        ).lean();
+
+
+    } catch (error) {
+
+        console.error(
+            "CREATE ORDER ERROR:",
+            error
+        );
+
+        throw error;
     }
+};
 
-    return {
-      ...order.toObject(),
 
-      items:
-        await orderRepository.findByOrderId(
-          order._id
-        ),
+/* ==========================================================================
+   PLACE ORDER
+   ========================================================================== */
+
+const placeOrder = async (
+    userId,
+    orderData = {}
+) => {
+
+    return createOrder(
+        userId,
+        orderData
+    );
+};
+
+
+/* ==========================================================================
+   GET ORDER BY ID
+   ========================================================================== */
+
+const getOrderById = async (
+    orderId,
+    userId = null
+) => {
+
+    try {
+
+        if (
+            !mongoose.Types.ObjectId.isValid(
+                orderId
+            )
+        ) {
+
+            throw new Error(
+                "Invalid order ID"
+            );
+        }
+
+
+        const query = {
+            _id: orderId,
+        };
+
+
+        if (userId) {
+            query.userId =
+                userId;
+        }
+
+
+        const order =
+            await Order.findOne(
+                query
+            )
+                .populate(
+                    "userId",
+                    "name userId email mobile role referralCode"
+                )
+                .lean();
+
+
+        if (!order) {
+
+            throw new Error(
+                "Order not found"
+            );
+        }
+
+
+        const items =
+            await OrderItem.find({
+                orderId:
+                    order._id,
+            })
+                .populate(
+                    "productId",
+                    "name productName images price"
+                )
+                .lean();
+
+
+        return {
+
+            ...order,
+
+            items,
+        };
+
+
+    } catch (error) {
+
+        console.error(
+            "GET ORDER BY ID ERROR:",
+            error
+        );
+
+        throw error;
+    }
+};
+
+
+/* ==========================================================================
+   GET MY ORDERS
+   ========================================================================== */
+
+const getMyOrders = async (
+    userId
+) => {
+
+    try {
+
+        if (!userId) {
+            return [];
+        }
+
+
+        const orders =
+            await Order.find({
+                userId,
+            })
+                .sort({
+                    createdAt: -1,
+                })
+                .lean();
+
+
+        if (!orders.length) {
+            return [];
+        }
+
+
+        const orderIds =
+            orders.map(
+                (order) =>
+                    order._id
+            );
+
+
+        const items =
+            await OrderItem.find({
+                orderId: {
+                    $in:
+                        orderIds,
+                },
+            })
+                .populate(
+                    "productId",
+                    "name productName images price"
+                )
+                .lean();
+
+
+        const itemsByOrder = {};
+
+
+        for (
+            const item
+            of items
+        ) {
+
+            const key =
+                item.orderId.toString();
+
+
+            if (
+                !itemsByOrder[key]
+            ) {
+
+                itemsByOrder[key] =
+                    [];
+            }
+
+
+            itemsByOrder[key].push(
+                item
+            );
+        }
+
+
+        return orders.map(
+            (order) => ({
+
+                ...order,
+
+                items:
+                    itemsByOrder[
+                        order._id.toString()
+                    ] || [],
+
+            })
+        );
+
+
+    } catch (error) {
+
+        console.error(
+            "GET MY ORDERS ERROR:",
+            error
+        );
+
+        throw error;
+    }
+};
+
+/* ==========================================================================
+   GET ALL ORDERS
+   ========================================================================== */
+
+const getAllOrders = async (
+    options = {}
+) => {
+
+    try {
+
+        const {
+            page = 1,
+            limit = 20,
+            status,
+            paymentStatus,
+            orderType,
+            search,
+        } = options;
+
+
+        const filter = {};
+
+
+        if (status) {
+            filter.status =
+                status;
+        }
+
+
+        if (paymentStatus) {
+            filter.paymentStatus =
+                paymentStatus;
+        }
+
+
+        if (orderType) {
+            filter.orderType =
+                orderType;
+        }
+
+
+        if (search) {
+
+            filter.$or = [
+
+                {
+                    orderNumber: {
+                        $regex:
+                            search,
+                        $options:
+                            "i",
+                    },
+                },
+
+                {
+                    customerName: {
+                        $regex:
+                            search,
+                        $options:
+                            "i",
+                    },
+                },
+
+                {
+                    customerMobile: {
+                        $regex:
+                            search,
+                        $options:
+                            "i",
+                    },
+                },
+
+                {
+                    customerEmail: {
+                        $regex:
+                            search,
+                        $options:
+                            "i",
+                    },
+                },
+
+            ];
+        }
+
+
+        const skip =
+            (Number(page) - 1) *
+            Number(limit);
+
+
+        const [
+            orders,
+            total,
+        ] = await Promise.all([
+
+            Order.find(filter)
+                .populate(
+                    "userId",
+                    "name userId email mobile role referralCode sellingPoints membershipStatus"
+                )
+                .sort({
+                    createdAt: -1,
+                })
+                .skip(skip)
+                .limit(
+                    Number(limit)
+                )
+                .lean(),
+
+            Order.countDocuments(
+                filter
+            ),
+
+        ]);
+
+
+        if (!orders.length) {
+
+            return {
+
+                orders: [],
+
+                pagination: {
+
+                    page:
+                        Number(page),
+
+                    limit:
+                        Number(limit),
+
+                    total: 0,
+
+                    pages: 0,
+                },
+            };
+        }
+
+
+        const orderIds =
+            orders.map(
+                (order) =>
+                    order._id
+            );
+
+
+        const items =
+            await OrderItem.find({
+                orderId: {
+                    $in:
+                        orderIds,
+                },
+            })
+                .populate(
+                    "productId",
+                    "name productName images price"
+                )
+                .lean();
+
+
+        const itemsByOrder = {};
+
+
+        for (
+            const item
+            of items
+        ) {
+
+            const key =
+                item.orderId.toString();
+
+
+            if (
+                !itemsByOrder[key]
+            ) {
+
+                itemsByOrder[key] =
+                    [];
+            }
+
+
+            itemsByOrder[key].push(
+                item
+            );
+        }
+
+
+        const formattedOrders =
+            orders.map(
+                (order) => ({
+
+                    ...order,
+
+                    items:
+                        itemsByOrder[
+                            order._id.toString()
+                        ] || [],
+
+                })
+            );
+
+
+        return {
+
+            orders:
+                formattedOrders,
+
+            pagination: {
+
+                page:
+                    Number(page),
+
+                limit:
+                    Number(limit),
+
+                total,
+
+                pages:
+                    Math.ceil(
+                        total /
+                            Number(limit)
+                    ),
+            },
+        };
+
+
+    } catch (error) {
+
+        console.error(
+            "GET ALL ORDERS ERROR:",
+            error
+        );
+
+        throw error;
+    }
+};
+
+
+/* ==========================================================================
+   GET ORDERS BY MOBILE
+   ========================================================================== */
+
+const getOrdersByMobile = async (
+    mobile
+) => {
+
+    try {
+
+        if (!mobile) {
+            return [];
+        }
+
+
+        const cleanMobile =
+            String(mobile).trim();
+
+
+        const orders =
+            await Order.find({
+
+                customerMobile:
+                    cleanMobile,
+
+            })
+                .sort({
+                    createdAt: -1,
+                })
+                .lean();
+
+
+        if (!orders.length) {
+            return [];
+        }
+
+
+        const orderIds =
+            orders.map(
+                (order) =>
+                    order._id
+            );
+
+
+        const items =
+            await OrderItem.find({
+
+                orderId: {
+                    $in:
+                        orderIds,
+                },
+
+            })
+                .populate(
+                    "productId",
+                    "name productName images price"
+                )
+                .lean();
+
+
+        const itemsByOrder = {};
+
+
+        for (
+            const item
+            of items
+        ) {
+
+            const key =
+                item.orderId.toString();
+
+
+            if (
+                !itemsByOrder[key]
+            ) {
+
+                itemsByOrder[key] =
+                    [];
+            }
+
+
+            itemsByOrder[key].push(
+                item
+            );
+        }
+
+
+        return orders.map(
+            (order) => ({
+
+                ...order,
+
+                items:
+                    itemsByOrder[
+                        order._id.toString()
+                    ] || [],
+
+            })
+        );
+
+
+    } catch (error) {
+
+        console.error(
+            "GET ORDERS BY MOBILE ERROR:",
+            error
+        );
+
+        throw error;
+    }
+};
+
+
+/* ==========================================================================
+   LINK GUEST ORDERS TO USER
+   ========================================================================== */
+
+const linkGuestOrdersToUser =
+    async (
+        userId,
+        mobile
+    ) => {
+
+        try {
+
+            if (
+                !userId ||
+                !mobile
+            ) {
+
+                return {
+
+                    matched: 0,
+
+                    linked: 0,
+
+                };
+            }
+
+
+            const cleanMobile =
+                String(
+                    mobile
+                ).trim();
+
+
+            const result =
+                await Order.updateMany(
+
+                    {
+
+                        customerMobile:
+                            cleanMobile,
+
+                        $or: [
+
+                            {
+                                userId:
+                                    null,
+                            },
+
+                            {
+                                userId: {
+                                    $exists:
+                                        false,
+                                },
+                            },
+
+                        ],
+
+                        orderType:
+                            "GUEST",
+
+                    },
+
+                    {
+
+                        $set: {
+
+                            userId,
+
+                            membershipLinked:
+                                true,
+
+                            linkedAt:
+                                new Date(),
+
+                            orderType:
+                                "MEMBER",
+
+                        },
+
+                    }
+
+                );
+
+
+            console.log(
+                "======================================"
+            );
+
+            console.log(
+                "GUEST ORDERS LINKED"
+            );
+
+            console.log(
+                "Mobile:",
+                cleanMobile
+            );
+
+            console.log(
+                "User:",
+                userId
+            );
+
+            console.log(
+                "Linked:",
+                result.modifiedCount
+            );
+
+            console.log(
+                "======================================"
+            );
+
+
+            return {
+
+                matched:
+                    result.matchedCount ||
+                    0,
+
+                linked:
+                    result.modifiedCount ||
+                    0,
+
+            };
+
+
+        } catch (error) {
+
+            console.error(
+                "LINK GUEST ORDERS ERROR:",
+                error
+            );
+
+            throw error;
+        }
     };
-  };
-
-/* ==========================================
-   GUEST ORDERS BY MOBILE
-========================================== */
-
-const getGuestOrdersByMobile =
-  async (
-    customerMobile
-  ) => {
-
-    const normalizedMobile =
-      String(
-        customerMobile || ""
-      ).replace(
-        /\D/g,
-        ""
-      );
 
 
-    if (
-      normalizedMobile.length !==
-      10
-    ) {
+/* ==========================================================================
+   PROCESS SELLING POINTS
+   ==========================================================================
 
-      throw new ApiError(
-        400,
-        "Valid 10-digit mobile number is required"
-      );
+   IMPORTANT:
 
-    }
+   SP is processed ONLY after payment becomes PAID.
+
+   Delivery charge is NEVER included.
+
+   Example:
+
+   Product subtotal = ₹450
+   Delivery         = ₹50
+   Final payment    = ₹500
+
+   SP = 8
+
+   NOT 10.
+
+   ========================================================================== */
+
+const processSellingPoints =
+    async (
+        orderId
+    ) => {
+
+        try {
+
+            if (!orderId) {
+
+                return {
+
+                    success:
+                        false,
+
+                    message:
+                        "Order ID is required",
+
+                };
+            }
 
 
-    const orders =
-      await orderRepository.findGuestOrdersByMobile(
-        normalizedMobile
-      );
+            const order =
+                await Order.findById(
+                    orderId
+                );
 
 
-    return await Promise.all(
+            if (!order) {
 
-      orders.map(
-        async (
-          order
-        ) => {
+                return {
 
-          return {
-            ...order.toObject(),
+                    success:
+                        false,
 
-            items:
-              await orderRepository.findByOrderId(
-                order._id
-              ),
+                    message:
+                        "Order not found",
 
-          };
+                };
+            }
 
+
+            /* --------------------------------------------------------------
+               ALREADY PROCESSED
+               -------------------------------------------------------------- */
+
+            if (
+                order.sellingPointsProcessed ===
+                true
+            ) {
+
+                console.log(
+                    `SP SKIPPED: Already processed ${order.orderNumber}`
+                );
+
+
+                return {
+
+                    success:
+                        true,
+
+                    alreadyProcessed:
+                        true,
+
+                    sellingPoints:
+                        Number(
+                            order.sellingPoints ||
+                            0
+                        ),
+
+                };
+            }
+
+
+            /* --------------------------------------------------------------
+               PAYMENT CHECK
+               -------------------------------------------------------------- */
+
+            if (
+                String(
+                    order.paymentStatus ||
+                    ""
+                ).toUpperCase() !==
+                "PAID"
+            ) {
+
+                console.log(
+                    `SP SKIPPED: Payment not PAID ${order.orderNumber}`
+                );
+
+
+                return {
+
+                    success:
+                        false,
+
+                    message:
+                        "Order payment is not PAID",
+
+                };
+            }
+
+
+            /* --------------------------------------------------------------
+               GUEST CHECK
+               -------------------------------------------------------------- */
+
+            if (!order.userId) {
+
+                console.log(
+                    `SP WAITING: Guest order ${order.orderNumber}`
+                );
+
+
+                return {
+
+                    success:
+                        true,
+
+                    waitingForMembership:
+                        true,
+
+                    sellingPoints:
+                        Number(
+                            order.sellingPoints ||
+                            0
+                        ),
+
+                };
+            }
+
+
+            /* --------------------------------------------------------------
+               FIND USER
+               -------------------------------------------------------------- */
+
+            const user =
+                await User.findById(
+                    order.userId
+                );
+
+
+            if (!user) {
+
+                console.log(
+                    `SP SKIPPED: User not found for ${order.orderNumber}`
+                );
+
+
+                return {
+
+                    success:
+                        false,
+
+                    message:
+                        "User not found",
+
+                };
+            }
+
+
+            /* --------------------------------------------------------------
+               ROLE CHECK
+               -------------------------------------------------------------- */
+
+            const allowedRoles = [
+
+                "MEMBER",
+
+                "MANAGER",
+
+            ];
+
+
+            const userRole =
+                String(
+                    user.role || ""
+                ).toUpperCase();
+
+
+            if (
+                !allowedRoles.includes(
+                    userRole
+                )
+            ) {
+
+                console.log(
+                    `SP SKIPPED: Role ${user.role} not eligible`
+                );
+
+
+                return {
+
+                    success:
+                        false,
+
+                    message:
+                        "User role is not eligible for selling points",
+
+                };
+            }
+
+
+            /* --------------------------------------------------------------
+               SELLING POINT QUALIFYING AMOUNT
+               --------------------------------------------------------------
+
+               ONLY subtotal.
+
+               Delivery charge is excluded.
+
+               -------------------------------------------------------------- */
+
+            const amount =
+                Number(
+                    order.subtotal ||
+                    0
+                );
+
+
+            const calculatedSP =
+                calculateOrderSellingPoints(
+                    amount
+                );
+
+
+            /* --------------------------------------------------------------
+               ZERO SP
+               -------------------------------------------------------------- */
+
+            if (
+                calculatedSP <= 0
+            ) {
+
+                await Order.findByIdAndUpdate(
+
+                    order._id,
+
+                    {
+
+                        $set: {
+
+                            sellingPoints:
+                                0,
+
+                            sellingPointsProcessed:
+                                true,
+
+                            sellingPointsProcessedAt:
+                                new Date(),
+
+                        },
+
+                    }
+
+                );
+
+
+                console.log(
+                    `SP PROCESSED: 0 SP for ${order.orderNumber}`
+                );
+
+
+                return {
+
+                    success:
+                        true,
+
+                    sellingPoints:
+                        0,
+
+                };
+            }
+
+
+            /* --------------------------------------------------------------
+               SELLING POINT SERVICE
+               -------------------------------------------------------------- */
+
+            let spResult =
+                null;
+
+
+            const sellingPointAmount =
+                Number(
+                    order.subtotal ||
+                    0
+                );
+
+
+            /* --------------------------------------------------------------
+               METHOD 1
+               -------------------------------------------------------------- */
+
+            if (
+                typeof
+                    sellingPointService
+                        .updateSellingPoints ===
+                "function"
+            ) {
+
+                spResult =
+                    await
+                        sellingPointService
+                            .updateSellingPoints(
+
+                                user._id,
+
+                                sellingPointAmount,
+
+                                order._id
+
+                            );
+
+            }
+
+            /* --------------------------------------------------------------
+               METHOD 2
+               -------------------------------------------------------------- */
+
+            else if (
+                typeof
+                    sellingPointService
+                        .processPurchaseSellingPoints ===
+                "function"
+            ) {
+
+                spResult =
+                    await
+                        sellingPointService
+                            .processPurchaseSellingPoints(
+
+                                user._id,
+
+                                sellingPointAmount,
+
+                                order._id
+
+                            );
+
+            }
+
+            /* --------------------------------------------------------------
+               METHOD 3
+               -------------------------------------------------------------- */
+
+            else if (
+                typeof
+                    sellingPointService
+                        .addPurchaseSellingPoints ===
+                "function"
+            ) {
+
+                spResult =
+                    await
+                        sellingPointService
+                            .addPurchaseSellingPoints(
+
+                                user._id,
+
+                                sellingPointAmount,
+
+                                order._id
+
+                            );
+
+            }
+
+            else {
+
+                throw new Error(
+                    "No compatible selling point service method found"
+                );
+            }
+
+
+            /* --------------------------------------------------------------
+               MARK ORDER SP AS PROCESSED
+               -------------------------------------------------------------- */
+
+            await Order.findByIdAndUpdate(
+
+                order._id,
+
+                {
+
+                    $set: {
+
+                        sellingPoints:
+                            calculatedSP,
+
+                        sellingPointsProcessed:
+                            true,
+
+                        sellingPointsProcessedAt:
+                            new Date(),
+
+                    },
+
+                }
+
+            );
+
+
+            console.log(
+                "======================================"
+            );
+
+            console.log(
+                "SP PROCESSED"
+            );
+
+            console.log(
+                "User:",
+                user.userId
+            );
+
+            console.log(
+                "Role:",
+                user.role
+            );
+
+            console.log(
+                "Order:",
+                order.orderNumber
+            );
+
+            console.log(
+                "Product Subtotal: ₹",
+                Number(
+                    order.subtotal ||
+                    0
+                )
+            );
+
+            console.log(
+                "Delivery Charge: ₹",
+                Number(
+                    order.deliveryCharge ||
+                    0
+                )
+            );
+
+            console.log(
+                "Customer Payment: ₹",
+                Number(
+                    order.finalAmount ||
+                    0
+                )
+            );
+
+            console.log(
+                "Selling Point Basis: ₹",
+                amount
+            );
+
+            console.log(
+                "Selling Points Awarded:",
+                calculatedSP
+            );
+
+            console.log(
+                "======================================"
+            );
+
+
+            return {
+
+                success:
+                    true,
+
+                sellingPoints:
+                    calculatedSP,
+
+                result:
+                    spResult,
+
+            };
+
+
+        } catch (error) {
+
+            console.error(
+                "PROCESS SELLING POINTS ERROR:",
+                error
+            );
+
+            throw error;
         }
-      )
+    };
 
-    );
-
-  };
-
-/* ==========================================
-   MANAGER ORDERS
-========================================== */
-
-const getManagerOrders =
-  async () => {
-
-    const orders =
-      await orderRepository.getAllOrders();
-
-
-    return await Promise.all(
-
-      orders.map(
-        async (
-          order
-        ) => {
-
-          return {
-            ...order.toObject(),
-
-            items:
-              await orderRepository.findByOrderId(
-                order._id
-              ),
-
-          };
-
-        }
-      )
-
-    );
-
-  };
-
-
-/* ==========================================
+/* ==========================================================================
    UPDATE PAYMENT STATUS
-========================================== */
+   ========================================================================== */
 
 const updatePaymentStatus =
-  async (
-    orderId,
-    paymentStatus
-  ) => {
-
-    const order =
-      await orderRepository.updatePaymentStatus(
+    async (
         orderId,
-        paymentStatus
-      );
+        paymentStatus,
+        paymentData = {}
+    ) => {
+
+        try {
+
+            if (
+                !mongoose.Types.ObjectId.isValid(
+                    orderId
+                )
+            ) {
+
+                throw new Error(
+                    "Invalid order ID"
+                );
+            }
 
 
-    if (!order) {
-
-      throw new ApiError(
-        404,
-        "Order not found"
-      );
-
-    }
+            const normalizedStatus =
+                String(
+                    paymentStatus || ""
+                ).toUpperCase();
 
 
-    /*
-    If payment is manually confirmed
-    by Admin, record paidAt.
-    */
+            const allowedStatuses = [
 
-    if (
-      paymentStatus ===
-      "PAID"
-    ) {
+                "PENDING",
 
-      order.paidAt =
-        new Date();
+                "PAID",
 
-      /*
-      If the order is still PLACED,
-      payment confirmation can move
-      it to CONFIRMED.
+                "FAILED",
 
-      We do NOT automatically change
-      orders that are already further
-      in the lifecycle.
-      */
+                "REFUNDED",
 
-      if (
-        order.status ===
-        "PLACED"
-      ) {
-
-        order.status =
-          "CONFIRMED";
-
-        order.confirmedAt =
-          new Date();
-
-      }
-
-      await order.save();
-
-    }
+            ];
 
 
-    return {
-      ...order.toObject(),
+            if (
+                !allowedStatuses.includes(
+                    normalizedStatus
+                )
+            ) {
 
-      items:
-        await orderRepository.findByOrderId(
-          order._id
-        ),
+                throw new Error(
+                    "Invalid payment status"
+                );
+            }
+
+
+            const update = {
+
+                paymentStatus:
+                    normalizedStatus,
+
+            };
+
+
+            if (
+                paymentData.phonePeOrderId
+            ) {
+
+                update.phonePeOrderId =
+                    paymentData.phonePeOrderId;
+            }
+
+
+            if (
+                paymentData.phonePeTransactionId
+            ) {
+
+                update.phonePeTransactionId =
+                    paymentData.phonePeTransactionId;
+            }
+
+
+            /* --------------------------------------------------------------
+               PAYMENT SUCCESS
+               -------------------------------------------------------------- */
+
+            if (
+                normalizedStatus ===
+                "PAID"
+            ) {
+
+                update.paidAt =
+                    new Date();
+
+                update.status =
+                    "CONFIRMED";
+
+                update.confirmedAt =
+                    new Date();
+            }
+
+
+            const order =
+                await Order.findByIdAndUpdate(
+
+                    orderId,
+
+                    {
+
+                        $set:
+                            update,
+
+                    },
+
+                    {
+
+                        new:
+                            true,
+
+                        runValidators:
+                            true,
+
+                    }
+
+                );
+
+
+            if (!order) {
+
+                throw new Error(
+                    "Order not found"
+                );
+            }
+
+
+            /* --------------------------------------------------------------
+               PROCESS SP ONLY AFTER PAYMENT IS PAID
+               -------------------------------------------------------------- */
+
+            if (
+                normalizedStatus ===
+                "PAID"
+            ) {
+
+                try {
+
+                    await processSellingPoints(
+                        order._id
+                    );
+
+                } catch (spError) {
+
+                    console.error(
+                        "SP PROCESSING FAILED:",
+                        spError
+                    );
+
+                    /*
+                     * Payment remains PAID.
+                     *
+                     * SP processing can be retried later.
+                     */
+                }
+            }
+
+
+            return await getOrderById(
+                order._id
+            );
+
+
+        } catch (error) {
+
+            console.error(
+                "UPDATE PAYMENT STATUS ERROR:",
+                error
+            );
+
+            throw error;
+        }
     };
 
-  };
+
+/* ==========================================================================
+   UPDATE ORDER STATUS
+   ========================================================================== */
+
+const updateOrderStatus =
+    async (
+        orderId,
+        status
+    ) => {
+
+        try {
+
+            if (
+                !mongoose.Types.ObjectId.isValid(
+                    orderId
+                )
+            ) {
+
+                throw new Error(
+                    "Invalid order ID"
+                );
+            }
+
+
+            const normalizedStatus =
+                String(
+                    status || ""
+                ).toUpperCase();
+
+
+            const allowedStatuses = [
+
+                "PLACED",
+
+                "CONFIRMED",
+
+                "PACKED",
+
+                "SHIPPED",
+
+                "DELIVERED",
+
+                "CANCELLED",
+
+            ];
+
+
+            if (
+                !allowedStatuses.includes(
+                    normalizedStatus
+                )
+            ) {
+
+                throw new Error(
+                    `Invalid order status: ${status}`
+                );
+            }
+
+
+            const update = {
+
+                status:
+                    normalizedStatus,
+
+            };
+
+
+            const now =
+                new Date();
+
+
+            if (
+                normalizedStatus ===
+                "CONFIRMED"
+            ) {
+
+                update.confirmedAt =
+                    now;
+            }
+
+
+            if (
+                normalizedStatus ===
+                "PACKED"
+            ) {
+
+                update.packedAt =
+                    now;
+            }
+
+
+            if (
+                normalizedStatus ===
+                "SHIPPED"
+            ) {
+
+                update.shippedAt =
+                    now;
+            }
+
+
+            if (
+                normalizedStatus ===
+                "DELIVERED"
+            ) {
+
+                update.deliveredAt =
+                    now;
+            }
+
+
+            if (
+                normalizedStatus ===
+                "CANCELLED"
+            ) {
+
+                update.cancelledAt =
+                    now;
+            }
+
+
+            const order =
+                await Order.findByIdAndUpdate(
+
+                    orderId,
+
+                    {
+
+                        $set:
+                            update,
+
+                    },
+
+                    {
+
+                        new:
+                            true,
+
+                        runValidators:
+                            true,
+
+                    }
+
+                );
+
+
+            if (!order) {
+
+                throw new Error(
+                    "Order not found"
+                );
+            }
+
+
+            return await getOrderById(
+                order._id
+            );
+
+
+        } catch (error) {
+
+            console.error(
+                "UPDATE ORDER STATUS ERROR:",
+                error
+            );
+
+            throw error;
+        }
+    };
+
+
+/* ==========================================================================
+   UPDATE ORDER STATUS ALIAS
+   ========================================================================== */
+
+const updateStatus =
+    async (
+        orderId,
+        status
+    ) => {
+
+        return updateOrderStatus(
+            orderId,
+            status
+        );
+    };
+
+
+/* ==========================================================================
+   CANCEL ORDER
+   ========================================================================== */
+
+const cancelOrder =
+    async (
+        orderId,
+        userId = null
+    ) => {
+
+        try {
+
+            if (
+                !mongoose.Types.ObjectId.isValid(
+                    orderId
+                )
+            ) {
+
+                throw new Error(
+                    "Invalid order ID"
+                );
+            }
+
+
+            const query = {
+
+                _id:
+                    orderId,
+
+            };
+
+
+            if (userId) {
+
+                query.userId =
+                    userId;
+            }
+
+
+            const order =
+                await Order.findOne(
+                    query
+                );
+
+
+            if (!order) {
+
+                throw new Error(
+                    "Order not found"
+                );
+            }
+
+
+            if (
+                String(
+                    order.status ||
+                    ""
+                ).toUpperCase() ===
+                "DELIVERED"
+            ) {
+
+                throw new Error(
+                    "Delivered orders cannot be cancelled"
+                );
+            }
+
+
+            if (
+                String(
+                    order.status ||
+                    ""
+                ).toUpperCase() ===
+                "CANCELLED"
+            ) {
+
+                return await getOrderById(
+                    order._id
+                );
+            }
+
+
+            order.status =
+                "CANCELLED";
+
+
+            order.cancelledAt =
+                new Date();
+
+
+            await order.save();
+
+
+            return await getOrderById(
+                order._id
+            );
+
+
+        } catch (error) {
+
+            console.error(
+                "CANCEL ORDER ERROR:",
+                error
+            );
+
+            throw error;
+        }
+    };
+
+
+/* ==========================================================================
+   DELETE ORDER
+   ========================================================================== */
+
+const deleteOrder =
+    async (
+        orderId
+    ) => {
+
+        try {
+
+            if (
+                !mongoose.Types.ObjectId.isValid(
+                    orderId
+                )
+            ) {
+
+                throw new Error(
+                    "Invalid order ID"
+                );
+            }
+
+
+            const order =
+                await Order.findById(
+                    orderId
+                );
+
+
+            if (!order) {
+
+                throw new Error(
+                    "Order not found"
+                );
+            }
+
+
+            await OrderItem.deleteMany({
+
+                orderId:
+                    order._id,
+
+            });
+
+
+            await Order.findByIdAndDelete(
+                order._id
+            );
+
+
+            return {
+
+                success:
+                    true,
+
+                message:
+                    "Order deleted successfully",
+
+            };
+
+
+        } catch (error) {
+
+            console.error(
+                "DELETE ORDER ERROR:",
+                error
+            );
+
+            throw error;
+        }
+    };
+
+
+/* ==========================================================================
+   GET ORDERS FOR MANAGER
+   ========================================================================== */
+
+const getManagerOrders =
+    async (
+        managerId,
+        options = {}
+    ) => {
+
+        try {
+
+            if (!managerId) {
+
+                throw new Error(
+                    "Manager ID is required"
+                );
+            }
+
+
+            const manager =
+                await User.findById(
+                    managerId
+                )
+                    .select(
+                        "userId role"
+                    )
+                    .lean();
+
+
+            if (!manager) {
+
+                throw new Error(
+                    "Manager not found"
+                );
+            }
+
+
+            const networkUsers =
+                await User.find({
+
+                    $or: [
+
+                        {
+                            _id:
+                                managerId,
+                        },
+
+                        {
+                            managerId:
+                                managerId,
+                        },
+
+                    ],
+
+                })
+                    .select(
+                        "_id"
+                    )
+                    .lean();
+
+
+            const userIds =
+                networkUsers.map(
+                    (user) =>
+                        user._id
+                );
+
+
+            if (
+                !userIds.some(
+                    (id) =>
+                        id.toString() ===
+                        managerId.toString()
+                )
+            ) {
+
+                userIds.push(
+                    managerId
+                );
+            }
+
+
+            const {
+
+                page = 1,
+
+                limit = 20,
+
+                status,
+
+                paymentStatus,
+
+            } = options;
+
+
+            const filter = {
+
+                userId: {
+
+                    $in:
+                        userIds,
+
+                },
+
+            };
+
+
+            if (status) {
+
+                filter.status =
+                    status;
+            }
+
+
+            if (paymentStatus) {
+
+                filter.paymentStatus =
+                    paymentStatus;
+            }
+
+
+            const skip =
+                (Number(page) - 1) *
+                Number(limit);
+
+
+            const [
+                orders,
+                total,
+            ] = await Promise.all([
+
+                Order.find(filter)
+                    .populate(
+                        "userId",
+                        "name userId email mobile role referralCode"
+                    )
+                    .sort({
+                        createdAt: -1,
+                    })
+                    .skip(skip)
+                    .limit(
+                        Number(limit)
+                    )
+                    .lean(),
+
+                Order.countDocuments(
+                    filter
+                ),
+
+            ]);
+
+
+            return {
+
+                orders,
+
+                pagination: {
+
+                    page:
+                        Number(page),
+
+                    limit:
+                        Number(limit),
+
+                    total,
+
+                    pages:
+                        Math.ceil(
+                            total /
+                                Number(limit)
+                        ),
+
+                },
+
+            };
+
+
+        } catch (error) {
+
+            console.error(
+                "GET MANAGER ORDERS ERROR:",
+                error
+            );
+
+            throw error;
+        }
+    };
+
+
+/* ==========================================================================
+   GET ORDER STATISTICS
+   ========================================================================== */
+
+const getOrderStats =
+    async (
+        filter = {}
+    ) => {
+
+        try {
+
+            const [
+
+                totalOrders,
+
+                placedOrders,
+
+                confirmedOrders,
+
+                packedOrders,
+
+                shippedOrders,
+
+                deliveredOrders,
+
+                cancelledOrders,
+
+                paidOrders,
+
+            ] = await Promise.all([
+
+                Order.countDocuments(
+                    filter
+                ),
+
+                Order.countDocuments({
+
+                    ...filter,
+
+                    status:
+                        "PLACED",
+
+                }),
+
+                Order.countDocuments({
+
+                    ...filter,
+
+                    status:
+                        "CONFIRMED",
+
+                }),
+
+                Order.countDocuments({
+
+                    ...filter,
+
+                    status:
+                        "PACKED",
+
+                }),
+
+                Order.countDocuments({
+
+                    ...filter,
+
+                    status:
+                        "SHIPPED",
+
+                }),
+
+                Order.countDocuments({
+
+                    ...filter,
+
+                    status:
+                        "DELIVERED",
+
+                }),
+
+                Order.countDocuments({
+
+                    ...filter,
+
+                    status:
+                        "CANCELLED",
+
+                }),
+
+                Order.countDocuments({
+
+                    ...filter,
+
+                    paymentStatus:
+                        "PAID",
+
+                }),
+
+            ]);
+
+
+            return {
+
+                totalOrders,
+
+                placedOrders,
+
+                confirmedOrders,
+
+                packedOrders,
+
+                shippedOrders,
+
+                deliveredOrders,
+
+                cancelledOrders,
+
+                paidOrders,
+
+            };
+
+
+        } catch (error) {
+
+            console.error(
+                "GET ORDER STATS ERROR:",
+                error
+            );
+
+            throw error;
+        }
+    };
+
+
+/* ==========================================================================
+   CLAIM GUEST ORDERS
+   ========================================================================== */
+
+const claimGuestOrders =
+    async (
+        userId,
+        mobile
+    ) => {
+
+        try {
+
+            const linkResult =
+                await linkGuestOrdersToUser(
+                    userId,
+                    mobile
+                );
+
+
+            const linkedOrders =
+                await Order.find({
+
+                    userId,
+
+                    customerMobile:
+                        String(
+                            mobile
+                        ).trim(),
+
+                    paymentStatus:
+                        "PAID",
+
+                    sellingPointsProcessed:
+                        false,
+
+                })
+                    .select(
+                        "_id"
+                    )
+                    .lean();
+
+
+            let processed =
+                0;
+
+
+            for (
+                const order
+                of linkedOrders
+            ) {
+
+                try {
+
+                    const result =
+                        await processSellingPoints(
+                            order._id
+                        );
+
+
+                    if (
+                        result?.success &&
+                        !result?.waitingForMembership
+                    ) {
+
+                        processed++;
+                    }
+
+
+                } catch (error) {
+
+                    console.error(
+
+                        `SP retry failed for ${order._id}:`,
+
+                        error
+
+                    );
+                }
+            }
+
+
+            return {
+
+                ...linkResult,
+
+                processed,
+
+            };
+
+
+        } catch (error) {
+
+            console.error(
+                "CLAIM GUEST ORDERS ERROR:",
+                error
+            );
+
+            throw error;
+        }
+    };
+
+
+/* ==========================================================================
+   MODULE EXPORTS
+   ========================================================================== */
 
 module.exports = {
-  placeOrder,
-  placeGuestOrder,
-  getMyOrders,
-  getOrderById,
-  getAllOrders,
-  getManagerOrders,
-  updateOrderStatus,
-  getGuestOrdersByMobile,
-  updatePaymentStatus,
+
+    createOrder,
+
+    placeOrder,
+
+    getOrderById,
+
+    getMyOrders,
+
+    getAllOrders,
+
+    getOrdersByMobile,
+
+    linkGuestOrdersToUser,
+
+    claimGuestOrders,
+
+    processSellingPoints,
+
+    updatePaymentStatus,
+
+    updateOrderStatus,
+
+    updateStatus,
+
+    cancelOrder,
+
+    deleteOrder,
+
+    getManagerOrders,
+
+    getOrderStats,
+
+    calculateOrderSellingPoints,
+
 };
