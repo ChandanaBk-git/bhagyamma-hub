@@ -324,29 +324,6 @@ const markCommissionAsPaid = async (
 // ============================================================
 // PROCESS JOINING COMMISSION
 // ============================================================
-//
-// NEW MEMBER
-//      ↓
-// sponsor
-//      ↓
-// L1 = 20%
-//      ↓
-// sponsor's sponsor
-//      ↓
-// L2 = 5%
-//      ↓
-// next sponsor
-//      ↓
-// L3+ = 1%
-//
-// ₹2,000 membership:
-//
-// L1 = ₹400
-// L2 = ₹100
-// L3 = ₹20
-// L4 = ₹20
-//
-// ============================================================
 
 const processJoiningCommission = async ({
   newMemberId,
@@ -654,10 +631,6 @@ const processJoiningCommission = async ({
 // ============================================================
 // DISTRIBUTE COMMISSION
 // ============================================================
-//
-// THIS IS THE FUNCTION SELLING POINT SERVICE CALLS.
-//
-// ============================================================
 
 const distributeCommission = async (
   newMemberId,
@@ -748,6 +721,79 @@ const getCommissionHistory = async (
     .findByUser(
       userId
     );
+};
+
+
+// ============================================================
+// FIND BY USER
+// ============================================================
+//
+// Controller uses:
+// commissionService.findByUser(userId)
+//
+// Keep getCommissionHistory for backward compatibility.
+// Both point to the same repository method.
+//
+// ============================================================
+
+const findByUser = async (
+  userId
+) => {
+
+  if (!userId) {
+    return [];
+  }
+
+  return commissionRepository
+    .findByUser(
+      userId
+    );
+};
+
+
+// ============================================================
+// GET COMMISSION BY ID
+// ============================================================
+
+const findById = async (
+  commissionId
+) => {
+
+  if (!commissionId) {
+    return null;
+  }
+
+  return commissionRepository
+    .findById(
+      commissionId
+    );
+};
+
+
+// ============================================================
+// GET ALL COMMISSIONS
+// ============================================================
+
+const getAllCommissions = async () => {
+
+  return commissionRepository
+    .findAll();
+};
+
+
+// ============================================================
+// FIND ALL
+// ============================================================
+//
+// Controller uses:
+// commissionService.findAll()
+//
+// ============================================================
+
+const findAll = async () => {
+
+  return commissionRepository
+    .findAll();
 };
 
 
@@ -845,24 +891,7 @@ const getCommissionSummary = async (
 
 
 // ============================================================
-// GET ALL
-// ============================================================
-
-const getAllCommissions = async () => {
-
-  return commissionRepository
-    .findAll();
-};
-
-
-// ============================================================
 // BACKFILL
-// ============================================================
-//
-// This also repairs BH000032 because it is already ACTIVE.
-// It does NOT create duplicates because we check existing
-// commission records first.
-//
 // ============================================================
 
 const backfillPaidMembershipCommissions = async () => {
@@ -1060,34 +1089,40 @@ const backfillPaidMembershipCommissions = async () => {
 
 module.exports = {
 
+  // Sponsor / tree
   getSponsor,
-
   getUpline,
-
   isEligibleSponsor,
 
+  // Commission configuration
   getCommissionPercentage,
 
+  // Commission creation / wallet
   createCommissionTransaction,
-
   creditCommissionWallet,
-
   markCommissionAsPaid,
 
+  // Commission distribution
   processJoiningCommission,
-
   distributeCommission,
-
   processOrderCommission,
 
+  // History
   getCommissionHistory,
+  findByUser,
 
+  // Single commission
+  findById,
+
+  // All commissions
+  getAllCommissions,
+  findAll,
+
+  // Totals / summary
   getCommissionTotal,
-
   getCommissionSummary,
 
-  getAllCommissions,
-
+  // Backfill
   backfillPaidMembershipCommissions,
 
 };

@@ -5,8 +5,21 @@ const ApiError = require("../utils/ApiError");
 const cloudinary = require("../config/cloudinary");
 
 // =======================================
-// Create Product
+// Upload image to Cloudinary
 // =======================================
+const uploadToCloudinary = async (file) => {
+  if (!file || !file.path) {
+    throw new ApiError(400, "Uploaded image file is missing.");
+  }
+
+  const result = await cloudinary.uploader.upload(file.path, {
+    folder: "bhagyamma-hub/products",
+    resource_type: "image",
+  });
+
+  return result.secure_url;
+};
+
 // =======================================
 // Create Product
 // =======================================
@@ -17,29 +30,15 @@ const createProduct = asyncHandler(async (req, res) => {
 
   const images = [];
 
+  // Upload images to Cloudinary
   if (req.files && req.files.length > 0) {
     for (const file of req.files) {
-      const result = await new Promise((resolve, reject) => {
-        const uploadStream = cloudinary.uploader.upload_stream(
-          {
-            folder: "bhagyamma-hub/products",
-            resource_type: "image",
-          },
-          (error, result) => {
-            if (error) {
-              reject(error);
-            } else {
-              resolve(result);
-            }
-          }
-        );
-
-        uploadStream.end(file.buffer);
-      });
-
-      images.push(result.secure_url);
+      const imageUrl = await uploadToCloudinary(file);
+      images.push(imageUrl);
     }
   }
+
+  console.log("CLOUDINARY IMAGES:", images);
 
   const product = await ProductService.createProduct({
     productName: req.body.productName,
@@ -64,6 +63,8 @@ const createProduct = asyncHandler(async (req, res) => {
     images,
   });
 
+  console.log("PRODUCT CREATED:", product);
+
   return res.status(201).json(
     new ApiResponse(
       201,
@@ -72,6 +73,7 @@ const createProduct = asyncHandler(async (req, res) => {
     )
   );
 });
+
 // =======================================
 // Get All Products
 // =======================================
@@ -115,39 +117,30 @@ const getProductById = asyncHandler(async (req, res) => {
 // Update Product
 // =======================================
 const updateProduct = asyncHandler(async (req, res) => {
+  console.log("========== UPDATE PRODUCT ==========");
+  console.log("BODY:", req.body);
+  console.log("FILES:", req.files);
+
   const updatedData = {
     ...req.body,
   };
 
+  // Upload new images to Cloudinary
   if (req.files && req.files.length > 0) {
     const uploadedImages = [];
 
     for (const file of req.files) {
-      const result = await new Promise((resolve, reject) => {
-        const uploadStream = cloudinary.uploader.upload_stream(
-          {
-            folder: "bhagyamma-hub/products",
-            resource_type: "image",
-          },
-          (error, result) => {
-            if (error) {
-              reject(error);
-            } else {
-              resolve(result);
-            }
-          }
-        );
-
-        uploadStream.end(file.buffer);
-      });
-
-      uploadedImages.push(result.secure_url);
+      const imageUrl = await uploadToCloudinary(file);
+      uploadedImages.push(imageUrl);
     }
 
     updatedData.images = uploadedImages;
   }
 
-  updatedData.price = Number(updatedData.price);
+  // Convert price to number
+  if (updatedData.price !== undefined) {
+    updatedData.price = Number(updatedData.price);
+  }
 
   const product = await ProductService.updateProduct(
     req.params.id,
@@ -166,6 +159,7 @@ const updateProduct = asyncHandler(async (req, res) => {
     )
   );
 });
+
 // =======================================
 // Delete Product
 // =======================================
@@ -187,6 +181,9 @@ const deleteProduct = asyncHandler(async (req, res) => {
   );
 });
 
+// =======================================
+// Exports
+// =======================================
 module.exports = {
   createProduct,
   getAllProducts,
