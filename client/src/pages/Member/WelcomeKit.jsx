@@ -33,8 +33,8 @@ const WelcomeKit = () => {
         minWidth: 0,
         minHeight: "100vh",
 
-        margin: 0,
-        padding: 0,
+        m: 0,
+        p: 0,
 
         boxSizing: "border-box",
 
@@ -42,12 +42,16 @@ const WelcomeKit = () => {
 
         overflowX: "hidden",
 
+        borderRadius: 0,
+
         "& .MuiCard-root": {
-          borderRadius: "0 !important",
+          borderRadius:
+            "0 !important",
         },
 
         "& .MuiPaper-root": {
-          borderRadius: "0 !important",
+          borderRadius:
+            "0 !important",
         },
       }}
     >
@@ -58,20 +62,24 @@ const WelcomeKit = () => {
       <Box
         sx={{
           width: "100%",
+
           maxWidth: {
             xs: "100%",
+            sm: "100%",
             md: "1400px",
           },
 
-          margin: {
+          minWidth: 0,
+
+          m: {
             xs: 0,
             md: "0 auto",
           },
 
-          padding: {
-            xs: "8px 8px 20px",
-            sm: "14px 14px 24px",
-            md: "20px 8px 30px",
+          p: {
+            xs: "8px",
+            sm: "12px",
+            md: "16px 8px 24px",
           },
 
           boxSizing: "border-box",
@@ -86,27 +94,23 @@ const WelcomeKit = () => {
         <Typography
           component="h1"
           sx={{
-            margin: 0,
+            m: 0,
 
-            marginBottom: {
-              xs: "5px",
-              sm: "7px",
-              md: "8px",
+            mb: {
+              xs: 0.5,
+              sm: 0.75,
+              md: 1,
             },
 
             fontSize: {
-              xs: "20px",
-              sm: "25px",
-              md: "30px",
+              xs: "18px",
+              sm: "22px",
+              md: "26px",
             },
 
-            lineHeight: {
-              xs: "25px",
-              sm: "31px",
-              md: "36px",
-            },
+            lineHeight: 1.25,
 
-            fontWeight: 800,
+            fontWeight: 700,
 
             color: "#292929",
           }}
@@ -121,21 +125,21 @@ const WelcomeKit = () => {
         <Typography
           color="text.secondary"
           sx={{
-            margin: 0,
+            m: 0,
 
-            marginBottom: {
-              xs: "12px",
-              sm: "16px",
-              md: "20px",
+            mb: {
+              xs: 1,
+              sm: 1.25,
+              md: 1.5,
             },
 
             fontSize: {
-              xs: "11px",
-              sm: "13px",
-              md: "14px",
+              xs: "9px",
+              sm: "11px",
+              md: "12px",
             },
 
-            lineHeight: 1.45,
+            lineHeight: 1.4,
 
             maxWidth: "850px",
           }}
@@ -154,21 +158,23 @@ const WelcomeKit = () => {
             width: "100%",
             maxWidth: "100%",
 
-            margin: 0,
+            m: 0,
 
-            marginBottom: {
-              xs: "12px",
-              sm: "16px",
-              md: "20px",
+            mb: {
+              xs: 1,
+              sm: 1.25,
+              md: 1.5,
             },
 
-            border: "1px solid #E5E5E5",
+            border:
+              "1px solid #DDE7DE",
 
-            borderLeft: "3px solid #2E7D32",
+            borderLeft:
+              "3px solid #2E7D32",
 
             backgroundColor: "#FFFFFF",
 
-            boxShadow: "0 2px 8px rgba(0,0,0,0.06)",
+            boxShadow: "none",
 
             overflow: "hidden",
 
@@ -179,19 +185,19 @@ const WelcomeKit = () => {
             sx={{
               width: "100%",
 
-              padding: {
-                xs: "12px",
-                sm: "16px",
-                md: "20px",
+              p: {
+                xs: 1.25,
+                sm: 1.5,
+                md: 1.75,
               },
 
               boxSizing: "border-box",
 
               "&:last-child": {
-                paddingBottom: {
-                  xs: "12px",
-                  sm: "16px",
-                  md: "20px",
+                pb: {
+                  xs: 1.25,
+                  sm: 1.5,
+                  md: 1.75,
                 },
               },
             }}
@@ -200,7 +206,7 @@ const WelcomeKit = () => {
               direction="row"
               spacing={{
                 xs: 1,
-                sm: 1.5,
+                sm: 1.25,
               }}
               alignItems="center"
               sx={{
@@ -213,28 +219,28 @@ const WelcomeKit = () => {
               <Box
                 sx={{
                   width: {
-                    xs: 44,
-                    sm: 52,
-                    md: 58,
+                    xs: 34,
+                    sm: 40,
+                    md: 44,
                   },
 
                   height: {
-                    xs: 44,
-                    sm: 52,
-                    md: 58,
+                    xs: 34,
+                    sm: 40,
+                    md: 44,
                   },
 
                   minWidth: {
-                    xs: 44,
-                    sm: 52,
-                    md: 58,
+                    xs: 34,
+                    sm: 40,
+                    md: 44,
                   },
 
                   bgcolor: "#E8F5E9",
 
                   color: "#2E7D32",
 
-                  borderRadius: "50%",
+                  borderRadius: 0,
 
                   display: "flex",
 
@@ -248,9 +254,9 @@ const WelcomeKit = () => {
                 <CardGiftcard
                   sx={{
                     fontSize: {
-                      xs: 24,
-                      sm: 29,
-                      md: 32,
+                      xs: 19,
+                      sm: 22,
+                      md: 25,
                     },
                   }}
                 />
@@ -268,16 +274,16 @@ const WelcomeKit = () => {
                   fontWeight={700}
                   sx={{
                     fontSize: {
-                      xs: "15px",
-                      sm: "17px",
-                      md: "19px",
+                      xs: "13px",
+                      sm: "15px",
+                      md: "16px",
                     },
 
                     lineHeight: 1.2,
 
-                    marginBottom: {
-                      xs: "5px",
-                      sm: "7px",
+                    mb: {
+                      xs: 0.4,
+                      sm: 0.5,
                     },
                   }}
                 >
@@ -290,13 +296,13 @@ const WelcomeKit = () => {
                   color="warning"
                   sx={{
                     height: {
-                      xs: 23,
-                      sm: 26,
+                      xs: 21,
+                      sm: 23,
                     },
 
                     fontSize: {
-                      xs: "10px",
-                      sm: "11px",
+                      xs: "8px",
+                      sm: "9px",
                     },
 
                     fontWeight: 600,
@@ -306,18 +312,18 @@ const WelcomeKit = () => {
                 <Typography
                   color="text.secondary"
                   sx={{
-                    marginTop: {
-                      xs: "6px",
-                      sm: "8px",
+                    mt: {
+                      xs: 0.5,
+                      sm: 0.75,
                     },
 
                     fontSize: {
-                      xs: "11px",
-                      sm: "12px",
-                      md: "13px",
+                      xs: "9px",
+                      sm: "10px",
+                      md: "11px",
                     },
 
-                    lineHeight: 1.45,
+                    lineHeight: 1.4,
                   }}
                 >
                   Our team will verify your account and
@@ -337,8 +343,8 @@ const WelcomeKit = () => {
           sx={{
             width: "100%",
             maxWidth: "100%",
-            margin: 0,
-            padding: 0,
+            m: 0,
+            p: 0,
             boxSizing: "border-box",
           }}
         >
@@ -347,19 +353,20 @@ const WelcomeKit = () => {
             sx={{
               width: "100%",
               maxWidth: "100%",
-              margin: 0,
-              padding: 0,
+
+              m: 0,
+              p: 0,
 
               boxSizing: "border-box",
 
               columnGap: {
                 xs: 0,
-                md: 2.5,
+                md: 1.5,
               },
 
               rowGap: {
-                xs: 1.5,
-                sm: 2,
+                xs: 1,
+                sm: 1.25,
                 md: 0,
               },
             }}
@@ -375,15 +382,14 @@ const WelcomeKit = () => {
               sx={{
                 width: {
                   xs: "100%",
-                  md: "calc(58.333333% - 10px)",
+                  md: "calc(58.333333% - 6px)",
                 },
 
                 maxWidth: "100%",
-
                 minWidth: 0,
 
-                margin: 0,
-                padding: 0,
+                m: 0,
+                p: 0,
 
                 boxSizing: "border-box",
               }}
@@ -394,14 +400,14 @@ const WelcomeKit = () => {
                   width: "100%",
                   maxWidth: "100%",
 
-                  margin: 0,
+                  m: 0,
 
-                  border: "1px solid #E5E5E5",
+                  border:
+                    "1px solid #DDE7DE",
 
                   backgroundColor: "#FFFFFF",
 
-                  boxShadow:
-                    "0 2px 8px rgba(0,0,0,0.06)",
+                  boxShadow: "none",
 
                   boxSizing: "border-box",
                 }}
@@ -410,19 +416,19 @@ const WelcomeKit = () => {
                   sx={{
                     width: "100%",
 
-                    padding: {
-                      xs: "12px",
-                      sm: "16px",
-                      md: "20px",
+                    p: {
+                      xs: 1.25,
+                      sm: 1.5,
+                      md: 1.75,
                     },
 
                     boxSizing: "border-box",
 
                     "&:last-child": {
-                      paddingBottom: {
-                        xs: "12px",
-                        sm: "16px",
-                        md: "20px",
+                      pb: {
+                        xs: 1.25,
+                        sm: 1.5,
+                        md: 1.75,
                       },
                     },
                   }}
@@ -431,16 +437,16 @@ const WelcomeKit = () => {
                     fontWeight={700}
                     sx={{
                       fontSize: {
-                        xs: "15px",
-                        sm: "17px",
-                        md: "19px",
+                        xs: "13px",
+                        sm: "15px",
+                        md: "16px",
                       },
 
                       lineHeight: 1.25,
 
-                      marginBottom: {
-                        xs: "8px",
-                        sm: "10px",
+                      mb: {
+                        xs: 0.75,
+                        sm: 1,
                       },
                     }}
                   >
@@ -449,17 +455,17 @@ const WelcomeKit = () => {
 
                   <Divider
                     sx={{
-                      marginBottom: {
-                        xs: "9px",
-                        sm: "12px",
+                      mb: {
+                        xs: 0.75,
+                        sm: 1,
                       },
                     }}
                   />
 
                   <Stack
                     spacing={{
-                      xs: 0.8,
-                      sm: 1,
+                      xs: 0.6,
+                      sm: 0.8,
                     }}
                   >
                     {benefits.map((benefit) => (
@@ -467,8 +473,8 @@ const WelcomeKit = () => {
                         key={benefit}
                         direction="row"
                         spacing={{
-                          xs: 0.8,
-                          sm: 1,
+                          xs: 0.6,
+                          sm: 0.8,
                         }}
                         alignItems="center"
                         sx={{
@@ -479,8 +485,8 @@ const WelcomeKit = () => {
                           color="success"
                           sx={{
                             fontSize: {
-                              xs: 17,
-                              sm: 19,
+                              xs: 15,
+                              sm: 17,
                             },
 
                             flexShrink: 0,
@@ -490,12 +496,12 @@ const WelcomeKit = () => {
                         <Typography
                           sx={{
                             fontSize: {
-                              xs: "11px",
-                              sm: "13px",
-                              md: "14px",
+                              xs: "9px",
+                              sm: "11px",
+                              md: "12px",
                             },
 
-                            lineHeight: 1.35,
+                            lineHeight: 1.3,
 
                             minWidth: 0,
                           }}
@@ -520,15 +526,14 @@ const WelcomeKit = () => {
               sx={{
                 width: {
                   xs: "100%",
-                  md: "calc(41.666667% - 10px)",
+                  md: "calc(41.666667% - 6px)",
                 },
 
                 maxWidth: "100%",
-
                 minWidth: 0,
 
-                margin: 0,
-                padding: 0,
+                m: 0,
+                p: 0,
 
                 boxSizing: "border-box",
               }}
@@ -539,14 +544,14 @@ const WelcomeKit = () => {
                   width: "100%",
                   maxWidth: "100%",
 
-                  margin: 0,
+                  m: 0,
 
-                  border: "1px solid #E5E5E5",
+                  border:
+                    "1px solid #DDE7DE",
 
                   backgroundColor: "#FFFFFF",
 
-                  boxShadow:
-                    "0 2px 8px rgba(0,0,0,0.06)",
+                  boxShadow: "none",
 
                   boxSizing: "border-box",
                 }}
@@ -555,19 +560,19 @@ const WelcomeKit = () => {
                   sx={{
                     width: "100%",
 
-                    padding: {
-                      xs: "12px",
-                      sm: "16px",
-                      md: "20px",
+                    p: {
+                      xs: 1.25,
+                      sm: 1.5,
+                      md: 1.75,
                     },
 
                     boxSizing: "border-box",
 
                     "&:last-child": {
-                      paddingBottom: {
-                        xs: "12px",
-                        sm: "16px",
-                        md: "20px",
+                      pb: {
+                        xs: 1.25,
+                        sm: 1.5,
+                        md: 1.75,
                       },
                     },
                   }}
@@ -576,16 +581,16 @@ const WelcomeKit = () => {
                     fontWeight={700}
                     sx={{
                       fontSize: {
-                        xs: "15px",
-                        sm: "17px",
-                        md: "19px",
+                        xs: "13px",
+                        sm: "15px",
+                        md: "16px",
                       },
 
                       lineHeight: 1.25,
 
-                      marginBottom: {
-                        xs: "8px",
-                        sm: "10px",
+                      mb: {
+                        xs: 0.75,
+                        sm: 1,
                       },
                     }}
                   >
@@ -594,17 +599,17 @@ const WelcomeKit = () => {
 
                   <Divider
                     sx={{
-                      marginBottom: {
-                        xs: "9px",
-                        sm: "12px",
+                      mb: {
+                        xs: 0.75,
+                        sm: 1,
                       },
                     }}
                   />
 
                   <Stack
                     spacing={{
-                      xs: 1,
-                      sm: 1.25,
+                      xs: 0.75,
+                      sm: 1,
                     }}
                   >
                     {/* VERIFICATION */}
@@ -612,8 +617,8 @@ const WelcomeKit = () => {
                     <Stack
                       direction="row"
                       spacing={{
-                        xs: 0.8,
-                        sm: 1,
+                        xs: 0.6,
+                        sm: 0.8,
                       }}
                       alignItems="center"
                       sx={{
@@ -624,8 +629,8 @@ const WelcomeKit = () => {
                         color="success"
                         sx={{
                           fontSize: {
-                            xs: 19,
-                            sm: 21,
+                            xs: 17,
+                            sm: 19,
                           },
 
                           flexShrink: 0,
@@ -635,12 +640,12 @@ const WelcomeKit = () => {
                       <Typography
                         sx={{
                           fontSize: {
-                            xs: "11px",
-                            sm: "13px",
-                            md: "14px",
+                            xs: "9px",
+                            sm: "11px",
+                            md: "12px",
                           },
 
-                          lineHeight: 1.35,
+                          lineHeight: 1.3,
                         }}
                       >
                         Account verification required
@@ -652,8 +657,8 @@ const WelcomeKit = () => {
                     <Stack
                       direction="row"
                       spacing={{
-                        xs: 0.8,
-                        sm: 1,
+                        xs: 0.6,
+                        sm: 0.8,
                       }}
                       alignItems="center"
                       sx={{
@@ -664,8 +669,8 @@ const WelcomeKit = () => {
                         color="success"
                         sx={{
                           fontSize: {
-                            xs: 19,
-                            sm: 21,
+                            xs: 17,
+                            sm: 19,
                           },
 
                           flexShrink: 0,
@@ -675,12 +680,12 @@ const WelcomeKit = () => {
                       <Typography
                         sx={{
                           fontSize: {
-                            xs: "11px",
-                            sm: "13px",
-                            md: "14px",
+                            xs: "9px",
+                            sm: "11px",
+                            md: "12px",
                           },
 
-                          lineHeight: 1.35,
+                          lineHeight: 1.3,
                         }}
                       >
                         Dispatch begins after approval
@@ -696,25 +701,25 @@ const WelcomeKit = () => {
                     fullWidth
                     href="/member/profile"
                     sx={{
-                      marginTop: {
-                        xs: "12px",
-                        sm: "16px",
+                      mt: {
+                        xs: 1,
+                        sm: 1.25,
                       },
 
                       minHeight: {
-                        xs: 40,
-                        sm: 44,
+                        xs: 36,
+                        sm: 40,
                       },
 
-                      borderRadius: "5px",
+                      borderRadius: 0,
 
                       textTransform: "none",
 
                       fontWeight: 700,
 
                       fontSize: {
-                        xs: "12px",
-                        sm: "13px",
+                        xs: "10px",
+                        sm: "11px",
                       },
                     }}
                   >

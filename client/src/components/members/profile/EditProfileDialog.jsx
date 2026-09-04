@@ -15,6 +15,7 @@ import {
   CircularProgress,
 } from "@mui/material";
 
+
 const EditProfileDialog = ({
   open,
   onClose,
@@ -22,6 +23,7 @@ const EditProfileDialog = ({
   onSave,
   saving = false,
 }) => {
+
   const [form, setForm] = useState({
     name: "",
     mobile: "",
@@ -44,7 +46,9 @@ const EditProfileDialog = ({
     panNumber: "",
   });
 
+
   useEffect(() => {
+
     if (!user) return;
 
     setForm({
@@ -79,20 +83,63 @@ const EditProfileDialog = ({
       panNumber:
         user.panNumber || "",
     });
+
   }, [user, open]);
 
+
   const handleChange = (event) => {
+
     const { name, value } = event.target;
 
     setForm((previous) => ({
       ...previous,
       [name]: value,
     }));
+
   };
+
 
   const handleSave = () => {
     onSave?.(form);
   };
+
+
+  const textFieldSx = {
+    "& .MuiInputBase-root": {
+      borderRadius: 0,
+
+      minHeight: {
+        xs: 40,
+        sm: 42,
+      },
+
+      fontSize: {
+        xs: "11px",
+        sm: "12px",
+        md: "13px",
+      },
+    },
+
+    "& .MuiInputLabel-root": {
+      fontSize: {
+        xs: "10px",
+        sm: "11px",
+        md: "12px",
+      },
+    },
+
+    "& .MuiInputBase-input": {
+      py: {
+        xs: "9px",
+        sm: "10px",
+      },
+    },
+
+    "& .MuiInputBase-inputMultiline": {
+      py: "7px",
+    },
+  };
+
 
   return (
     <Dialog
@@ -101,33 +148,125 @@ const EditProfileDialog = ({
       fullWidth
       maxWidth="md"
       scroll="paper"
+
+      PaperProps={{
+        sx: {
+          borderRadius: 0,
+
+          border: "1px solid #E0E0E0",
+
+          boxShadow: "none",
+
+          width: "100%",
+
+          m: {
+            xs: 1,
+            sm: 2,
+          },
+
+          maxHeight: {
+            xs: "calc(100% - 16px)",
+            sm: "calc(100% - 32px)",
+          },
+        },
+      }}
     >
+
+      {/* =========================================
+          TITLE
+      ========================================== */}
+
       <DialogTitle
         sx={{
+          px: {
+            xs: 1.5,
+            sm: 2,
+            md: 2.5,
+          },
+
+          py: {
+            xs: 1,
+            sm: 1.25,
+          },
+
           fontWeight: 700,
-          pb: 1,
+
+          fontSize: {
+            xs: "15px",
+            sm: "17px",
+            md: "19px",
+          },
+
+          lineHeight: 1.2,
+
+          borderBottom: "1px solid #E0E0E0",
         }}
       >
         Edit Profile
       </DialogTitle>
 
-      <DialogContent dividers>
+
+      <DialogContent
+        dividers
+        sx={{
+          px: {
+            xs: 1.25,
+            sm: 2,
+            md: 2.5,
+          },
+
+          py: {
+            xs: 1.25,
+            sm: 1.5,
+            md: 2,
+          },
+
+          borderTop: "none",
+
+          borderBottom: "none",
+
+          "&::-webkit-scrollbar": {
+            width: "5px",
+          },
+        }}
+      >
+
         {/* =========================================
             PERSONAL INFORMATION
         ========================================== */}
 
         <Typography
-          variant="h6"
           fontWeight={700}
-          sx={{ mb: 2 }}
+          sx={{
+            fontSize: {
+              xs: "12px",
+              sm: "14px",
+              md: "15px",
+            },
+
+            lineHeight: 1.2,
+
+            mb: {
+              xs: 1,
+              sm: 1.25,
+            },
+
+            color: "#292929",
+          }}
         >
           Personal Information
         </Typography>
 
+
         <Grid
           container
-          spacing={2}
+          spacing={{
+            xs: 1,
+            sm: 1.25,
+            md: 1.5,
+          }}
         >
+
           <Grid item xs={12} md={6}>
             <TextField
               fullWidth
@@ -136,8 +275,10 @@ const EditProfileDialog = ({
               value={form.name}
               onChange={handleChange}
               required
+              sx={textFieldSx}
             />
           </Grid>
+
 
           <Grid item xs={12} md={6}>
             <TextField
@@ -147,8 +288,10 @@ const EditProfileDialog = ({
               value={form.mobile}
               onChange={handleChange}
               required
+              sx={textFieldSx}
             />
           </Grid>
+
 
           <Grid item xs={12} md={6}>
             <TextField
@@ -158,7 +301,9 @@ const EditProfileDialog = ({
               name="gender"
               value={form.gender}
               onChange={handleChange}
+              sx={textFieldSx}
             >
+
               <MenuItem value="">
                 Not Selected
               </MenuItem>
@@ -174,8 +319,10 @@ const EditProfileDialog = ({
               <MenuItem value="Other">
                 Other
               </MenuItem>
+
             </TextField>
           </Grid>
+
 
           <Grid item xs={12} md={6}>
             <TextField
@@ -188,40 +335,73 @@ const EditProfileDialog = ({
               InputLabelProps={{
                 shrink: true,
               }}
+              sx={textFieldSx}
             />
           </Grid>
+
         </Grid>
 
-        <Divider sx={{ my: 4 }} />
+
+        <Divider
+          sx={{
+            my: {
+              xs: 1.5,
+              sm: 2,
+            },
+          }}
+        />
+
 
         {/* =========================================
             ADDRESS INFORMATION
         ========================================== */}
 
         <Typography
-          variant="h6"
           fontWeight={700}
-          sx={{ mb: 2 }}
+          sx={{
+            fontSize: {
+              xs: "12px",
+              sm: "14px",
+              md: "15px",
+            },
+
+            lineHeight: 1.2,
+
+            mb: {
+              xs: 1,
+              sm: 1.25,
+            },
+
+            color: "#292929",
+          }}
         >
           Address Information
         </Typography>
 
+
         <Grid
           container
-          spacing={2}
+          spacing={{
+            xs: 1,
+            sm: 1.25,
+            md: 1.5,
+          }}
         >
+
           <Grid item xs={12}>
             <TextField
               fullWidth
               multiline
-              minRows={3}
+              minRows={2}
               label="Address"
               name="address"
               value={form.address}
               onChange={handleChange}
               placeholder="Enter your complete address"
+              sx={textFieldSx}
             />
           </Grid>
+
 
           <Grid item xs={12} sm={6}>
             <TextField
@@ -230,8 +410,10 @@ const EditProfileDialog = ({
               name="city"
               value={form.city}
               onChange={handleChange}
+              sx={textFieldSx}
             />
           </Grid>
+
 
           <Grid item xs={12} sm={6}>
             <TextField
@@ -240,8 +422,10 @@ const EditProfileDialog = ({
               name="state"
               value={form.state}
               onChange={handleChange}
+              sx={textFieldSx}
             />
           </Grid>
+
 
           <Grid item xs={12} sm={6}>
             <TextField
@@ -253,8 +437,10 @@ const EditProfileDialog = ({
               inputProps={{
                 maxLength: 6,
               }}
+              sx={textFieldSx}
             />
           </Grid>
+
 
           <Grid item xs={12} sm={6}>
             <TextField
@@ -263,46 +449,99 @@ const EditProfileDialog = ({
               name="country"
               value={form.country}
               onChange={handleChange}
+              sx={textFieldSx}
             />
           </Grid>
+
         </Grid>
 
-        <Divider sx={{ my: 4 }} />
+
+        <Divider
+          sx={{
+            my: {
+              xs: 1.5,
+              sm: 2,
+            },
+          }}
+        />
+
 
         {/* =========================================
             BANK INFORMATION
         ========================================== */}
 
         <Typography
-          variant="h6"
           fontWeight={700}
-          sx={{ mb: 2 }}
+          sx={{
+            fontSize: {
+              xs: "12px",
+              sm: "14px",
+              md: "15px",
+            },
+
+            lineHeight: 1.2,
+
+            mb: {
+              xs: 1,
+              sm: 1.25,
+            },
+
+            color: "#292929",
+          }}
         >
           Bank Information
         </Typography>
 
+
         <Box
           sx={{
-            mb: 2,
-            p: 1.5,
-            borderRadius: 2,
-            backgroundColor: "warning.light",
+            mb: {
+              xs: 1,
+              sm: 1.25,
+            },
+
+            p: {
+              xs: 1,
+              sm: 1.25,
+            },
+
+            borderRadius: 0,
+
+            border: "1px solid #E0E0E0",
+
+            backgroundColor: "#FFF8E1",
           }}
         >
+
           <Typography
-            variant="body2"
             color="text.secondary"
+            sx={{
+              fontSize: {
+                xs: "9px",
+                sm: "10px",
+                md: "11px",
+              },
+
+              lineHeight: 1.35,
+            }}
           >
             Enter your bank details carefully. These
             details may be used for eligible payments
             and withdrawals.
           </Typography>
+
         </Box>
+
 
         <Grid
           container
-          spacing={2}
+          spacing={{
+            xs: 1,
+            sm: 1.25,
+            md: 1.5,
+          }}
         >
+
           <Grid item xs={12} sm={6}>
             <TextField
               fullWidth
@@ -310,8 +549,10 @@ const EditProfileDialog = ({
               name="bankName"
               value={form.bankName}
               onChange={handleChange}
+              sx={textFieldSx}
             />
           </Grid>
+
 
           <Grid item xs={12} sm={6}>
             <TextField
@@ -320,8 +561,10 @@ const EditProfileDialog = ({
               name="accountHolderName"
               value={form.accountHolderName}
               onChange={handleChange}
+              sx={textFieldSx}
             />
           </Grid>
+
 
           <Grid item xs={12} sm={6}>
             <TextField
@@ -331,8 +574,10 @@ const EditProfileDialog = ({
               value={form.accountNumber}
               onChange={handleChange}
               type="text"
+              sx={textFieldSx}
             />
           </Grid>
+
 
           <Grid item xs={12} sm={6}>
             <TextField
@@ -344,8 +589,10 @@ const EditProfileDialog = ({
               inputProps={{
                 maxLength: 11,
               }}
+              sx={textFieldSx}
             />
           </Grid>
+
 
           <Grid item xs={12}>
             <TextField
@@ -354,46 +601,99 @@ const EditProfileDialog = ({
               name="branch"
               value={form.branch}
               onChange={handleChange}
+              sx={textFieldSx}
             />
           </Grid>
+
         </Grid>
 
-        <Divider sx={{ my: 4 }} />
+
+        <Divider
+          sx={{
+            my: {
+              xs: 1.5,
+              sm: 2,
+            },
+          }}
+        />
+
 
         {/* =========================================
             KYC INFORMATION
         ========================================== */}
 
         <Typography
-          variant="h6"
           fontWeight={700}
-          sx={{ mb: 2 }}
+          sx={{
+            fontSize: {
+              xs: "12px",
+              sm: "14px",
+              md: "15px",
+            },
+
+            lineHeight: 1.2,
+
+            mb: {
+              xs: 1,
+              sm: 1.25,
+            },
+
+            color: "#292929",
+          }}
         >
           KYC Information
         </Typography>
 
+
         <Box
           sx={{
-            mb: 2,
-            p: 1.5,
-            borderRadius: 2,
-            backgroundColor: "info.light",
+            mb: {
+              xs: 1,
+              sm: 1.25,
+            },
+
+            p: {
+              xs: 1,
+              sm: 1.25,
+            },
+
+            borderRadius: 0,
+
+            border: "1px solid #E0E0E0",
+
+            backgroundColor: "#E3F2FD",
           }}
         >
+
           <Typography
-            variant="body2"
             color="text.secondary"
+            sx={{
+              fontSize: {
+                xs: "9px",
+                sm: "10px",
+                md: "11px",
+              },
+
+              lineHeight: 1.35,
+            }}
           >
             You can submit or update your KYC
             information here. KYC verification status
             is controlled by the administrator.
           </Typography>
+
         </Box>
+
 
         <Grid
           container
-          spacing={2}
+          spacing={{
+            xs: 1,
+            sm: 1.25,
+            md: 1.5,
+          }}
         >
+
           <Grid item xs={12} sm={6}>
             <TextField
               fullWidth
@@ -404,8 +704,10 @@ const EditProfileDialog = ({
               inputProps={{
                 maxLength: 12,
               }}
+              sx={textFieldSx}
             />
           </Grid>
+
 
           <Grid item xs={12} sm={6}>
             <TextField
@@ -417,24 +719,67 @@ const EditProfileDialog = ({
               inputProps={{
                 maxLength: 10,
               }}
+              sx={textFieldSx}
             />
           </Grid>
+
         </Grid>
+
       </DialogContent>
+
+
+      {/* =========================================
+          ACTIONS
+      ========================================== */}
 
       <DialogActions
         sx={{
-          px: 3,
-          py: 2,
+          px: {
+            xs: 1.25,
+            sm: 2,
+            md: 2.5,
+          },
+
+          py: {
+            xs: 1,
+            sm: 1.25,
+          },
+
+          borderTop: "1px solid #E0E0E0",
+
+          gap: 0.75,
         }}
       >
+
         <Button
           onClick={onClose}
           disabled={saving}
           color="inherit"
+          sx={{
+            minHeight: {
+              xs: 34,
+              sm: 38,
+            },
+
+            px: {
+              xs: 1.5,
+              sm: 2,
+            },
+
+            borderRadius: 0,
+
+            fontSize: {
+              xs: "10px",
+              sm: "11px",
+              md: "12px",
+            },
+
+            textTransform: "none",
+          }}
         >
           Cancel
         </Button>
+
 
         <Button
           variant="contained"
@@ -444,19 +789,51 @@ const EditProfileDialog = ({
           startIcon={
             saving ? (
               <CircularProgress
-                size={18}
+                size={15}
                 color="inherit"
               />
             ) : null
           }
+          sx={{
+            minHeight: {
+              xs: 34,
+              sm: 38,
+            },
+
+            px: {
+              xs: 1.5,
+              sm: 2,
+            },
+
+            borderRadius: 0,
+
+            boxShadow: "none",
+
+            fontSize: {
+              xs: "10px",
+              sm: "11px",
+              md: "12px",
+            },
+
+            fontWeight: 600,
+
+            textTransform: "none",
+
+            "&:hover": {
+              boxShadow: "none",
+            },
+          }}
         >
           {saving
             ? "Saving..."
             : "Save Changes"}
         </Button>
+
       </DialogActions>
+
     </Dialog>
   );
 };
+
 
 export default EditProfileDialog;

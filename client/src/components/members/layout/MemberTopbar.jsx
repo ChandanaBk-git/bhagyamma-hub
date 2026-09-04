@@ -16,6 +16,7 @@ import {
 } from "@mui/icons-material";
 
 import { useNavigate } from "react-router-dom";
+import logo from "../../../assets/images/logo.png";
 
 import { useCart } from "../../../context/CartContext";
 
@@ -47,10 +48,11 @@ const MemberTopbar = ({ onMenuClick }) => {
   return (
     <AppBar
       position="sticky"
-      elevation={1}
+      elevation={0}
       sx={{
         bgcolor: "#ffffff",
         color: "#333333",
+        borderRadius: 0,
         zIndex: (theme) =>
           theme.zIndex.drawer + 1,
       }}
@@ -58,16 +60,19 @@ const MemberTopbar = ({ onMenuClick }) => {
       <Toolbar
         sx={{
           minHeight: {
-            xs: 68,
-            sm: 76,
+            xs: 56,
+            sm: 62,
+            md: 66,
           },
 
           px: {
-            xs: 1.5,
-            sm: 3,
+            xs: 0.75,
+            sm: 1.5,
+            md: 2,
           },
 
-          gap: 1,
+          gap: 0.5,
+          borderRadius: 0,
         }}
       >
 
@@ -84,16 +89,52 @@ const MemberTopbar = ({ onMenuClick }) => {
               md: "none",
             },
 
-            mr: {
-              xs: 0.5,
-              sm: 1,
-            },
+            mr: 0.5,
 
-            color: "#666",
+            color: "#2E7D32",
+
+            width: 34,
+            height: 34,
+
+            borderRadius: 0,
+
+            p: 0.25,
           }}
         >
-          <Menu />
+          <Menu
+            sx={{
+              fontSize: 24,
+            }}
+          />
         </IconButton>
+
+        {/* =================================================
+            MEMBER LOGO
+        ================================================= */}
+
+        <Box
+          component="img"
+          src={logo}
+          alt="Bhagyamma Hub"
+          onClick={() => navigate("/")}
+          sx={{
+            display: {
+              xs: "block",
+              md: "none",
+            },
+
+            width: 36,
+            height: 36,
+
+            objectFit: "contain",
+
+            flexShrink: 0,
+
+            cursor: "pointer",
+
+            borderRadius: 0,
+          }}
+        />
 
         {/* =================================================
             WELCOME SECTION
@@ -131,6 +172,11 @@ const MemberTopbar = ({ onMenuClick }) => {
             variant="body2"
             color="text.secondary"
             sx={{
+              display: {
+                xs: "none",
+                sm: "block",
+              },
+
               fontSize: {
                 xs: "0.72rem",
                 sm: "0.875rem",
@@ -156,14 +202,16 @@ const MemberTopbar = ({ onMenuClick }) => {
               color: "#2E7D32",
 
               width: {
-                xs: 42,
-                sm: 46,
+                xs: 40,
+                sm: 44,
               },
 
               height: {
-                xs: 42,
-                sm: 46,
+                xs: 40,
+                sm: 44,
               },
+
+              borderRadius: 0,
 
               "&:hover": {
                 bgcolor: "#E8F5E9",
@@ -199,14 +247,16 @@ const MemberTopbar = ({ onMenuClick }) => {
               color: "#666",
 
               width: {
-                xs: 42,
-                sm: 46,
+                xs: 40,
+                sm: 44,
               },
 
               height: {
-                xs: 42,
-                sm: 46,
+                xs: 40,
+                sm: 44,
               },
+
+              borderRadius: 0,
 
               "&:hover": {
                 bgcolor: "#F5F5F5",
@@ -229,77 +279,6 @@ const MemberTopbar = ({ onMenuClick }) => {
           </IconButton>
         </Tooltip>
 
-        {/* =================================================
-            USER AVATAR
-        ================================================= */}
-
-        <Box
-          sx={{
-            display: "flex",
-            alignItems: "center",
-            ml: {
-              xs: 0,
-              sm: 0.5,
-            },
-          }}
-        >
-          <Avatar
-            sx={{
-              bgcolor: "#2E7D32",
-
-              width: {
-                xs: 40,
-                sm: 48,
-              },
-
-              height: {
-                xs: 40,
-                sm: 48,
-              },
-
-              fontWeight: "bold",
-
-              fontSize: {
-                xs: "1rem",
-                sm: "1.25rem",
-              },
-            }}
-          >
-            {user?.name
-              ?.charAt(0)
-              ?.toUpperCase() || "M"}
-          </Avatar>
-
-          {/* Desktop user information */}
-
-          <Box
-            sx={{
-              display: {
-                xs: "none",
-                lg: "block",
-              },
-
-              ml: 1.2,
-
-              minWidth: 90,
-            }}
-          >
-            <Typography
-              fontWeight="bold"
-              fontSize="0.9rem"
-              noWrap
-            >
-              {user?.name || "Member"}
-            </Typography>
-
-            <Typography
-              variant="caption"
-              color="text.secondary"
-            >
-              {user?.role || "MEMBER"}
-            </Typography>
-          </Box>
-        </Box>
       </Toolbar>
     </AppBar>
   );

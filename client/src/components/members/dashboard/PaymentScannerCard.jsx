@@ -14,6 +14,7 @@ import {
 
 import { useNavigate } from "react-router-dom";
 
+
 const PaymentScannerCard = () => {
   const navigate = useNavigate();
 
@@ -35,35 +36,67 @@ const PaymentScannerCard = () => {
     );
   };
 
+
   return (
     <Card
-      elevation={2}
+      elevation={0}
       sx={{
-        mt: 3,
-        borderRadius: 4,
+        width: "100%",
+        maxWidth: "100%",
+
+        mt: {
+          xs: 1,
+          sm: 1.5,
+          md: 2,
+        },
+
+        borderRadius: 0,
+
+        border: "1px solid #E0E0E0",
+
+        backgroundColor: "#FFFFFF",
+
+        boxShadow: "none",
+
         overflow: "hidden",
+
+        boxSizing: "border-box",
       }}
     >
+
       <CardContent
         sx={{
           p: {
-            xs: 2,
-            sm: 2.5,
-            md: 3,
+            xs: "9px",
+            sm: "12px",
+            md: "15px",
+          },
+
+          "&:last-child": {
+            pb: {
+              xs: "9px",
+              sm: "12px",
+              md: "15px",
+            },
           },
         }}
       >
+
         <Stack
           direction={{
-            xs: "column",
+            xs: "row",
             sm: "row",
           }}
-          spacing={2}
-          alignItems={{
-            xs: "flex-start",
-            sm: "center",
+          spacing={{
+            xs: 0.8,
+            sm: 1.2,
           }}
+          alignItems="center"
           justifyContent="space-between"
+          sx={{
+            width: "100%",
+            minWidth: 0,
+          }}
         >
 
           {/* =================================================
@@ -72,26 +105,40 @@ const PaymentScannerCard = () => {
 
           <Stack
             direction="row"
-            spacing={2}
+            spacing={{
+              xs: 0.8,
+              sm: 1,
+            }}
             alignItems="center"
             sx={{
               minWidth: 0,
+              flex: 1,
             }}
           >
+
+            {/* QR ICON */}
 
             <Box
               sx={{
                 width: {
-                  xs: 56,
-                  sm: 64,
+                  xs: 34,
+                  sm: 40,
+                  md: 46,
                 },
 
                 height: {
-                  xs: 56,
-                  sm: 64,
+                  xs: 34,
+                  sm: 40,
+                  md: 46,
                 },
 
-                borderRadius: "50%",
+                minWidth: {
+                  xs: 34,
+                  sm: 40,
+                  md: 46,
+                },
+
+                borderRadius: 0,
 
                 bgcolor: "#E8F5E9",
 
@@ -106,38 +153,86 @@ const PaymentScannerCard = () => {
                 flexShrink: 0,
               }}
             >
+
               <QrCode2
                 sx={{
                   fontSize: {
-                    xs: 32,
-                    sm: 38,
+                    xs: 19,
+                    sm: 23,
+                    md: 26,
                   },
                 }}
               />
+
             </Box>
+
+
+            {/* TEXT */}
 
             <Box
               sx={{
                 minWidth: 0,
+                flex: 1,
+                overflow: "hidden",
               }}
             >
 
               <Typography
-                variant="h6"
-                fontWeight={800}
+                fontWeight={700}
+                sx={{
+                  fontSize: {
+                    xs: "12px",
+                    sm: "14px",
+                    md: "16px",
+                  },
+
+                  lineHeight: 1.2,
+
+                  color: "#292929",
+
+                  whiteSpace: {
+                    xs: "nowrap",
+                    sm: "normal",
+                  },
+
+                  overflow: "hidden",
+
+                  textOverflow: "ellipsis",
+                }}
               >
                 Registration Payment
               </Typography>
 
+
               <Typography
                 color="text.secondary"
                 sx={{
-                  mt: 0.5,
+                  mt: {
+                    xs: "2px",
+                    sm: "3px",
+                  },
 
                   fontSize: {
-                    xs: "0.85rem",
-                    sm: "0.9rem",
+                    xs: "9px",
+                    sm: "10px",
+                    md: "11px",
                   },
+
+                  lineHeight: 1.25,
+
+                  display: {
+                    xs: "-webkit-box",
+                    sm: "block",
+                  },
+
+                  WebkitLineClamp: {
+                    xs: 2,
+                    sm: "unset",
+                  },
+
+                  WebkitBoxOrient: "vertical",
+
+                  overflow: "hidden",
                 }}
               >
                 Pay the ₹2,000 registration fee
@@ -147,6 +242,7 @@ const PaymentScannerCard = () => {
             </Box>
 
           </Stack>
+
 
           {/* =================================================
               BUTTON
@@ -159,41 +255,92 @@ const PaymentScannerCard = () => {
               <ArrowForwardIos
                 sx={{
                   fontSize:
-                    "14px !important",
+                    "10px !important",
                 }}
               />
             }
             onClick={handleOpenScanner}
             sx={{
-              width: {
-                xs: "100%",
-                sm: "auto",
-              },
-
               minWidth: {
-                sm: 180,
+                xs: "auto",
+                sm: 150,
+                md: 170,
               },
 
-              borderRadius: 3,
+              height: {
+                xs: 32,
+                sm: 36,
+                md: 40,
+              },
+
+              borderRadius: 0,
 
               textTransform: "none",
 
-              fontWeight: 800,
+              fontWeight: 600,
 
-              py: 1.2,
+              fontSize: {
+                xs: "9px",
+                sm: "10px",
+                md: "11px",
+              },
 
-              px: 2.5,
+              lineHeight: 1.1,
+
+              px: {
+                xs: 1,
+                sm: 1.5,
+                md: 2,
+              },
+
+              py: 0,
 
               flexShrink: 0,
+
+              whiteSpace: {
+                xs: "nowrap",
+                sm: "nowrap",
+              },
+
+              boxShadow: "none",
+
+              "&:hover": {
+                boxShadow: "none",
+              },
             }}
           >
-            Pay ₹2,000 Registration Fee
+            <Box
+              component="span"
+              sx={{
+                display: {
+                  xs: "none",
+                  sm: "inline",
+                },
+              }}
+            >
+              Pay ₹2,000 Registration Fee
+            </Box>
+
+            <Box
+              component="span"
+              sx={{
+                display: {
+                  xs: "inline",
+                  sm: "none",
+                },
+              }}
+            >
+              Pay ₹2,000
+            </Box>
           </Button>
 
         </Stack>
+
       </CardContent>
+
     </Card>
   );
 };
+
 
 export default PaymentScannerCard;

@@ -16,7 +16,9 @@ import {
   Business,
 } from "@mui/icons-material";
 
+
 const BankInformation = ({ user = {} }) => {
+
   const hasBankDetails =
     Boolean(user.bankName) ||
     Boolean(user.accountHolderName) ||
@@ -24,7 +26,9 @@ const BankInformation = ({ user = {} }) => {
     Boolean(user.ifscCode) ||
     Boolean(user.branch);
 
+
   const maskAccountNumber = (accountNumber) => {
+
     if (!accountNumber) {
       return "Not Added";
     }
@@ -39,6 +43,7 @@ const BankInformation = ({ user = {} }) => {
       Math.max(value.length - 4, 4)
     )}${value.slice(-4)}`;
   };
+
 
   const fields = [
     {
@@ -75,42 +80,83 @@ const BankInformation = ({ user = {} }) => {
     },
   ];
 
+
   return (
     <Card
-      elevation={2}
+      elevation={0}
       sx={{
-        borderRadius: 4,
-        mb: 3,
         width: "100%",
+
+        mb: {
+          xs: 1,
+          sm: 1.5,
+          md: 2,
+        },
+
+        borderRadius: 0,
+
+        border: "1px solid #E0E0E0",
+
+        boxShadow: "none",
+
+        backgroundColor: "#FFFFFF",
+
+        overflow: "hidden",
       }}
     >
+
       <CardContent
         sx={{
           p: {
-            xs: 2,
-            sm: 3,
+            xs: "9px",
+            sm: "12px",
+            md: "15px",
+          },
+
+          "&:last-child": {
+            pb: {
+              xs: "9px",
+              sm: "12px",
+              md: "15px",
+            },
           },
         }}
       >
+
+        {/* HEADER */}
+
         <Stack
           direction={{
-            xs: "column",
+            xs: "row",
             sm: "row",
           }}
           justifyContent="space-between"
-          alignItems={{
-            xs: "flex-start",
-            sm: "center",
+          alignItems="center"
+          spacing={1}
+          mb={{
+            xs: "9px",
+            sm: "12px",
+            md: "15px",
           }}
-          spacing={1.5}
-          mb={3}
         >
+
           <Typography
-            variant="h6"
-            fontWeight="bold"
+            fontWeight={600}
+            sx={{
+              fontSize: {
+                xs: "14px",
+                sm: "16px",
+                md: "18px",
+              },
+
+              lineHeight: 1.2,
+
+              color: "#292929",
+            }}
           >
             Bank Information
           </Typography>
+
 
           <Chip
             size="small"
@@ -124,38 +170,115 @@ const BankInformation = ({ user = {} }) => {
                 ? "success"
                 : "warning"
             }
+            sx={{
+              height: {
+                xs: "21px",
+                sm: "23px",
+              },
+
+              borderRadius: 0,
+
+              fontSize: {
+                xs: "8px",
+                sm: "9px",
+                md: "10px",
+              },
+
+              fontWeight: 600,
+
+              flexShrink: 0,
+
+              "& .MuiChip-label": {
+                px: {
+                  xs: "6px",
+                  sm: "7px",
+                },
+              },
+            }}
           />
+
         </Stack>
+
+
+        {/* BANK FIELDS */}
 
         <Grid
           container
           spacing={{
-            xs: 2.5,
-            sm: 3,
+            xs: 1,
+            sm: 1.5,
+            md: 2,
           }}
         >
+
           {fields.map((field) => (
+
             <Grid
               item
               xs={12}
               sm={6}
               key={field.title}
+              sx={{
+                minWidth: 0,
+              }}
             >
+
               <Stack
                 direction="row"
-                spacing={2}
+                spacing={{
+                  xs: 1,
+                  sm: 1.25,
+                }}
                 alignItems="flex-start"
+                sx={{
+                  minWidth: 0,
+                }}
               >
+
+                {/* ICON */}
+
                 <Box
                   sx={{
-                    minWidth: 32,
+                    width: {
+                      xs: 26,
+                      sm: 30,
+                    },
+
+                    height: {
+                      xs: 26,
+                      sm: 30,
+                    },
+
+                    minWidth: {
+                      xs: 26,
+                      sm: 30,
+                    },
+
                     display: "flex",
-                    justifyContent:
-                      "center",
+
+                    alignItems: "center",
+
+                    justifyContent: "center",
+
+                    border: "1px solid #E0E0E0",
+
+                    borderRadius: 0,
+
+                    flexShrink: 0,
+
+                    "& svg": {
+                      fontSize: {
+                        xs: 16,
+                        sm: 18,
+                      },
+                    },
                   }}
                 >
                   {field.icon}
                 </Box>
+
+
+                {/* FIELD CONTENT */}
 
                 <Box
                   sx={{
@@ -163,30 +286,59 @@ const BankInformation = ({ user = {} }) => {
                     flex: 1,
                   }}
                 >
+
                   <Typography
-                    variant="body2"
                     color="text.secondary"
-                    mb={0.5}
+                    sx={{
+                      fontSize: {
+                        xs: "9px",
+                        sm: "10px",
+                        md: "11px",
+                      },
+
+                      lineHeight: 1.2,
+
+                      mb: "3px",
+                    }}
                   >
                     {field.title}
                   </Typography>
 
+
                   <Typography
-                    fontWeight="bold"
+                    fontWeight={600}
                     sx={{
+                      fontSize: {
+                        xs: "10px",
+                        sm: "11px",
+                        md: "12px",
+                      },
+
+                      lineHeight: 1.35,
+
                       wordBreak: "break-word",
+
+                      color: "#292929",
                     }}
                   >
                     {field.value}
                   </Typography>
+
                 </Box>
+
               </Stack>
+
             </Grid>
+
           ))}
+
         </Grid>
+
       </CardContent>
+
     </Card>
   );
 };
+
 
 export default BankInformation;

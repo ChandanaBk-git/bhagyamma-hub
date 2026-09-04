@@ -20,6 +20,10 @@ const Wallet = () => {
 
   const [loading, setLoading] = useState(true);
 
+  /* =====================================================
+     LOAD WALLET
+  ===================================================== */
+
   useEffect(() => {
     loadWallet();
   }, []);
@@ -32,32 +36,57 @@ const Wallet = () => {
 
       setWalletData({
         wallet: data?.wallet || {},
-        transactions: Array.isArray(data?.transactions)
+        transactions: Array.isArray(
+          data?.transactions
+        )
           ? data.transactions
           : [],
       });
     } catch (error) {
-      console.error("WALLET LOAD ERROR:", error);
+      console.error(
+        "WALLET LOAD ERROR:",
+        error
+      );
     } finally {
       setLoading(false);
     }
   };
 
+  /* =====================================================
+     LOADING
+  ===================================================== */
+
   if (loading) {
     return (
       <Box
         sx={{
-          minHeight: "70vh",
           width: "100%",
+          minHeight: "45vh",
+
           display: "flex",
-          justifyContent: "center",
           alignItems: "center",
+          justifyContent: "center",
+
+          m: 0,
+          p: 0,
+
+          boxSizing: "border-box",
+
+          backgroundColor: "#F5F7FA",
         }}
       >
-        <CircularProgress color="success" />
+        <CircularProgress
+          color="success"
+          size={24}
+          thickness={4}
+        />
       </Box>
     );
   }
+
+  /* =====================================================
+     PAGE
+  ===================================================== */
 
   return (
     <Box
@@ -65,68 +94,232 @@ const Wallet = () => {
         width: "100%",
         maxWidth: "100%",
         minWidth: 0,
-        boxSizing: "border-box",
 
-        px: {
-          xs: 1.5,
-          sm: 2,
-          md: 3,
-        },
-
-        py: {
-          xs: 2,
-          sm: 2.5,
-          md: 3,
-        },
-
-        bgcolor: "#F5F7FA",
         minHeight: "100vh",
 
+        m: 0,
+        p: 0,
+
+        backgroundColor: "#F5F7FA",
+
+        boxSizing: "border-box",
+
         overflowX: "hidden",
+
+        borderRadius: 0,
+
+        "& .MuiCard-root": {
+          borderRadius:
+            "0 !important",
+        },
+
+        "& .MuiPaper-root": {
+          borderRadius:
+            "0 !important",
+        },
       }}
     >
-      {/* PAGE TITLE */}
+      {/* =================================================
+          PAGE CONTENT
+      ================================================= */}
 
-      <Typography
-        component="h1"
-        fontWeight={700}
+      <Box
         sx={{
-          mb: {
-            xs: 2,
-            sm: 2.5,
-            md: 3,
+          width: "100%",
+
+          maxWidth: {
+            xs: "100%",
+            sm: "100%",
+            md: "1400px",
           },
 
-          fontSize: {
-            xs: "1.5rem",
-            sm: "1.8rem",
-            md: "2.1rem",
+          minWidth: 0,
+
+          m: {
+            xs: 0,
+            md: "0 auto",
           },
 
-          lineHeight: 1.2,
+          p: {
+            xs: "8px",
+            sm: "12px",
+            md: "16px 8px 24px",
+          },
+
+          boxSizing: "border-box",
+
+          overflowX: "hidden",
         }}
       >
-        Wallet
-      </Typography>
+        {/* =================================================
+            PAGE TITLE
+        ================================================= */}
 
-      {/* SUMMARY */}
+        <Typography
+          component="h1"
+          sx={{
+            m: 0,
+            p: 0,
 
-      <WalletSummary
-        wallet={walletData.wallet}
-      />
+            mb: {
+              xs: 1,
+              sm: 1.25,
+              md: 1.5,
+            },
 
-      {/* WITHDRAW */}
+            fontSize: {
+              xs: "18px",
+              sm: "22px",
+              md: "26px",
+            },
 
-      <WithdrawCard
-        wallet={walletData.wallet}
-        onSuccess={loadWallet}
-      />
+            lineHeight: 1.25,
 
-      {/* TRANSACTIONS */}
+            fontWeight: 700,
 
-      <WalletTransactions
-        transactions={walletData.transactions}
-      />
+            color: "#292929",
+          }}
+        >
+          Wallet
+        </Typography>
+
+        {/* =================================================
+            WALLET SUMMARY
+        ================================================= */}
+
+        <Box
+          sx={{
+            width: "100%",
+            maxWidth: "100%",
+            minWidth: 0,
+
+            m: 0,
+            p: 0,
+
+            boxSizing: "border-box",
+
+            overflowX: "hidden",
+
+            "& > *": {
+              width: "100%",
+              maxWidth: "100%",
+              boxSizing: "border-box",
+            },
+
+            "& .MuiCard-root": {
+              borderRadius:
+                "0 !important",
+            },
+
+            "& .MuiPaper-root": {
+              borderRadius:
+                "0 !important",
+            },
+          }}
+        >
+          <WalletSummary
+            wallet={walletData.wallet}
+          />
+        </Box>
+
+        {/* =================================================
+            WITHDRAW
+        ================================================= */}
+
+        <Box
+          sx={{
+            width: "100%",
+            maxWidth: "100%",
+            minWidth: 0,
+
+            m: 0,
+
+            mt: {
+              xs: 1,
+              sm: 1.25,
+              md: 1.5,
+            },
+
+            p: 0,
+
+            boxSizing: "border-box",
+
+            overflowX: "hidden",
+
+            "& > *": {
+              width: "100%",
+              maxWidth: "100%",
+              boxSizing: "border-box",
+            },
+
+            "& .MuiCard-root": {
+              borderRadius:
+                "0 !important",
+            },
+
+            "& .MuiPaper-root": {
+              borderRadius:
+                "0 !important",
+            },
+          }}
+        >
+          <WithdrawCard
+            wallet={walletData.wallet}
+            onSuccess={loadWallet}
+          />
+        </Box>
+
+        {/* =================================================
+            TRANSACTIONS
+        ================================================= */}
+
+        <Box
+          sx={{
+            width: "100%",
+            maxWidth: "100%",
+            minWidth: 0,
+
+            m: 0,
+
+            mt: {
+              xs: 1,
+              sm: 1.25,
+              md: 1.5,
+            },
+
+            p: 0,
+
+            boxSizing: "border-box",
+
+            overflowX: "auto",
+
+            WebkitOverflowScrolling:
+              "touch",
+
+            "& > *": {
+              width: "100%",
+              maxWidth: "100%",
+              boxSizing: "border-box",
+            },
+
+            "& .MuiCard-root": {
+              borderRadius:
+                "0 !important",
+            },
+
+            "& .MuiPaper-root": {
+              borderRadius:
+                "0 !important",
+            },
+          }}
+        >
+          <WalletTransactions
+            transactions={
+              walletData.transactions
+            }
+          />
+        </Box>
+      </Box>
     </Box>
   );
 };

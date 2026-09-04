@@ -13,7 +13,9 @@ import {
   TrendingUp,
 } from "@mui/icons-material";
 
-const ProgressCard = ({ summary = {} }) => {
+const ProgressCard = ({
+  summary = {},
+}) => {
   // =====================================================
   // SUPERVISOR TARGET
   // =====================================================
@@ -51,23 +53,43 @@ const ProgressCard = ({ summary = {} }) => {
 
   return (
     <Card
-      elevation={2}
+      elevation={0}
       sx={{
-        mb: 3,
-        borderRadius: 4,
-        transition: ".3s",
+        mb: 1.5,
+
+        borderRadius: 0,
+
+        border:
+          "1px solid #2E7D32",
+
+        boxShadow: "none",
+
+        background:
+          "#FFFFFF",
+
+        transition:
+          "border-color 0.2s ease",
 
         "&:hover": {
-          transform: "translateY(-3px)",
-          boxShadow: 8,
+          transform: "none",
+          boxShadow: "none",
+          borderColor:
+            "#2E7D32",
         },
       }}
     >
       <CardContent
         sx={{
           p: {
-            xs: 2,
-            sm: 3,
+            xs: 1,
+            sm: 1.5,
+          },
+
+          "&:last-child": {
+            pb: {
+              xs: 1,
+              sm: 1.5,
+            },
           },
         }}
       >
@@ -76,29 +98,50 @@ const ProgressCard = ({ summary = {} }) => {
         ================================================= */}
 
         <Stack
-          direction={{
-            xs: "column",
-            sm: "row",
-          }}
+          direction="row"
           justifyContent="space-between"
-          alignItems={{
-            xs: "flex-start",
-            sm: "center",
-          }}
-          spacing={2}
-          mb={3}
+          alignItems="center"
+          spacing={1}
+          mb={1}
         >
-          <Box>
+          <Box
+            sx={{
+              minWidth: 0,
+              flex: 1,
+            }}
+          >
             <Typography
-              variant="h5"
-              fontWeight="bold"
+              sx={{
+                fontSize: {
+                  xs: "13px",
+                  sm: "16px",
+                },
+
+                lineHeight: 1.2,
+
+                fontWeight: 700,
+
+                color:
+                  "#1F2937",
+              }}
             >
               Supervisor Progress
             </Typography>
 
             <Typography
-              color="text.secondary"
-              sx={{ mt: 0.5 }}
+              sx={{
+                mt: 0.3,
+
+                fontSize: {
+                  xs: "8px",
+                  sm: "10px",
+                },
+
+                lineHeight: 1.3,
+
+                color:
+                  "text.secondary",
+              }}
             >
               Earn 500 Selling Points to become
               a Supervisor
@@ -106,13 +149,37 @@ const ProgressCard = ({ summary = {} }) => {
           </Box>
 
           <Chip
-            icon={<EmojiEvents />}
+            icon={
+              <EmojiEvents
+                sx={{
+                  fontSize:
+                    "13px !important",
+                }}
+              />
+            }
             label={`${percentage.toFixed(0)}%`}
+            size="small"
             color={
               supervisorAchieved
                 ? "success"
                 : "warning"
             }
+            sx={{
+              height: 22,
+
+              borderRadius: 0,
+
+              fontSize:
+                "8px",
+
+              fontWeight: 700,
+
+              flexShrink: 0,
+
+              "& .MuiChip-label": {
+                px: 0.6,
+              },
+            }}
           />
         </Stack>
 
@@ -129,9 +196,14 @@ const ProgressCard = ({ summary = {} }) => {
               : "primary"
           }
           sx={{
-            height: 12,
-            borderRadius: 6,
-            mb: 3,
+            height: 6,
+
+            borderRadius: 0,
+
+            mb: 1.2,
+
+            backgroundColor:
+              "#E5E7EB",
           }}
         />
 
@@ -140,24 +212,67 @@ const ProgressCard = ({ summary = {} }) => {
         ================================================= */}
 
         <Stack
-          direction={{
-            xs: "column",
-            sm: "row",
+          direction="row"
+          spacing={{
+            xs: 0.6,
+            sm: 1,
           }}
-          spacing={3}
         >
           {/* TARGET */}
 
-          <Box flex={1}>
+          <Box
+            sx={{
+              flex: 1,
+
+              minWidth: 0,
+
+              p: {
+                xs: 0.7,
+                sm: 1,
+              },
+
+              border:
+                "1px solid #E5E7EB",
+
+              borderLeft:
+                "3px solid #1565C0",
+
+              background:
+                "#FFFFFF",
+            }}
+          >
             <Typography
-              color="text.secondary"
+              sx={{
+                fontSize: {
+                  xs: "7px",
+                  sm: "9px",
+                },
+
+                lineHeight: 1.2,
+
+                color:
+                  "text.secondary",
+              }}
             >
               Target
             </Typography>
 
             <Typography
-              variant="h6"
-              fontWeight="bold"
+              sx={{
+                mt: 0.3,
+
+                fontSize: {
+                  xs: "12px",
+                  sm: "15px",
+                },
+
+                lineHeight: 1.1,
+
+                fontWeight: 700,
+
+                color:
+                  "#1F2937",
+              }}
             >
               {target} SP
             </Typography>
@@ -165,17 +280,59 @@ const ProgressCard = ({ summary = {} }) => {
 
           {/* ACHIEVED */}
 
-          <Box flex={1}>
+          <Box
+            sx={{
+              flex: 1,
+
+              minWidth: 0,
+
+              p: {
+                xs: 0.7,
+                sm: 1,
+              },
+
+              border:
+                "1px solid #E5E7EB",
+
+              borderLeft:
+                "3px solid #2E7D32",
+
+              background:
+                "#FFFFFF",
+            }}
+          >
             <Typography
-              color="text.secondary"
+              sx={{
+                fontSize: {
+                  xs: "7px",
+                  sm: "9px",
+                },
+
+                lineHeight: 1.2,
+
+                color:
+                  "text.secondary",
+              }}
             >
               Achieved
             </Typography>
 
             <Typography
-              variant="h6"
-              color="success.main"
-              fontWeight="bold"
+              sx={{
+                mt: 0.3,
+
+                fontSize: {
+                  xs: "12px",
+                  sm: "15px",
+                },
+
+                lineHeight: 1.1,
+
+                fontWeight: 700,
+
+                color:
+                  "success.main",
+              }}
             >
               {achieved} SP
             </Typography>
@@ -183,21 +340,65 @@ const ProgressCard = ({ summary = {} }) => {
 
           {/* REMAINING */}
 
-          <Box flex={1}>
+          <Box
+            sx={{
+              flex: 1,
+
+              minWidth: 0,
+
+              p: {
+                xs: 0.7,
+                sm: 1,
+              },
+
+              border:
+                "1px solid #E5E7EB",
+
+              borderLeft:
+                `3px solid ${
+                  remaining === 0
+                    ? "#2E7D32"
+                    : "#DC2626"
+                }`,
+
+              background:
+                "#FFFFFF",
+            }}
+          >
             <Typography
-              color="text.secondary"
+              sx={{
+                fontSize: {
+                  xs: "7px",
+                  sm: "9px",
+                },
+
+                lineHeight: 1.2,
+
+                color:
+                  "text.secondary",
+              }}
             >
               Remaining
             </Typography>
 
             <Typography
-              variant="h6"
-              color={
-                remaining === 0
-                  ? "success.main"
-                  : "error.main"
-              }
-              fontWeight="bold"
+              sx={{
+                mt: 0.3,
+
+                fontSize: {
+                  xs: "12px",
+                  sm: "15px",
+                },
+
+                lineHeight: 1.1,
+
+                fontWeight: 700,
+
+                color:
+                  remaining === 0
+                    ? "success.main"
+                    : "error.main",
+              }}
             >
               {remaining} SP
             </Typography>
@@ -209,12 +410,19 @@ const ProgressCard = ({ summary = {} }) => {
         ================================================= */}
 
         <Box
-          mt={3}
+          mt={1}
           display="flex"
           justifyContent="center"
         >
           <Chip
-            icon={<TrendingUp />}
+            icon={
+              <TrendingUp
+                sx={{
+                  fontSize:
+                    "13px !important",
+                }}
+              />
+            }
             color={
               supervisorAchieved
                 ? "success"
@@ -225,6 +433,21 @@ const ProgressCard = ({ summary = {} }) => {
                 ? "Supervisor Achieved"
                 : `${remaining} SP Remaining`
             }
+            size="small"
+            sx={{
+              height: 22,
+
+              borderRadius: 0,
+
+              fontSize:
+                "8px",
+
+              fontWeight: 700,
+
+              "& .MuiChip-label": {
+                px: 0.7,
+              },
+            }}
           />
         </Box>
       </CardContent>

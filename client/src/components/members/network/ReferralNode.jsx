@@ -1,4 +1,7 @@
-import { useEffect, useState } from "react";
+import {
+  useEffect,
+  useState,
+} from "react";
 
 import {
   Avatar,
@@ -64,7 +67,6 @@ const getLevelStyle = (level) => {
   return styles[level] || styles[5];
 };
 
-
 /* =========================================================
    REFERRAL NODE
 ========================================================= */
@@ -75,83 +77,111 @@ const ReferralNode = ({
   expandAll,
   level = 1,
 }) => {
-
-  const [open, setOpen] = useState(expandAll);
+  const [open, setOpen] =
+    useState(expandAll);
 
   useEffect(() => {
     setOpen(expandAll);
   }, [expandAll]);
 
-  const children = Array.isArray(member?.children)
-    ? member.children
-    : [];
+  const children =
+    Array.isArray(member?.children)
+      ? member.children
+      : [];
 
-  const style = getLevelStyle(level);
+  const style =
+    getLevelStyle(level);
 
   const memberName =
-    member?.name || "Unknown Member";
+    member?.name ||
+    "Unknown Member";
 
   const memberInitial =
-    memberName.charAt(0).toUpperCase();
+    memberName
+      .charAt(0)
+      .toUpperCase();
 
   return (
     <Box
       sx={{
         position: "relative",
+        width: "100%",
+        boxSizing: "border-box",
 
         ml: {
-          xs: level === 1 ? 0 : 1.5,
-          sm: level === 1 ? 0 : 3,
-          md: level === 1 ? 0 : 4,
+          xs: level === 1 ? 0 : 1,
+          sm: level === 1 ? 0 : 2,
+          md: level === 1 ? 0 : 3,
         },
 
-        mt: level === 1 ? 2 : 1.5,
+        mt:
+          level === 1
+            ? 1
+            : 1,
 
-        pl: level === 1 ? 0 : {
-          xs: 1.5,
-          sm: 3,
-        },
+        pl:
+          level === 1
+            ? 0
+            : {
+                xs: 1.5,
+                sm: 2.5,
+              },
       }}
     >
-
       {/* =====================================================
           CONNECTOR TO PARENT
       ===================================================== */}
 
       {level > 1 && (
         <>
-          {/* Vertical line */}
+          {/* Vertical connector */}
+
           <Box
             sx={{
               position: "absolute",
+
               left: {
                 xs: 3,
-                sm: 8,
+                sm: 7,
               },
-              top: -18,
-              bottom: 20,
-              width: "3px",
-              bgcolor: style.border,
-              borderRadius: 2,
+
+              top: -10,
+
+              bottom: 18,
+
+              width: "1px",
+
+              bgcolor:
+                style.border,
+
+              opacity: 0.65,
             }}
           />
 
-          {/* Horizontal line */}
+          {/* Horizontal connector */}
+
           <Box
             sx={{
               position: "absolute",
+
               left: {
                 xs: 3,
-                sm: 8,
+                sm: 7,
               },
-              top: 38,
+
+              top: 30,
+
               width: {
-                xs: 18,
-                sm: 30,
+                xs: 12,
+                sm: 22,
               },
-              height: "3px",
-              bgcolor: style.border,
-              borderRadius: 2,
+
+              height: "1px",
+
+              bgcolor:
+                style.border,
+
+              opacity: 0.65,
             }}
           />
         </>
@@ -162,8 +192,10 @@ const ReferralNode = ({
       ===================================================== */}
 
       <Card
-        elevation={3}
-        onClick={() => onSelect(member)}
+        elevation={0}
+        onClick={() =>
+          onSelect(member)
+        }
         sx={{
           position: "relative",
 
@@ -171,55 +203,57 @@ const ReferralNode = ({
 
           cursor: "pointer",
 
-          borderRadius: {
-            xs: 2.5,
-            sm: 3,
-          },
+          borderRadius: 0,
 
-          border: `2px solid ${style.border}`,
+          border:
+            `1px solid ${style.border}`,
 
-          borderLeft: {
-            xs: `7px solid ${style.main}`,
-            sm: `8px solid ${style.main}`,
-          },
+          borderLeft:
+            `4px solid ${style.main}`,
 
-          background: "#FFFFFF",
+          background:
+            "#FFFFFF",
+
+          boxShadow: "none",
 
           transition:
-            "transform 0.2s ease, box-shadow 0.2s ease",
+            "border-color 0.2s ease",
 
           "&:hover": {
-            transform: "translateY(-2px)",
-            boxShadow: `0 8px 24px ${style.main}40`,
+            boxShadow: "none",
+
+            borderColor:
+              style.main,
           },
         }}
       >
-
         <CardContent
           sx={{
             p: {
-              xs: 1.5,
-              sm: 2,
+              xs: 1,
+              sm: 1.25,
             },
 
             "&:last-child": {
               pb: {
-                xs: 1.5,
-                sm: 2,
+                xs: 1,
+                sm: 1.25,
               },
             },
           }}
         >
+          {/* =================================================
+              MAIN MEMBER ROW
+          ================================================= */}
 
           <Stack
             direction="row"
             alignItems="center"
             spacing={{
-              xs: 1.2,
-              sm: 2,
+              xs: 0.8,
+              sm: 1.2,
             }}
           >
-
             {/* =================================================
                 AVATAR
             ================================================= */}
@@ -227,37 +261,40 @@ const ReferralNode = ({
             <Avatar
               sx={{
                 width: {
-                  xs: 44,
-                  sm: 52,
+                  xs: 34,
+                  sm: 40,
                 },
 
                 height: {
-                  xs: 44,
-                  sm: 52,
+                  xs: 34,
+                  sm: 40,
                 },
 
-                flexShrink: 0,
+                minWidth: {
+                  xs: 34,
+                  sm: 40,
+                },
 
-                bgcolor: style.main,
+                bgcolor:
+                  style.main,
 
-                color: "#FFFFFF",
+                color:
+                  "#FFFFFF",
 
-                fontWeight: 800,
+                fontWeight: 700,
 
                 fontSize: {
-                  xs: "1rem",
-                  sm: "1.2rem",
+                  xs: "0.8rem",
+                  sm: "0.95rem",
                 },
 
-                border: "3px solid #FFFFFF",
+                borderRadius: 0,
 
-                boxShadow:
-                  `0 0 0 2px ${style.main}`,
+                flexShrink: 0,
               }}
             >
               {memberInitial}
             </Avatar>
-
 
             {/* =================================================
                 MEMBER INFORMATION
@@ -269,35 +306,38 @@ const ReferralNode = ({
                 minWidth: 0,
               }}
             >
-
               <Stack
-                direction={{
-                  xs: "column",
-                  sm: "row",
-                }}
-                spacing={{
-                  xs: 0.4,
-                  sm: 1,
-                }}
-                alignItems={{
-                  xs: "flex-start",
-                  sm: "center",
+                direction="row"
+                alignItems="center"
+                spacing={0.5}
+                sx={{
+                  minWidth: 0,
                 }}
               >
-
                 <Typography
-                  fontWeight={800}
                   sx={{
-                    color: "#202124",
+                    color:
+                      "#202124",
 
                     fontSize: {
-                      xs: "0.95rem",
-                      sm: "1.05rem",
+                      xs: "11px",
+                      sm: "13px",
                     },
 
-                    lineHeight: 1.25,
+                    lineHeight: 1.2,
 
-                    overflowWrap: "anywhere",
+                    fontWeight: 700,
+
+                    overflow:
+                      "hidden",
+
+                    textOverflow:
+                      "ellipsis",
+
+                    whiteSpace:
+                      "nowrap",
+
+                    minWidth: 0,
                   }}
                 >
                   {memberName}
@@ -305,113 +345,162 @@ const ReferralNode = ({
 
                 <Chip
                   size="small"
+                  label={
+                    `Level ${level}`
+                  }
                   icon={
                     <AccountTree
                       sx={{
-                        fontSize: "15px !important",
+                        fontSize:
+                          "11px !important",
                       }}
                     />
                   }
-                  label={`Level ${level}`}
                   sx={{
-                    height: 23,
+                    height: 19,
 
-                    bgcolor: style.main,
+                    borderRadius: 0,
 
-                    color: "#FFFFFF",
+                    bgcolor:
+                      style.light,
 
-                    fontWeight: 800,
+                    color:
+                      style.text,
+
+                    fontSize:
+                      "8px",
+
+                    fontWeight: 700,
+
+                    flexShrink: 0,
 
                     "& .MuiChip-icon": {
-                      color: "#FFFFFF",
+                      color:
+                        style.text,
                     },
 
                     "& .MuiChip-label": {
-                      px: 1,
+                      px: 0.5,
                     },
                   }}
                 />
-
               </Stack>
 
+              <Typography
+                sx={{
+                  mt: 0.3,
+
+                  fontSize: {
+                    xs: "8px",
+                    sm: "9px",
+                  },
+
+                  lineHeight: 1.25,
+
+                  fontWeight: 600,
+
+                  color:
+                    style.text,
+
+                  overflow:
+                    "hidden",
+
+                  textOverflow:
+                    "ellipsis",
+
+                  whiteSpace:
+                    "nowrap",
+                }}
+              >
+                Member ID:{" "}
+                {member.userId || "-"}
+              </Typography>
 
               <Typography
                 sx={{
-                  mt: 0.4,
+                  mt: 0.2,
 
                   fontSize: {
-                    xs: "0.75rem",
-                    sm: "0.82rem",
+                    xs: "8px",
+                    sm: "9px",
                   },
 
-                  fontWeight: 700,
+                  lineHeight: 1.25,
 
-                  color: style.text,
+                  color:
+                    "#6B7280",
 
-                  overflowWrap: "anywhere",
+                  overflow:
+                    "hidden",
+
+                  textOverflow:
+                    "ellipsis",
+
+                  whiteSpace:
+                    "nowrap",
                 }}
               >
-                Member ID: {member.userId || "-"}
+                Referral:{" "}
+                {member.referralCode ||
+                  "-"}
               </Typography>
-
-
-              <Typography
-                sx={{
-                  mt: 0.25,
-
-                  fontSize: {
-                    xs: "0.72rem",
-                    sm: "0.8rem",
-                  },
-
-                  color: "#666",
-
-                  overflowWrap: "anywhere",
-                }}
-              >
-                Referral: {member.referralCode || "-"}
-              </Typography>
-
             </Box>
 
-
             {/* =================================================
-                CHILD COUNT
+                CHILD COUNT + EXPAND
             ================================================= */}
 
             <Stack
-              alignItems="flex-end"
-              spacing={0.5}
+              alignItems="center"
+              spacing={0.4}
               sx={{
                 flexShrink: 0,
               }}
             >
-
               <Chip
                 icon={
                   <People
                     sx={{
-                      color: "#FFFFFF !important",
-                      fontSize: "17px !important",
+                      color:
+                        "#FFFFFF !important",
+
+                      fontSize:
+                        "12px !important",
                     }}
                   />
                 }
-                label={`${children.length}`}
+                label={
+                  children.length
+                }
                 size="small"
                 sx={{
-                  bgcolor: style.main,
-
-                  color: "#FFFFFF",
-
-                  fontWeight: 800,
+                  height: 20,
 
                   minWidth: {
-                    xs: 42,
-                    sm: 50,
+                    xs: 30,
+                    sm: 36,
                   },
 
+                  borderRadius: 0,
+
+                  bgcolor:
+                    style.main,
+
+                  color:
+                    "#FFFFFF",
+
+                  fontWeight: 700,
+
+                  fontSize:
+                    "8px",
+
                   "& .MuiChip-label": {
-                    px: 1,
+                    px: 0.5,
+                  },
+
+                  "& .MuiChip-icon": {
+                    ml: 0.4,
+                    mr: -0.2,
                   },
                 }}
               />
@@ -419,24 +508,42 @@ const ReferralNode = ({
               {children.length > 0 && (
                 <IconButton
                   size="small"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setOpen((prev) => !prev);
+                  onClick={(event) => {
+                    event.stopPropagation();
+
+                    setOpen(
+                      (previous) =>
+                        !previous
+                    );
                   }}
                   sx={{
-                    width: 32,
-                    height: 32,
+                    width: 25,
 
-                    color: style.main,
+                    height: 25,
 
-                    bgcolor: style.light,
+                    p: 0,
+
+                    borderRadius: 0,
+
+                    color:
+                      style.main,
+
+                    bgcolor:
+                      style.light,
 
                     border:
                       `1px solid ${style.border}`,
 
                     "&:hover": {
-                      bgcolor: style.main,
-                      color: "#FFFFFF",
+                      bgcolor:
+                        style.main,
+
+                      color:
+                        "#FFFFFF",
+                    },
+
+                    "& svg": {
+                      fontSize: 15,
                     },
                   }}
                 >
@@ -447,11 +554,8 @@ const ReferralNode = ({
                   )}
                 </IconButton>
               )}
-
             </Stack>
-
           </Stack>
-
 
           {/* =================================================
               LEVEL INFORMATION
@@ -459,30 +563,34 @@ const ReferralNode = ({
 
           <Box
             sx={{
-              mt: 1.5,
+              mt: 0.8,
 
-              px: 1.2,
-              py: 0.7,
+              px: 0.8,
 
-              borderRadius: 1.5,
+              py: 0.45,
 
-              bgcolor: style.light,
+              borderRadius: 0,
+
+              bgcolor:
+                style.light,
 
               borderLeft:
-                `4px solid ${style.main}`,
+                `3px solid ${style.main}`,
             }}
           >
-
             <Typography
               sx={{
                 fontSize: {
-                  xs: "0.7rem",
-                  sm: "0.75rem",
+                  xs: "8px",
+                  sm: "9px",
                 },
 
-                fontWeight: 700,
+                lineHeight: 1.25,
 
-                color: style.text,
+                fontWeight: 600,
+
+                color:
+                  style.text,
               }}
             >
               {level === 1
@@ -494,13 +602,9 @@ const ReferralNode = ({
                 ? "member"
                 : "members"}
             </Typography>
-
           </Box>
-
         </CardContent>
-
       </Card>
-
 
       {/* =====================================================
           CHILDREN
@@ -509,41 +613,36 @@ const ReferralNode = ({
       {children.length > 0 && (
         <Collapse
           in={open}
-          timeout={250}
+          timeout={200}
           unmountOnExit={false}
         >
-
           <Box
             sx={{
-              mt: 0.5,
+              mt: 0,
             }}
           >
-
-            {children.map((child) => (
-
-              <ReferralNode
-key={
-  member._id ||
-  member.id ||
-  member.userId
-}
-
-                member={child}
-
-                onSelect={onSelect}
-
-                expandAll={expandAll}
-
-                level={level + 1}
-              />
-
-            ))}
-
+            {children.map(
+              (child) => (
+                <ReferralNode
+                  key={
+                    child._id ||
+                    child.id ||
+                    child.userId
+                  }
+                  member={child}
+                  onSelect={onSelect}
+                  expandAll={
+                    expandAll
+                  }
+                  level={
+                    level + 1
+                  }
+                />
+              )
+            )}
           </Box>
-
         </Collapse>
       )}
-
     </Box>
   );
 };

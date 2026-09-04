@@ -23,48 +23,137 @@ import {
   Share,
 } from "@mui/icons-material";
 
-const InfoRow = ({ icon, label, value }) => (
+const formatCurrency = (value) => {
+  const numericValue = Number(value ?? 0);
+
+  if (!Number.isFinite(numericValue)) {
+    return "-";
+  }
+
+  return `₹${numericValue.toLocaleString("en-IN")}`;
+};
+
+const InfoRow = ({
+  icon,
+  label,
+  value,
+}) => (
   <Box
     sx={{
       display: "flex",
       justifyContent: "space-between",
       alignItems: "center",
-      py: 1,
-      borderBottom: "1px solid #F1F1F1",
+
+      py: {
+        xs: 0.65,
+        sm: 0.8,
+      },
+
+      gap: 1,
+
+      borderBottom:
+        "1px solid #F1F1F1",
+
+      "&:last-child": {
+        borderBottom: "none",
+      },
     }}
   >
+
     <Box
       sx={{
         display: "flex",
         alignItems: "center",
-        gap: 1,
+
+        gap: {
+          xs: 0.6,
+          sm: 0.8,
+        },
+
+        minWidth: 0,
+        flex: 1,
       }}
     >
-      {icon}
+
+      <Box
+        sx={{
+          display: "flex",
+          alignItems: "center",
+          flexShrink: 0,
+
+          "& .MuiSvgIcon-root": {
+            fontSize: {
+              xs: 16,
+              sm: 18,
+            },
+          },
+        }}
+      >
+        {icon}
+      </Box>
+
 
       <Typography
-        fontWeight={600}
-        color="text.secondary"
+        sx={{
+          fontSize: {
+            xs: "9px",
+            sm: "10px",
+          },
+
+          fontWeight: 600,
+
+          color:
+            "text.secondary",
+
+          lineHeight: 1.3,
+
+          whiteSpace:
+            "nowrap",
+        }}
       >
         {label}
       </Typography>
+
     </Box>
 
+
     <Typography
-      fontWeight={600}
-      textAlign="right"
+      sx={{
+        fontSize: {
+          xs: "9px",
+          sm: "10px",
+        },
+
+        fontWeight: 600,
+
+        textAlign: "right",
+
+        lineHeight: 1.3,
+
+        maxWidth: {
+          xs: "55%",
+          sm: "60%",
+        },
+
+        wordBreak:
+          "break-word",
+      }}
     >
       {value || "-"}
     </Typography>
+
   </Box>
 );
+
 
 const MemberDetailsModal = ({
   open,
   onClose,
   member,
 }) => {
+
   if (!member) return null;
+
 
   return (
     <Dialog
@@ -72,68 +161,207 @@ const MemberDetailsModal = ({
       onClose={onClose}
       maxWidth="md"
       fullWidth
+
       PaperProps={{
         sx: {
-          borderRadius: 4,
+          borderRadius: 0,
+
+          boxShadow: "none",
+
+          border:
+            "1px solid #E0E0E0",
+
+          width: {
+            xs: "calc(100% - 16px)",
+            sm: "calc(100% - 32px)",
+          },
+
+          margin: {
+            xs: 1,
+            sm: 2,
+          },
+
+          maxHeight:
+            "calc(100vh - 24px)",
         },
       }}
     >
-      {/* Header */}
+
+      {/* =================================================
+          HEADER
+      ================================================= */}
 
       <DialogTitle
         sx={{
           bgcolor: "#2E7D32",
+
           color: "#fff",
+
           display: "flex",
-          justifyContent: "space-between",
+
+          justifyContent:
+            "space-between",
+
           alignItems: "center",
+
+          px: {
+            xs: 1.25,
+            sm: 1.75,
+          },
+
+          py: {
+            xs: 0.9,
+            sm: 1.1,
+          },
+
+          fontSize: {
+            xs: "14px",
+            sm: "16px",
+          },
+
+          fontWeight: 800,
         }}
       >
+
         Member Details
 
         <IconButton
           onClick={onClose}
-          sx={{ color: "#fff" }}
+          size="small"
+          sx={{
+            color: "#fff",
+
+            width: {
+              xs: 28,
+              sm: 32,
+            },
+
+            height: {
+              xs: 28,
+              sm: 32,
+            },
+          }}
         >
-          <Close />
+          <Close
+            sx={{
+              fontSize: {
+                xs: 18,
+                sm: 20,
+              },
+            }}
+          />
         </IconButton>
+
       </DialogTitle>
 
-      <DialogContent sx={{ p: 3 }}>
 
-        {/* Profile */}
+      {/* =================================================
+          CONTENT
+      ================================================= */}
+
+      <DialogContent
+        sx={{
+          p: {
+            xs: 1,
+            sm: 1.5,
+            md: 2,
+          },
+
+          overflowX: "hidden",
+
+          "&:last-child": {
+            pb: {
+              xs: 1,
+              sm: 1.5,
+              md: 2,
+            },
+          },
+        }}
+      >
+
+        {/* =================================================
+            PROFILE
+        ================================================= */}
 
         <Box
           sx={{
             textAlign: "center",
-            mb: 4,
+
+            mb: {
+              xs: 1.25,
+              sm: 1.5,
+            },
           }}
         >
+
           <Avatar
             sx={{
-              width: 95,
-              height: 95,
+              width: {
+                xs: 55,
+                sm: 65,
+              },
+
+              height: {
+                xs: 55,
+                sm: 65,
+              },
+
               mx: "auto",
+
               bgcolor: "#2E7D32",
             }}
           >
-            <Person sx={{ fontSize: 50 }} />
+            <Person
+              sx={{
+                fontSize: {
+                  xs: 30,
+                  sm: 36,
+                },
+              }}
+            />
           </Avatar>
 
+
           <Typography
-            variant="h5"
-            fontWeight="bold"
-            mt={2}
+            sx={{
+              mt: {
+                xs: 0.75,
+                sm: 1,
+              },
+
+              fontSize: {
+                xs: "15px",
+                sm: "18px",
+              },
+
+              fontWeight: 800,
+
+              lineHeight: 1.25,
+
+              wordBreak:
+                "break-word",
+            }}
           >
             {member.name}
           </Typography>
 
+
           <Typography
-            color="text.secondary"
-            mt={1}
+            sx={{
+              mt: 0.25,
+
+              fontSize: {
+                xs: "9px",
+                sm: "11px",
+              },
+
+              color:
+                "text.secondary",
+            }}
           >
             {member.userId}
           </Typography>
+
 
           <Chip
             label={member.role}
@@ -142,152 +370,383 @@ const MemberDetailsModal = ({
                 ? "primary"
                 : "success"
             }
-            sx={{ mt: 2 }}
+            sx={{
+              mt: 0.75,
+
+              height: {
+                xs: 21,
+                sm: 24,
+              },
+
+              borderRadius: 0,
+
+              fontSize: {
+                xs: "8px",
+                sm: "10px",
+              },
+
+              fontWeight: 700,
+            }}
           />
+
         </Box>
 
-        <Grid container spacing={3}>
 
-          {/* Personal */}
+        {/* =================================================
+            INFORMATION GRID
+        ================================================= */}
+
+        <Grid
+          container
+          spacing={{
+            xs: 0.75,
+            sm: 1,
+          }}
+        >
+
+          {/* =================================================
+              PERSONAL
+          ================================================= */}
 
           <Grid item xs={12} md={6}>
+
             <Paper
-              elevation={2}
+              elevation={0}
               sx={{
-                p: 3,
-                borderRadius: 3,
+                p: {
+                  xs: 1,
+                  sm: 1.25,
+                },
+
+                borderRadius: 0,
+
+                border:
+                  "1px solid #E0E0E0",
+
+                boxShadow: "none",
+
                 height: "100%",
+
+                boxSizing:
+                  "border-box",
               }}
             >
+
               <Typography
-                variant="h6"
-                fontWeight="bold"
-                mb={2}
+                sx={{
+                  fontSize: {
+                    xs: "11px",
+                    sm: "13px",
+                  },
+
+                  fontWeight: 800,
+
+                  mb: 0.75,
+                }}
               >
                 👤 Personal Information
               </Typography>
 
-              <Divider sx={{ mb: 2 }} />
+              <Divider sx={{ mb: 0.25 }} />
 
               <InfoRow
-                icon={<Person color="success" />}
+                icon={
+                  <Person color="success" />
+                }
                 label="Name"
                 value={member.name}
               />
 
               <InfoRow
-                icon={<Badge color="primary" />}
+                icon={
+                  <Badge color="primary" />
+                }
                 label="User ID"
                 value={member.userId}
               />
 
               <InfoRow
-                icon={<Share color="warning" />}
+                icon={
+                  <Share color="warning" />
+                }
                 label="Referral Code"
-                value={member.referralCode}
+                value={
+                  member.referralCode
+                }
               />
 
               <InfoRow
-                icon={<Group color="info" />}
+                icon={
+                  <Group color="info" />
+                }
                 label="Role"
                 value={member.role}
               />
+
             </Paper>
+
           </Grid>
 
-          {/* Contact */}
+
+          {/* =================================================
+              CONTACT
+          ================================================= */}
 
           <Grid item xs={12} md={6}>
+
             <Paper
-              elevation={2}
+              elevation={0}
               sx={{
-                p: 3,
-                borderRadius: 3,
+                p: {
+                  xs: 1,
+                  sm: 1.25,
+                },
+
+                borderRadius: 0,
+
+                border:
+                  "1px solid #E0E0E0",
+
+                boxShadow: "none",
+
                 height: "100%",
+
+                boxSizing:
+                  "border-box",
               }}
             >
+
               <Typography
-                variant="h6"
-                fontWeight="bold"
-                mb={2}
+                sx={{
+                  fontSize: {
+                    xs: "11px",
+                    sm: "13px",
+                  },
+
+                  fontWeight: 800,
+
+                  mb: 0.75,
+                }}
               >
                 📞 Contact Information
               </Typography>
 
-              <Divider sx={{ mb: 2 }} />
+              <Divider sx={{ mb: 0.25 }} />
 
               <InfoRow
-                icon={<Phone color="success" />}
+                icon={
+                  <Phone color="success" />
+                }
                 label="Mobile"
                 value={member.mobile}
               />
 
               <InfoRow
-                icon={<Email color="error" />}
+                icon={
+                  <Email color="error" />
+                }
                 label="Email"
                 value={member.email}
               />
+
             </Paper>
+
           </Grid>
 
-          {/* Referral */}
+
+          {/* =================================================
+              REFERRAL
+          ================================================= */}
 
           <Grid item xs={12} md={6}>
+
             <Paper
-              elevation={2}
+              elevation={0}
               sx={{
-                p: 3,
-                borderRadius: 3,
+                p: {
+                  xs: 1,
+                  sm: 1.25,
+                },
+
+                borderRadius: 0,
+
+                border:
+                  "1px solid #E0E0E0",
+
+                boxShadow: "none",
+
                 height: "100%",
+
+                boxSizing:
+                  "border-box",
               }}
             >
+
               <Typography
-                variant="h6"
-                fontWeight="bold"
-                mb={2}
+                sx={{
+                  fontSize: {
+                    xs: "11px",
+                    sm: "13px",
+                  },
+
+                  fontWeight: 800,
+
+                  mb: 0.75,
+                }}
               >
                 👥 Referral Information
               </Typography>
 
-              <Divider sx={{ mb: 2 }} />
+              <Divider sx={{ mb: 0.25 }} />
 
               <InfoRow
-                icon={<Person color="primary" />}
+                icon={
+                  <Person color="primary" />
+                }
                 label="Sponsor"
-                value={member.sponsorName}
+                value={
+                  member.sponsorName
+                }
               />
 
               <InfoRow
-                icon={<Group color="success" />}
+                icon={
+                  <Group color="success" />
+                }
                 label="Direct Members"
-                value={member.children?.length || 0}
+                value={
+                  member.children?.length ||
+                  0
+                }
               />
+
             </Paper>
+
           </Grid>
 
-          {/* Account */}
+
+          {/* =================================================
+              ACCOUNT
+          ================================================= */}
 
           <Grid item xs={12} md={6}>
+
             <Paper
-              elevation={2}
+              elevation={0}
               sx={{
-                p: 3,
-                borderRadius: 3,
+                p: {
+                  xs: 1,
+                  sm: 1.25,
+                },
+
+                borderRadius: 0,
+
+                border:
+                  "1px solid #E0E0E0",
+
+                boxShadow: "none",
+
                 height: "100%",
+
+                boxSizing:
+                  "border-box",
               }}
             >
+
               <Typography
-                variant="h6"
-                fontWeight="bold"
-                mb={2}
+                sx={{
+                  fontSize: {
+                    xs: "11px",
+                    sm: "13px",
+                  },
+
+                  fontWeight: 800,
+
+                  mb: 0.75,
+                }}
               >
-                📅 Account Information
+                � Credits
               </Typography>
 
-              <Divider sx={{ mb: 2 }} />
+              <Divider sx={{ mb: 0.25 }} />
 
               <InfoRow
-                icon={<CalendarMonth color="warning" />}
+                icon={
+                  <Badge color="success" />
+                }
+                label="Available Credits"
+                value={formatCurrency(
+                  member.walletBalance ??
+                    member.wallet?.balance ??
+                    0
+                )}
+              />
+
+              <InfoRow
+                icon={
+                  <CalendarMonth color="warning" />
+                }
+                label="Total Commission"
+                value={formatCurrency(
+                  member.totalCommission ??
+                    member.wallet?.totalCommission ??
+                    0
+                )}
+              />
+
+            </Paper>
+
+          </Grid>
+
+          {/* =================================================
+              ACCOUNT
+          ================================================= */}
+
+          <Grid item xs={12} md={6}>
+
+            <Paper
+              elevation={0}
+              sx={{
+                p: {
+                  xs: 1,
+                  sm: 1.25,
+                },
+
+                borderRadius: 0,
+
+                border:
+                  "1px solid #E0E0E0",
+
+                boxShadow: "none",
+
+                height: "100%",
+
+                boxSizing:
+                  "border-box",
+              }}
+            >
+
+              <Typography
+                sx={{
+                  fontSize: {
+                    xs: "11px",
+                    sm: "13px",
+                  },
+
+                  fontWeight: 800,
+
+                  mb: 0.75,
+                }}
+              >
+                �📅 Account Information
+              </Typography>
+
+              <Divider sx={{ mb: 0.25 }} />
+
+              <InfoRow
+                icon={
+                  <CalendarMonth color="warning" />
+                }
                 label="Joined On"
                 value={
                   member.createdAt
@@ -297,13 +756,18 @@ const MemberDetailsModal = ({
                     : "-"
                 }
               />
+
             </Paper>
+
           </Grid>
 
         </Grid>
+
       </DialogContent>
+
     </Dialog>
   );
 };
+
 
 export default MemberDetailsModal;

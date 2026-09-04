@@ -19,6 +19,7 @@ import {
   Lock,
 } from "@mui/icons-material";
 
+
 const ChangePassword = ({ onSubmit }) => {
 
   const [showCurrent, setShowCurrent] = useState(false);
@@ -31,6 +32,7 @@ const ChangePassword = ({ onSubmit }) => {
     confirmPassword: "",
   });
 
+
   const handleChange = (e) => {
 
     setForm({
@@ -39,6 +41,7 @@ const ChangePassword = ({ onSubmit }) => {
     });
 
   };
+
 
   const getStrength = () => {
 
@@ -58,7 +61,9 @@ const ChangePassword = ({ onSubmit }) => {
 
   };
 
+
   const strength = getStrength();
+
 
   const handleSubmit = () => {
 
@@ -73,30 +78,86 @@ const ChangePassword = ({ onSubmit }) => {
 
   };
 
+
   return (
 
     <Card
-      elevation={2}
+      elevation={0}
       sx={{
-        borderRadius: 4,
-        mb: 3,
+        width: "100%",
+
+        mb: {
+          xs: 1,
+          sm: 1.5,
+          md: 2,
+        },
+
+        borderRadius: 0,
+
+        border: "1px solid #E0E0E0",
+
+        boxShadow: "none",
+
+        backgroundColor: "#FFFFFF",
+
+        overflow: "hidden",
       }}
     >
 
-      <CardContent>
+      <CardContent
+        sx={{
+          p: {
+            xs: "9px",
+            sm: "12px",
+            md: "15px",
+          },
+
+          "&:last-child": {
+            pb: {
+              xs: "9px",
+              sm: "12px",
+              md: "15px",
+            },
+          },
+        }}
+      >
+
+        {/* HEADER */}
 
         <Typography
-          variant="h6"
-          fontWeight="bold"
-          mb={3}
+          fontWeight={600}
+          sx={{
+            fontSize: {
+              xs: "14px",
+              sm: "16px",
+              md: "18px",
+            },
+
+            lineHeight: 1.2,
+
+            mb: {
+              xs: "10px",
+              sm: "12px",
+              md: "15px",
+            },
+
+            color: "#292929",
+          }}
         >
           Change Password
         </Typography>
 
+
         <Grid
           container
-          spacing={3}
+          spacing={{
+            xs: 1.25,
+            sm: 1.5,
+            md: 2,
+          }}
         >
+
+          {/* CURRENT PASSWORD */}
 
           <Grid item xs={12}>
 
@@ -111,43 +172,72 @@ const ChangePassword = ({ onSubmit }) => {
                   ? "text"
                   : "password"
               }
+
               InputProps={{
                 startAdornment: (
                   <InputAdornment position="start">
-                    <Lock />
+                    <Lock
+                      sx={{
+                        fontSize: {
+                          xs: 17,
+                          sm: 19,
+                        },
+
+                        color: "#2E7D32",
+                      }}
+                    />
                   </InputAdornment>
                 ),
+
                 endAdornment: (
                   <InputAdornment position="end">
 
                     <IconButton
+                      size="small"
                       onClick={() =>
                         setShowCurrent(!showCurrent)
                       }
                     >
 
-                      {
-
-                        showCurrent
-
-                          ?
-
-                          <VisibilityOff />
-
-                          :
-
-                          <Visibility />
-
-                      }
+                      {showCurrent
+                        ? <VisibilityOff fontSize="small" />
+                        : <Visibility fontSize="small" />}
 
                     </IconButton>
 
                   </InputAdornment>
                 ),
               }}
+
+              sx={{
+                "& .MuiInputBase-root": {
+                  borderRadius: 0,
+
+                  minHeight: {
+                    xs: 42,
+                    sm: 44,
+                  },
+
+                  fontSize: {
+                    xs: "11px",
+                    sm: "12px",
+                    md: "13px",
+                  },
+                },
+
+                "& .MuiInputLabel-root": {
+                  fontSize: {
+                    xs: "11px",
+                    sm: "12px",
+                  },
+                },
+              }}
             />
 
           </Grid>
+
+
+          {/* NEW PASSWORD */}
 
           <Grid item xs={12}>
 
@@ -162,43 +252,79 @@ const ChangePassword = ({ onSubmit }) => {
                   ? "text"
                   : "password"
               }
+
               InputProps={{
                 startAdornment: (
                   <InputAdornment position="start">
-                    <Lock />
+                    <Lock
+                      sx={{
+                        fontSize: {
+                          xs: 17,
+                          sm: 19,
+                        },
+
+                        color: "#2E7D32",
+                      }}
+                    />
                   </InputAdornment>
                 ),
+
                 endAdornment: (
                   <InputAdornment position="end">
 
                     <IconButton
+                      size="small"
                       onClick={() =>
                         setShowNew(!showNew)
                       }
                     >
 
-                      {
-
-                        showNew
-
-                          ?
-
-                          <VisibilityOff />
-
-                          :
-
-                          <Visibility />
-
-                      }
+                      {showNew
+                        ? <VisibilityOff fontSize="small" />
+                        : <Visibility fontSize="small" />}
 
                     </IconButton>
 
                   </InputAdornment>
                 ),
               }}
+
+              sx={{
+                "& .MuiInputBase-root": {
+                  borderRadius: 0,
+
+                  minHeight: {
+                    xs: 42,
+                    sm: 44,
+                  },
+
+                  fontSize: {
+                    xs: "11px",
+                    sm: "12px",
+                    md: "13px",
+                  },
+                },
+
+                "& .MuiInputLabel-root": {
+                  fontSize: {
+                    xs: "11px",
+                    sm: "12px",
+                  },
+                },
+              }}
             />
 
-            <Box mt={2}>
+
+            {/* PASSWORD STRENGTH */}
+
+            <Box
+              sx={{
+                mt: {
+                  xs: "6px",
+                  sm: "8px",
+                },
+              }}
+            >
 
               <LinearProgress
                 variant="determinate"
@@ -210,16 +336,33 @@ const ChangePassword = ({ onSubmit }) => {
                     ? "warning"
                     : "success"
                 }
+
                 sx={{
-                  height: 8,
-                  borderRadius: 5,
+                  height: {
+                    xs: 5,
+                    sm: 6,
+                  },
+
+                  borderRadius: 0,
+
+                  backgroundColor: "#EEEEEE",
                 }}
               />
 
+
               <Typography
-                mt={1}
-                variant="body2"
                 color="text.secondary"
+                sx={{
+                  mt: "3px",
+
+                  fontSize: {
+                    xs: "9px",
+                    sm: "10px",
+                    md: "11px",
+                  },
+
+                  lineHeight: 1.2,
+                }}
               >
                 Password Strength : {strength}%
               </Typography>
@@ -227,6 +370,9 @@ const ChangePassword = ({ onSubmit }) => {
             </Box>
 
           </Grid>
+
+
+          {/* CONFIRM PASSWORD */}
 
           <Grid item xs={12}>
 
@@ -241,43 +387,72 @@ const ChangePassword = ({ onSubmit }) => {
                   ? "text"
                   : "password"
               }
+
               InputProps={{
                 startAdornment: (
                   <InputAdornment position="start">
-                    <Lock />
+                    <Lock
+                      sx={{
+                        fontSize: {
+                          xs: 17,
+                          sm: 19,
+                        },
+
+                        color: "#2E7D32",
+                      }}
+                    />
                   </InputAdornment>
                 ),
+
                 endAdornment: (
                   <InputAdornment position="end">
 
                     <IconButton
+                      size="small"
                       onClick={() =>
                         setShowConfirm(!showConfirm)
                       }
                     >
 
-                      {
-
-                        showConfirm
-
-                          ?
-
-                          <VisibilityOff />
-
-                          :
-
-                          <Visibility />
-
-                      }
+                      {showConfirm
+                        ? <VisibilityOff fontSize="small" />
+                        : <Visibility fontSize="small" />}
 
                     </IconButton>
 
                   </InputAdornment>
                 ),
               }}
+
+              sx={{
+                "& .MuiInputBase-root": {
+                  borderRadius: 0,
+
+                  minHeight: {
+                    xs: 42,
+                    sm: 44,
+                  },
+
+                  fontSize: {
+                    xs: "11px",
+                    sm: "12px",
+                    md: "13px",
+                  },
+                },
+
+                "& .MuiInputLabel-root": {
+                  fontSize: {
+                    xs: "11px",
+                    sm: "12px",
+                  },
+                },
+              }}
             />
 
           </Grid>
+
+
+          {/* UPDATE BUTTON */}
 
           <Grid item xs={12}>
 
@@ -286,6 +461,35 @@ const ChangePassword = ({ onSubmit }) => {
               color="success"
               size="large"
               onClick={handleSubmit}
+              sx={{
+                minHeight: {
+                  xs: 36,
+                  sm: 40,
+                },
+
+                px: {
+                  xs: 2,
+                  sm: 2.5,
+                },
+
+                borderRadius: 0,
+
+                boxShadow: "none",
+
+                fontSize: {
+                  xs: "10px",
+                  sm: "11px",
+                  md: "12px",
+                },
+
+                fontWeight: 600,
+
+                textTransform: "none",
+
+                "&:hover": {
+                  boxShadow: "none",
+                },
+              }}
             >
               Update Password
             </Button>
@@ -301,5 +505,6 @@ const ChangePassword = ({ onSubmit }) => {
   );
 
 };
+
 
 export default ChangePassword;

@@ -23,25 +23,19 @@ import {
 
 
 const Profile = () => {
+  const [user, setUser] = useState(null);
 
-  const [user, setUser] =
-    useState(null);
+  const [loading, setLoading] = useState(true);
 
-  const [loading, setLoading] =
-    useState(true);
+  const [saving, setSaving] = useState(false);
 
-  const [saving, setSaving] =
-    useState(false);
+  const [editOpen, setEditOpen] = useState(false);
 
-  const [editOpen, setEditOpen] =
-    useState(false);
-
-  const [toast, setToast] =
-    useState({
-      open: false,
-      message: "",
-      severity: "success",
-    });
+  const [toast, setToast] = useState({
+    open: false,
+    message: "",
+    severity: "success",
+  });
 
 
   // =====================================================
@@ -54,19 +48,15 @@ const Profile = () => {
 
 
   const loadProfile = async () => {
-
     try {
-
       setLoading(true);
 
-      const response =
-        await getProfile();
+      const response = await getProfile();
 
       console.log(
         "Profile API:",
         response
       );
-
 
       const profile =
         response?.data ||
@@ -76,17 +66,14 @@ const Profile = () => {
       setUser(profile);
 
     } catch (error) {
-
       console.error(
         "Profile loading error:",
         error
       );
 
-
       const message =
         error?.response?.data?.message ||
         "Unable to load profile";
-
 
       setToast({
         open: true,
@@ -95,11 +82,8 @@ const Profile = () => {
       });
 
     } finally {
-
       setLoading(false);
-
     }
-
   };
 
 
@@ -108,9 +92,7 @@ const Profile = () => {
   // =====================================================
 
   const handleOpenEdit = () => {
-
     setEditOpen(true);
-
   };
 
 
@@ -119,13 +101,11 @@ const Profile = () => {
   // =====================================================
 
   const handleCloseEdit = () => {
-
     if (saving) {
       return;
     }
 
     setEditOpen(false);
-
   };
 
 
@@ -134,128 +114,78 @@ const Profile = () => {
   // =====================================================
 
   const handleSave = async (form) => {
-
     try {
-
       setSaving(true);
 
-
       const payload = {
+        name: form.name,
+        mobile: form.mobile,
+        gender: form.gender,
+        dateOfBirth: form.dateOfBirth,
 
-        name:
-          form.name,
+        address: form.address,
+        city: form.city,
+        state: form.state,
+        pincode: form.pincode,
+        country: form.country,
 
-        mobile:
-          form.mobile,
-
-        gender:
-          form.gender,
-
-        dateOfBirth:
-          form.dateOfBirth,
-
-        address:
-          form.address,
-
-        city:
-          form.city,
-
-        state:
-          form.state,
-
-        pincode:
-          form.pincode,
-
-        country:
-          form.country,
-
-        bankName:
-          form.bankName,
-
+        bankName: form.bankName,
         accountHolderName:
           form.accountHolderName,
-
         accountNumber:
           form.accountNumber,
-
-        ifscCode:
-          form.ifscCode,
-
-        branch:
-          form.branch,
+        ifscCode: form.ifscCode,
+        branch: form.branch,
 
         aadhaarNumber:
           form.aadhaarNumber,
-
         panNumber:
           form.panNumber,
       };
 
-
       const response =
-        await updateProfile(
-          payload
-        );
-
+        await updateProfile(payload);
 
       console.log(
         "Profile update response:",
         response
       );
 
-
       const updatedUser =
         response?.data ||
         response?.user ||
         response;
 
-
-      setUser(
-        updatedUser
-      );
-
+      setUser(updatedUser);
 
       setEditOpen(false);
 
-
       setToast({
         open: true,
-
         message:
           "Profile updated successfully",
-
-        severity:
-          "success",
+        severity: "success",
       });
 
     } catch (error) {
-
       console.error(
         "Profile update error:",
         error
       );
 
-
       const message =
         error?.response?.data?.message ||
         "Profile update failed";
 
-
       setToast({
         open: true,
-
         message,
-
-        severity:
-          "error",
+        severity: "error",
       });
 
     } finally {
-
       setSaving(false);
-
     }
-
   };
 
 
@@ -264,14 +194,10 @@ const Profile = () => {
   // =====================================================
 
   const handleCloseToast = () => {
-
-    setToast(
-      (previous) => ({
-        ...previous,
-        open: false,
-      })
-    );
-
+    setToast((previous) => ({
+      ...previous,
+      open: false,
+    }));
   };
 
 
@@ -280,37 +206,25 @@ const Profile = () => {
   // =====================================================
 
   if (loading) {
-
     return (
-
       <Box
         sx={{
           width: "100%",
-
           minHeight: "60vh",
 
           display: "flex",
-
-          justifyContent:
-            "center",
-
-          alignItems:
-            "center",
+          justifyContent: "center",
+          alignItems: "center",
 
           margin: 0,
-
           padding: 0,
+
+          boxSizing: "border-box",
         }}
       >
-
-        <CircularProgress
-          color="success"
-        />
-
+        <CircularProgress color="success" />
       </Box>
-
     );
-
   }
 
 
@@ -319,32 +233,27 @@ const Profile = () => {
   // =====================================================
 
   if (!user) {
-
     return (
-
       <Box
         sx={{
           width: "100%",
-
           margin: 0,
 
           padding: {
-            xs: 2,
-            sm: 3,
+            xs: 1.5,
+            sm: 2,
           },
 
           textAlign: "center",
 
-          boxSizing:
-            "border-box",
+          boxSizing: "border-box",
         }}
       >
-
         <Typography
           sx={{
             fontSize: {
-              xs: "17px",
-              sm: "20px",
+              xs: "14px",
+              sm: "17px",
             },
 
             fontWeight: 600,
@@ -352,11 +261,8 @@ const Profile = () => {
         >
           Unable to load profile
         </Typography>
-
       </Box>
-
     );
-
   }
 
 
@@ -365,71 +271,68 @@ const Profile = () => {
   // =====================================================
 
   return (
-
     <Box
       sx={{
         width: "100%",
-
         maxWidth: "100%",
-
         minWidth: 0,
 
         margin: 0,
-
         padding: 0,
 
-        boxSizing:
-          "border-box",
+        boxSizing: "border-box",
 
-        backgroundColor:
-          "#F5F7FA",
+        backgroundColor: "#F5F7FA",
 
-        minHeight:
-          "100vh",
+        minHeight: "100vh",
 
-        overflowX:
-          "hidden",
+        overflowX: "hidden",
 
-        borderRadius:
-          "0 !important",
-
+        borderRadius: "0 !important",
 
         /* ===============================================
-           REMOVE OUTER CARD/PAPER CURVES
+           REMOVE ALL CURVED CONTAINERS
         =============================================== */
 
         "& .MuiCard-root": {
-          borderRadius:
-            "0 !important",
+          borderRadius: "0 !important",
         },
 
         "& .MuiPaper-root": {
-          borderRadius:
-            "0 !important",
+          borderRadius: "0 !important",
         },
 
         "& .MuiCardContent-root": {
-          borderRadius:
-            "0 !important",
+          borderRadius: "0 !important",
         },
 
+        "& .MuiAlert-root": {
+          borderRadius: "0 !important",
+        },
 
         /* ===============================================
-           KEEP CONTENT INSIDE MOBILE SCREEN
+           BUTTONS / CHIPS
+        =============================================== */
+
+        "& .MuiButton-root": {
+          borderRadius: "0 !important",
+        },
+
+        "& .MuiChip-root": {
+          borderRadius: "0 !important",
+        },
+
+        /* ===============================================
+           KEEP EVERYTHING INSIDE SCREEN
         =============================================== */
 
         "& > *": {
-
           width: "100%",
-
           maxWidth: "100%",
-
           minWidth: 0,
 
-          boxSizing:
-            "border-box",
+          boxSizing: "border-box",
         },
-
       }}
     >
 
@@ -442,21 +345,16 @@ const Profile = () => {
           width: "100%",
 
           margin: 0,
-
           padding: 0,
 
-          boxSizing:
-            "border-box",
+          boxSizing: "border-box",
 
-          overflowX:
-            "hidden",
+          overflowX: "hidden",
         }}
       >
-
         <ProfileHeader
           user={user}
         />
-
       </Box>
 
 
@@ -469,24 +367,17 @@ const Profile = () => {
           width: "100%",
 
           margin: 0,
-
           padding: 0,
 
-          boxSizing:
-            "border-box",
+          boxSizing: "border-box",
 
-          overflowX:
-            "hidden",
+          overflowX: "hidden",
         }}
       >
-
         <PersonalInformation
           user={user}
-          onEdit={
-            handleOpenEdit
-          }
+          onEdit={handleOpenEdit}
         />
-
       </Box>
 
 
@@ -499,21 +390,16 @@ const Profile = () => {
           width: "100%",
 
           margin: 0,
-
           padding: 0,
 
-          boxSizing:
-            "border-box",
+          boxSizing: "border-box",
 
-          overflowX:
-            "hidden",
+          overflowX: "hidden",
         }}
       >
-
         <AddressInformation
           user={user}
         />
-
       </Box>
 
 
@@ -526,21 +412,16 @@ const Profile = () => {
           width: "100%",
 
           margin: 0,
-
           padding: 0,
 
-          boxSizing:
-            "border-box",
+          boxSizing: "border-box",
 
-          overflowX:
-            "hidden",
+          overflowX: "hidden",
         }}
       >
-
         <BankInformation
           user={user}
         />
-
       </Box>
 
 
@@ -553,19 +434,14 @@ const Profile = () => {
           width: "100%",
 
           margin: 0,
-
           padding: 0,
 
-          boxSizing:
-            "border-box",
+          boxSizing: "border-box",
 
-          overflowX:
-            "hidden",
+          overflowX: "hidden",
         }}
       >
-
         <KYCInformation />
-
       </Box>
 
 
@@ -578,26 +454,21 @@ const Profile = () => {
           width: "100%",
 
           margin: 0,
-
           padding: 0,
 
-          boxSizing:
-            "border-box",
+          boxSizing: "border-box",
 
-          overflowX:
-            "hidden",
+          overflowX: "hidden",
 
           pb: {
-            xs: 2,
-            sm: 4,
+            xs: 1.5,
+            sm: 2.5,
           },
         }}
       >
-
         <ProfileCompletion
           user={user}
         />
-
       </Box>
 
 
@@ -608,15 +479,11 @@ const Profile = () => {
       <EditProfileDialog
         open={editOpen}
 
-        onClose={
-          handleCloseEdit
-        }
+        onClose={handleCloseEdit}
 
         user={user}
 
-        onSave={
-          handleSave
-        }
+        onSave={handleSave}
 
         saving={saving}
       />
@@ -631,43 +498,38 @@ const Profile = () => {
 
         autoHideDuration={4000}
 
-        onClose={
-          handleCloseToast
-        }
+        onClose={handleCloseToast}
 
         anchorOrigin={{
           vertical: "bottom",
           horizontal: "center",
         }}
       >
-
         <Alert
-          severity={
-            toast.severity
-          }
+          severity={toast.severity}
 
-          onClose={
-            handleCloseToast
-          }
+          onClose={handleCloseToast}
 
           sx={{
             width: "100%",
 
             borderRadius:
               "0 !important",
+
+            fontSize: {
+              xs: "11px",
+              sm: "12px",
+            },
+
+            boxSizing: "border-box",
           }}
         >
-
           {toast.message}
-
         </Alert>
-
       </Snackbar>
 
     </Box>
-
   );
-
 };
 
 

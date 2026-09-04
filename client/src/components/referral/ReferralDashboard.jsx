@@ -14,6 +14,7 @@ import {
   Search,
 } from "@mui/icons-material";
 
+
 const ReferralDashboard = ({
   stats,
   search,
@@ -23,127 +24,232 @@ const ReferralDashboard = ({
 }) => {
   return (
     <>
-      {/* Heading */}
+      {/* =================================================
+          HEADING
+      ================================================= */}
 
       <Typography
         fontWeight="bold"
         sx={{
-          mb: 3,
-          fontSize: {
-            xs: 28,
-            sm: 34,
-            md: 40,
+          mb: {
+            xs: 1,
+            sm: 1.5,
           },
+
+          fontSize: {
+            xs: "16px",
+            sm: "19px",
+            md: "22px",
+          },
+
+          lineHeight: 1.25,
         }}
       >
         Referral Network
       </Typography>
 
-      {/* Statistics */}
+
+      {/* =================================================
+          STATISTICS
+      ================================================= */}
 
       <Grid
         container
-        spacing={2}
-        mb={3}
+        spacing={{
+          xs: 0.75,
+          sm: 1,
+          md: 1.5,
+        }}
+        mb={{
+          xs: 1.25,
+          sm: 1.5,
+        }}
         alignItems="stretch"
       >
-        {/* Total Members */}
+
+        {/* TOTAL MEMBERS */}
 
         <Grid
           item
-          xs={12}
+          xs={6}
           sm={6}
           md={4}
         >
           <Paper
             elevation={0}
             sx={{
-              p: 3,
-              borderRadius: 4,
-              border: "1px solid #E5E7EB",
-              boxShadow:
-                "0 8px 20px rgba(0,0,0,.08)",
-              transition: ".3s",
+              height: "100%",
+
+              p: {
+                xs: 1,
+                sm: 1.25,
+                md: 1.5,
+              },
+
+              borderRadius: 0,
+
+              border:
+                "1px solid #E0E0E0",
+
+              boxShadow: "none",
+
+              boxSizing: "border-box",
+
+              transition:
+                "border-color 0.2s ease",
 
               "&:hover": {
-                transform: "translateY(-5px)",
-                boxShadow:
-                  "0 15px 30px rgba(0,0,0,.12)",
+                borderColor:
+                  "#1565C0",
               },
             }}
           >
             <People
               color="primary"
               sx={{
-                fontSize: 42,
-                mb: 1,
+                fontSize: {
+                  xs: 22,
+                  sm: 27,
+                  md: 30,
+                },
+
+                mb: {
+                  xs: 0.25,
+                  sm: 0.5,
+                },
               }}
             />
 
             <Typography
-              color="text.secondary"
+              sx={{
+                color:
+                  "text.secondary",
+
+                fontSize: {
+                  xs: "8px",
+                  sm: "10px",
+                  md: "11px",
+                },
+
+                lineHeight: 1.3,
+              }}
             >
               Total Members
             </Typography>
 
             <Typography
-              variant="h4"
-              fontWeight="bold"
+              sx={{
+                mt: 0.25,
+
+                fontSize: {
+                  xs: "19px",
+                  sm: "22px",
+                  md: "25px",
+                },
+
+                lineHeight: 1.1,
+
+                fontWeight: 800,
+              }}
             >
               {stats.totalMembers}
             </Typography>
           </Paper>
         </Grid>
 
-        {/* Managers */}
+
+        {/* MANAGERS */}
 
         <Grid
           item
-          xs={12}
+          xs={6}
           sm={6}
           md={4}
         >
           <Paper
             elevation={0}
             sx={{
-              p: 3,
-              borderRadius: 4,
-              border: "1px solid #E5E7EB",
-              boxShadow:
-                "0 8px 20px rgba(0,0,0,.08)",
-              transition: ".3s",
+              height: "100%",
+
+              p: {
+                xs: 1,
+                sm: 1.25,
+                md: 1.5,
+              },
+
+              borderRadius: 0,
+
+              border:
+                "1px solid #E0E0E0",
+
+              boxShadow: "none",
+
+              boxSizing: "border-box",
+
+              transition:
+                "border-color 0.2s ease",
 
               "&:hover": {
-                transform: "translateY(-5px)",
-                boxShadow:
-                  "0 15px 30px rgba(0,0,0,.12)",
+                borderColor:
+                  "#2E7D32",
               },
             }}
           >
             <Person
               color="success"
               sx={{
-                fontSize: 42,
-                mb: 1,
+                fontSize: {
+                  xs: 22,
+                  sm: 27,
+                  md: 30,
+                },
+
+                mb: {
+                  xs: 0.25,
+                  sm: 0.5,
+                },
               }}
             />
 
             <Typography
-              color="text.secondary"
+              sx={{
+                color:
+                  "text.secondary",
+
+                fontSize: {
+                  xs: "8px",
+                  sm: "10px",
+                  md: "11px",
+                },
+
+                lineHeight: 1.3,
+              }}
             >
               Managers
             </Typography>
 
             <Typography
-              variant="h4"
-              fontWeight="bold"
+              sx={{
+                mt: 0.25,
+
+                fontSize: {
+                  xs: "19px",
+                  sm: "22px",
+                  md: "25px",
+                },
+
+                lineHeight: 1.1,
+
+                fontWeight: 800,
+              }}
             >
               {stats.managers}
             </Typography>
           </Paper>
         </Grid>
 
-        {/* Referral Levels */}
+
+        {/* REFERRAL LEVELS */}
 
         <Grid
           item
@@ -154,52 +260,107 @@ const ReferralDashboard = ({
           <Paper
             elevation={0}
             sx={{
-              p: 3,
-              borderRadius: 4,
-              border: "1px solid #E5E7EB",
-              boxShadow:
-                "0 8px 20px rgba(0,0,0,.08)",
-              transition: ".3s",
+              height: "100%",
+
+              p: {
+                xs: 1,
+                sm: 1.25,
+                md: 1.5,
+              },
+
+              borderRadius: 0,
+
+              border:
+                "1px solid #E0E0E0",
+
+              boxShadow: "none",
+
+              boxSizing: "border-box",
+
+              transition:
+                "border-color 0.2s ease",
 
               "&:hover": {
-                transform: "translateY(-5px)",
-                boxShadow:
-                  "0 15px 30px rgba(0,0,0,.12)",
+                borderColor:
+                  "#F9A825",
               },
             }}
           >
             <AccountTree
               color="warning"
               sx={{
-                fontSize: 42,
-                mb: 1,
+                fontSize: {
+                  xs: 22,
+                  sm: 27,
+                  md: 30,
+                },
+
+                mb: {
+                  xs: 0.25,
+                  sm: 0.5,
+                },
               }}
             />
 
             <Typography
-              color="text.secondary"
+              sx={{
+                color:
+                  "text.secondary",
+
+                fontSize: {
+                  xs: "8px",
+                  sm: "10px",
+                  md: "11px",
+                },
+
+                lineHeight: 1.3,
+              }}
             >
               Referral Levels
             </Typography>
 
             <Typography
-              variant="h4"
-              fontWeight="bold"
+              sx={{
+                mt: 0.25,
+
+                fontSize: {
+                  xs: "19px",
+                  sm: "22px",
+                  md: "25px",
+                },
+
+                lineHeight: 1.1,
+
+                fontWeight: 800,
+              }}
             >
               {stats.levels}
             </Typography>
           </Paper>
         </Grid>
+
       </Grid>
 
-      {/* Search & Buttons */}
+
+      {/* =================================================
+          SEARCH & BUTTONS
+      ================================================= */}
 
       <Grid
         container
-        spacing={2}
-        mb={4}
+        spacing={{
+          xs: 0.75,
+          sm: 1,
+        }}
+        mb={{
+          xs: 1.5,
+          sm: 2,
+        }}
         alignItems="center"
       >
+
+        {/* SEARCH */}
+
         <Grid
           item
           xs={12}
@@ -207,20 +368,61 @@ const ReferralDashboard = ({
         >
           <TextField
             fullWidth
-            size="medium"
+
+            size="small"
+
             value={search}
+
             onChange={(e) =>
-              setSearch(e.target.value)
+              setSearch(
+                e.target.value
+              )
             }
+
             placeholder="Search by Name / User ID"
+
             sx={{
               "& .MuiOutlinedInput-root": {
-                borderRadius: 3,
+                borderRadius: 0,
+
+                minHeight: {
+                  xs: 36,
+                  sm: 38,
+                },
+              },
+
+              "& .MuiInputBase-input": {
+                fontSize: {
+                  xs: "10px",
+                  sm: "11px",
+                },
+
+                py: {
+                  xs: 0.75,
+                  sm: 0.9,
+                },
+              },
+
+              "& .MuiInputBase-input::placeholder": {
+                fontSize: {
+                  xs: "10px",
+                  sm: "11px",
+                },
+              },
+
+              "& .MuiInputAdornment-root .MuiSvgIcon-root": {
+                fontSize: {
+                  xs: 17,
+                  sm: 19,
+                },
               },
             }}
+
             InputProps={{
               startAdornment: (
-                <InputAdornment position="start">
+                <InputAdornment
+                  position="start"
+                >
                   <Search />
                 </InputAdornment>
               ),
@@ -228,55 +430,115 @@ const ReferralDashboard = ({
           />
         </Grid>
 
+
+        {/* BUTTONS */}
+
         <Grid
           item
           xs={12}
           md={6}
+
           display="flex"
+
           flexDirection={{
-            xs: "column",
+            xs: "row",
             sm: "row",
           }}
+
           justifyContent={{
-            xs: "center",
+            xs: "stretch",
             md: "flex-end",
           }}
+
           alignItems="center"
-          gap={2}
+
+          gap={{
+            xs: 0.75,
+            sm: 1,
+          }}
         >
+
           <Button
             variant="contained"
+
             fullWidth
+
             sx={{
               maxWidth: {
                 xs: "100%",
-                sm: 180,
+                sm: 150,
               },
-              borderRadius: 3,
+
+              minHeight: {
+                xs: 32,
+                sm: 36,
+              },
+
+              borderRadius: 0,
+
+              textTransform: "none",
+
+              fontSize: {
+                xs: "9px",
+                sm: "10px",
+              },
+
+              fontWeight: 700,
+
+              boxShadow: "none",
+
+              "&:hover": {
+                boxShadow: "none",
+              },
             }}
+
             onClick={expandAll}
           >
             Expand All
           </Button>
 
+
           <Button
             variant="outlined"
+
             fullWidth
+
             sx={{
               maxWidth: {
                 xs: "100%",
-                sm: 180,
+                sm: 150,
               },
-              borderRadius: 3,
+
+              minHeight: {
+                xs: 32,
+                sm: 36,
+              },
+
+              borderRadius: 0,
+
+              textTransform: "none",
+
+              fontSize: {
+                xs: "9px",
+                sm: "10px",
+              },
+
+              fontWeight: 700,
+
+              boxShadow: "none",
             }}
+
             onClick={collapseAll}
           >
             Collapse All
           </Button>
+
         </Grid>
+
       </Grid>
     </>
   );
 };
+
 
 export default ReferralDashboard;

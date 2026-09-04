@@ -11,8 +11,11 @@ import PaidIcon from "@mui/icons-material/Paid";
 import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
 import GroupIcon from "@mui/icons-material/Group";
 
+
 const DashboardStats = ({ data }) => {
+
   const summary = data?.summary || {};
+
 
   const stats = [
     {
@@ -41,22 +44,51 @@ const DashboardStats = ({ data }) => {
     },
   ];
 
+
   return (
     <Grid
       container
       columns={{ xs: 12, sm: 12, md: 12 }}
-      spacing={{ xs: 1.5, sm: 2, md: 2.5 }}
+      spacing={{
+        xs: 0.75,
+        sm: 1,
+        md: 1.5,
+      }}
       sx={{
         width: "100%",
+
         margin: 0,
-        mb: { xs: 2, sm: 3 },
+
+        mb: {
+          xs: 1,
+          sm: 1.5,
+          md: 2,
+        },
+
+        boxSizing: "border-box",
+
+        "& > .MuiGrid-item": {
+          paddingTop: {
+            xs: "3px",
+            sm: "4px",
+            md: "6px",
+          },
+
+          paddingLeft: {
+            xs: "3px",
+            sm: "4px",
+            md: "6px",
+          },
+        },
       }}
     >
+
       {stats.map((item) => (
+
         <Grid
           key={item.title}
           size={{
-            xs: 12,
+            xs: 6,
             sm: 6,
             md: 3,
           }}
@@ -64,126 +96,219 @@ const DashboardStats = ({ data }) => {
             minWidth: 0,
           }}
         >
+
           <Card
-            elevation={2}
+            elevation={0}
             sx={{
               width: "100%",
-              height: "100%",
-              minWidth: 0,
-              borderRadius: {
-                xs: 2.5,
-                sm: 3,
+
+              height: {
+                xs: "72px",
+                sm: "82px",
+                md: "94px",
               },
+
+              minWidth: 0,
+
+              minHeight: 0,
+
+              borderRadius: 0,
+
+              border: "1px solid #E0E0E0",
+
+              borderLeft: {
+                xs: `2px solid ${item.color}`,
+                sm: `3px solid ${item.color}`,
+              },
+
+              backgroundColor: "#FFFFFF",
+
               overflow: "hidden",
+
               boxSizing: "border-box",
+
+              boxShadow: "none",
             }}
           >
+
             <CardContent
               sx={{
+                width: "100%",
+
+                height: "100%",
+
+                minHeight: 0,
+
+                boxSizing: "border-box",
+
                 p: {
-                  xs: 1.75,
-                  sm: 2,
-                  md: 2.5,
+                  xs: "7px 8px",
+                  sm: "9px 10px",
+                  md: "11px 12px",
                 },
+
                 "&:last-child": {
                   pb: {
-                    xs: 1.75,
-                    sm: 2,
-                    md: 2.5,
+                    xs: "7px",
+                    sm: "9px",
+                    md: "11px",
                   },
                 },
               }}
             >
+
               <Box
                 sx={{
+                  width: "100%",
+
+                  height: "100%",
+
                   display: "flex",
+
                   alignItems: "center",
+
                   justifyContent: "space-between",
-                  gap: 1.5,
+
+                  gap: {
+                    xs: 0.5,
+                    sm: 0.75,
+                  },
+
                   minWidth: 0,
                 }}
               >
+
+                {/* =====================================
+                    TEXT
+                ===================================== */}
+
                 <Box
                   sx={{
                     flex: 1,
+
                     minWidth: 0,
+
+                    overflow: "hidden",
                   }}
                 >
+
                   <Typography
                     color="text.secondary"
                     sx={{
                       fontSize: {
-                        xs: "0.75rem",
-                        sm: "0.8rem",
+                        xs: "9px",
+                        sm: "10px",
+                        md: "11px",
                       },
-                      lineHeight: 1.3,
-                      overflowWrap: "anywhere",
+
+                      fontWeight: 500,
+
+                      lineHeight: 1.15,
+
+                      whiteSpace: "nowrap",
+
+                      overflow: "hidden",
+
+                      textOverflow: "ellipsis",
                     }}
                   >
                     {item.title}
                   </Typography>
 
+
                   <Typography
-                    fontWeight={800}
+                    fontWeight={700}
                     sx={{
-                      mt: 0.75,
-                      fontSize: {
-                        xs: "1.35rem",
-                        sm: "1.5rem",
-                        md: "1.75rem",
+                      mt: {
+                        xs: "3px",
+                        sm: "4px",
+                        md: "5px",
                       },
-                      lineHeight: 1.2,
-                      overflowWrap: "anywhere",
-                      wordBreak: "break-word",
+
+                      fontSize: {
+                        xs: "15px",
+                        sm: "17px",
+                        md: "20px",
+                      },
+
+                      lineHeight: 1.05,
+
+                      whiteSpace: "nowrap",
+
+                      overflow: "hidden",
+
+                      textOverflow: "ellipsis",
                     }}
                   >
                     {item.value}
                   </Typography>
+
                 </Box>
+
+
+                {/* =====================================
+                    ICON
+                ===================================== */}
 
                 <Box
                   sx={{
                     width: {
-                      xs: 48,
-                      sm: 52,
-                      md: 56,
+                      xs: 28,
+                      sm: 34,
+                      md: 40,
                     },
+
                     height: {
-                      xs: 48,
-                      sm: 52,
-                      md: 56,
+                      xs: 28,
+                      sm: 34,
+                      md: 40,
                     },
+
                     minWidth: {
-                      xs: 48,
-                      sm: 52,
-                      md: 56,
+                      xs: 28,
+                      sm: 34,
+                      md: 40,
                     },
-                    borderRadius: "50%",
+
+                    borderRadius: 0,
+
                     bgcolor: item.color,
+
                     color: "#fff",
+
                     display: "flex",
+
                     alignItems: "center",
+
                     justifyContent: "center",
+
                     flexShrink: 0,
 
                     "& svg": {
                       fontSize: {
-                        xs: 25,
-                        sm: 28,
-                        md: 30,
+                        xs: 15,
+                        sm: 18,
+                        md: 21,
                       },
                     },
                   }}
                 >
                   {item.icon}
                 </Box>
+
               </Box>
+
             </CardContent>
+
           </Card>
+
         </Grid>
+
       ))}
+
     </Grid>
   );
 };
+
 
 export default DashboardStats;

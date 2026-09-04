@@ -10,7 +10,9 @@ import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
 import TrendingUpIcon from "@mui/icons-material/TrendingUp";
 import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
 
-const SummaryCard = ({ summary = {} }) => {
+const SummaryCard = ({
+  summary = {},
+}) => {
   const {
     sellingPoints = 0,
     lifetimePurchase = 0,
@@ -29,7 +31,9 @@ const SummaryCard = ({ summary = {} }) => {
     },
     {
       title: "Lifetime Purchase",
-      value: `₹${Number(lifetimePurchase).toLocaleString("en-IN")}`,
+      value: `₹${Number(
+        lifetimePurchase
+      ).toLocaleString("en-IN")}`,
       icon: <ShoppingCartIcon />,
       iconColor: "#1976D2",
       iconBg: "#EAF2FF",
@@ -43,7 +47,9 @@ const SummaryCard = ({ summary = {} }) => {
     },
     {
       title: "Supervisor",
-      value: isSupervisor ? "YES" : "NO",
+      value: isSupervisor
+        ? "YES"
+        : "NO",
       icon: <EmojiEventsIcon />,
       iconColor: "#7B1FA2",
       iconBg: "#F5E8FA",
@@ -54,160 +60,204 @@ const SummaryCard = ({ summary = {} }) => {
     <Box
       sx={{
         width: "100%",
-        mb: 3,
+        mb: 1.5,
       }}
     >
       <Grid
         container
         spacing={{
-          xs: 2,
-          sm: 2,
-          md: 2.5,
+          xs: 1,
+          sm: 1.5,
         }}
       >
         {cards.map((card) => (
           <Grid
             key={card.title}
-            size={{
-              xs: 12,
-              sm: 6,
-              md: 3,
-            }}
+            item
+            xs={6}
+            sm={6}
+            md={3}
           >
             <Paper
               elevation={0}
               sx={{
                 width: "100%",
+
                 minHeight: {
-                  xs: 145,
-                  sm: 155,
-                  md: 165,
+                  xs: 78,
+                  sm: 90,
                 },
 
                 height: "100%",
 
-                boxSizing: "border-box",
+                boxSizing:
+                  "border-box",
 
                 p: {
-                  xs: 2,
-                  sm: 2.25,
-                  md: 2.5,
+                  xs: 1,
+                  sm: 1.25,
                 },
 
-                borderRadius: {
-                  xs: "24px",
-                  sm: "26px",
-                  md: "28px",
-                },
+                borderRadius: 0,
 
-                backgroundColor: "#FFFFFF",
+                border:
+                  `1px solid ${card.iconColor}`,
+
+                borderLeft:
+                  `3px solid ${card.iconColor}`,
+
+                backgroundColor:
+                  "#FFFFFF",
 
                 display: "flex",
-                flexDirection: "column",
-                justifyContent: "space-between",
 
-                boxShadow:
-                  "0 6px 20px rgba(0,0,0,0.08)",
+                alignItems:
+                  "center",
+
+                gap: {
+                  xs: 0.8,
+                  sm: 1,
+                },
+
+                boxShadow: "none",
 
                 overflow: "hidden",
 
                 transition:
-                  "transform 0.2s ease, box-shadow 0.2s ease",
+                  "border-color 0.2s ease",
 
                 "&:hover": {
-                  transform: {
-                    xs: "none",
-                    sm: "translateY(-3px)",
-                  },
+                  transform:
+                    "none",
 
                   boxShadow:
-                    "0 10px 28px rgba(0,0,0,0.12)",
+                    "none",
+
+                  borderColor:
+                    card.iconColor,
                 },
               }}
             >
-              {/* ICON */}
+              {/* =================================================
+                  ICON
+              ================================================= */}
+
               <Box
                 sx={{
                   width: {
-                    xs: 48,
-                    sm: 52,
+                    xs: 30,
+                    sm: 36,
                   },
 
                   height: {
-                    xs: 48,
-                    sm: 52,
+                    xs: 30,
+                    sm: 36,
                   },
 
-                  borderRadius: "50%",
+                  minWidth: {
+                    xs: 30,
+                    sm: 36,
+                  },
 
-                  backgroundColor: card.iconBg,
+                  borderRadius: 0,
+
+                  backgroundColor:
+                    card.iconBg,
 
                   display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
+
+                  alignItems:
+                    "center",
+
+                  justifyContent:
+                    "center",
 
                   flexShrink: 0,
 
                   "& svg": {
                     fontSize: {
-                      xs: 29,
-                      sm: 31,
+                      xs: 17,
+                      sm: 21,
                     },
 
-                    color: card.iconColor,
+                    color:
+                      card.iconColor,
                   },
                 }}
               >
                 {card.icon}
               </Box>
 
-              {/* TITLE */}
-              <Typography
+              {/* =================================================
+                  CONTENT
+              ================================================= */}
+
+              <Box
                 sx={{
-                  mt: 1.5,
-
-                  fontSize: {
-                    xs: "0.9rem",
-                    sm: "0.95rem",
-                    md: "1rem",
-                  },
-
-                  lineHeight: 1.3,
-
-                  color: "#616161",
-
-                  fontWeight: 400,
-
-                  whiteSpace: "normal",
-
-                  wordBreak: "break-word",
+                  minWidth: 0,
+                  flex: 1,
                 }}
               >
-                {card.title}
-              </Typography>
+                {/* TITLE */}
 
-              {/* VALUE */}
-              <Typography
-                sx={{
-                  mt: 0.5,
+                <Typography
+                  sx={{
+                    fontSize: {
+                      xs: "8px",
+                      sm: "10px",
+                    },
 
-                  fontSize: {
-                    xs: "1.25rem",
-                    sm: "1.35rem",
-                    md: "1.45rem",
-                  },
+                    lineHeight: 1.2,
 
-                  lineHeight: 1.2,
+                    color:
+                      "#616161",
 
-                  color: "#292929",
+                    fontWeight: 500,
 
-                  fontWeight: 700,
+                    overflow:
+                      "hidden",
 
-                  wordBreak: "break-word",
-                }}
-              >
-                {card.value}
-              </Typography>
+                    textOverflow:
+                      "ellipsis",
+
+                    whiteSpace:
+                      "nowrap",
+                  }}
+                >
+                  {card.title}
+                </Typography>
+
+                {/* VALUE */}
+
+                <Typography
+                  sx={{
+                    mt: 0.35,
+
+                    fontSize: {
+                      xs: "14px",
+                      sm: "17px",
+                    },
+
+                    lineHeight: 1.15,
+
+                    color:
+                      "#292929",
+
+                    fontWeight: 700,
+
+                    overflow:
+                      "hidden",
+
+                    textOverflow:
+                      "ellipsis",
+
+                    whiteSpace:
+                      "nowrap",
+                  }}
+                >
+                  {card.value}
+                </Typography>
+              </Box>
             </Paper>
           </Grid>
         ))}

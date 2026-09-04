@@ -25,11 +25,9 @@ import { getImageUrl } from "../../utils/imageUrl";
 
 
 const Products = () => {
-
   const { addToCart } = useCart();
 
-  const [products, setProducts] =
-    useState([]);
+  const [products, setProducts] = useState([]);
 
   const [searchTerm, setSearchTerm] =
     useState("");
@@ -58,22 +56,15 @@ const Products = () => {
 
 
   const loadProducts = async () => {
-
     try {
-
       setLoading(true);
-
       setError("");
 
-      const data =
-        await getProducts();
+      const data = await getProducts();
 
-      setProducts(
-        data || []
-      );
+      setProducts(data || []);
 
     } catch (err) {
-
       console.error(
         "Products loading error:",
         err
@@ -81,16 +72,13 @@ const Products = () => {
 
       setError(
         err?.response?.data?.message ||
-        err?.message ||
-        "Unable to load products."
+          err?.message ||
+          "Unable to load products."
       );
 
     } finally {
-
       setLoading(false);
-
     }
-
   };
 
 
@@ -98,115 +86,93 @@ const Products = () => {
   // FILTER PRODUCTS
   // =====================================================
 
-  const filteredProducts =
-    useMemo(() => {
+  const filteredProducts = useMemo(() => {
+    const search =
+      searchTerm
+        .trim()
+        .toLowerCase();
 
-      const search =
-        searchTerm
-          .trim()
-          .toLowerCase();
+    if (!search) {
+      return products;
+    }
 
-      if (!search) {
-        return products;
-      }
+    return products.filter((product) => {
+      return (
+        product.productName
+          ?.toLowerCase()
+          .includes(search) ||
 
-      return products.filter(
-        (product) => {
+        product.category
+          ?.toLowerCase()
+          .includes(search) ||
 
-          return (
-            product.productName
-              ?.toLowerCase()
-              .includes(search) ||
-
-            product.category
-              ?.toLowerCase()
-              .includes(search) ||
-
-            product.brand
-              ?.toLowerCase()
-              .includes(search)
-          );
-
-        }
+        product.brand
+          ?.toLowerCase()
+          .includes(search)
       );
+    });
 
-    }, [
-      products,
-      searchTerm,
-    ]);
+  }, [
+    products,
+    searchTerm,
+  ]);
 
 
   // =====================================================
   // CLOSE SNACKBAR
   // =====================================================
 
-  const handleCloseSnackbar =
-    () => {
-
-      setSnackbar(
-        (prev) => ({
-          ...prev,
-          open: false,
-        })
-      );
-
-    };
+  const handleCloseSnackbar = () => {
+    setSnackbar((prev) => ({
+      ...prev,
+      open: false,
+    }));
+  };
 
 
   // =====================================================
   // ADD TO CART
   // =====================================================
 
-  const handleAddToCart =
-    async (product) => {
+  const handleAddToCart = async (product) => {
+    try {
+      const result =
+        await addToCart(product._id);
 
-      try {
-
-        const result =
-          await addToCart(
-            product._id
-          );
-
-
-        if (result === false) {
-
-          setSnackbar({
-            open: true,
-            severity: "error",
-            message:
-              "Unable to add product to cart.",
-          });
-
-          return;
-        }
-
-
-        setSnackbar({
-          open: true,
-          severity: "success",
-          message:
-            `${product.productName} added to cart successfully.`,
-        });
-
-      } catch (err) {
-
-        console.error(
-          "Add to cart error:",
-          err
-        );
-
+      if (result === false) {
         setSnackbar({
           open: true,
           severity: "error",
           message:
-            err?.response?.data?.message ||
-            err?.message ||
             "Unable to add product to cart.",
         });
 
+        return;
       }
 
-    };
+      setSnackbar({
+        open: true,
+        severity: "success",
+        message:
+          `${product.productName} added to cart successfully.`,
+      });
+
+    } catch (err) {
+      console.error(
+        "Add to cart error:",
+        err
+      );
+
+      setSnackbar({
+        open: true,
+        severity: "error",
+        message:
+          err?.response?.data?.message ||
+          err?.message ||
+          "Unable to add product to cart.",
+      });
+    }
+  };
 
 
   // =====================================================
@@ -214,37 +180,23 @@ const Products = () => {
   // =====================================================
 
   if (loading) {
-
     return (
-
       <Box
         sx={{
           width: "100%",
-
           minHeight: "60vh",
 
           display: "flex",
-
-          justifyContent:
-            "center",
-
-          alignItems:
-            "center",
+          justifyContent: "center",
+          alignItems: "center",
 
           margin: 0,
-
           padding: 0,
         }}
       >
-
-        <CircularProgress
-          color="success"
-        />
-
+        <CircularProgress color="success" />
       </Box>
-
     );
-
   }
 
 
@@ -253,35 +205,50 @@ const Products = () => {
   // =====================================================
 
   return (
-
     <Box
       sx={{
         width: "100%",
-
         maxWidth: "100%",
-
         minWidth: 0,
 
         margin: 0,
-
         padding: 0,
 
-        boxSizing:
-          "border-box",
+        boxSizing: "border-box",
 
-        overflowX:
-          "hidden",
+        overflowX: "hidden",
 
-        backgroundColor:
-          "#F5F7FA",
+        backgroundColor: "#F5F7FA",
 
-        minHeight:
-          "100vh",
+        minHeight: "100vh",
 
-        borderRadius: 0,
+        borderRadius: "0 !important",
+
+        "& .MuiCard-root": {
+          borderRadius: "0 !important",
+        },
+
+        "& .MuiPaper-root": {
+          borderRadius: "0 !important",
+        },
+
+        "& .MuiCardContent-root": {
+          borderRadius: "0 !important",
+        },
+
+        "& .MuiButton-root": {
+          borderRadius: "0 !important",
+        },
+
+        "& .MuiChip-root": {
+          borderRadius: "0 !important",
+        },
+
+        "& .MuiAlert-root": {
+          borderRadius: "0 !important",
+        },
       }}
     >
-
 
       {/* =================================================
           PAGE CONTENT
@@ -301,24 +268,20 @@ const Products = () => {
 
           margin: {
             xs: 0,
-            sm: 0,
             md: "0 auto",
           },
 
           padding: {
-            xs: "10px 8px 20px",
-            sm: "14px 14px 24px",
-            md: "24px",
+            xs: "8px 8px 16px",
+            sm: "12px 12px 20px",
+            md: "18px 20px 24px",
           },
 
-          boxSizing:
-            "border-box",
+          boxSizing: "border-box",
 
-          overflowX:
-            "hidden",
+          overflowX: "hidden",
         }}
       >
-
 
         {/* =================================================
             HEADER
@@ -327,35 +290,28 @@ const Products = () => {
         <Box
           sx={{
             width: "100%",
-
             margin: 0,
-
             padding: 0,
 
             mb: {
-              xs: 1.5,
-              sm: 2,
-              md: 3,
+              xs: 1,
+              sm: 1.5,
+              md: 2,
             },
           }}
         >
-
           <Typography
             component="h1"
             sx={{
               margin: 0,
 
               fontSize: {
-                xs: "20px",
-                sm: "24px",
-                md: "30px",
+                xs: "18px",
+                sm: "22px",
+                md: "27px",
               },
 
-              lineHeight: {
-                xs: "25px",
-                sm: "30px",
-                md: "36px",
-              },
+              lineHeight: 1.25,
 
               fontWeight: 700,
 
@@ -365,29 +321,23 @@ const Products = () => {
             Products
           </Typography>
 
-
           <Typography
             sx={{
-              marginTop: {
-                xs: "3px",
-                sm: "5px",
-              },
+              marginTop: "2px",
 
               fontSize: {
-                xs: "11px",
-                sm: "13px",
-                md: "14px",
+                xs: "10px",
+                sm: "12px",
+                md: "13px",
               },
 
-              lineHeight: 1.5,
+              lineHeight: 1.4,
 
-              color:
-                "text.secondary",
+              color: "text.secondary",
             }}
           >
             Browse our products and shop what you need.
           </Typography>
-
         </Box>
 
 
@@ -398,42 +348,29 @@ const Products = () => {
         <Box
           sx={{
             width: "100%",
-
             margin: 0,
 
-            padding: 0,
-
             mb: {
-              xs: 1.5,
-              sm: 2,
-              md: 3,
+              xs: 1,
+              sm: 1.5,
+              md: 2,
             },
 
-            boxSizing:
-              "border-box",
+            boxSizing: "border-box",
 
-            overflow:
-              "hidden",
+            overflow: "hidden",
 
             "& > *": {
               width: "100%",
               maxWidth: "100%",
-              boxSizing:
-                "border-box",
+              boxSizing: "border-box",
             },
           }}
         >
-
           <ProductSearch
-            searchTerm={
-              searchTerm
-            }
-
-            setSearchTerm={
-              setSearchTerm
-            }
+            searchTerm={searchTerm}
+            setSearchTerm={setSearchTerm}
           />
-
         </Box>
 
 
@@ -442,40 +379,36 @@ const Products = () => {
         ================================================= */}
 
         {error && (
-
           <Box
             sx={{
               width: "100%",
-
               margin: 0,
 
-              mb: 2,
+              mb: 1.5,
 
               padding: 0,
             }}
           >
-
             <Alert
               severity="error"
               sx={{
                 width: "100%",
 
-                boxSizing:
-                  "border-box",
+                boxSizing: "border-box",
 
                 borderRadius: 0,
 
                 fontSize: {
-                  xs: "12px",
-                  sm: "13px",
+                  xs: "10px",
+                  sm: "12px",
                 },
+
+                py: 0.75,
               }}
             >
               {error}
             </Alert>
-
           </Box>
-
         )}
 
 
@@ -485,56 +418,44 @@ const Products = () => {
 
         {!error &&
           filteredProducts.length === 0 && (
-
             <Box
               sx={{
                 width: "100%",
 
-                minHeight: "160px",
+                minHeight: "130px",
 
                 display: "flex",
 
-                justifyContent:
-                  "center",
+                justifyContent: "center",
+                alignItems: "center",
 
-                alignItems:
-                  "center",
+                textAlign: "center",
 
-                textAlign:
-                  "center",
+                backgroundColor: "#FFFFFF",
 
-                backgroundColor:
-                  "#FFFFFF",
-
-                border:
-                  "1px solid #E0E0E0",
+                border: "1px solid #E0E0E0",
 
                 borderRadius: 0,
 
-                boxSizing:
-                  "border-box",
+                boxSizing: "border-box",
               }}
             >
-
               <Typography
                 sx={{
                   fontSize: {
-                    xs: "14px",
-                    sm: "16px",
+                    xs: "12px",
+                    sm: "14px",
                   },
 
-                  color:
-                    "text.secondary",
+                  color: "text.secondary",
                 }}
               >
                 {searchTerm
                   ? "No products found."
                   : "No products available."}
               </Typography>
-
             </Box>
-
-        )}
+          )}
 
 
         {/* =================================================
@@ -543,37 +464,33 @@ const Products = () => {
 
         {!error &&
           filteredProducts.length > 0 && (
-
             <Box
               sx={{
                 display: "grid",
 
                 width: "100%",
-
                 maxWidth: "100%",
-
                 minWidth: 0,
 
-                boxSizing:
-                  "border-box",
+                boxSizing: "border-box",
 
                 gridTemplateColumns:
-                  "repeat(4, minmax(0, 1fr))",
+                  "repeat(5, minmax(0, 1fr))",
 
                 gap: {
-                  xs: 1,
-                  sm: 1.5,
-                  md: 2.5,
+                  xs: "8px",
+                  sm: "10px",
+                  md: "14px",
                 },
 
                 "@media (max-width: 1200px)": {
                   gridTemplateColumns:
-                    "repeat(3, minmax(0, 1fr))",
+                    "repeat(4, minmax(0, 1fr))",
                 },
 
                 "@media (max-width: 900px)": {
                   gridTemplateColumns:
-                    "repeat(2, minmax(0, 1fr))",
+                    "repeat(3, minmax(0, 1fr))",
                 },
 
                 "@media (max-width: 600px)": {
@@ -585,554 +502,492 @@ const Products = () => {
               }}
             >
 
-              {filteredProducts.map(
-                (product) => {
+              {filteredProducts.map((product) => {
 
-                  // =======================================
-                  // IMAGE
-                  // =======================================
+                // =========================================
+                // IMAGE
+                // =========================================
 
-                  const image =
-                    product.images?.length
-                      ? getImageUrl(
-                          product.images[0]
-                        )
-                      : "/images/no-image.png";
+                const image =
+                  product.images?.length
+                    ? getImageUrl(
+                        product.images[0]
+                      )
+                    : "/images/no-image.png";
 
 
-                  return (
+                return (
+                  <Card
+                    key={product._id}
 
-                    <Card
-                      key={
-                        product._id
-                      }
+                    elevation={0}
 
-                      elevation={0}
+                    sx={{
+                      width: "100%",
+                      minWidth: 0,
+                      height: "100%",
 
+                      display: "flex",
+                      flexDirection: "column",
+
+                      overflow: "hidden",
+
+                      boxSizing: "border-box",
+
+                      border:
+                        "1px solid #E0E0E0",
+
+                      borderRadius: 0,
+
+                      backgroundColor:
+                        "#FFFFFF",
+
+                      boxShadow: "none",
+
+                      transition:
+                        "border-color 0.2s ease",
+
+                      "&:hover": {
+                        borderColor:
+                          "#2E7D32",
+                      },
+                    }}
+                  >
+
+                    {/* ===================================
+                        IMAGE
+                    ==================================== */}
+
+                    <Box
                       sx={{
                         width: "100%",
 
-                        minWidth: 0,
+                        aspectRatio: "1 / 1",
 
-                        height: "100%",
-
-                        display: "flex",
-
-                        flexDirection:
-                          "column",
-
-                        overflow:
-                          "hidden",
-
-                        boxSizing:
-                          "border-box",
-
-                        border:
-                          "1px solid #E0E0E0",
-
-                        borderRadius: 0,
+                        overflow: "hidden",
 
                         backgroundColor:
-                          "#FFFFFF",
+                          "#F5F5F5",
 
-                        boxShadow:
-                          "none",
+                        flexShrink: 0,
+                      }}
+                    >
+                      <CardMedia
+                        component="img"
 
-                        transition:
-                          "box-shadow 0.2s ease",
+                        image={image}
 
-                        "&:hover": {
-                          boxShadow:
-                            "0 2px 8px rgba(0,0,0,0.08)",
+                        alt={
+                          product.productName ||
+                          "Product"
+                        }
+
+                        sx={{
+                          width: "100%",
+                          height: "100%",
+
+                          objectFit: "cover",
+
+                          display: "block",
+                        }}
+                      />
+                    </Box>
+
+
+                    {/* ===================================
+                        CONTENT
+                    ==================================== */}
+
+                    <CardContent
+                      sx={{
+                        flexGrow: 1,
+                        minWidth: 0,
+
+                        p: {
+                          xs: "7px",
+                          sm: "9px",
+                          md: "11px",
+                        },
+
+                        "&:last-child": {
+                          pb: {
+                            xs: "7px",
+                            sm: "9px",
+                            md: "11px",
+                          },
                         },
                       }}
                     >
 
-
-                      {/* =================================
-                          IMAGE
-                      ================================== */}
+                      {/* CATEGORY */}
 
                       <Box
                         sx={{
-                          width: "100%",
+                          mb: {
+                            xs: 0.4,
+                            sm: 0.6,
+                          },
 
-                          aspectRatio:
-                            "1 / 1",
-
-                          overflow:
-                            "hidden",
-
-                          backgroundColor:
-                            "#F5F5F5",
-
-                          flexShrink: 0,
+                          maxWidth: "100%",
                         }}
                       >
-
-                        <CardMedia
-                          component="img"
-
-                          image={image}
-
-                          alt={
-                            product.productName ||
+                        <Chip
+                          label={
+                            product.category ||
                             "Product"
                           }
 
+                          color="success"
+
+                          size="small"
+
                           sx={{
-                            width:
-                              "100%",
+                            maxWidth: "100%",
 
-                            height:
-                              "100%",
-
-                            objectFit:
-                              "cover",
-
-                            display:
-                              "block",
-                          }}
-                        />
-
-                      </Box>
-
-
-                      {/* =================================
-                          CONTENT
-                      ================================== */}
-
-                      <CardContent
-                        sx={{
-                          flexGrow: 1,
-
-                          minWidth: 0,
-
-                          padding: {
-                            xs: "8px",
-                            sm: "12px",
-                            md: "16px",
-                          },
-
-                          "&:last-child": {
-                            paddingBottom: {
-                              xs: "8px",
-                              sm: "12px",
-                              md: "16px",
-                            },
-                          },
-                        }}
-                      >
-
-
-                        {/* CATEGORY */}
-
-                        <Box
-                          sx={{
-                            mb: {
-                              xs: 0.5,
-                              sm: 1,
+                            height: {
+                              xs: "19px",
+                              sm: "21px",
                             },
 
-                            maxWidth:
-                              "100%",
-                          }}
-                        >
+                            borderRadius: 0,
 
-                          <Chip
-                            label={
-                              product.category ||
-                              "Product"
-                            }
-
-                            color="success"
-
-                            size="small"
-
-                            sx={{
-                              maxWidth:
-                                "100%",
-
-                              height: {
-                                xs: "21px",
-                                sm: "24px",
-                              },
-
-                              borderRadius: 1,
-
-                              fontSize: {
-                                xs: "9px",
-                                sm: "11px",
-                              },
-
-                              "& .MuiChip-label":
-                                {
-                                  overflow:
-                                    "hidden",
-
-                                  textOverflow:
-                                    "ellipsis",
-
-                                  whiteSpace:
-                                    "nowrap",
-
-                                  px: {
-                                    xs: 0.7,
-                                    sm: 1,
-                                  },
-                                },
-                            }}
-                          />
-
-                        </Box>
-
-
-                        {/* PRODUCT NAME */}
-
-                        <Typography
-                          sx={{
                             fontSize: {
-                              xs: "12px",
-                              sm: "14px",
-                              md: "16px",
+                              xs: "8px",
+                              sm: "9px",
                             },
 
-                            lineHeight:
-                              1.35,
-
-                            fontWeight: 700,
-
-                            display:
-                              "-webkit-box",
-
-                            WebkitLineClamp:
-                              2,
-
-                            WebkitBoxOrient:
-                              "vertical",
-
-                            overflow:
-                              "hidden",
-
-                            minHeight: {
-                              xs: "32px",
-                              sm: "38px",
-                              md: "43px",
-                            },
-                          }}
-                        >
-                          {
-                            product.productName
-                          }
-                        </Typography>
-
-
-                        {/* BRAND */}
-
-                        {product.brand && (
-
-                          <Typography
-                            sx={{
-                              marginTop: {
-                                xs: "3px",
-                                sm: "5px",
-                              },
-
-                              fontSize: {
-                                xs: "10px",
-                                sm: "12px",
-                              },
-
-                              lineHeight: 1.4,
-
-                              color:
-                                "text.secondary",
-
-                              overflow:
-                                "hidden",
+                            "& .MuiChip-label": {
+                              overflow: "hidden",
 
                               textOverflow:
                                 "ellipsis",
 
                               whiteSpace:
                                 "nowrap",
-                            }}
-                          >
-                            {
-                              product.brand
-                            }
-                          </Typography>
 
-                        )}
+                              px: {
+                                xs: 0.6,
+                                sm: 0.8,
+                              },
+                            },
+                          }}
+                        />
+                      </Box>
 
 
-                        {/* DESCRIPTION */}
+                      {/* PRODUCT NAME */}
 
+                      <Typography
+                        sx={{
+                          fontSize: {
+                            xs: "11px",
+                            sm: "12px",
+                            md: "14px",
+                          },
+
+                          lineHeight: 1.3,
+
+                          fontWeight: 700,
+
+                          display:
+                            "-webkit-box",
+
+                          WebkitLineClamp: 2,
+
+                          WebkitBoxOrient:
+                            "vertical",
+
+                          overflow: "hidden",
+
+                          minHeight: {
+                            xs: "29px",
+                            sm: "32px",
+                            md: "36px",
+                          },
+                        }}
+                      >
+                        {product.productName}
+                      </Typography>
+
+
+                      {/* BRAND */}
+
+                      {product.brand && (
                         <Typography
                           sx={{
-                            marginTop: {
-                              xs: "5px",
-                              sm: "8px",
-                            },
+                            marginTop: "3px",
 
                             fontSize: {
                               xs: "9px",
-                              sm: "11px",
-                              md: "13px",
+                              sm: "10px",
                             },
 
-                            lineHeight:
-                              1.4,
+                            lineHeight: 1.3,
 
                             color:
                               "text.secondary",
 
-                            display:
-                              {
-                                xs: "none",
-                                sm: "-webkit-box",
-                              },
+                            overflow: "hidden",
 
-                            WebkitLineClamp:
-                              2,
+                            textOverflow:
+                              "ellipsis",
 
-                            WebkitBoxOrient:
-                              "vertical",
-
-                            overflow:
-                              "hidden",
+                            whiteSpace:
+                              "nowrap",
                           }}
                         >
-                          {
-                            product.description ||
-                            "No description available."
-                          }
+                          {product.brand}
                         </Typography>
+                      )}
 
 
-                        {/* PRICE */}
+                      {/* DESCRIPTION */}
 
-                        <Typography
+                      <Typography
+                        sx={{
+                          marginTop: {
+                            xs: "4px",
+                            sm: "5px",
+                          },
+
+                          fontSize: {
+                            xs: "8px",
+                            sm: "9px",
+                            md: "11px",
+                          },
+
+                          lineHeight: 1.35,
+
+                          color:
+                            "text.secondary",
+
+                          display: {
+                            xs: "none",
+                            sm: "-webkit-box",
+                          },
+
+                          WebkitLineClamp: 2,
+
+                          WebkitBoxOrient:
+                            "vertical",
+
+                          overflow: "hidden",
+                        }}
+                      >
+                        {product.description ||
+                          "No description available."}
+                      </Typography>
+
+
+                      {/* PRICE */}
+
+                      <Typography
+                        sx={{
+                          marginTop: {
+                            xs: "6px",
+                            sm: "7px",
+                          },
+
+                          fontSize: {
+                            xs: "13px",
+                            sm: "15px",
+                            md: "17px",
+                          },
+
+                          lineHeight: 1.2,
+
+                          color:
+                            "success.main",
+
+                          fontWeight: 800,
+                        }}
+                      >
+                        ₹
+                        {Number(
+                          product.price || 0
+                        ).toLocaleString(
+                          "en-IN"
+                        )}
+                      </Typography>
+
+                    </CardContent>
+
+
+                    {/* ===================================
+                        BUTTONS
+                    ==================================== */}
+
+                    <Box
+                      sx={{
+                        width: "100%",
+
+                        px: {
+                          xs: "7px",
+                          sm: "9px",
+                          md: "11px",
+                        },
+
+                        pb: {
+                          xs: "7px",
+                          sm: "9px",
+                          md: "11px",
+                        },
+
+                        boxSizing: "border-box",
+                      }}
+                    >
+                      <Stack
+                        spacing={{
+                          xs: 0.6,
+                          sm: 0.75,
+                        }}
+                      >
+
+                        {/* VIEW DETAILS */}
+
+                        <Button
+                          component={Link}
+
+                          to={`/products/${product._id}`}
+
+                          variant="outlined"
+
+                          color="success"
+
+                          fullWidth
+
                           sx={{
-                            marginTop: {
-                              xs: "7px",
-                              sm: "10px",
+                            minHeight: {
+                              xs: "28px",
+                              sm: "32px",
                             },
 
+                            p: {
+                              xs: "2px 4px",
+                              sm: "4px 6px",
+                            },
+
+                            textTransform:
+                              "none",
+
+                            borderRadius: 0,
+
                             fontSize: {
-                              xs: "14px",
-                              sm: "17px",
-                              md: "20px",
+                              xs: "9px",
+                              sm: "10px",
                             },
 
                             lineHeight: 1.2,
 
-                            color:
-                              "success.main",
-
-                            fontWeight: 800,
+                            boxShadow: "none",
                           }}
                         >
-                          ₹
-                          {Number(
-                            product.price ||
-                              0
-                          ).toLocaleString(
-                            "en-IN"
-                          )}
-                        </Typography>
-
-                      </CardContent>
+                          View Details
+                        </Button>
 
 
-                      {/* =================================
-                          BUTTONS
-                      ================================== */}
+                        {/* ADD TO CART */}
 
-                      <Box
-                        sx={{
-                          width: "100%",
+                        <Button
+                          variant="contained"
 
-                          padding: {
-                            xs: "0 8px 8px",
-                            sm: "0 12px 12px",
-                            md: "0 16px 16px",
-                          },
+                          color="success"
 
-                          boxSizing:
-                            "border-box",
-                        }}
-                      >
+                          fullWidth
 
-                        <Stack
-                          spacing={{
-                            xs: 0.7,
-                            sm: 1,
+                          onClick={() =>
+                            handleAddToCart(
+                              product
+                            )
+                          }
+
+                          sx={{
+                            minHeight: {
+                              xs: "28px",
+                              sm: "32px",
+                            },
+
+                            p: {
+                              xs: "2px 4px",
+                              sm: "4px 6px",
+                            },
+
+                            textTransform:
+                              "none",
+
+                            borderRadius: 0,
+
+                            fontSize: {
+                              xs: "9px",
+                              sm: "10px",
+                            },
+
+                            lineHeight: 1.2,
+
+                            boxShadow: "none",
+
+                            "&:hover": {
+                              boxShadow: "none",
+                            },
                           }}
                         >
+                          Add to Cart
+                        </Button>
 
+                      </Stack>
+                    </Box>
 
-                          {/* VIEW DETAILS */}
-
-                          <Button
-                            component={
-                              Link
-                            }
-
-                            to={`/products/${product._id}`}
-
-                            variant="outlined"
-
-                            color="success"
-
-                            fullWidth
-
-                            sx={{
-                              minHeight: {
-                                xs: "30px",
-                                sm: "36px",
-                              },
-
-                              padding:
-                                {
-                                  xs: "3px 5px",
-                                  sm: "5px 8px",
-                                },
-
-                              textTransform:
-                                "none",
-
-                              borderRadius: 1,
-
-                              fontSize: {
-                                xs: "10px",
-                                sm: "12px",
-                              },
-
-                              lineHeight: 1.2,
-                            }}
-                          >
-                            View Details
-                          </Button>
-
-
-                          {/* ADD TO CART */}
-
-                          <Button
-                            variant="contained"
-
-                            color="success"
-
-                            fullWidth
-
-                            onClick={() =>
-                              handleAddToCart(
-                                product
-                              )
-                            }
-
-                            sx={{
-                              minHeight: {
-                                xs: "30px",
-                                sm: "36px",
-                              },
-
-                              padding:
-                                {
-                                  xs: "3px 5px",
-                                  sm: "5px 8px",
-                                },
-
-                              textTransform:
-                                "none",
-
-                              borderRadius: 1,
-
-                              fontSize: {
-                                xs: "10px",
-                                sm: "12px",
-                              },
-
-                              lineHeight: 1.2,
-                            }}
-                          >
-                            Add to Cart
-                          </Button>
-
-                        </Stack>
-
-                      </Box>
-
-                    </Card>
-
-                  );
-
-                }
-              )}
+                  </Card>
+                );
+              })}
 
             </Box>
-
-        )}
+          )}
 
       </Box>
 
 
-      {/* ===================================================
+      {/* =================================================
           SNACKBAR
-      =================================================== */}
+      ================================================= */}
 
       <Snackbar
-        open={
-          snackbar.open
-        }
+        open={snackbar.open}
 
-        autoHideDuration={
-          3000
-        }
+        autoHideDuration={3000}
 
-        onClose={
-          handleCloseSnackbar
-        }
+        onClose={handleCloseSnackbar}
 
         anchorOrigin={{
           vertical: "bottom",
           horizontal: "center",
         }}
       >
-
         <Alert
-          severity={
-            snackbar.severity
-          }
+          severity={snackbar.severity}
 
           variant="filled"
 
-          onClose={
-            handleCloseSnackbar
-          }
+          onClose={handleCloseSnackbar}
 
           sx={{
             width: "100%",
 
-            borderRadius: 1,
+            borderRadius:
+              "0 !important",
 
             fontSize: {
-              xs: "11px",
-              sm: "13px",
+              xs: "10px",
+              sm: "12px",
             },
           }}
         >
-          {
-            snackbar.message
-          }
+          {snackbar.message}
         </Alert>
-
       </Snackbar>
 
     </Box>
-
   );
-
 };
 
 

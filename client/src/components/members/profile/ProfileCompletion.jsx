@@ -16,7 +16,9 @@ import {
   Cancel,
 } from "@mui/icons-material";
 
+
 const ProfileCompletion = ({ user = {} }) => {
+
   // =====================================================
   // CHECK PERSONAL INFORMATION
   // =====================================================
@@ -28,6 +30,7 @@ const ProfileCompletion = ({ user = {} }) => {
     user.gender &&
     user.dateOfBirth
   );
+
 
   // =====================================================
   // CHECK ADDRESS INFORMATION
@@ -41,6 +44,7 @@ const ProfileCompletion = ({ user = {} }) => {
     user.country
   );
 
+
   // =====================================================
   // CHECK BANK INFORMATION
   // =====================================================
@@ -53,6 +57,7 @@ const ProfileCompletion = ({ user = {} }) => {
     user.branch
   );
 
+
   // =====================================================
   // CHECK KYC INFORMATION
   // =====================================================
@@ -61,6 +66,7 @@ const ProfileCompletion = ({ user = {} }) => {
     user.aadhaarNumber &&
     user.panNumber
   );
+
 
   // =====================================================
   // PROFILE CHECKS
@@ -88,6 +94,7 @@ const ProfileCompletion = ({ user = {} }) => {
     },
   ];
 
+
   // =====================================================
   // CALCULATE COMPLETION
   // =====================================================
@@ -100,11 +107,13 @@ const ProfileCompletion = ({ user = {} }) => {
     (completedSections / checks.length) * 100
   );
 
+
   // =====================================================
   // STATUS TEXT
   // =====================================================
 
   const getStatusText = () => {
+
     if (percentage === 100) {
       return "Profile completed";
     }
@@ -124,23 +133,50 @@ const ProfileCompletion = ({ user = {} }) => {
     return "Profile needs information";
   };
 
+
   return (
+
     <Card
-      elevation={2}
+      elevation={0}
       sx={{
-        borderRadius: 4,
-        mb: 3,
         width: "100%",
+
+        mb: {
+          xs: 1,
+          sm: 1.5,
+          md: 2,
+        },
+
+        borderRadius: 0,
+
+        border: "1px solid #E0E0E0",
+
+        boxShadow: "none",
+
+        backgroundColor: "#FFFFFF",
+
+        overflow: "hidden",
       }}
     >
+
       <CardContent
         sx={{
           p: {
-            xs: 2,
-            sm: 3,
+            xs: "9px",
+            sm: "12px",
+            md: "15px",
+          },
+
+          "&:last-child": {
+            pb: {
+              xs: "9px",
+              sm: "12px",
+              md: "15px",
+            },
           },
         }}
       >
+
         {/* ===============================================
             HEADER
         ================================================ */}
@@ -148,25 +184,40 @@ const ProfileCompletion = ({ user = {} }) => {
         <Box
           sx={{
             display: "flex",
+
             justifyContent: "space-between",
-            alignItems: {
-              xs: "flex-start",
-              sm: "center",
-            },
-            flexDirection: {
-              xs: "column",
-              sm: "row",
-            },
+
+            alignItems: "center",
+
             gap: 1,
-            mb: 2,
+
+            mb: {
+              xs: "8px",
+              sm: "10px",
+              md: "12px",
+            },
+
+            minWidth: 0,
           }}
         >
+
           <Typography
-            variant="h6"
-            fontWeight="bold"
+            fontWeight={600}
+            sx={{
+              fontSize: {
+                xs: "14px",
+                sm: "16px",
+                md: "18px",
+              },
+
+              lineHeight: 1.2,
+
+              color: "#292929",
+            }}
           >
             Profile Completion
           </Typography>
+
 
           <Chip
             size="small"
@@ -176,21 +227,61 @@ const ProfileCompletion = ({ user = {} }) => {
                 ? "success"
                 : "warning"
             }
+            sx={{
+              height: {
+                xs: "21px",
+                sm: "23px",
+              },
+
+              borderRadius: 0,
+
+              fontSize: {
+                xs: "8px",
+                sm: "9px",
+                md: "10px",
+              },
+
+              fontWeight: 600,
+
+              flexShrink: 0,
+
+              "& .MuiChip-label": {
+                px: {
+                  xs: "5px",
+                  sm: "6px",
+                },
+              },
+            }}
           />
+
         </Box>
+
 
         {/* ===============================================
             PERCENTAGE
         ================================================ */}
 
         <Typography
-          variant="h3"
           color="success.main"
-          fontWeight="bold"
-          mb={2}
+          fontWeight={700}
+          sx={{
+            fontSize: {
+              xs: "25px",
+              sm: "30px",
+              md: "34px",
+            },
+
+            lineHeight: 1,
+
+            mb: {
+              xs: "7px",
+              sm: "9px",
+            },
+          }}
         >
           {percentage}%
         </Typography>
+
 
         {/* ===============================================
             PROGRESS BAR
@@ -201,30 +292,89 @@ const ProfileCompletion = ({ user = {} }) => {
           value={percentage}
           color="success"
           sx={{
-            height: 12,
-            borderRadius: 5,
-            mb: 3,
+            height: {
+              xs: 5,
+              sm: 6,
+            },
+
+            borderRadius: 0,
+
+            mb: {
+              xs: "8px",
+              sm: "10px",
+              md: "12px",
+            },
+
+            backgroundColor: "#EEEEEE",
+
+            "& .MuiLinearProgress-bar": {
+              borderRadius: 0,
+            },
           }}
         />
+
 
         {/* ===============================================
             SECTION STATUS
         ================================================ */}
 
-        <List disablePadding>
+        <List
+          disablePadding
+          sx={{
+            width: "100%",
+          }}
+        >
+
           {checks.map((item) => (
+
             <ListItem
               key={item.label}
               disableGutters
               sx={{
-                py: 1,
+                py: {
+                  xs: "5px",
+                  sm: "6px",
+                },
+
+                minHeight: {
+                  xs: 34,
+                  sm: 38,
+                },
+
+                gap: {
+                  xs: "5px",
+                  sm: "7px",
+                },
               }}
             >
+
               <ListItemIcon
                 sx={{
-                  minWidth: 40,
+                  minWidth: {
+                    xs: 22,
+                    sm: 26,
+                  },
+
+                  width: {
+                    xs: 22,
+                    sm: 26,
+                  },
+
+                  display: "flex",
+
+                  alignItems: "center",
+
+                  justifyContent: "center",
+
+                  "& svg": {
+                    fontSize: {
+                      xs: 17,
+                      sm: 19,
+                    },
+                  },
                 }}
               >
+
                 {item.completed ? (
                   <CheckCircle
                     color="success"
@@ -234,14 +384,31 @@ const ProfileCompletion = ({ user = {} }) => {
                     color="error"
                   />
                 )}
+
               </ListItemIcon>
+
 
               <ListItemText
                 primary={item.label}
                 primaryTypographyProps={{
                   fontWeight: 500,
+
+                  fontSize: {
+                    xs: "9px",
+                    sm: "10px",
+                    md: "11px",
+                  },
+
+                  lineHeight: 1.2,
+                }}
+
+                sx={{
+                  minWidth: 0,
+
+                  m: 0,
                 }}
               />
+
 
               <Chip
                 size="small"
@@ -256,57 +423,131 @@ const ProfileCompletion = ({ user = {} }) => {
                     : "error"
                 }
                 variant="outlined"
+                sx={{
+                  height: {
+                    xs: "20px",
+                    sm: "22px",
+                  },
+
+                  borderRadius: 0,
+
+                  fontSize: {
+                    xs: "7px",
+                    sm: "8px",
+                    md: "9px",
+                  },
+
+                  flexShrink: 0,
+
+                  "& .MuiChip-label": {
+                    px: {
+                      xs: "4px",
+                      sm: "5px",
+                    },
+                  },
+                }}
               />
+
             </ListItem>
+
           ))}
+
         </List>
+
 
         {/* ===============================================
             COMPLETION MESSAGE
         ================================================ */}
 
         {percentage !== 100 && (
+
           <Box
-            mt={2}
+            mt={{
+              xs: 1,
+              sm: 1.25,
+            }}
             sx={{
-              p: 2,
-              borderRadius: 2,
-              backgroundColor:
-                "success.50",
+              p: {
+                xs: "7px",
+                sm: "9px",
+              },
+
+              borderRadius: 0,
+
+              border: "1px solid #E0E0E0",
+
+              backgroundColor: "#F1F8E9",
             }}
           >
+
             <Typography
               color="text.secondary"
-              variant="body2"
+              sx={{
+                fontSize: {
+                  xs: "8px",
+                  sm: "9px",
+                  md: "10px",
+                },
+
+                lineHeight: 1.3,
+              }}
             >
               Complete the remaining sections
               to reach 100% profile completion.
             </Typography>
+
           </Box>
+
         )}
 
+
         {percentage === 100 && (
+
           <Box
-            mt={2}
+            mt={{
+              xs: 1,
+              sm: 1.25,
+            }}
             sx={{
-              p: 2,
-              borderRadius: 2,
-              backgroundColor:
-                "success.50",
+              p: {
+                xs: "7px",
+                sm: "9px",
+              },
+
+              borderRadius: 0,
+
+              border: "1px solid #E0E0E0",
+
+              backgroundColor: "#F1F8E9",
             }}
           >
+
             <Typography
               color="success.main"
               fontWeight={600}
-              variant="body2"
+              sx={{
+                fontSize: {
+                  xs: "8px",
+                  sm: "9px",
+                  md: "10px",
+                },
+
+                lineHeight: 1.3,
+              }}
             >
               Your profile is completely filled.
             </Typography>
+
           </Box>
+
         )}
+
       </CardContent>
+
     </Card>
+
   );
 };
+
 
 export default ProfileCompletion;

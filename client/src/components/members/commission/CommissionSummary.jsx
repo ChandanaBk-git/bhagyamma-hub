@@ -117,9 +117,9 @@ const CommissionSummary = ({
     <Grid
       container
       spacing={{
-        xs: 1,
-        sm: 1.5,
-        md: 2,
+        xs: 0.75,
+        sm: 1,
+        md: 1.5,
       }}
       sx={{
         width: "100%",
@@ -131,15 +131,15 @@ const CommissionSummary = ({
 
         "& > .MuiGrid-item": {
           paddingTop: {
-            xs: "4px",
-            sm: "6px",
-            md: "8px",
+            xs: "3px",
+            sm: "4px",
+            md: "6px",
           },
 
           paddingLeft: {
-            xs: "4px",
-            sm: "6px",
-            md: "8px",
+            xs: "3px",
+            sm: "4px",
+            md: "6px",
           },
         },
       }}
@@ -150,7 +150,7 @@ const CommissionSummary = ({
         <Grid
           key={card.title}
           size={{
-            xs: 12,
+            xs: 6,
             sm: 6,
             md: 3,
           }}
@@ -164,39 +164,36 @@ const CommissionSummary = ({
               minWidth: 0,
 
               height: {
-                xs: "94px",
-                sm: "110px",
-                md: "125px",
+                xs: "78px",
+                sm: "88px",
+                md: "100px",
               },
 
-              minHeight: "0 !important",
+              minHeight: 0,
 
               boxSizing: "border-box",
 
-              borderRadius: "0 !important",
+              borderRadius: 0,
 
               borderLeft: {
-                xs: `3px solid ${card.color}`,
-                sm: `4px solid ${card.color}`,
+                xs: `2px solid ${card.color}`,
+                sm: `3px solid ${card.color}`,
               },
 
-              borderTop: "1px solid #EEEEEE",
-              borderRight: "1px solid #EEEEEE",
-              borderBottom: "1px solid #EEEEEE",
+              borderTop: "1px solid #E5E5E5",
+              borderRight: "1px solid #E5E5E5",
+              borderBottom: "1px solid #E5E5E5",
 
               backgroundColor: "#FFFFFF",
 
-              boxShadow:
-                "0 2px 8px rgba(0,0,0,0.06)",
+              boxShadow: "none",
 
               overflow: "hidden",
 
-              transition:
-                "box-shadow 0.2s ease",
+              transition: "none",
 
               "&:hover": {
-                boxShadow:
-                  "0 4px 12px rgba(0,0,0,0.09)",
+                boxShadow: "none",
               },
             }}
           >
@@ -207,21 +204,21 @@ const CommissionSummary = ({
 
                 height: "100%",
 
-                minHeight: "0 !important",
+                minHeight: 0,
 
                 padding: {
-                  xs: "10px 11px !important",
-                  sm: "13px 14px !important",
-                  md: "16px !important",
+                  xs: "7px 8px !important",
+                  sm: "9px 10px !important",
+                  md: "11px 12px !important",
                 },
 
                 boxSizing: "border-box",
 
                 "&:last-child": {
                   paddingBottom: {
-                    xs: "10px !important",
-                    sm: "13px !important",
-                    md: "16px !important",
+                    xs: "7px !important",
+                    sm: "9px !important",
+                    md: "11px !important",
                   },
                 },
               }}
@@ -231,10 +228,12 @@ const CommissionSummary = ({
                 direction="row"
                 justifyContent="space-between"
                 alignItems="center"
-                spacing={1}
+                spacing={0.5}
                 sx={{
                   width: "100%",
+
                   height: "100%",
+
                   minWidth: 0,
                 }}
               >
@@ -260,14 +259,14 @@ const CommissionSummary = ({
                       color: "#616161",
 
                       fontSize: {
-                        xs: "12px",
-                        sm: "13px",
-                        md: "14px",
+                        xs: "9px",
+                        sm: "10px",
+                        md: "11px",
                       },
 
-                      lineHeight: 1.2,
+                      lineHeight: 1.15,
 
-                      fontWeight: 400,
+                      fontWeight: 500,
 
                       whiteSpace: "nowrap",
 
@@ -285,9 +284,9 @@ const CommissionSummary = ({
                   <Typography
                     sx={{
                       marginTop: {
-                        xs: "5px",
-                        sm: "6px",
-                        md: "7px",
+                        xs: "3px",
+                        sm: "4px",
+                        md: "5px",
                       },
 
                       color: "#292929",
@@ -295,12 +294,12 @@ const CommissionSummary = ({
                       fontWeight: 700,
 
                       fontSize: {
-                        xs: "19px",
-                        sm: "21px",
-                        md: "24px",
+                        xs: "15px",
+                        sm: "17px",
+                        md: "20px",
                       },
 
-                      lineHeight: 1.1,
+                      lineHeight: 1.05,
 
                       whiteSpace: "nowrap",
 
@@ -326,20 +325,20 @@ const CommissionSummary = ({
                   <Typography
                     sx={{
                       marginTop: {
-                        xs: "4px",
-                        sm: "5px",
-                        md: "6px",
+                        xs: "2px",
+                        sm: "3px",
+                        md: "4px",
                       },
 
-                      color: "#757575",
+                      color: "#888888",
 
                       fontSize: {
-                        xs: "10px",
-                        sm: "11px",
-                        md: "12px",
+                        xs: "8px",
+                        sm: "9px",
+                        md: "10px",
                       },
 
-                      lineHeight: 1.2,
+                      lineHeight: 1.1,
 
                       whiteSpace: "nowrap",
 
@@ -361,24 +360,24 @@ const CommissionSummary = ({
                 <Box
                   sx={{
                     width: {
-                      xs: 42,
-                      sm: 50,
-                      md: 58,
+                      xs: 28,
+                      sm: 34,
+                      md: 40,
                     },
 
                     height: {
-                      xs: 42,
-                      sm: 50,
-                      md: 58,
+                      xs: 28,
+                      sm: 34,
+                      md: 40,
                     },
 
                     minWidth: {
-                      xs: 42,
-                      sm: 50,
-                      md: 58,
+                      xs: 28,
+                      sm: 34,
+                      md: 40,
                     },
 
-                    borderRadius: "50%",
+                    borderRadius: 0,
 
                     bgcolor: card.bg,
 
@@ -394,9 +393,9 @@ const CommissionSummary = ({
 
                     "& svg": {
                       fontSize: {
-                        xs: 23,
-                        sm: 27,
-                        md: 32,
+                        xs: 16,
+                        sm: 19,
+                        md: 22,
                       },
                     },
                   }}

@@ -32,6 +32,7 @@ import {
   useNavigate,
 } from "react-router-dom";
 
+
 const DRAWER_WIDTH = 280;
 
 
@@ -275,15 +276,15 @@ const MemberSidebar = ({
 
           sx={{
 
-            minHeight: 50,
+            minHeight: 36,
 
-            mx: 1.5,
+            mx: 0.15,
 
-            mb: 0.6,
+            mb: 0.1,
 
-            px: 2,
+            px: 0.35,
 
-            borderRadius: 3,
+            borderRadius: 0,
 
             color: "#fff",
 
@@ -317,17 +318,17 @@ const MemberSidebar = ({
           }}
         >
 
-          <ListItemIcon
-            sx={{
-              minWidth: 40,
-
-              color: "inherit",
-            }}
-          >
-
-            {item.icon}
-
-          </ListItemIcon>
+<ListItemIcon
+  sx={{
+    minWidth: 30,
+    color: "inherit",
+    "& svg": {
+      fontSize: 18,
+    },
+  }}
+>
+  {item.icon}
+</ListItemIcon>
 
 
           <ListItemText
@@ -335,8 +336,8 @@ const MemberSidebar = ({
 
             primaryTypographyProps={{
               fontSize: {
-                xs: "0.9rem",
-                md: "0.95rem",
+                xs: "0.55rem",
+                md: "0.82rem",
               },
 
               fontWeight:
@@ -346,6 +347,10 @@ const MemberSidebar = ({
 
               whiteSpace:
                 "nowrap",
+
+              overflow: "hidden",
+
+              textOverflow: "ellipsis",
             }}
           />
 
@@ -364,7 +369,14 @@ const MemberSidebar = ({
 
     <Box
       sx={{
-        width: DRAWER_WIDTH,
+        width: {
+          xs: "100%",
+          md: DRAWER_WIDTH,
+        },
+
+        maxWidth: "100%",
+
+        minWidth: 0,
 
         height: "100%",
 
@@ -380,46 +392,6 @@ const MemberSidebar = ({
       }}
     >
 
-      {/* =================================================
-          BRAND
-      ================================================= */}
-
-      <Box
-        sx={{
-          px: 3,
-
-          py: 3,
-
-          minHeight: 90,
-
-          display: "flex",
-
-          alignItems: "center",
-        }}
-      >
-
-        <Typography
-          sx={{
-            fontSize: {
-              xs: "1.45rem",
-
-              md: "1.55rem",
-            },
-
-            fontWeight: 800,
-
-            color: "#fff",
-
-            whiteSpace:
-              "nowrap",
-          }}
-        >
-          Bhagyamma Hub
-        </Typography>
-
-      </Box>
-
-
       <Divider
         sx={{
           borderColor:
@@ -434,9 +406,9 @@ const MemberSidebar = ({
 
       <Box
         sx={{
-          px: 2,
+          px: 0.25,
 
-          py: 3,
+          py: 1,
 
           textAlign: "center",
         }}
@@ -444,9 +416,9 @@ const MemberSidebar = ({
 
         <Avatar
           sx={{
-            width: 74,
+            width: 38,
 
-            height: 74,
+            height: 38,
 
             mx: "auto",
 
@@ -456,7 +428,7 @@ const MemberSidebar = ({
 
             color: "#fff",
 
-            fontSize: "2rem",
+            fontSize: "1.15rem",
 
             fontWeight: 700,
           }}
@@ -468,7 +440,7 @@ const MemberSidebar = ({
         <Typography
           fontWeight={700}
           sx={{
-            fontSize: "1rem",
+            fontSize: "0.68rem",
 
             whiteSpace:
               "nowrap",
@@ -488,7 +460,7 @@ const MemberSidebar = ({
           sx={{
             mt: 0.4,
 
-            fontSize: "0.75rem",
+            fontSize: "0.55rem",
 
             opacity: 0.8,
 
@@ -503,7 +475,7 @@ const MemberSidebar = ({
           sx={{
             mt: 0.5,
 
-            fontSize: "0.7rem",
+            fontSize: "0.52rem",
 
             opacity: 0.65,
 
@@ -552,7 +524,7 @@ const MemberSidebar = ({
             backgroundColor:
               "rgba(255,255,255,0.25)",
 
-            borderRadius: 10,
+            borderRadius: 0,
 
           },
 
@@ -565,11 +537,11 @@ const MemberSidebar = ({
 
         <Typography
           sx={{
-            px: 3,
+            px: 0.6,
 
-            mb: 1,
+            mb: 0.4,
 
-            fontSize: "0.68rem",
+            fontSize: "0.5rem",
 
             fontWeight: 700,
 
@@ -597,13 +569,13 @@ const MemberSidebar = ({
 
         <Typography
           sx={{
-            px: 3,
+            px: 0.6,
 
-            mt: 2.5,
+            mt: 1.2,
 
-            mb: 1,
+            mb: 0.4,
 
-            fontSize: "0.68rem",
+            fontSize: "0.5rem",
 
             fontWeight: 700,
 
@@ -631,13 +603,13 @@ const MemberSidebar = ({
 
         <Typography
           sx={{
-            px: 3,
+            px: 1,
 
-            mt: 2.5,
+            mt: 1.5,
 
-            mb: 1,
+            mb: 0.6,
 
-            fontSize: "0.68rem",
+            fontSize: "0.55rem",
 
             fontWeight: 700,
 
@@ -685,9 +657,9 @@ const MemberSidebar = ({
             }
 
             sx={{
-              minHeight: 50,
+              minHeight: 40,
 
-              borderRadius: 3,
+              borderRadius: 0,
 
               color: "#fff",
 
@@ -704,7 +676,7 @@ const MemberSidebar = ({
 
             <ListItemIcon
               sx={{
-                minWidth: 40,
+                minWidth: 25,
 
                 color: "#fff",
               }}
@@ -720,7 +692,7 @@ const MemberSidebar = ({
 
               primaryTypographyProps={{
                 fontSize:
-                  "0.95rem",
+                  "0.75rem",
               }}
             />
 
@@ -767,11 +739,20 @@ const MemberSidebar = ({
 
           "& .MuiDrawer-paper": {
 
-            width:
-              DRAWER_WIDTH,
+            width: {
+              xs: "30vw",
+              md: DRAWER_WIDTH,
+            },
 
-            maxWidth:
-              "85vw",
+            minWidth: {
+              xs: "30vw",
+              md: DRAWER_WIDTH,
+            },
+
+            maxWidth: {
+              xs: "30vw",
+              md: DRAWER_WIDTH,
+            },
 
             boxSizing:
               "border-box",

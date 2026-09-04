@@ -17,8 +17,8 @@ const MemberLayout = ({ children }) => {
   // OPEN MOBILE SIDEBAR
   // =====================================================
 
-  const handleDrawerOpen = () => {
-    setMobileOpen(true);
+  const handleDrawerToggle = () => {
+    setMobileOpen((prev) => !prev);
   };
 
 
@@ -78,6 +78,7 @@ const MemberLayout = ({ children }) => {
           maxWidth: "100%",
 
           overflowX: "hidden",
+          borderRadius: 0,
         }}
       >
 
@@ -86,7 +87,7 @@ const MemberLayout = ({ children }) => {
         ================================================= */}
 
         <MemberTopbar
-          onMenuClick={handleDrawerOpen}
+          onMenuClick={handleDrawerToggle}
         />
 
 
@@ -105,22 +106,19 @@ const MemberLayout = ({ children }) => {
             overflowX: "hidden",
 
             px: {
-              xs: 1.5,
-
-              sm: 2,
-
-              md: 3,
-
-              lg: 4,
+              xs: 0,
+              sm: 1,
+              md: 2,
+              lg: 3,
             },
 
             py: {
-              xs: 2,
-
-              sm: 2.5,
-
-              md: 3,
+              xs: 0.5,
+              sm: 1,
+              md: 1.5,
             },
+
+            borderRadius: 0,
           }}
         >
 

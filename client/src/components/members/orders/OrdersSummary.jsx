@@ -14,6 +14,7 @@ import {
   Cancel,
 } from "@mui/icons-material";
 
+
 const OrdersSummary = ({ orders = [] }) => {
 
   const total = orders.length;
@@ -34,12 +35,12 @@ const OrdersSummary = ({ orders = [] }) => {
       o.status === "CANCELLED"
   ).length;
 
-  const cards = [
 
+  const cards = [
     {
       title: "Total Orders",
       value: total,
-      icon: <ShoppingBag sx={{ fontSize: 38 }} />,
+      icon: <ShoppingBag />,
       color: "#1565C0",
       bg: "#E3F2FD",
     },
@@ -47,7 +48,7 @@ const OrdersSummary = ({ orders = [] }) => {
     {
       title: "Pending",
       value: pending,
-      icon: <PendingActions sx={{ fontSize: 38 }} />,
+      icon: <PendingActions />,
       color: "#F9A825",
       bg: "#FFF8E1",
     },
@@ -55,7 +56,7 @@ const OrdersSummary = ({ orders = [] }) => {
     {
       title: "Delivered",
       value: delivered,
-      icon: <CheckCircle sx={{ fontSize: 38 }} />,
+      icon: <CheckCircle />,
       color: "#2E7D32",
       bg: "#E8F5E9",
     },
@@ -63,104 +64,199 @@ const OrdersSummary = ({ orders = [] }) => {
     {
       title: "Cancelled",
       value: cancelled,
-      icon: <Cancel sx={{ fontSize: 38 }} />,
+      icon: <Cancel />,
       color: "#D32F2F",
       bg: "#FFEBEE",
     },
-
   ];
 
-  return (
 
+  return (
     <Grid
       container
-      spacing={3}
-      mb={3}
+      spacing={{
+        xs: 0.75,
+        sm: 1,
+        md: 1.5,
+      }}
+      mb={{
+        xs: 1,
+        sm: 1.5,
+      }}
     >
 
-      {
+      {cards.map((card) => (
 
-        cards.map((card) => (
+        <Grid
+          item
+          xs={6}
+          sm={6}
+          md={3}
+          key={card.title}
+        >
 
-          <Grid
-            item
-            xs={12}
-            sm={6}
-            md={3}
-            key={card.title}
+          <Card
+            elevation={0}
+            sx={{
+              width: "100%",
+              height: "100%",
+
+              borderRadius: 0,
+
+              border:
+                "1px solid #E0E0E0",
+
+              borderLeft:
+                `3px solid ${card.color}`,
+
+              boxShadow: "none",
+
+              boxSizing: "border-box",
+
+              transition:
+                "border-color 0.2s ease",
+
+              "&:hover": {
+                borderColor:
+                  card.color,
+              },
+            }}
           >
 
-            <Card
-              elevation={2}
+            <CardContent
               sx={{
-                borderRadius: 4,
-                borderLeft: `5px solid ${card.color}`,
-                transition: ".3s",
+                p: {
+                  xs: 1,
+                  sm: 1.25,
+                  md: 1.5,
+                },
 
-                "&:hover": {
-                  transform: "translateY(-5px)",
-                  boxShadow: 8,
+                "&:last-child": {
+                  pb: {
+                    xs: 1,
+                    sm: 1.25,
+                    md: 1.5,
+                  },
                 },
               }}
             >
 
-              <CardContent>
+              <Stack
+                direction="row"
+                justifyContent="space-between"
+                alignItems="center"
+                spacing={1}
+              >
 
-                <Stack
-                  direction="row"
-                  justifyContent="space-between"
-                  alignItems="center"
+                <Box
+                  sx={{
+                    minWidth: 0,
+                    flex: 1,
+                  }}
                 >
 
-                  <Box>
-
-                    <Typography
-                      color="text.secondary"
-                    >
-                      {card.title}
-                    </Typography>
-
-                    <Typography
-                      variant="h4"
-                      fontWeight="bold"
-                      mt={1}
-                    >
-                      {card.value}
-                    </Typography>
-
-                  </Box>
-
-                  <Box
+                  <Typography
                     sx={{
-                      width: 65,
-                      height: 65,
-                      bgcolor: card.bg,
-                      color: card.color,
-                      borderRadius: "50%",
-                      display: "flex",
-                      justifyContent: "center",
-                      alignItems: "center",
+                      color:
+                        "text.secondary",
+
+                      fontSize: {
+                        xs: "9px",
+                        sm: "10px",
+                        md: "11px",
+                      },
+
+                      lineHeight: 1.3,
+
+                      whiteSpace:
+                        "nowrap",
+
+                      overflow:
+                        "hidden",
+
+                      textOverflow:
+                        "ellipsis",
                     }}
                   >
-                    {card.icon}
-                  </Box>
+                    {card.title}
+                  </Typography>
 
-                </Stack>
 
-              </CardContent>
+                  <Typography
+                    sx={{
+                      mt: {
+                        xs: 0.3,
+                        sm: 0.4,
+                      },
 
-            </Card>
+                      fontSize: {
+                        xs: "20px",
+                        sm: "23px",
+                        md: "26px",
+                      },
 
-          </Grid>
+                      lineHeight: 1.1,
 
-        ))
+                      fontWeight: 800,
 
-      }
+                      color: "#292929",
+                    }}
+                  >
+                    {card.value}
+                  </Typography>
+
+                </Box>
+
+
+                <Box
+                  sx={{
+                    width: {
+                      xs: 30,
+                      sm: 34,
+                      md: 38,
+                    },
+
+                    height: {
+                      xs: 30,
+                      sm: 34,
+                      md: 38,
+                    },
+
+                    flexShrink: 0,
+
+                    bgcolor:
+                      card.bg,
+
+                    color:
+                      card.color,
+
+                    borderRadius: 0,
+
+                    display: "flex",
+
+                    justifyContent:
+                      "center",
+
+                    alignItems:
+                      "center",
+                  }}
+                >
+                  {card.icon}
+                </Box>
+
+              </Stack>
+
+            </CardContent>
+
+          </Card>
+
+        </Grid>
+
+      ))}
 
     </Grid>
-
   );
-
 };
+
 
 export default OrdersSummary;

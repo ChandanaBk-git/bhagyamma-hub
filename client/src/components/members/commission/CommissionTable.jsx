@@ -29,12 +29,11 @@ const CommissionTable = ({
         sx={{
           width: "100%",
           maxWidth: "100%",
-
           boxSizing: "border-box",
 
-          borderRadius: "0 !important",
+          borderRadius: 0,
 
-          border: "1px solid #E8E8E8",
+          border: "1px solid #E0E0E0",
 
           backgroundColor: "#FFFFFF",
 
@@ -46,43 +45,49 @@ const CommissionTable = ({
 
         <CardContent
           sx={{
-            padding: {
-              xs: "14px",
-              sm: "20px",
-              md: "24px",
+            p: {
+              xs: "10px",
+              sm: "14px",
+              md: "18px",
             },
 
             "&:last-child": {
-              paddingBottom: {
-                xs: "14px",
-                sm: "20px",
-                md: "24px",
+              pb: {
+                xs: "10px",
+                sm: "14px",
+                md: "18px",
               },
             },
           }}
         >
 
+          {/* HEADER */}
+
           <Typography
-            fontWeight={700}
+            fontWeight={600}
             sx={{
               fontSize: {
-                xs: "18px",
-                sm: "20px",
-                md: "23px",
+                xs: "14px",
+                sm: "16px",
+                md: "18px",
               },
 
-              lineHeight: 1.25,
+              lineHeight: 1.2,
+
+              color: "#292929",
             }}
           >
             Commission History
           </Typography>
 
 
+          {/* EMPTY CONTENT */}
+
           <Box
             sx={{
               py: {
-                xs: 4,
-                sm: 5,
+                xs: 2.5,
+                sm: 3,
               },
 
               textAlign: "center",
@@ -92,8 +97,8 @@ const CommissionTable = ({
             <CurrencyRupee
               sx={{
                 fontSize: {
-                  xs: 48,
-                  sm: 60,
+                  xs: 34,
+                  sm: 42,
                 },
 
                 color: "#C8E6C9",
@@ -102,14 +107,16 @@ const CommissionTable = ({
 
             <Typography
               sx={{
-                mt: 1.5,
+                mt: 0.8,
 
-                fontWeight: 700,
+                fontWeight: 600,
 
                 fontSize: {
-                  xs: "15px",
-                  sm: "17px",
+                  xs: "13px",
+                  sm: "15px",
                 },
+
+                lineHeight: 1.2,
               }}
             >
               No Commission Yet
@@ -118,14 +125,18 @@ const CommissionTable = ({
             <Typography
               color="text.secondary"
               sx={{
-                mt: 0.7,
+                mt: 0.5,
 
                 fontSize: {
-                  xs: "12px",
-                  sm: "14px",
+                  xs: "10px",
+                  sm: "12px",
                 },
 
-                lineHeight: 1.5,
+                lineHeight: 1.35,
+
+                maxWidth: "400px",
+
+                mx: "auto",
               }}
             >
               Start referring members and purchasing
@@ -135,6 +146,7 @@ const CommissionTable = ({
           </Box>
 
         </CardContent>
+
       </Card>
     );
   }
@@ -150,12 +162,11 @@ const CommissionTable = ({
       sx={{
         width: "100%",
         maxWidth: "100%",
-
         boxSizing: "border-box",
 
-        borderRadius: "0 !important",
+        borderRadius: 0,
 
-        border: "1px solid #E8E8E8",
+        border: "1px solid #E0E0E0",
 
         backgroundColor: "#FFFFFF",
 
@@ -167,17 +178,17 @@ const CommissionTable = ({
 
       <CardContent
         sx={{
-          padding: {
-            xs: "12px",
-            sm: "18px",
-            md: "22px",
+          p: {
+            xs: "9px",
+            sm: "13px",
+            md: "17px",
           },
 
           "&:last-child": {
-            paddingBottom: {
-              xs: "12px",
-              sm: "18px",
-              md: "22px",
+            pb: {
+              xs: "9px",
+              sm: "13px",
+              md: "17px",
             },
           },
         }}
@@ -193,24 +204,26 @@ const CommissionTable = ({
           alignItems="center"
           spacing={1}
           sx={{
-            marginBottom: {
-              xs: "12px",
-              sm: "16px",
-              md: "20px",
+            mb: {
+              xs: "8px",
+              sm: "11px",
+              md: "14px",
             },
           }}
         >
 
           <Typography
-            fontWeight={700}
+            fontWeight={600}
             sx={{
               fontSize: {
-                xs: "18px",
-                sm: "20px",
-                md: "23px",
+                xs: "14px",
+                sm: "16px",
+                md: "18px",
               },
 
-              lineHeight: 1.25,
+              lineHeight: 1.2,
+
+              color: "#292929",
             }}
           >
             Commission History
@@ -223,16 +236,25 @@ const CommissionTable = ({
             size="small"
             sx={{
               height: {
-                xs: "24px",
-                sm: "26px",
+                xs: "21px",
+                sm: "23px",
               },
 
+              borderRadius: 0,
+
               fontSize: {
-                xs: "11px",
-                sm: "12px",
+                xs: "9px",
+                sm: "10px",
               },
 
               fontWeight: 500,
+
+              "& .MuiChip-label": {
+                px: {
+                  xs: "6px",
+                  sm: "7px",
+                },
+              },
             }}
           />
 
@@ -247,15 +269,14 @@ const CommissionTable = ({
           sx={{
             width: "100%",
             maxWidth: "100%",
-
             boxSizing: "border-box",
 
             display: "flex",
             flexDirection: "column",
 
             gap: {
-              xs: "8px",
-              sm: "10px",
+              xs: "5px",
+              sm: "7px",
             },
           }}
         >
@@ -267,22 +288,18 @@ const CommissionTable = ({
               sx={{
                 width: "100%",
                 maxWidth: "100%",
-
                 boxSizing: "border-box",
 
-                padding: {
-                  xs: "10px 12px",
-                  sm: "14px",
+                p: {
+                  xs: "7px 8px",
+                  sm: "10px",
                 },
 
-                borderRadius: {
-                  xs: "14px",
-                  sm: "16px",
-                },
+                borderRadius: 0,
 
                 backgroundColor: "#FFFFFF",
 
-                border: "1px solid #E5E5E5",
+                border: "1px solid #E2E2E2",
 
                 overflow: "hidden",
 
@@ -300,7 +317,7 @@ const CommissionTable = ({
                 direction="row"
                 justifyContent="space-between"
                 alignItems="center"
-                spacing={1}
+                spacing={0.7}
                 sx={{
                   width: "100%",
                   minWidth: 0,
@@ -311,7 +328,7 @@ const CommissionTable = ({
 
                 <Stack
                   direction="row"
-                  spacing={1}
+                  spacing={0.8}
                   alignItems="center"
                   sx={{
                     minWidth: 0,
@@ -324,29 +341,31 @@ const CommissionTable = ({
                   <Box
                     sx={{
                       width: {
-                        xs: 42,
-                        sm: 48,
+                        xs: 32,
+                        sm: 36,
                       },
 
                       height: {
-                        xs: 42,
-                        sm: 48,
+                        xs: 32,
+                        sm: 36,
                       },
 
                       minWidth: {
-                        xs: 42,
-                        sm: 48,
+                        xs: 32,
+                        sm: 36,
                       },
 
                       bgcolor: "#E8F5E9",
 
-                      borderRadius: "50%",
+                      borderRadius: 0,
 
                       display: "flex",
 
                       justifyContent: "center",
 
                       alignItems: "center",
+
+                      flexShrink: 0,
                     }}
                   >
 
@@ -355,8 +374,8 @@ const CommissionTable = ({
                         color: "#2E7D32",
 
                         fontSize: {
-                          xs: 21,
-                          sm: 25,
+                          xs: 17,
+                          sm: 19,
                         },
                       }}
                     />
@@ -374,20 +393,22 @@ const CommissionTable = ({
                   >
 
                     <Typography
-                      fontWeight={700}
+                      fontWeight={600}
                       sx={{
                         fontSize: {
-                          xs: "14px",
-                          sm: "15px",
+                          xs: "12px",
+                          sm: "13px",
                         },
 
-                        lineHeight: 1.25,
+                        lineHeight: 1.2,
 
                         whiteSpace: "nowrap",
 
                         overflow: "hidden",
 
                         textOverflow: "ellipsis",
+
+                        color: "#292929",
                       }}
                     >
                       {item?.fromUser?.name ||
@@ -399,13 +420,13 @@ const CommissionTable = ({
                       color="text.secondary"
                       sx={{
                         fontSize: {
-                          xs: "11px",
-                          sm: "12px",
+                          xs: "9px",
+                          sm: "10px",
                         },
 
-                        lineHeight: 1.3,
+                        lineHeight: 1.2,
 
-                        marginTop: "2px",
+                        mt: "2px",
 
                         whiteSpace: "nowrap",
 
@@ -430,9 +451,9 @@ const CommissionTable = ({
                   color="success.main"
                   sx={{
                     fontSize: {
-                      xs: "19px",
-                      sm: "21px",
-                      md: "23px",
+                      xs: "15px",
+                      sm: "17px",
+                      md: "19px",
                     },
 
                     lineHeight: 1,
@@ -457,14 +478,14 @@ const CommissionTable = ({
 
               <Stack
                 direction="row"
-                spacing={0.7}
+                spacing={0.5}
                 alignItems="center"
                 flexWrap="wrap"
                 useFlexGap
                 sx={{
-                  marginTop: {
-                    xs: "8px",
-                    sm: "10px",
+                  mt: {
+                    xs: "5px",
+                    sm: "7px",
                   },
                 }}
               >
@@ -475,13 +496,19 @@ const CommissionTable = ({
                   color="primary"
                   sx={{
                     height: {
-                      xs: "23px",
-                      sm: "25px",
+                      xs: "19px",
+                      sm: "21px",
                     },
 
+                    borderRadius: 0,
+
                     fontSize: {
-                      xs: "11px",
-                      sm: "12px",
+                      xs: "9px",
+                      sm: "10px",
+                    },
+
+                    "& .MuiChip-label": {
+                      px: "5px",
                     },
                   }}
                 />
@@ -500,17 +527,23 @@ const CommissionTable = ({
                   )}%`}
                   sx={{
                     height: {
-                      xs: "23px",
-                      sm: "25px",
+                      xs: "19px",
+                      sm: "21px",
                     },
+
+                    borderRadius: 0,
 
                     bgcolor: "#FFF3E0",
 
                     color: "#EF6C00",
 
                     fontSize: {
-                      xs: "11px",
-                      sm: "12px",
+                      xs: "9px",
+                      sm: "10px",
+                    },
+
+                    "& .MuiChip-label": {
+                      px: "5px",
                     },
                   }}
                 />
@@ -522,13 +555,19 @@ const CommissionTable = ({
                   color="success"
                   sx={{
                     height: {
-                      xs: "23px",
-                      sm: "25px",
+                      xs: "19px",
+                      sm: "21px",
                     },
 
+                    borderRadius: 0,
+
                     fontSize: {
-                      xs: "11px",
-                      sm: "12px",
+                      xs: "9px",
+                      sm: "10px",
+                    },
+
+                    "& .MuiChip-label": {
+                      px: "5px",
                     },
                   }}
                 />
@@ -543,17 +582,17 @@ const CommissionTable = ({
               <Typography
                 color="text.secondary"
                 sx={{
-                  marginTop: {
-                    xs: "7px",
-                    sm: "9px",
+                  mt: {
+                    xs: "4px",
+                    sm: "6px",
                   },
 
                   fontSize: {
-                    xs: "11px",
-                    sm: "12px",
+                    xs: "9px",
+                    sm: "10px",
                   },
 
-                  lineHeight: 1.3,
+                  lineHeight: 1.2,
                 }}
               >
                 Earned On:{" "}

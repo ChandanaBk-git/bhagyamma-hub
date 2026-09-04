@@ -18,6 +18,7 @@ import {
   LocalShipping,
 } from "@mui/icons-material";
 
+
 const OrderDialog = ({
   open,
   onClose,
@@ -25,6 +26,7 @@ const OrderDialog = ({
 }) => {
 
   if (!order) return null;
+
 
   const getStatusColor = (status) => {
 
@@ -49,6 +51,7 @@ const OrderDialog = ({
 
   };
 
+
   return (
 
     <Dialog
@@ -56,321 +59,900 @@ const OrderDialog = ({
       onClose={onClose}
       fullWidth
       maxWidth="md"
+      PaperProps={{
+        sx: {
+          borderRadius: 0,
+          boxShadow: "none",
+          border: "1px solid #E0E0E0",
+          margin: {
+            xs: 1,
+            sm: 2,
+          },
+          width: {
+            xs: "calc(100% - 16px)",
+            sm: "calc(100% - 32px)",
+          },
+        },
+      }}
     >
+
+      {/* =================================================
+          TITLE
+      ================================================= */}
 
       <DialogTitle
         sx={{
-          fontWeight: "bold",
+          px: {
+            xs: 1.25,
+            sm: 1.75,
+            md: 2,
+          },
+
+          py: {
+            xs: 1,
+            sm: 1.25,
+          },
+
+          fontSize: {
+            xs: "15px",
+            sm: "17px",
+          },
+
+          fontWeight: 800,
+
+          borderBottom:
+            "1px solid #E0E0E0",
         }}
       >
         Order Details
       </DialogTitle>
 
-      <DialogContent>
+
+      {/* =================================================
+          CONTENT
+      ================================================= */}
+
+      <DialogContent
+        sx={{
+          px: {
+            xs: 1.25,
+            sm: 1.75,
+            md: 2,
+          },
+
+          py: {
+            xs: 1.25,
+            sm: 1.5,
+          },
+
+          "&:last-child": {
+            pb: {
+              xs: 1.25,
+              sm: 1.5,
+            },
+          },
+
+          overflowX: "hidden",
+        }}
+      >
+
+        {/* =================================================
+            ORDER HEADER
+        ================================================= */}
 
         <Stack
           direction="row"
           justifyContent="space-between"
           alignItems="center"
-          mb={3}
+          mb={{
+            xs: 1.25,
+            sm: 1.5,
+          }}
           flexWrap="wrap"
-          gap={2}
+          gap={1}
         >
 
-          <Box>
+          <Box
+            sx={{
+              minWidth: 0,
+              flex: 1,
+            }}
+          >
 
             <Typography
-              variant="h5"
-              fontWeight="bold"
+              sx={{
+                fontSize: {
+                  xs: "14px",
+                  sm: "17px",
+                },
+
+                lineHeight: 1.25,
+
+                fontWeight: 800,
+
+                wordBreak:
+                  "break-word",
+              }}
             >
               {order.orderNumber}
             </Typography>
 
+
             <Typography
-              color="text.secondary"
+              sx={{
+                mt: 0.25,
+
+                color:
+                  "text.secondary",
+
+                fontSize: {
+                  xs: "9px",
+                  sm: "11px",
+                },
+              }}
             >
               Order Information
             </Typography>
 
           </Box>
 
+
           <Chip
             label={order.status}
             color={getStatusColor(order.status)}
+            sx={{
+              height: {
+                xs: 21,
+                sm: 24,
+              },
+
+              borderRadius: 0,
+
+              fontSize: {
+                xs: "8px",
+                sm: "10px",
+              },
+
+              fontWeight: 700,
+
+              flexShrink: 0,
+            }}
           />
 
         </Stack>
 
-        <Divider sx={{ mb: 3 }} />
+
+        <Divider sx={{ mb: { xs: 1.25, sm: 1.5 } }} />
+
+
+        {/* =================================================
+            ORDER INFORMATION
+        ================================================= */}
 
         <Grid
           container
-          spacing={3}
+          spacing={{
+            xs: 0.75,
+            sm: 1,
+          }}
         >
 
-          <Grid item xs={12} md={6}>
+          {/* ORDER NUMBER */}
 
-            <Stack
-              direction="row"
-              spacing={2}
+          <Grid item xs={6} sm={6}>
+
+            <Box
+              sx={{
+                height: "100%",
+
+                p: {
+                  xs: 0.9,
+                  sm: 1.1,
+                },
+
+                border:
+                  "1px solid #E0E0E0",
+
+                boxSizing:
+                  "border-box",
+              }}
             >
 
-              <ShoppingBag color="success" />
+              <Stack
+                direction="row"
+                spacing={{
+                  xs: 0.75,
+                  sm: 1,
+                }}
+                alignItems="flex-start"
+              >
 
-              <Box>
+                <ShoppingBag
+                  color="success"
+                  sx={{
+                    fontSize: {
+                      xs: 17,
+                      sm: 20,
+                    },
 
-                <Typography
-                  color="text.secondary"
-                  variant="body2"
-                >
-                  Order Number
-                </Typography>
-
-                <Typography
-                  fontWeight="bold"
-                >
-                  {order.orderNumber}
-                </Typography>
-
-              </Box>
-
-            </Stack>
-
-          </Grid>
-
-          <Grid item xs={12} md={6}>
-
-            <Stack
-              direction="row"
-              spacing={2}
-            >
-
-              <CurrencyRupee color="success" />
-
-              <Box>
-
-                <Typography
-                  color="text.secondary"
-                  variant="body2"
-                >
-                  Total Amount
-                </Typography>
-
-                <Typography
-                  fontWeight="bold"
-                >
-                  ₹{order.finalAmount}
-                </Typography>
-
-              </Box>
-
-            </Stack>
-
-          </Grid>
-
-          <Grid item xs={12} md={6}>
-
-            <Stack
-              direction="row"
-              spacing={2}
-            >
-
-              <CreditCard color="success" />
-
-              <Box>
-
-                <Typography
-                  color="text.secondary"
-                  variant="body2"
-                >
-                  Payment Status
-                </Typography>
-
-                <Chip
-                  label={order.paymentStatus}
-                  color={
-                    order.paymentStatus === "PAID"
-                      ? "success"
-                      : "warning"
-                  }
-                  size="small"
+                    flexShrink: 0,
+                  }}
                 />
 
-              </Box>
+                <Box
+                  sx={{
+                    minWidth: 0,
+                  }}
+                >
 
-            </Stack>
+                  <Typography
+                    sx={{
+                      color:
+                        "text.secondary",
+
+                      fontSize: {
+                        xs: "8px",
+                        sm: "10px",
+                      },
+
+                      lineHeight: 1.3,
+                    }}
+                  >
+                    Order Number
+                  </Typography>
+
+                  <Typography
+                    sx={{
+                      mt: 0.25,
+
+                      fontSize: {
+                        xs: "10px",
+                        sm: "12px",
+                      },
+
+                      fontWeight: 700,
+
+                      wordBreak:
+                        "break-word",
+                    }}
+                  >
+                    {order.orderNumber}
+                  </Typography>
+
+                </Box>
+
+              </Stack>
+
+            </Box>
 
           </Grid>
 
-          <Grid item xs={12} md={6}>
 
-            <Stack
-              direction="row"
-              spacing={2}
+          {/* TOTAL AMOUNT */}
+
+          <Grid item xs={6} sm={6}>
+
+            <Box
+              sx={{
+                height: "100%",
+
+                p: {
+                  xs: 0.9,
+                  sm: 1.1,
+                },
+
+                border:
+                  "1px solid #E0E0E0",
+
+                boxSizing:
+                  "border-box",
+              }}
             >
 
-              <LocalShipping color="success" />
+              <Stack
+                direction="row"
+                spacing={{
+                  xs: 0.75,
+                  sm: 1,
+                }}
+                alignItems="flex-start"
+              >
 
-              <Box>
+                <CurrencyRupee
+                  color="success"
+                  sx={{
+                    fontSize: {
+                      xs: 17,
+                      sm: 20,
+                    },
 
-                <Typography
-                  color="text.secondary"
-                  variant="body2"
-                >
-                  Order Status
-                </Typography>
-
-                <Chip
-                  label={order.status}
-                  color={getStatusColor(order.status)}
-                  size="small"
+                    flexShrink: 0,
+                  }}
                 />
 
-              </Box>
+                <Box>
 
-            </Stack>
+                  <Typography
+                    sx={{
+                      color:
+                        "text.secondary",
+
+                      fontSize: {
+                        xs: "8px",
+                        sm: "10px",
+                      },
+
+                      lineHeight: 1.3,
+                    }}
+                  >
+                    Total Amount
+                  </Typography>
+
+                  <Typography
+                    sx={{
+                      mt: 0.25,
+
+                      fontSize: {
+                        xs: "11px",
+                        sm: "13px",
+                      },
+
+                      fontWeight: 800,
+
+                      color:
+                        "success.main",
+                    }}
+                  >
+                    ₹{order.finalAmount}
+                  </Typography>
+
+                </Box>
+
+              </Stack>
+
+            </Box>
 
           </Grid>
 
-          <Grid item xs={12} md={6}>
 
-            <Stack
-              direction="row"
-              spacing={2}
+          {/* PAYMENT STATUS */}
+
+          <Grid item xs={6} sm={6}>
+
+            <Box
+              sx={{
+                height: "100%",
+
+                p: {
+                  xs: 0.9,
+                  sm: 1.1,
+                },
+
+                border:
+                  "1px solid #E0E0E0",
+
+                boxSizing:
+                  "border-box",
+              }}
             >
 
-              <CalendarMonth color="success" />
+              <Stack
+                direction="row"
+                spacing={{
+                  xs: 0.75,
+                  sm: 1,
+                }}
+                alignItems="flex-start"
+              >
 
-              <Box>
+                <CreditCard
+                  color="success"
+                  sx={{
+                    fontSize: {
+                      xs: 17,
+                      sm: 20,
+                    },
 
-                <Typography
-                  color="text.secondary"
-                  variant="body2"
+                    flexShrink: 0,
+                  }}
+                />
+
+                <Box
+                  sx={{
+                    minWidth: 0,
+                  }}
                 >
-                  Order Date
-                </Typography>
 
-                <Typography
-                  fontWeight="bold"
-                >
-                  {
-                    order.placedAt
-                      ? new Date(order.placedAt).toLocaleDateString()
-                      : "-"
-                  }
-                </Typography>
+                  <Typography
+                    sx={{
+                      color:
+                        "text.secondary",
 
-              </Box>
+                      fontSize: {
+                        xs: "8px",
+                        sm: "10px",
+                      },
 
-            </Stack>
+                      lineHeight: 1.3,
+
+                      mb: 0.4,
+                    }}
+                  >
+                    Payment Status
+                  </Typography>
+
+                  <Chip
+                    label={
+                      order.paymentStatus
+                    }
+
+                    color={
+                      order.paymentStatus ===
+                      "PAID"
+                        ? "success"
+                        : "warning"
+                    }
+
+                    size="small"
+
+                    sx={{
+                      height: {
+                        xs: 19,
+                        sm: 22,
+                      },
+
+                      borderRadius: 0,
+
+                      fontSize: {
+                        xs: "7px",
+                        sm: "9px",
+                      },
+
+                      fontWeight: 700,
+                    }}
+                  />
+
+                </Box>
+
+              </Stack>
+
+            </Box>
 
           </Grid>
 
-          <Grid item xs={12} md={6}>
 
-            <Stack
-              direction="row"
-              spacing={2}
+          {/* ORDER STATUS */}
+
+          <Grid item xs={6} sm={6}>
+
+            <Box
+              sx={{
+                height: "100%",
+
+                p: {
+                  xs: 0.9,
+                  sm: 1.1,
+                },
+
+                border:
+                  "1px solid #E0E0E0",
+
+                boxSizing:
+                  "border-box",
+              }}
             >
 
-              <CurrencyRupee color="success" />
+              <Stack
+                direction="row"
+                spacing={{
+                  xs: 0.75,
+                  sm: 1,
+                }}
+                alignItems="flex-start"
+              >
 
-              <Box>
+                <LocalShipping
+                  color="success"
+                  sx={{
+                    fontSize: {
+                      xs: 17,
+                      sm: 20,
+                    },
 
-                <Typography
-                  color="text.secondary"
-                  variant="body2"
+                    flexShrink: 0,
+                  }}
+                />
+
+                <Box
+                  sx={{
+                    minWidth: 0,
+                  }}
                 >
-                  Selling Points Earned
-                </Typography>
 
-                <Typography
-                  fontWeight="bold"
-                >
-                  {order.sellingPoints || 0} SP
-                </Typography>
+                  <Typography
+                    sx={{
+                      color:
+                        "text.secondary",
 
-              </Box>
+                      fontSize: {
+                        xs: "8px",
+                        sm: "10px",
+                      },
 
-            </Stack>
+                      lineHeight: 1.3,
+
+                      mb: 0.4,
+                    }}
+                  >
+                    Order Status
+                  </Typography>
+
+                  <Chip
+                    label={
+                      order.status
+                    }
+
+                    color={
+                      getStatusColor(
+                        order.status
+                      )
+                    }
+
+                    size="small"
+
+                    sx={{
+                      height: {
+                        xs: 19,
+                        sm: 22,
+                      },
+
+                      borderRadius: 0,
+
+                      fontSize: {
+                        xs: "7px",
+                        sm: "9px",
+                      },
+
+                      fontWeight: 700,
+                    }}
+                  />
+
+                </Box>
+
+              </Stack>
+
+            </Box>
+
+          </Grid>
+
+
+          {/* ORDER DATE */}
+
+          <Grid item xs={6} sm={6}>
+
+            <Box
+              sx={{
+                height: "100%",
+
+                p: {
+                  xs: 0.9,
+                  sm: 1.1,
+                },
+
+                border:
+                  "1px solid #E0E0E0",
+
+                boxSizing:
+                  "border-box",
+              }}
+            >
+
+              <Stack
+                direction="row"
+                spacing={{
+                  xs: 0.75,
+                  sm: 1,
+                }}
+                alignItems="flex-start"
+              >
+
+                <CalendarMonth
+                  color="success"
+                  sx={{
+                    fontSize: {
+                      xs: 17,
+                      sm: 20,
+                    },
+
+                    flexShrink: 0,
+                  }}
+                />
+
+                <Box>
+
+                  <Typography
+                    sx={{
+                      color:
+                        "text.secondary",
+
+                      fontSize: {
+                        xs: "8px",
+                        sm: "10px",
+                      },
+
+                      lineHeight: 1.3,
+                    }}
+                  >
+                    Order Date
+                  </Typography>
+
+                  <Typography
+                    sx={{
+                      mt: 0.25,
+
+                      fontSize: {
+                        xs: "10px",
+                        sm: "12px",
+                      },
+
+                      fontWeight: 700,
+                    }}
+                  >
+                    {
+                      order.placedAt
+                        ? new Date(
+                            order.placedAt
+                          ).toLocaleDateString()
+                        : "-"
+                    }
+                  </Typography>
+
+                </Box>
+
+              </Stack>
+
+            </Box>
+
+          </Grid>
+
+
+          {/* SELLING POINTS */}
+
+          <Grid item xs={6} sm={6}>
+
+            <Box
+              sx={{
+                height: "100%",
+
+                p: {
+                  xs: 0.9,
+                  sm: 1.1,
+                },
+
+                border:
+                  "1px solid #E0E0E0",
+
+                boxSizing:
+                  "border-box",
+              }}
+            >
+
+              <Stack
+                direction="row"
+                spacing={{
+                  xs: 0.75,
+                  sm: 1,
+                }}
+                alignItems="flex-start"
+              >
+
+                <CurrencyRupee
+                  color="success"
+                  sx={{
+                    fontSize: {
+                      xs: 17,
+                      sm: 20,
+                    },
+
+                    flexShrink: 0,
+                  }}
+                />
+
+                <Box>
+
+                  <Typography
+                    sx={{
+                      color:
+                        "text.secondary",
+
+                      fontSize: {
+                        xs: "8px",
+                        sm: "10px",
+                      },
+
+                      lineHeight: 1.3,
+                    }}
+                  >
+                    Selling Points Earned
+                  </Typography>
+
+                  <Typography
+                    sx={{
+                      mt: 0.25,
+
+                      fontSize: {
+                        xs: "10px",
+                        sm: "12px",
+                      },
+
+                      fontWeight: 700,
+                    }}
+                  >
+                    {order.sellingPoints || 0} SP
+                  </Typography>
+
+                </Box>
+
+              </Stack>
+
+            </Box>
 
           </Grid>
 
         </Grid>
 
-        {
 
-          order.items?.length > 0 && (
+        {/* =================================================
+            PRODUCTS
+        ================================================= */}
 
-            <>
+        {order.items?.length > 0 && (
+          <>
+            <Divider
+              sx={{
+                my: {
+                  xs: 1.5,
+                  sm: 2,
+                },
+              }}
+            />
 
-              <Divider sx={{ my: 4 }} />
+            <Typography
+              sx={{
+                fontSize: {
+                  xs: "13px",
+                  sm: "15px",
+                },
 
-              <Typography
-                variant="h6"
-                fontWeight="bold"
-                mb={2}
-              >
-                Products
-              </Typography>
+                fontWeight: 800,
 
-              {
+                mb: {
+                  xs: 0.75,
+                  sm: 1,
+                },
+              }}
+            >
+              Products
+            </Typography>
 
-                order.items.map((item, index) => (
 
-                  <Box
-                    key={index}
+            {order.items.map(
+              (item, index) => (
+                <Box
+                  key={index}
+                  sx={{
+                    mb: {
+                      xs: 0.75,
+                      sm: 1,
+                    },
+
+                    p: {
+                      xs: 0.9,
+                      sm: 1.1,
+                    },
+
+                    bgcolor: "#F8F9FA",
+
+                    border:
+                      "1px solid #E0E0E0",
+
+                    borderRadius: 0,
+
+                    boxSizing:
+                      "border-box",
+                  }}
+                >
+
+                  <Typography
                     sx={{
-                      mb: 2,
-                      p: 2,
-                      bgcolor: "#F8F9FA",
-                      borderRadius: 2,
+                      fontSize: {
+                        xs: "10px",
+                        sm: "12px",
+                      },
+
+                      fontWeight: 700,
+
+                      lineHeight: 1.35,
+
+                      wordBreak:
+                        "break-word",
                     }}
                   >
+                    {item.productName}
+                  </Typography>
 
-                    <Typography
-                      fontWeight="bold"
-                    >
-                      {item.productName}
-                    </Typography>
 
-                    <Typography
-                      color="text.secondary"
-                    >
-                      Quantity : {item.quantity}
-                    </Typography>
+                  <Typography
+                    sx={{
+                      mt: 0.3,
 
-                    <Typography
-                      color="text.secondary"
-                    >
-                      Price : ₹{item.price}
-                    </Typography>
+                      fontSize: {
+                        xs: "8px",
+                        sm: "10px",
+                      },
 
-                    <Typography
-                      color="success.main"
-                      fontWeight="bold"
-                    >
-                      Total : ₹{item.total}
-                    </Typography>
+                      color:
+                        "text.secondary",
 
-                  </Box>
+                      lineHeight: 1.35,
+                    }}
+                  >
+                    Quantity : {item.quantity}
+                  </Typography>
 
-                ))
 
-              }
+                  <Typography
+                    sx={{
+                      mt: 0.2,
 
-            </>
+                      fontSize: {
+                        xs: "8px",
+                        sm: "10px",
+                      },
 
-          )
+                      color:
+                        "text.secondary",
 
-        }
+                      lineHeight: 1.35,
+                    }}
+                  >
+                    Price : ₹{item.price}
+                  </Typography>
+
+
+                  <Typography
+                    sx={{
+                      mt: 0.3,
+
+                      fontSize: {
+                        xs: "9px",
+                        sm: "11px",
+                      },
+
+                      color:
+                        "success.main",
+
+                      fontWeight: 800,
+
+                      lineHeight: 1.35,
+                    }}
+                  >
+                    Total : ₹{item.total}
+                  </Typography>
+
+                </Box>
+              )
+            )}
+
+          </>
+        )}
 
       </DialogContent>
 
     </Dialog>
 
   );
-
 };
+
 
 export default OrderDialog;

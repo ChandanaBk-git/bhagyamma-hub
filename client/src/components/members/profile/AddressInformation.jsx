@@ -15,7 +15,9 @@ import {
   Public,
 } from "@mui/icons-material";
 
+
 const AddressInformation = ({ user = {} }) => {
+
   const fields = [
     {
       icon: <Home color="success" />,
@@ -48,60 +50,154 @@ const AddressInformation = ({ user = {} }) => {
     },
   ];
 
+
   return (
     <Card
-      elevation={2}
+      elevation={0}
       sx={{
-        borderRadius: 4,
-        mb: 3,
         width: "100%",
+
+        mb: {
+          xs: 1,
+          sm: 1.5,
+          md: 2,
+        },
+
+        borderRadius: 0,
+
+        border: "1px solid #E0E0E0",
+
+        boxShadow: "none",
+
+        backgroundColor: "#FFFFFF",
+
+        overflow: "hidden",
       }}
     >
+
       <CardContent
         sx={{
           p: {
-            xs: 2,
-            sm: 3,
+            xs: "9px",
+            sm: "12px",
+            md: "15px",
+          },
+
+          "&:last-child": {
+            pb: {
+              xs: "9px",
+              sm: "12px",
+              md: "15px",
+            },
           },
         }}
       >
+
+        {/* HEADER */}
+
         <Typography
-          variant="h6"
-          fontWeight="bold"
-          mb={3}
+          fontWeight={600}
+          sx={{
+            fontSize: {
+              xs: "14px",
+              sm: "16px",
+              md: "18px",
+            },
+
+            lineHeight: 1.2,
+
+            mb: {
+              xs: "9px",
+              sm: "12px",
+              md: "15px",
+            },
+
+            color: "#292929",
+          }}
         >
           Address Information
         </Typography>
 
+
+        {/* ADDRESS FIELDS */}
+
         <Grid
           container
           spacing={{
-            xs: 2.5,
-            sm: 3,
+            xs: 1,
+            sm: 1.5,
+            md: 2,
           }}
         >
+
           {fields.map((field) => (
+
             <Grid
               item
               xs={12}
               sm={6}
               key={field.title}
+              sx={{
+                minWidth: 0,
+              }}
             >
+
               <Stack
                 direction="row"
-                spacing={2}
+                spacing={{
+                  xs: 1,
+                  sm: 1.25,
+                }}
                 alignItems="flex-start"
+                sx={{
+                  minWidth: 0,
+                }}
               >
+
+                {/* ICON */}
+
                 <Box
                   sx={{
-                    minWidth: 32,
+                    width: {
+                      xs: 26,
+                      sm: 30,
+                    },
+
+                    height: {
+                      xs: 26,
+                      sm: 30,
+                    },
+
+                    minWidth: {
+                      xs: 26,
+                      sm: 30,
+                    },
+
                     display: "flex",
+
                     alignItems: "center",
+
                     justifyContent: "center",
+
+                    border: "1px solid #E0E0E0",
+
+                    borderRadius: 0,
+
+                    flexShrink: 0,
+
+                    "& svg": {
+                      fontSize: {
+                        xs: 16,
+                        sm: 18,
+                      },
+                    },
                   }}
                 >
                   {field.icon}
                 </Box>
+
+
+                {/* FIELD CONTENT */}
 
                 <Box
                   sx={{
@@ -109,34 +205,64 @@ const AddressInformation = ({ user = {} }) => {
                     flex: 1,
                   }}
                 >
+
                   <Typography
-                    variant="body2"
                     color="text.secondary"
-                    mb={0.5}
+                    sx={{
+                      fontSize: {
+                        xs: "9px",
+                        sm: "10px",
+                        md: "11px",
+                      },
+
+                      lineHeight: 1.2,
+
+                      mb: "3px",
+                    }}
                   >
                     {field.title}
                   </Typography>
 
+
                   <Typography
-                    fontWeight="bold"
+                    fontWeight={600}
                     sx={{
+                      fontSize: {
+                        xs: "10px",
+                        sm: "11px",
+                        md: "12px",
+                      },
+
+                      lineHeight: 1.35,
+
                       wordBreak: "break-word",
+
                       whiteSpace:
                         field.title === "Address"
                           ? "pre-wrap"
                           : "normal",
+
+                      color: "#292929",
                     }}
                   >
                     {field.value}
                   </Typography>
+
                 </Box>
+
               </Stack>
+
             </Grid>
+
           ))}
+
         </Grid>
+
       </CardContent>
+
     </Card>
   );
 };
+
 
 export default AddressInformation;

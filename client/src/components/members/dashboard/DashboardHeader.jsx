@@ -13,8 +13,15 @@ import {
   Badge,
 } from "@mui/icons-material";
 
-const DashboardHeader = ({ user, summary }) => {
-  const rank = summary?.currentRank || "MEMBER";
+
+const DashboardHeader = ({
+  user,
+  summary,
+}) => {
+
+  const rank =
+    summary?.currentRank || "MEMBER";
+
 
   return (
     <Card
@@ -23,146 +30,222 @@ const DashboardHeader = ({ user, summary }) => {
         width: "100%",
         maxWidth: "100%",
         minWidth: 0,
+
         mb: {
-          xs: 1.5,
-          sm: 2,
-          md: 3,
+          xs: 1,
+          sm: 1.5,
+          md: 2,
         },
-        borderRadius: {
-          xs: 2.5,
-          sm: 3,
-          md: 4,
-        },
+
+        borderRadius: 0,
+
         background:
           "linear-gradient(135deg,#2E7D32,#43A047)",
+
         color: "#fff",
+
         overflow: "hidden",
+
         boxSizing: "border-box",
+
+        boxShadow: "none",
       }}
     >
+
       <CardContent
         sx={{
           p: {
-            xs: 2,
-            sm: 2.5,
-            md: 4,
+            xs: "10px",
+            sm: "13px",
+            md: "16px",
           },
+
           "&:last-child": {
             pb: {
-              xs: 2,
-              sm: 2.5,
-              md: 4,
+              xs: "10px",
+              sm: "13px",
+              md: "16px",
             },
           },
         }}
       >
+
         <Stack
-          direction={{
-            xs: "column",
-            sm: "row",
-          }}
+          direction="row"
           spacing={{
-            xs: 1.5,
-            sm: 2,
+            xs: 1,
+            sm: 1.5,
           }}
-          alignItems={{
-            xs: "flex-start",
-            sm: "center",
-          }}
+          alignItems="center"
           sx={{
             width: "100%",
             minWidth: 0,
           }}
         >
-          {/* AVATAR */}
+
+          {/* ==========================================
+              AVATAR
+          ========================================== */}
+
           <Avatar
             sx={{
               width: {
-                xs: 58,
-                sm: 68,
-                md: 75,
+                xs: 42,
+                sm: 50,
+                md: 56,
               },
+
               height: {
-                xs: 58,
-                sm: 68,
-                md: 75,
+                xs: 42,
+                sm: 50,
+                md: 56,
               },
+
               bgcolor: "#fff",
+
               color: "#2E7D32",
+
               fontSize: {
-                xs: 25,
-                sm: 29,
-                md: 32,
+                xs: 18,
+                sm: 22,
+                md: 25,
               },
-              fontWeight: "bold",
+
+              fontWeight: 700,
+
               flexShrink: 0,
             }}
           >
             {user?.name?.charAt(0)?.toUpperCase() || "M"}
           </Avatar>
 
-          {/* MEMBER INFORMATION */}
+
+          {/* ==========================================
+              MEMBER INFORMATION
+          ========================================== */}
+
           <Box
             sx={{
-              width: "100%",
               minWidth: 0,
+
               flex: 1,
+
+              overflow: "hidden",
             }}
           >
+
             <Typography
-              fontWeight={800}
+              fontWeight={700}
               sx={{
                 fontSize: {
-                  xs: "1.15rem",
-                  sm: "1.35rem",
-                  md: "1.5rem",
+                  xs: "13px",
+                  sm: "15px",
+                  md: "17px",
                 },
-                lineHeight: 1.3,
-                overflowWrap: "anywhere",
+
+                lineHeight: 1.2,
+
+                overflow: "hidden",
+
+                textOverflow: "ellipsis",
+
+                whiteSpace: "nowrap",
               }}
             >
               Welcome, {user?.name || "Member"}
             </Typography>
 
+
             <Typography
               sx={{
-                mt: 0.4,
-                opacity: 0.9,
+                mt: "3px",
+
+                opacity: 0.88,
+
                 fontSize: {
-                  xs: "0.8rem",
-                  sm: "0.9rem",
+                  xs: "9px",
+                  sm: "10px",
+                  md: "11px",
                 },
-                overflowWrap: "anywhere",
+
+                lineHeight: 1.2,
+
+                overflow: "hidden",
+
+                textOverflow: "ellipsis",
+
+                whiteSpace: "nowrap",
               }}
             >
               Member ID: {user?.userId || "--"}
             </Typography>
 
+
+            {/* STATUS / RANK */}
+
             <Box
               sx={{
-                mt: 1.5,
+                mt: {
+                  xs: "5px",
+                  sm: "6px",
+                },
+
                 display: "flex",
+
                 flexWrap: "wrap",
-                gap: 0.8,
+
+                gap: "4px",
+
                 width: "100%",
               }}
             >
+
               <Chip
                 icon={<WorkspacePremium />}
                 label={rank}
                 size="small"
                 sx={{
+                  height: {
+                    xs: "20px",
+                    sm: "22px",
+                  },
+
+                  borderRadius: 0,
+
                   bgcolor: "#fff",
+
                   color: "#2E7D32",
-                  fontWeight: 800,
-                  maxWidth: "100%",
+
+                  fontWeight: 700,
+
+                  maxWidth: "110px",
+
+                  fontSize: {
+                    xs: "8px",
+                    sm: "9px",
+                  },
+
+                  "& .MuiChip-icon": {
+                    fontSize: {
+                      xs: "12px",
+                      sm: "14px",
+                    },
+
+                    ml: "4px",
+                  },
 
                   "& .MuiChip-label": {
+                    px: "5px",
+
                     overflow: "hidden",
+
                     textOverflow: "ellipsis",
+
+                    whiteSpace: "nowrap",
                   },
                 }}
               />
+
 
               <Chip
                 icon={<Badge />}
@@ -177,68 +260,108 @@ const DashboardHeader = ({ user, summary }) => {
                     ? "success"
                     : "error"
                 }
+                sx={{
+                  height: {
+                    xs: "20px",
+                    sm: "22px",
+                  },
+
+                  borderRadius: 0,
+
+                  fontSize: {
+                    xs: "8px",
+                    sm: "9px",
+                  },
+
+                  "& .MuiChip-icon": {
+                    fontSize: {
+                      xs: "12px",
+                      sm: "14px",
+                    },
+
+                    ml: "4px",
+                  },
+
+                  "& .MuiChip-label": {
+                    px: "5px",
+                  },
+                }}
               />
+
             </Box>
+
           </Box>
 
-          {/* WALLET */}
+
+          {/* ==========================================
+              WALLET
+          ========================================== */}
+
           <Box
             sx={{
-              width: {
-                xs: "100%",
-                sm: "auto",
+              minWidth: {
+                xs: "65px",
+                sm: "85px",
+                md: "100px",
               },
-              minWidth: 0,
-              textAlign: {
-                xs: "left",
-                sm: "right",
-              },
+
               flexShrink: 0,
-              pt: {
-                xs: 0.5,
-                sm: 0,
-              },
-              borderTop: {
-                xs: "1px solid rgba(255,255,255,0.18)",
-                sm: "none",
-              },
-              mt: {
-                xs: 0.5,
-                sm: 0,
-              },
+
+              textAlign: "right",
             }}
           >
+
             <Typography
               sx={{
-                opacity: 0.85,
+                opacity: 0.82,
+
                 fontSize: {
-                  xs: "0.75rem",
-                  sm: "0.82rem",
+                  xs: "8px",
+                  sm: "9px",
+                  md: "10px",
                 },
+
+                lineHeight: 1.2,
+
+                whiteSpace: "nowrap",
               }}
             >
               Wallet Balance
             </Typography>
 
+
             <Typography
-              fontWeight={800}
+              fontWeight={700}
               sx={{
+                mt: "3px",
+
                 fontSize: {
-                  xs: "1.45rem",
-                  sm: "1.8rem",
-                  md: "2rem",
+                  xs: "15px",
+                  sm: "18px",
+                  md: "21px",
                 },
-                lineHeight: 1.2,
-                overflowWrap: "anywhere",
+
+                lineHeight: 1.1,
+
+                whiteSpace: "nowrap",
+
+                overflow: "hidden",
+
+                textOverflow: "ellipsis",
               }}
             >
               ₹{summary?.walletBalance || 0}
             </Typography>
+
           </Box>
+
         </Stack>
+
       </CardContent>
+
     </Card>
   );
 };
+
 
 export default DashboardHeader;
