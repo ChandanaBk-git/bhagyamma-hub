@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { motion } from "framer-motion";
 
 import {
   Alert,
@@ -41,6 +42,52 @@ import { register } from "../../services/auth.service";
 
 const REGISTRATION_STORAGE_KEY =
   "bhagyamma_registration_form";
+
+const pageVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: { duration: 0.35 },
+  },
+};
+
+const cardVariants = {
+  hidden: { opacity: 0, y: 35 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: {
+      duration: 0.6,
+      ease: [0.22, 1, 0.36, 1],
+    },
+  },
+};
+
+const iconVariants = {
+  hidden: { opacity: 0, scale: 0.8 },
+  visible: {
+    opacity: 1,
+    scale: 1,
+    transition: {
+      duration: 0.45,
+      delay: 0.15,
+      ease: "easeOut",
+    },
+  },
+};
+
+const contentVariants = {
+  hidden: { opacity: 0, y: 12 },
+  visible: (delay = 0) => ({
+    opacity: 1,
+    y: 0,
+    transition: {
+      duration: 0.4,
+      delay,
+      ease: "easeOut",
+    },
+  }),
+};
 
 const RegisterForm = () => {
   const navigate = useNavigate();
@@ -431,6 +478,10 @@ const RegisterForm = () => {
 
   return (
     <Box
+      component={motion.div}
+      variants={pageVariants}
+      initial="hidden"
+      animate="visible"
       sx={{
         minHeight:
           "calc(100vh - 75px)",
@@ -452,13 +503,23 @@ const RegisterForm = () => {
       }}
     >
       <Card
+        component={motion.div}
+        variants={cardVariants}
+        initial="hidden"
+        animate="visible"
         elevation={0}
         sx={{
+          "& .MuiOutlinedInput-root": {
+            borderRadius: 0,
+          },
+          "& .MuiButton-root": {
+            borderRadius: 0,
+          },
           width: "100%",
 
           maxWidth: 650,
 
-          borderRadius: 4,
+          borderRadius: 0,
 
           border:
             "1px solid #e5e7eb",
@@ -492,6 +553,10 @@ const RegisterForm = () => {
           }}
         >
           <Box
+            component={motion.div}
+            variants={iconVariants}
+            initial="hidden"
+            animate="visible"
             sx={{
               width: 58,
 
@@ -501,7 +566,7 @@ const RegisterForm = () => {
 
               mb: 2,
 
-              borderRadius: "50%",
+              borderRadius: 0,
 
               bgcolor:
                 "rgba(255,255,255,0.16)",
@@ -522,6 +587,11 @@ const RegisterForm = () => {
           </Box>
 
           <Typography
+            component={motion.h4}
+            variants={contentVariants}
+            initial="hidden"
+            animate="visible"
+            custom={0.22}
             variant="h4"
             fontWeight={800}
             sx={{
@@ -535,6 +605,11 @@ const RegisterForm = () => {
           </Typography>
 
           <Typography
+            component={motion.p}
+            variants={contentVariants}
+            initial="hidden"
+            animate="visible"
+            custom={0.32}
             sx={{
               mt: 1,
 
@@ -564,10 +639,14 @@ const RegisterForm = () => {
 
           {error && (
             <Alert
+              component={motion.div}
+              initial={{ opacity: 0, y: -8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3 }}
               severity="error"
               sx={{
                 mb: 3,
-                borderRadius: 2,
+                borderRadius: 0,
               }}
             >
               {error}
@@ -580,10 +659,14 @@ const RegisterForm = () => {
 
           {success && (
             <Alert
+              component={motion.div}
+              initial={{ opacity: 0, y: -8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3 }}
               severity="success"
               sx={{
                 mb: 3,
-                borderRadius: 2,
+                borderRadius: 0,
               }}
             >
               {success}
@@ -595,7 +678,11 @@ const RegisterForm = () => {
           ================================================= */}
 
           <Box
-            component="form"
+            component={motion.form}
+            variants={contentVariants}
+            initial="hidden"
+            animate="visible"
+            custom={0.4}
             onSubmit={handleSubmit}
             noValidate
           >
@@ -716,7 +803,7 @@ const RegisterForm = () => {
 
                     p: 1.5,
 
-                    borderRadius: 2,
+                    borderRadius: 0,
 
                     bgcolor:
                       "#f1f8f2",
@@ -872,6 +959,10 @@ const RegisterForm = () => {
                 xs={12}
               >
                 <Button
+                  component={motion.button}
+                  whileHover={{ y: -2 }}
+                  whileTap={{ y: 0 }}
+                  transition={{ duration: 0.18 }}
                   fullWidth
                   type="button"
                   variant="outlined"
@@ -886,7 +977,7 @@ const RegisterForm = () => {
                   sx={{
                     py: 1.35,
 
-                    borderRadius: 2.5,
+                    borderRadius: 0,
 
                     textTransform:
                       "none",
@@ -944,6 +1035,10 @@ const RegisterForm = () => {
                 xs={12}
               >
                 <Button
+                  component={motion.button}
+                  whileHover={{ y: -2 }}
+                  whileTap={{ y: 0 }}
+                  transition={{ duration: 0.18 }}
                   fullWidth
                   type="submit"
                   variant="contained"
@@ -955,7 +1050,7 @@ const RegisterForm = () => {
 
                     py: 1.5,
 
-                    borderRadius: 2.5,
+                    borderRadius: 0,
 
                     textTransform:
                       "none",
@@ -989,12 +1084,20 @@ const RegisterForm = () => {
           {/* LOGIN */}
 
           <Divider
+            component={motion.hr}
+            initial={{ opacity: 0, scaleX: 0.8 }}
+            animate={{ opacity: 1, scaleX: 1 }}
+            transition={{ duration: 0.4, delay: 0.7 }}
             sx={{
               my: 3,
             }}
           />
 
           <Stack
+            component={motion.div}
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4, delay: 0.76 }}
             direction="row"
             justifyContent="center"
             alignItems="center"

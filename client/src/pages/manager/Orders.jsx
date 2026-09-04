@@ -360,9 +360,9 @@ const SummaryCard = ({
         height: "100%",
 
         border:
-          "1px solid #E5E7EB",
+          "1px solid #2E7D32",
 
-        borderRadius: 3,
+        borderRadius: 0,
       }}
     >
 
@@ -388,15 +388,15 @@ const SummaryCard = ({
 
             alignItems: "center",
 
-            gap: 1.3,
+            gap: 1,
           }}
         >
 
           <Box
             sx={{
               width: {
-                xs: 40,
-                sm: 46,
+                xs: 32,
+                sm: 36,
               },
 
               height: {
@@ -406,7 +406,7 @@ const SummaryCard = ({
 
               flexShrink: 0,
 
-              borderRadius: 2,
+              borderRadius: 0,
 
               bgcolor:
                 `${color}12`,
@@ -443,8 +443,8 @@ const SummaryCard = ({
 
             <Typography
               fontSize={{
-                xs: 20,
-                sm: 23,
+                xs: 17,
+                sm: 20,
               }}
               fontWeight={800}
               sx={{
@@ -623,15 +623,15 @@ const OrderCard = ({
         width: "100%",
 
         border:
-          "1px solid #E5E7EB",
+          "1px solid #2E7D32",
 
-        borderRadius: 3,
+        borderRadius: 0,
       }}
     >
 
       <CardContent
         sx={{
-          p: 1.7,
+          p: 1.2,
 
           "&:last-child": {
             pb: 1.7,
@@ -652,7 +652,7 @@ const OrderCard = ({
 
             gap: 1,
 
-            mb: 1.5,
+            mb: 1,
           }}
         >
 
@@ -662,7 +662,7 @@ const OrderCard = ({
 
               alignItems: "center",
 
-              gap: 1.1,
+              gap: 0.8,
 
               minWidth: 0,
 
@@ -672,9 +672,9 @@ const OrderCard = ({
 
             <Avatar
               sx={{
-                width: 42,
+                width: 32,
 
-                height: 42,
+                height: 32,
 
                 flexShrink: 0,
 
@@ -741,7 +741,7 @@ const OrderCard = ({
             bgcolor:
               "#F8FAFC",
 
-            borderRadius: 2,
+            borderRadius: 0,
 
             mb: 1.2,
           }}
@@ -800,7 +800,7 @@ const OrderCard = ({
             sx={{
               p: 1.1,
 
-              borderRadius: 2,
+              borderRadius: 0,
 
               bgcolor: "#F8FAFC",
 
@@ -838,7 +838,7 @@ const OrderCard = ({
             sx={{
               p: 1.1,
 
-              borderRadius: 2,
+              borderRadius: 0,
 
               bgcolor: "#F8FAFC",
 
@@ -884,7 +884,7 @@ const OrderCard = ({
 
               p: 1.1,
 
-              borderRadius: 2,
+              borderRadius: 0,
 
               bgcolor: "#F8FAFC",
 
@@ -916,7 +916,7 @@ const OrderCard = ({
             sx={{
               p: 1.1,
 
-              borderRadius: 2,
+              borderRadius: 0,
 
               bgcolor: "#F8FAFC",
 
@@ -953,7 +953,7 @@ const OrderCard = ({
             sx={{
               p: 1.1,
 
-              borderRadius: 2,
+              borderRadius: 0,
 
               bgcolor: "#F8FAFC",
 
@@ -1050,12 +1050,12 @@ const DesktopOrderRow = ({
 
         px: 1.5,
 
-        py: 1.5,
+        py: 1,
 
         border:
-          "1px solid #E5E7EB",
+          "1px solid #2E7D32",
 
-        borderRadius: 2,
+        borderRadius: 0,
 
         mb: 1,
 
@@ -1646,9 +1646,9 @@ const Orders = () => {
           justifyContent:
             "space-between",
 
-          gap: 1.5,
+          gap: 1,
 
-          mb: 2,
+          mb: 1,
         }}
       >
 
@@ -1661,9 +1661,9 @@ const Orders = () => {
           <Typography
             sx={{
               fontSize: {
-                xs: 22,
-                sm: 27,
-                md: 30,
+                xs: 20,
+                sm: 24,
+                md: 27,
               },
 
               fontWeight: 800,
@@ -1706,9 +1706,9 @@ const Orders = () => {
             )
           }
           sx={{
-            minHeight: 42,
+            minHeight: 36,
 
-            borderRadius: 2,
+            borderRadius: 0,
 
             width: {
               xs: "100%",
@@ -1731,9 +1731,9 @@ const Orders = () => {
         <Alert
           severity="error"
           sx={{
-            mb: 2,
+            mb: 1,
 
-            borderRadius: 2,
+            borderRadius: 0,
           }}
 
           action={
@@ -1780,7 +1780,7 @@ const Orders = () => {
             sm: 2,
           },
 
-          mb: 2,
+          mb: 1,
         }}
       >
 
@@ -1852,12 +1852,12 @@ const Orders = () => {
       <Card
         elevation={0}
         sx={{
-          mb: 2,
+          mb: 1,
 
           border:
-            "1px solid #E5E7EB",
+            "1px solid #2E7D32",
 
-          borderRadius: 3,
+          borderRadius: 0,
         }}
       >
 
@@ -1896,7 +1896,7 @@ const Orders = () => {
             color="text.secondary"
             sx={{
               mt: 0.3,
-              mb: 1.5,
+              mb: 1,
             }}
           >
             Commission generated from managed member orders.
@@ -1915,18 +1915,18 @@ const Orders = () => {
                   "repeat(3, minmax(0, 1fr))",
               },
 
-              gap: 1.2,
+              gap: 1,
             }}
           >
 
             <Box
               sx={{
-                p: 1.3,
+                p: 1,
 
                 bgcolor:
                   "#F0FDF4",
 
-                borderRadius: 2,
+                borderRadius: 0,
 
                 minWidth: 0,
               }}
@@ -1958,12 +1958,12 @@ const Orders = () => {
 
             <Box
               sx={{
-                p: 1.3,
+                p: 1,
 
                 bgcolor:
                   "#F8FAFC",
 
-                borderRadius: 2,
+                borderRadius: 0,
 
                 minWidth: 0,
               }}
@@ -1994,12 +1994,12 @@ const Orders = () => {
 
             <Box
               sx={{
-                p: 1.3,
+                p: 1,
 
                 bgcolor:
                   "#EFF6FF",
 
-                borderRadius: 2,
+                borderRadius: 0,
 
                 minWidth: 0,
 
@@ -2051,11 +2051,11 @@ const Orders = () => {
         elevation={0}
         sx={{
           border:
-            "1px solid #E5E7EB",
+            "1px solid #2E7D32",
 
-          borderRadius: 3,
+          borderRadius: 0,
 
-          mb: 2,
+          mb: 1,
         }}
       >
 
@@ -2090,7 +2090,7 @@ const Orders = () => {
                   "2fr 1fr 1fr",
               },
 
-              gap: 1.2,
+              gap: 1,
             }}
           >
 
@@ -2316,15 +2316,15 @@ const Orders = () => {
           elevation={0}
           sx={{
             border:
-              "1px solid #E5E7EB",
+              "1px solid #2E7D32",
 
-            borderRadius: 3,
+            borderRadius: 0,
           }}
         >
 
           <CardContent
             sx={{
-              py: 5,
+              py: 2.5,
 
               textAlign:
                 "center",
@@ -2390,7 +2390,7 @@ const Orders = () => {
                 backgroundColor:
                   "#CBD5E1",
 
-                borderRadius: 10,
+                borderRadius: 0,
               },
             }}
           >
@@ -2408,15 +2408,15 @@ const Orders = () => {
 
                 px: 1.5,
 
-                py: 1.2,
+                py: 0.8,
 
                 bgcolor:
                   "#F8FAFC",
 
                 border:
-                  "1px solid #E5E7EB",
+                  "1px solid #2E7D32",
 
-                borderRadius: 2,
+                borderRadius: 0,
 
                 mb: 1,
 
@@ -2512,7 +2512,7 @@ const Orders = () => {
                   "repeat(2, minmax(0, 1fr))",
               },
 
-              gap: 1.5,
+              gap: 1,
 
               width: "100%",
             }}
@@ -2553,9 +2553,9 @@ const Orders = () => {
       <Alert
         severity="info"
         sx={{
-          mt: 2,
+          mt: 1,
 
-          borderRadius: 2,
+          borderRadius: 0,
 
           fontSize: {
             xs: 11,

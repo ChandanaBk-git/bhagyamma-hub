@@ -262,17 +262,17 @@ const SummaryCard = ({
         height: "100%",
 
         border:
-          "1px solid #E5E7EB",
+          "1px solid #2E7D32",
 
-        borderRadius: 3,
+        borderRadius: 0,
       }}
     >
 
       <Box
         sx={{
           p: {
-            xs: 1.5,
-            sm: 2,
+            xs: 1,
+            sm: 1.25,
           },
 
           display: "flex",
@@ -299,7 +299,7 @@ const SummaryCard = ({
 
             flexShrink: 0,
 
-            borderRadius: 2,
+            borderRadius: 0,
 
             bgcolor:
               `${color}14`,
@@ -750,9 +750,9 @@ const Products = () => {
           justifyContent:
             "space-between",
 
-          gap: 1.5,
+          gap: 1,
 
-          mb: 2,
+          mb: 1.25,
         }}
       >
 
@@ -838,9 +838,9 @@ const Products = () => {
         <Alert
           severity="error"
           sx={{
-            mb: 2,
+            mb: 1,
 
-            borderRadius: 2,
+            borderRadius: 0,
           }}
         >
           {error}
@@ -866,11 +866,11 @@ const Products = () => {
           },
 
           gap: {
-            xs: 1.3,
-            sm: 2,
+            xs: 0.75,
+            sm: 1,
           },
 
-          mb: 2,
+          mb: 1.25,
         }}
       >
 
@@ -938,19 +938,19 @@ const Products = () => {
         elevation={0}
         sx={{
           border:
-            "1px solid #E5E7EB",
+            "1px solid #2E7D32",
 
-          borderRadius: 3,
+          borderRadius: 0,
 
-          mb: 2,
+          mb: 1.25,
         }}
       >
 
         <Box
           sx={{
             p: {
-              xs: 1.5,
-              sm: 2,
+              xs: 1,
+              sm: 1.25,
             },
 
             display: "grid",
@@ -963,7 +963,7 @@ const Products = () => {
                 "2fr 1fr 1fr",
             },
 
-            gap: 1.2,
+            gap: 0.75,
           }}
         >
 
@@ -1100,9 +1100,9 @@ const Products = () => {
           justifyContent:
             "space-between",
 
-          mb: 1.2,
+          mb: 0.75,
 
-          gap: 1,
+          gap: 0.75,
         }}
       >
 
@@ -1143,17 +1143,17 @@ const Products = () => {
           elevation={0}
           sx={{
             border:
-              "1px solid #E5E7EB",
+              "1px solid #2E7D32",
 
-            borderRadius: 3,
+            borderRadius: 0,
           }}
         >
 
           <Box
             sx={{
-              py: 6,
+              py: 3,
 
-              px: 2,
+              px: 1.5,
 
               textAlign: "center",
             }}
@@ -1199,9 +1199,9 @@ const Products = () => {
           elevation={0}
           sx={{
             border:
-              "1px solid #E5E7EB",
+              "1px solid #2E7D32",
 
-            borderRadius: 3,
+            borderRadius: 0,
 
             overflow: "hidden",
 
@@ -1223,17 +1223,23 @@ const Products = () => {
                 backgroundColor:
                   "#CBD5E1",
 
-                borderRadius: 10,
+                borderRadius: 0,
               },
             }}
           >
 
             <Table
+              size="small"
               sx={{
-                minWidth: 900,
-
-                tableLayout:
-                  "fixed",
+                width: "100%",
+                minWidth: 0,
+                tableLayout: "fixed",
+                "& .MuiTableCell-root": {
+                  px: 0.7,
+                  py: 0.35,
+                  fontSize: 11,
+                  lineHeight: 1.2,
+                },
               }}
             >
 
@@ -1245,7 +1251,7 @@ const Products = () => {
   >
     <TableCell
       sx={{
-        width: 90,
+        width: 70,
         fontWeight: 800,
         fontSize: 12,
       }}
@@ -1255,7 +1261,7 @@ const Products = () => {
 
     <TableCell
       sx={{
-        width: 260,
+        width: 300,
         fontWeight: 800,
         fontSize: 12,
       }}
@@ -1264,19 +1270,9 @@ const Products = () => {
     </TableCell>
 
     <TableCell
-      sx={{
-        width: 190,
-        fontWeight: 800,
-        fontSize: 12,
-      }}
-    >
-      Category
-    </TableCell>
-
-    <TableCell
       align="right"
       sx={{
-        width: 130,
+        width: 120,
         fontWeight: 800,
         fontSize: 12,
       }}
@@ -1287,7 +1283,7 @@ const Products = () => {
     <TableCell
       align="center"
       sx={{
-        width: 140,
+        width: 120,
         fontWeight: 800,
         fontSize: 12,
       }}
@@ -1312,26 +1308,10 @@ const Products = () => {
                       );
 
 
-                    const stock =
-                      getProductStock(
-                        product
-                      );
-
-
                     const sold =
                       getSoldItems(
                         product
                       );
-
-
-                    const active =
-                      isProductActive(
-                        product
-                      );
-
-
-                    const outOfStock =
-                      stock <= 0;
 
 
                     return (
@@ -1360,7 +1340,7 @@ const Products = () => {
 
                               height: 54,
 
-                              borderRadius: 2,
+                              borderRadius: 0,
 
                               overflow:
                                 "hidden",
@@ -1467,32 +1447,6 @@ const Products = () => {
                         </TableCell>
 
 
-                        {/* CATEGORY */}
-
-                        <TableCell>
-
-                          <Typography
-                            fontSize={12}
-                            color="text.secondary"
-                            noWrap
-                            sx={{
-                              overflow:
-                                "hidden",
-
-                              textOverflow:
-                                "ellipsis",
-                            }}
-                          >
-                            {
-                              getProductCategory(
-                                product
-                              )
-                            }
-                          </Typography>
-
-                        </TableCell>
-
-
                         {/* PRICE */}
 
                         <TableCell
@@ -1539,91 +1493,6 @@ const Products = () => {
                         </TableCell>
 
 
-                        {/* STOCK */}
-
-                        <TableCell
-                          align="center"
-                        >
-
-                          <Typography
-                            fontSize={14}
-                            fontWeight={800}
-                            color={
-                              outOfStock
-                                ? "#DC2626"
-                                : stock <= 5
-                                  ? "#EA580C"
-                                  : "#15803D"
-                            }
-                          >
-                            {stock}
-                          </Typography>
-
-
-                          <Typography
-                            fontSize={9}
-                            color="text.secondary"
-                          >
-                            remaining
-                          </Typography>
-
-                        </TableCell>
-
-
-                        {/* STATUS */}
-
-                        <TableCell
-                          align="center"
-                        >
-
-                          {!active ? (
-
-                            <Chip
-                              size="small"
-                              label="Inactive"
-                              color="default"
-                              sx={{
-                                fontSize: 10,
-                              }}
-                            />
-
-                          ) : outOfStock ? (
-
-                            <Chip
-                              size="small"
-                              label="Out of Stock"
-                              color="error"
-                              sx={{
-                                fontSize: 10,
-                              }}
-                            />
-
-                          ) : stock <= 5 ? (
-
-                            <Chip
-                              size="small"
-                              label="Low Stock"
-                              color="warning"
-                              sx={{
-                                fontSize: 10,
-                              }}
-                            />
-
-                          ) : (
-
-                            <Chip
-                              size="small"
-                              label="Active"
-                              color="success"
-                              sx={{
-                                fontSize: 10,
-                              }}
-                            />
-
-                          )}
-
-                        </TableCell>
-
                       </TableRow>
 
                     );
@@ -1649,9 +1518,11 @@ const Products = () => {
       <Alert
         severity="info"
         sx={{
-          mt: 2,
+          mt: 1,
 
-          borderRadius: 2,
+          borderRadius: 0,
+
+          border: "1px solid #2E7D32",
 
           fontSize: {
             xs: 11,

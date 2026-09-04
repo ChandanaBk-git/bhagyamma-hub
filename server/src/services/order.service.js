@@ -219,7 +219,7 @@ const createOrder = async (
            cart.totalAmount
 
            delivery =
-           cart.deliveryCharge
+           ₹50
 
            finalAmount =
            subtotal
@@ -255,7 +255,9 @@ const createOrder = async (
                     cart.walletAmount || 0
                 );
 
-deliveryCharge = 50;
+            /* MEMBER DELIVERY CHARGE */
+
+            deliveryCharge = 50;
 
         } else {
 
@@ -274,10 +276,16 @@ deliveryCharge = 50;
                     guestWalletAmount || 0
                 );
 
-            deliveryCharge =
-                Number(
-                    guestDeliveryCharge || 0
-                );
+            /*
+             * Guest checkout also uses
+             * fixed ₹50 delivery.
+             *
+             * Even if frontend sends another
+             * value, use ₹50 here so the backend
+             * remains the source of truth.
+             */
+
+            deliveryCharge = 50;
         }
 
 
@@ -316,7 +324,6 @@ deliveryCharge = 50;
            = 8 SP
 
            NOT 10 SP.
-
            ------------------------------------------------------------------ */
 
         const sellingPoints =
@@ -558,7 +565,6 @@ deliveryCharge = 50;
 
            The cart must NOT disappear simply because
            the order was created.
-
            ------------------------------------------------------------------ */
 
 
@@ -649,6 +655,295 @@ const placeOrder = async (
         userId,
         orderData
     );
+};
+
+
+/* ==========================================================================
+   PLACE GUEST ORDER
+   ==========================================================================
+
+   IMPORTANT FIX:
+
+   order.controller.js calls:
+
+       orderService.placeGuestOrder(req.body)
+
+   Therefore this function MUST exist and MUST be exported.
+
+   Guest checkout sends:
+
+       name
+       mobile
+       email
+       address
+       city
+       state
+       pincode
+
+   createOrder() internally uses:
+
+       customerName
+       customerMobile
+       customerEmail
+       deliveryDetails
+
+   This function converts the guest checkout payload into
+   the format expected by createOrder().
+
+   ========================================================================== */
+
+const placeGuestOrder = async (
+    orderData = {}
+) => {
+
+    try {
+
+        /* ------------------------------------------------------------------
+           CUSTOMER NAME
+           ------------------------------------------------------------------ */
+
+        const customerName =
+            String(
+                orderData.customerName ||
+                orderData.name ||
+                ""
+            ).trim();
+
+
+        /* ------------------------------------------------------------------
+           CUSTOMER MOBILE
+           ------------------------------------------------------------------ */
+
+        const customerMobile =
+            String(
+                orderData.customerMobile ||
+                orderData.mobile ||
+                ""
+            )
+                .replace(
+                    /\D/g,
+                    ""
+                );
+
+
+        /* ------------------------------------------------------------------
+           CUSTOMER EMAIL
+           ------------------------------------------------------------------ */
+
+        const customerEmail =
+            String(
+                orderData.customerEmail ||
+                orderData.email ||
+                ""
+            )
+                .trim()
+                .toLowerCase();
+
+
+        /* ------------------------------------------------------------------
+           EXISTING DELIVERY DETAILS
+           ------------------------------------------------------------------ */
+
+        const existingDeliveryDetails =
+            orderData.deliveryDetails ||
+            {};
+
+
+        /* ------------------------------------------------------------------
+           NORMALIZED DELIVERY DETAILS
+           ------------------------------------------------------------------ */
+
+        const deliveryDetails = {
+
+            name:
+                String(
+                    existingDeliveryDetails.name ||
+                    customerName ||
+                    ""
+                ).trim(),
+
+            mobile:
+                String(
+                    existingDeliveryDetails.mobile ||
+                    customerMobile ||
+                    ""
+                )
+                    .replace(
+                        /\D/g,
+                        ""
+                    ),
+
+            address:
+                String(
+                    existingDeliveryDetails.address ||
+                    orderData.address ||
+                    ""
+                ).trim(),
+
+            city:
+                String(
+                    existingDeliveryDetails.city ||
+                    orderData.city ||
+                    ""
+                ).trim(),
+
+            state:
+                String(
+                    existingDeliveryDetails.state ||
+                    orderData.state ||
+                    ""
+                ).trim(),
+
+            pincode:
+                String(
+                    existingDeliveryDetails.pincode ||
+                    orderData.pincode ||
+                    ""
+                )
+                    .replace(
+                        /\D/g,
+                        ""
+                    ),
+        };
+
+
+        /* ------------------------------------------------------------------
+           VALIDATION
+           ------------------------------------------------------------------ */
+
+        if (!customerName) {
+
+            throw new Error(
+                "Customer name is required"
+            );
+        }
+
+
+        if (
+            customerMobile.length !== 10
+        ) {
+
+            throw new Error(
+                "Valid 10-digit mobile number is required"
+            );
+        }
+
+
+        if (
+            !deliveryDetails.address
+        ) {
+
+            throw new Error(
+                "Delivery address is required"
+            );
+        }
+
+
+        if (
+            !deliveryDetails.city
+        ) {
+
+            throw new Error(
+                "City is required"
+            );
+        }
+
+
+        if (
+            !deliveryDetails.state
+        ) {
+
+            throw new Error(
+                "State is required"
+            );
+        }
+
+
+        if (
+            deliveryDetails.pincode.length !== 6
+        ) {
+
+            throw new Error(
+                "Valid 6-digit pincode is required"
+            );
+        }
+
+
+        /* ------------------------------------------------------------------
+           NORMALIZED ORDER DATA
+           ------------------------------------------------------------------ */
+
+        const normalizedOrderData = {
+
+            ...orderData,
+
+            customerName,
+
+            customerMobile,
+
+            customerEmail,
+
+            deliveryDetails,
+
+            paymentMethod:
+                orderData.paymentMethod ||
+                "PHONEPE",
+
+            subtotal:
+                Number(
+                    orderData.subtotal || 0
+                ),
+
+            discount:
+                Number(
+                    orderData.discount || 0
+                ),
+
+            walletAmount:
+                Number(
+                    orderData.walletAmount || 0
+                ),
+
+            /*
+             * Backend source of truth:
+             * guest delivery = ₹50.
+             */
+
+            deliveryCharge:
+                50,
+
+            items:
+                Array.isArray(
+                    orderData.items
+                )
+                    ? orderData.items
+                    : [],
+        };
+
+
+        /* ------------------------------------------------------------------
+           CREATE GUEST ORDER
+           ------------------------------------------------------------------ */
+
+        const order =
+            await createOrder(
+                null,
+                normalizedOrderData
+            );
+
+
+        return order;
+
+
+    } catch (error) {
+
+        console.error(
+            "PLACE GUEST ORDER ERROR:",
+            error
+        );
+
+        throw error;
+    }
 };
 
 
@@ -845,138 +1140,229 @@ const getMyOrders = async (
    ========================================================================== */
 
 const getAllOrders = async (
-    options = {}
+    filters = {}
 ) => {
 
     try {
 
         const {
-            page = 1,
-            limit = 20,
             status,
             paymentStatus,
             orderType,
+            userId,
             search,
-        } = options;
+            startDate,
+            endDate,
+        } = filters;
 
 
-        const filter = {};
+        /* ------------------------------------------------------------------
+           BUILD QUERY
+           ------------------------------------------------------------------ */
+
+        const query = {};
 
 
         if (status) {
-            filter.status =
+            query.status =
                 status;
         }
 
 
         if (paymentStatus) {
-            filter.paymentStatus =
+            query.paymentStatus =
                 paymentStatus;
         }
 
 
         if (orderType) {
-            filter.orderType =
+            query.orderType =
                 orderType;
         }
 
 
-        if (search) {
+        if (userId) {
 
-            filter.$or = [
+            if (
+                mongoose.Types.ObjectId.isValid(
+                    userId
+                )
+            ) {
 
-                {
-                    orderNumber: {
-                        $regex:
-                            search,
-                        $options:
-                            "i",
-                    },
-                },
-
-                {
-                    customerName: {
-                        $regex:
-                            search,
-                        $options:
-                            "i",
-                    },
-                },
-
-                {
-                    customerMobile: {
-                        $regex:
-                            search,
-                        $options:
-                            "i",
-                    },
-                },
-
-                {
-                    customerEmail: {
-                        $regex:
-                            search,
-                        $options:
-                            "i",
-                    },
-                },
-
-            ];
+                query.userId =
+                    userId;
+            }
         }
 
 
-        const skip =
-            (Number(page) - 1) *
-            Number(limit);
+        /* ------------------------------------------------------------------
+           DATE FILTER
+           ------------------------------------------------------------------ */
+
+        if (
+            startDate ||
+            endDate
+        ) {
+
+            query.createdAt = {};
 
 
-        const [
-            orders,
-            total,
-        ] = await Promise.all([
+            if (startDate) {
 
-            Order.find(filter)
+                const start =
+                    new Date(
+                        startDate
+                    );
+
+                if (
+                    !Number.isNaN(
+                        start.getTime()
+                    )
+                ) {
+
+                    start.setHours(
+                        0,
+                        0,
+                        0,
+                        0
+                    );
+
+                    query.createdAt.$gte =
+                        start;
+                }
+            }
+
+
+            if (endDate) {
+
+                const end =
+                    new Date(
+                        endDate
+                    );
+
+                if (
+                    !Number.isNaN(
+                        end.getTime()
+                    )
+                ) {
+
+                    end.setHours(
+                        23,
+                        59,
+                        59,
+                        999
+                    );
+
+                    query.createdAt.$lte =
+                        end;
+                }
+            }
+
+
+            if (
+                Object.keys(
+                    query.createdAt
+                ).length === 0
+            ) {
+
+                delete query.createdAt;
+            }
+        }
+
+
+        /* ------------------------------------------------------------------
+           SEARCH
+           ------------------------------------------------------------------ */
+
+        if (search) {
+
+            const searchText =
+                String(
+                    search
+                ).trim();
+
+
+            if (searchText) {
+
+                const regex =
+                    new RegExp(
+                        searchText,
+                        "i"
+                    );
+
+
+                const searchConditions = [
+                    {
+                        orderNumber:
+                            regex,
+                    },
+                    {
+                        customerName:
+                            regex,
+                    },
+                    {
+                        customerMobile:
+                            regex,
+                    },
+                    {
+                        customerEmail:
+                            regex,
+                    },
+                ];
+
+
+                if (
+                    query.$or
+                ) {
+
+                    query.$and = [
+                        {
+                            $or:
+                                query.$or,
+                        },
+                        {
+                            $or:
+                                searchConditions,
+                        },
+                    ];
+
+                    delete query.$or;
+
+                } else {
+
+                    query.$or =
+                        searchConditions;
+                }
+            }
+        }
+
+
+        /* ------------------------------------------------------------------
+           FETCH ORDERS
+           ------------------------------------------------------------------ */
+
+        const orders =
+            await Order.find(
+                query
+            )
                 .populate(
                     "userId",
-                    "name userId email mobile role referralCode sellingPoints membershipStatus"
+                    "name userId email mobile role referralCode"
                 )
                 .sort({
                     createdAt: -1,
                 })
-                .skip(skip)
-                .limit(
-                    Number(limit)
-                )
-                .lean(),
-
-            Order.countDocuments(
-                filter
-            ),
-
-        ]);
+                .lean();
 
 
         if (!orders.length) {
-
-            return {
-
-                orders: [],
-
-                pagination: {
-
-                    page:
-                        Number(page),
-
-                    limit:
-                        Number(limit),
-
-                    total: 0,
-
-                    pages: 0,
-                },
-            };
+            return [];
         }
 
+
+        /* ------------------------------------------------------------------
+           FETCH ORDER ITEMS
+           ------------------------------------------------------------------ */
 
         const orderIds =
             orders.map(
@@ -994,10 +1380,14 @@ const getAllOrders = async (
             })
                 .populate(
                     "productId",
-                    "name productName images price"
+                    "name productName images price category brand"
                 )
                 .lean();
 
+
+        /* ------------------------------------------------------------------
+           GROUP ITEMS BY ORDER
+           ------------------------------------------------------------------ */
 
         const itemsByOrder = {};
 
@@ -1026,43 +1416,22 @@ const getAllOrders = async (
         }
 
 
-        const formattedOrders =
-            orders.map(
-                (order) => ({
+        /* ------------------------------------------------------------------
+           RETURN ORDERS
+           ------------------------------------------------------------------ */
 
-                    ...order,
+        return orders.map(
+            (order) => ({
 
-                    items:
-                        itemsByOrder[
-                            order._id.toString()
-                        ] || [],
+                ...order,
 
-                })
-            );
+                items:
+                    itemsByOrder[
+                        order._id.toString()
+                    ] || [],
 
-
-        return {
-
-            orders:
-                formattedOrders,
-
-            pagination: {
-
-                page:
-                    Number(page),
-
-                limit:
-                    Number(limit),
-
-                total,
-
-                pages:
-                    Math.ceil(
-                        total /
-                            Number(limit)
-                    ),
-            },
-        };
+            })
+        );
 
 
     } catch (error) {
@@ -1087,21 +1456,34 @@ const getOrdersByMobile = async (
 
     try {
 
-        if (!mobile) {
-            return [];
+        const normalizedMobile =
+            String(
+                mobile || ""
+            )
+                .replace(
+                    /\D/g,
+                    ""
+                );
+
+
+        if (
+            normalizedMobile.length !== 10
+        ) {
+
+            throw new Error(
+                "Valid 10-digit mobile number is required"
+            );
         }
 
 
-        const cleanMobile =
-            String(mobile).trim();
-
+        /* ------------------------------------------------------------------
+           FIND ORDERS
+           ------------------------------------------------------------------ */
 
         const orders =
             await Order.find({
-
                 customerMobile:
-                    cleanMobile,
-
+                    normalizedMobile,
             })
                 .sort({
                     createdAt: -1,
@@ -1114,6 +1496,10 @@ const getOrdersByMobile = async (
         }
 
 
+        /* ------------------------------------------------------------------
+           GET ORDER IDS
+           ------------------------------------------------------------------ */
+
         const orderIds =
             orders.map(
                 (order) =>
@@ -1121,21 +1507,27 @@ const getOrdersByMobile = async (
             );
 
 
+        /* ------------------------------------------------------------------
+           GET ITEMS
+           ------------------------------------------------------------------ */
+
         const items =
             await OrderItem.find({
-
                 orderId: {
                     $in:
                         orderIds,
                 },
-
             })
                 .populate(
                     "productId",
-                    "name productName images price"
+                    "name productName images price category brand"
                 )
                 .lean();
 
+
+        /* ------------------------------------------------------------------
+           GROUP ITEMS
+           ------------------------------------------------------------------ */
 
         const itemsByOrder = {};
 
@@ -1163,6 +1555,10 @@ const getOrdersByMobile = async (
             );
         }
 
+
+        /* ------------------------------------------------------------------
+           RETURN
+           ------------------------------------------------------------------ */
 
         return orders.map(
             (order) => ({
@@ -1194,1629 +1590,1549 @@ const getOrdersByMobile = async (
    LINK GUEST ORDERS TO USER
    ========================================================================== */
 
-const linkGuestOrdersToUser =
-    async (
-        userId,
-        mobile
-    ) => {
+const linkGuestOrdersToUser = async (
+    userId,
+    mobile
+) => {
 
-        try {
+    try {
 
-            if (
-                !userId ||
-                !mobile
-            ) {
+        if (!userId) {
 
-                return {
-
-                    matched: 0,
-
-                    linked: 0,
-
-                };
-            }
-
-
-            const cleanMobile =
-                String(
-                    mobile
-                ).trim();
-
-
-            const result =
-                await Order.updateMany(
-
-                    {
-
-                        customerMobile:
-                            cleanMobile,
-
-                        $or: [
-
-                            {
-                                userId:
-                                    null,
-                            },
-
-                            {
-                                userId: {
-                                    $exists:
-                                        false,
-                                },
-                            },
-
-                        ],
-
-                        orderType:
-                            "GUEST",
-
-                    },
-
-                    {
-
-                        $set: {
-
-                            userId,
-
-                            membershipLinked:
-                                true,
-
-                            linkedAt:
-                                new Date(),
-
-                            orderType:
-                                "MEMBER",
-
-                        },
-
-                    }
-
-                );
-
-
-            console.log(
-                "======================================"
+            throw new Error(
+                "User ID is required"
             );
-
-            console.log(
-                "GUEST ORDERS LINKED"
-            );
-
-            console.log(
-                "Mobile:",
-                cleanMobile
-            );
-
-            console.log(
-                "User:",
-                userId
-            );
-
-            console.log(
-                "Linked:",
-                result.modifiedCount
-            );
-
-            console.log(
-                "======================================"
-            );
-
-
-            return {
-
-                matched:
-                    result.matchedCount ||
-                    0,
-
-                linked:
-                    result.modifiedCount ||
-                    0,
-
-            };
-
-
-        } catch (error) {
-
-            console.error(
-                "LINK GUEST ORDERS ERROR:",
-                error
-            );
-
-            throw error;
         }
-    };
 
 
-/* ==========================================================================
-   PROCESS SELLING POINTS
-   ==========================================================================
+        if (
+            !mongoose.Types.ObjectId.isValid(
+                userId
+            )
+        ) {
 
-   IMPORTANT:
-
-   SP is processed ONLY after payment becomes PAID.
-
-   Delivery charge is NEVER included.
-
-   Example:
-
-   Product subtotal = ₹450
-   Delivery         = ₹50
-   Final payment    = ₹500
-
-   SP = 8
-
-   NOT 10.
-
-   ========================================================================== */
-
-const processSellingPoints =
-    async (
-        orderId
-    ) => {
-
-        try {
-
-            if (!orderId) {
-
-                return {
-
-                    success:
-                        false,
-
-                    message:
-                        "Order ID is required",
-
-                };
-            }
+            throw new Error(
+                "Invalid user ID"
+            );
+        }
 
 
-            const order =
-                await Order.findById(
-                    orderId
-                );
-
-
-            if (!order) {
-
-                return {
-
-                    success:
-                        false,
-
-                    message:
-                        "Order not found",
-
-                };
-            }
-
-
-            /* --------------------------------------------------------------
-               ALREADY PROCESSED
-               -------------------------------------------------------------- */
-
-            if (
-                order.sellingPointsProcessed ===
-                true
-            ) {
-
-                console.log(
-                    `SP SKIPPED: Already processed ${order.orderNumber}`
-                );
-
-
-                return {
-
-                    success:
-                        true,
-
-                    alreadyProcessed:
-                        true,
-
-                    sellingPoints:
-                        Number(
-                            order.sellingPoints ||
-                            0
-                        ),
-
-                };
-            }
-
-
-            /* --------------------------------------------------------------
-               PAYMENT CHECK
-               -------------------------------------------------------------- */
-
-            if (
-                String(
-                    order.paymentStatus ||
+        const normalizedMobile =
+            String(
+                mobile || ""
+            )
+                .replace(
+                    /\D/g,
                     ""
-                ).toUpperCase() !==
-                "PAID"
-            ) {
-
-                console.log(
-                    `SP SKIPPED: Payment not PAID ${order.orderNumber}`
                 );
 
 
-                return {
+        if (
+            normalizedMobile.length !== 10
+        ) {
 
-                    success:
-                        false,
+            throw new Error(
+                "Valid 10-digit mobile number is required"
+            );
+        }
 
-                    message:
-                        "Order payment is not PAID",
 
-                };
-            }
+        /* ------------------------------------------------------------------
+           LINK GUEST ORDERS
+           ------------------------------------------------------------------ */
 
-
-            /* --------------------------------------------------------------
-               GUEST CHECK
-               -------------------------------------------------------------- */
-
-            if (!order.userId) {
-
-                console.log(
-                    `SP WAITING: Guest order ${order.orderNumber}`
-                );
-
-
-                return {
-
-                    success:
-                        true,
-
-                    waitingForMembership:
-                        true,
-
-                    sellingPoints:
-                        Number(
-                            order.sellingPoints ||
-                            0
-                        ),
-
-                };
-            }
-
-
-            /* --------------------------------------------------------------
-               FIND USER
-               -------------------------------------------------------------- */
-
-            const user =
-                await User.findById(
-                    order.userId
-                );
-
-
-            if (!user) {
-
-                console.log(
-                    `SP SKIPPED: User not found for ${order.orderNumber}`
-                );
-
-
-                return {
-
-                    success:
-                        false,
-
-                    message:
-                        "User not found",
-
-                };
-            }
-
-
-            /* --------------------------------------------------------------
-               ROLE CHECK
-               -------------------------------------------------------------- */
-
-            const allowedRoles = [
-
-                "MEMBER",
-
-                "MANAGER",
-
-            ];
-
-
-            const userRole =
-                String(
-                    user.role || ""
-                ).toUpperCase();
-
-
-            if (
-                !allowedRoles.includes(
-                    userRole
-                )
-            ) {
-
-                console.log(
-                    `SP SKIPPED: Role ${user.role} not eligible`
-                );
-
-
-                return {
-
-                    success:
-                        false,
-
-                    message:
-                        "User role is not eligible for selling points",
-
-                };
-            }
-
-
-            /* --------------------------------------------------------------
-               SELLING POINT QUALIFYING AMOUNT
-               --------------------------------------------------------------
-
-               ONLY subtotal.
-
-               Delivery charge is excluded.
-
-               -------------------------------------------------------------- */
-
-            const amount =
-                Number(
-                    order.subtotal ||
-                    0
-                );
-
-
-            const calculatedSP =
-                calculateOrderSellingPoints(
-                    amount
-                );
-
-
-            /* --------------------------------------------------------------
-               ZERO SP
-               -------------------------------------------------------------- */
-
-            if (
-                calculatedSP <= 0
-            ) {
-
-                await Order.findByIdAndUpdate(
-
-                    order._id,
-
-                    {
-
-                        $set: {
-
-                            sellingPoints:
-                                0,
-
-                            sellingPointsProcessed:
-                                true,
-
-                            sellingPointsProcessedAt:
-                                new Date(),
-
-                        },
-
-                    }
-
-                );
-
-
-                console.log(
-                    `SP PROCESSED: 0 SP for ${order.orderNumber}`
-                );
-
-
-                return {
-
-                    success:
-                        true,
-
-                    sellingPoints:
-                        0,
-
-                };
-            }
-
-
-            /* --------------------------------------------------------------
-               SELLING POINT SERVICE
-               -------------------------------------------------------------- */
-
-            let spResult =
-                null;
-
-
-            const sellingPointAmount =
-                Number(
-                    order.subtotal ||
-                    0
-                );
-
-
-            /* --------------------------------------------------------------
-               METHOD 1
-               -------------------------------------------------------------- */
-
-            if (
-                typeof
-                    sellingPointService
-                        .updateSellingPoints ===
-                "function"
-            ) {
-
-                spResult =
-                    await
-                        sellingPointService
-                            .updateSellingPoints(
-
-                                user._id,
-
-                                sellingPointAmount,
-
-                                order._id
-
-                            );
-
-            }
-
-            /* --------------------------------------------------------------
-               METHOD 2
-               -------------------------------------------------------------- */
-
-            else if (
-                typeof
-                    sellingPointService
-                        .processPurchaseSellingPoints ===
-                "function"
-            ) {
-
-                spResult =
-                    await
-                        sellingPointService
-                            .processPurchaseSellingPoints(
-
-                                user._id,
-
-                                sellingPointAmount,
-
-                                order._id
-
-                            );
-
-            }
-
-            /* --------------------------------------------------------------
-               METHOD 3
-               -------------------------------------------------------------- */
-
-            else if (
-                typeof
-                    sellingPointService
-                        .addPurchaseSellingPoints ===
-                "function"
-            ) {
-
-                spResult =
-                    await
-                        sellingPointService
-                            .addPurchaseSellingPoints(
-
-                                user._id,
-
-                                sellingPointAmount,
-
-                                order._id
-
-                            );
-
-            }
-
-            else {
-
-                throw new Error(
-                    "No compatible selling point service method found"
-                );
-            }
-
-
-            /* --------------------------------------------------------------
-               MARK ORDER SP AS PROCESSED
-               -------------------------------------------------------------- */
-
-            await Order.findByIdAndUpdate(
-
-                order._id,
+        const result =
+            await Order.updateMany(
 
                 {
+                    orderType:
+                        "GUEST",
 
+                    userId:
+                        null,
+
+                    customerMobile:
+                        normalizedMobile,
+                },
+
+                {
                     $set: {
-
-                        sellingPoints:
-                            calculatedSP,
-
-                        sellingPointsProcessed:
-                            true,
-
-                        sellingPointsProcessedAt:
-                            new Date(),
-
+                        userId,
+                        orderType:
+                            "MEMBER",
                     },
-
                 }
-
             );
 
 
-            console.log(
-                "======================================"
-            );
-
-            console.log(
-                "SP PROCESSED"
-            );
-
-            console.log(
-                "User:",
-                user.userId
-            );
-
-            console.log(
-                "Role:",
-                user.role
-            );
-
-            console.log(
-                "Order:",
-                order.orderNumber
-            );
-
-            console.log(
-                "Product Subtotal: ₹",
-                Number(
-                    order.subtotal ||
-                    0
-                )
-            );
-
-            console.log(
-                "Delivery Charge: ₹",
-                Number(
-                    order.deliveryCharge ||
-                    0
-                )
-            );
-
-            console.log(
-                "Customer Payment: ₹",
-                Number(
-                    order.finalAmount ||
-                    0
-                )
-            );
-
-            console.log(
-                "Selling Point Basis: ₹",
-                amount
-            );
-
-            console.log(
-                "Selling Points Awarded:",
-                calculatedSP
-            );
-
-            console.log(
-                "======================================"
-            );
-
-
-            return {
-
-                success:
-                    true,
-
-                sellingPoints:
-                    calculatedSP,
-
-                result:
-                    spResult,
-
-            };
-
-
-        } catch (error) {
-
-            console.error(
-                "PROCESS SELLING POINTS ERROR:",
-                error
-            );
-
-            throw error;
-        }
-    };
-
-/* ==========================================================================
-   UPDATE PAYMENT STATUS
-   ========================================================================== */
-
-const updatePaymentStatus =
-    async (
-        orderId,
-        paymentStatus,
-        paymentData = {}
-    ) => {
-
-        try {
-
-            if (
-                !mongoose.Types.ObjectId.isValid(
-                    orderId
-                )
-            ) {
-
-                throw new Error(
-                    "Invalid order ID"
-                );
-            }
-
-
-            const normalizedStatus =
-                String(
-                    paymentStatus || ""
-                ).toUpperCase();
-
-
-            const allowedStatuses = [
-
-                "PENDING",
-
-                "PAID",
-
-                "FAILED",
-
-                "REFUNDED",
-
-            ];
-
-
-            if (
-                !allowedStatuses.includes(
-                    normalizedStatus
-                )
-            ) {
-
-                throw new Error(
-                    "Invalid payment status"
-                );
-            }
-
-
-            const update = {
-
-                paymentStatus:
-                    normalizedStatus,
-
-            };
-
-
-            if (
-                paymentData.phonePeOrderId
-            ) {
-
-                update.phonePeOrderId =
-                    paymentData.phonePeOrderId;
-            }
-
-
-            if (
-                paymentData.phonePeTransactionId
-            ) {
-
-                update.phonePeTransactionId =
-                    paymentData.phonePeTransactionId;
-            }
-
-
-            /* --------------------------------------------------------------
-               PAYMENT SUCCESS
-               -------------------------------------------------------------- */
-
-            if (
-                normalizedStatus ===
-                "PAID"
-            ) {
-
-                update.paidAt =
-                    new Date();
-
-                update.status =
-                    "CONFIRMED";
-
-                update.confirmedAt =
-                    new Date();
-            }
-
-
-            const order =
-                await Order.findByIdAndUpdate(
-
-                    orderId,
-
-                    {
-
-                        $set:
-                            update,
-
-                    },
-
-                    {
-
-                        new:
-                            true,
-
-                        runValidators:
-                            true,
-
-                    }
-
-                );
-
-
-            if (!order) {
-
-                throw new Error(
-                    "Order not found"
-                );
-            }
-
-
-            /* --------------------------------------------------------------
-               PROCESS SP ONLY AFTER PAYMENT IS PAID
-               -------------------------------------------------------------- */
-
-            if (
-                normalizedStatus ===
-                "PAID"
-            ) {
-
-                try {
-
-                    await processSellingPoints(
-                        order._id
-                    );
-
-                } catch (spError) {
-
-                    console.error(
-                        "SP PROCESSING FAILED:",
-                        spError
-                    );
-
-                    /*
-                     * Payment remains PAID.
-                     *
-                     * SP processing can be retried later.
-                     */
-                }
-            }
-
-
-            return await getOrderById(
-                order._id
-            );
-
-
-        } catch (error) {
-
-            console.error(
-                "UPDATE PAYMENT STATUS ERROR:",
-                error
-            );
-
-            throw error;
-        }
-    };
-
-
-/* ==========================================================================
-   UPDATE ORDER STATUS
-   ========================================================================== */
-
-const updateOrderStatus =
-    async (
-        orderId,
-        status
-    ) => {
-
-        try {
-
-            if (
-                !mongoose.Types.ObjectId.isValid(
-                    orderId
-                )
-            ) {
-
-                throw new Error(
-                    "Invalid order ID"
-                );
-            }
-
-
-            const normalizedStatus =
-                String(
-                    status || ""
-                ).toUpperCase();
-
-
-            const allowedStatuses = [
-
-                "PLACED",
-
-                "CONFIRMED",
-
-                "PACKED",
-
-                "SHIPPED",
-
-                "DELIVERED",
-
-                "CANCELLED",
-
-            ];
-
-
-            if (
-                !allowedStatuses.includes(
-                    normalizedStatus
-                )
-            ) {
-
-                throw new Error(
-                    `Invalid order status: ${status}`
-                );
-            }
-
-
-            const update = {
-
-                status:
-                    normalizedStatus,
-
-            };
-
-
-            const now =
-                new Date();
-
-
-            if (
-                normalizedStatus ===
-                "CONFIRMED"
-            ) {
-
-                update.confirmedAt =
-                    now;
-            }
-
-
-            if (
-                normalizedStatus ===
-                "PACKED"
-            ) {
-
-                update.packedAt =
-                    now;
-            }
-
-
-            if (
-                normalizedStatus ===
-                "SHIPPED"
-            ) {
-
-                update.shippedAt =
-                    now;
-            }
-
-
-            if (
-                normalizedStatus ===
-                "DELIVERED"
-            ) {
-
-                update.deliveredAt =
-                    now;
-            }
-
-
-            if (
-                normalizedStatus ===
-                "CANCELLED"
-            ) {
-
-                update.cancelledAt =
-                    now;
-            }
-
-
-            const order =
-                await Order.findByIdAndUpdate(
-
-                    orderId,
-
-                    {
-
-                        $set:
-                            update,
-
-                    },
-
-                    {
-
-                        new:
-                            true,
-
-                        runValidators:
-                            true,
-
-                    }
-
-                );
-
-
-            if (!order) {
-
-                throw new Error(
-                    "Order not found"
-                );
-            }
-
-
-            return await getOrderById(
-                order._id
-            );
-
-
-        } catch (error) {
-
-            console.error(
-                "UPDATE ORDER STATUS ERROR:",
-                error
-            );
-
-            throw error;
-        }
-    };
-
-
-/* ==========================================================================
-   UPDATE ORDER STATUS ALIAS
-   ========================================================================== */
-
-const updateStatus =
-    async (
-        orderId,
-        status
-    ) => {
-
-        return updateOrderStatus(
-            orderId,
-            status
+        console.log(
+            "GUEST ORDERS LINKED:",
+            result.modifiedCount
         );
-    };
 
 
-/* ==========================================================================
-   CANCEL ORDER
-   ========================================================================== */
+        return {
+            matchedCount:
+                result.matchedCount,
 
-const cancelOrder =
-    async (
-        orderId,
-        userId = null
-    ) => {
+            modifiedCount:
+                result.modifiedCount,
+        };
 
-        try {
 
-            if (
-                !mongoose.Types.ObjectId.isValid(
-                    orderId
-                )
-            ) {
+    } catch (error) {
 
-                throw new Error(
-                    "Invalid order ID"
-                );
-            }
+        console.error(
+            "LINK GUEST ORDERS ERROR:",
+            error
+        );
 
-
-            const query = {
-
-                _id:
-                    orderId,
-
-            };
-
-
-            if (userId) {
-
-                query.userId =
-                    userId;
-            }
-
-
-            const order =
-                await Order.findOne(
-                    query
-                );
-
-
-            if (!order) {
-
-                throw new Error(
-                    "Order not found"
-                );
-            }
-
-
-            if (
-                String(
-                    order.status ||
-                    ""
-                ).toUpperCase() ===
-                "DELIVERED"
-            ) {
-
-                throw new Error(
-                    "Delivered orders cannot be cancelled"
-                );
-            }
-
-
-            if (
-                String(
-                    order.status ||
-                    ""
-                ).toUpperCase() ===
-                "CANCELLED"
-            ) {
-
-                return await getOrderById(
-                    order._id
-                );
-            }
-
-
-            order.status =
-                "CANCELLED";
-
-
-            order.cancelledAt =
-                new Date();
-
-
-            await order.save();
-
-
-            return await getOrderById(
-                order._id
-            );
-
-
-        } catch (error) {
-
-            console.error(
-                "CANCEL ORDER ERROR:",
-                error
-            );
-
-            throw error;
-        }
-    };
-
-
-/* ==========================================================================
-   DELETE ORDER
-   ========================================================================== */
-
-const deleteOrder =
-    async (
-        orderId
-    ) => {
-
-        try {
-
-            if (
-                !mongoose.Types.ObjectId.isValid(
-                    orderId
-                )
-            ) {
-
-                throw new Error(
-                    "Invalid order ID"
-                );
-            }
-
-
-            const order =
-                await Order.findById(
-                    orderId
-                );
-
-
-            if (!order) {
-
-                throw new Error(
-                    "Order not found"
-                );
-            }
-
-
-            await OrderItem.deleteMany({
-
-                orderId:
-                    order._id,
-
-            });
-
-
-            await Order.findByIdAndDelete(
-                order._id
-            );
-
-
-            return {
-
-                success:
-                    true,
-
-                message:
-                    "Order deleted successfully",
-
-            };
-
-
-        } catch (error) {
-
-            console.error(
-                "DELETE ORDER ERROR:",
-                error
-            );
-
-            throw error;
-        }
-    };
-
-
-/* ==========================================================================
-   GET ORDERS FOR MANAGER
-   ========================================================================== */
-
-const getManagerOrders =
-    async (
-        managerId,
-        options = {}
-    ) => {
-
-        try {
-
-            if (!managerId) {
-
-                throw new Error(
-                    "Manager ID is required"
-                );
-            }
-
-
-            const manager =
-                await User.findById(
-                    managerId
-                )
-                    .select(
-                        "userId role"
-                    )
-                    .lean();
-
-
-            if (!manager) {
-
-                throw new Error(
-                    "Manager not found"
-                );
-            }
-
-
-            const networkUsers =
-                await User.find({
-
-                    $or: [
-
-                        {
-                            _id:
-                                managerId,
-                        },
-
-                        {
-                            managerId:
-                                managerId,
-                        },
-
-                    ],
-
-                })
-                    .select(
-                        "_id"
-                    )
-                    .lean();
-
-
-            const userIds =
-                networkUsers.map(
-                    (user) =>
-                        user._id
-                );
-
-
-            if (
-                !userIds.some(
-                    (id) =>
-                        id.toString() ===
-                        managerId.toString()
-                )
-            ) {
-
-                userIds.push(
-                    managerId
-                );
-            }
-
-
-            const {
-
-                page = 1,
-
-                limit = 20,
-
-                status,
-
-                paymentStatus,
-
-            } = options;
-
-
-            const filter = {
-
-                userId: {
-
-                    $in:
-                        userIds,
-
-                },
-
-            };
-
-
-            if (status) {
-
-                filter.status =
-                    status;
-            }
-
-
-            if (paymentStatus) {
-
-                filter.paymentStatus =
-                    paymentStatus;
-            }
-
-
-            const skip =
-                (Number(page) - 1) *
-                Number(limit);
-
-
-            const [
-                orders,
-                total,
-            ] = await Promise.all([
-
-                Order.find(filter)
-                    .populate(
-                        "userId",
-                        "name userId email mobile role referralCode"
-                    )
-                    .sort({
-                        createdAt: -1,
-                    })
-                    .skip(skip)
-                    .limit(
-                        Number(limit)
-                    )
-                    .lean(),
-
-                Order.countDocuments(
-                    filter
-                ),
-
-            ]);
-
-
-            return {
-
-                orders,
-
-                pagination: {
-
-                    page:
-                        Number(page),
-
-                    limit:
-                        Number(limit),
-
-                    total,
-
-                    pages:
-                        Math.ceil(
-                            total /
-                                Number(limit)
-                        ),
-
-                },
-
-            };
-
-
-        } catch (error) {
-
-            console.error(
-                "GET MANAGER ORDERS ERROR:",
-                error
-            );
-
-            throw error;
-        }
-    };
-
-
-/* ==========================================================================
-   GET ORDER STATISTICS
-   ========================================================================== */
-
-const getOrderStats =
-    async (
-        filter = {}
-    ) => {
-
-        try {
-
-            const [
-
-                totalOrders,
-
-                placedOrders,
-
-                confirmedOrders,
-
-                packedOrders,
-
-                shippedOrders,
-
-                deliveredOrders,
-
-                cancelledOrders,
-
-                paidOrders,
-
-            ] = await Promise.all([
-
-                Order.countDocuments(
-                    filter
-                ),
-
-                Order.countDocuments({
-
-                    ...filter,
-
-                    status:
-                        "PLACED",
-
-                }),
-
-                Order.countDocuments({
-
-                    ...filter,
-
-                    status:
-                        "CONFIRMED",
-
-                }),
-
-                Order.countDocuments({
-
-                    ...filter,
-
-                    status:
-                        "PACKED",
-
-                }),
-
-                Order.countDocuments({
-
-                    ...filter,
-
-                    status:
-                        "SHIPPED",
-
-                }),
-
-                Order.countDocuments({
-
-                    ...filter,
-
-                    status:
-                        "DELIVERED",
-
-                }),
-
-                Order.countDocuments({
-
-                    ...filter,
-
-                    status:
-                        "CANCELLED",
-
-                }),
-
-                Order.countDocuments({
-
-                    ...filter,
-
-                    paymentStatus:
-                        "PAID",
-
-                }),
-
-            ]);
-
-
-            return {
-
-                totalOrders,
-
-                placedOrders,
-
-                confirmedOrders,
-
-                packedOrders,
-
-                shippedOrders,
-
-                deliveredOrders,
-
-                cancelledOrders,
-
-                paidOrders,
-
-            };
-
-
-        } catch (error) {
-
-            console.error(
-                "GET ORDER STATS ERROR:",
-                error
-            );
-
-            throw error;
-        }
-    };
+        throw error;
+    }
+};
 
 
 /* ==========================================================================
    CLAIM GUEST ORDERS
    ========================================================================== */
 
-const claimGuestOrders =
-    async (
-        userId,
-        mobile
-    ) => {
+const claimGuestOrders = async (
+    userId,
+    mobile
+) => {
 
-        try {
+    try {
 
-            const linkResult =
-                await linkGuestOrdersToUser(
-                    userId,
-                    mobile
+        if (!userId) {
+
+            throw new Error(
+                "User ID is required"
+            );
+        }
+
+
+        const normalizedMobile =
+            String(
+                mobile || ""
+            )
+                .replace(
+                    /\D/g,
+                    ""
                 );
 
 
-            const linkedOrders =
-                await Order.find({
+        if (
+            normalizedMobile.length !== 10
+        ) {
 
-                    userId,
+            throw new Error(
+                "Valid 10-digit mobile number is required"
+            );
+        }
+
+
+        const result =
+            await Order.updateMany(
+
+                {
+                    orderType:
+                        "GUEST",
+
+                    userId:
+                        null,
 
                     customerMobile:
-                        String(
-                            mobile
-                        ).trim(),
+                        normalizedMobile,
+                },
 
-                    paymentStatus:
-                        "PAID",
+                {
+                    $set: {
+                        userId,
 
-                    sellingPointsProcessed:
-                        false,
-
-                })
-                    .select(
-                        "_id"
-                    )
-                    .lean();
-
-
-            let processed =
-                0;
-
-
-            for (
-                const order
-                of linkedOrders
-            ) {
-
-                try {
-
-                    const result =
-                        await processSellingPoints(
-                            order._id
-                        );
-
-
-                    if (
-                        result?.success &&
-                        !result?.waitingForMembership
-                    ) {
-
-                        processed++;
-                    }
-
-
-                } catch (error) {
-
-                    console.error(
-
-                        `SP retry failed for ${order._id}:`,
-
-                        error
-
-                    );
+                        orderType:
+                            "MEMBER",
+                    },
                 }
-            }
+            );
+
+
+        return {
+            matchedCount:
+                result.matchedCount,
+
+            modifiedCount:
+                result.modifiedCount,
+        };
+
+
+    } catch (error) {
+
+        console.error(
+            "CLAIM GUEST ORDERS ERROR:",
+            error
+        );
+
+        throw error;
+    }
+};
+
+
+/* ==========================================================================
+   PROCESS SELLING POINTS
+   ==========================================================================
+
+   Selling points are processed only after payment is successful.
+
+   IMPORTANT:
+
+   - Order must be PAID.
+   - SP must not already be processed.
+   - Delivery charge is excluded.
+   - SP is calculated from product subtotal only.
+
+   ========================================================================== */
+
+const processSellingPoints = async (
+    orderId
+) => {
+
+    try {
+
+        /* ------------------------------------------------------------------
+           VALIDATE ORDER ID
+           ------------------------------------------------------------------ */
+
+        if (
+            !mongoose.Types.ObjectId.isValid(
+                orderId
+            )
+        ) {
+
+            throw new Error(
+                "Invalid order ID"
+            );
+        }
+
+
+        /* ------------------------------------------------------------------
+           FETCH ORDER
+           ------------------------------------------------------------------ */
+
+        const order =
+            await Order.findById(
+                orderId
+            );
+
+
+        if (!order) {
+
+            throw new Error(
+                "Order not found"
+            );
+        }
+
+
+        /* ------------------------------------------------------------------
+           PAYMENT CHECK
+           ------------------------------------------------------------------ */
+
+        if (
+            String(
+                order.paymentStatus ||
+                ""
+            ).toUpperCase() !==
+            "PAID"
+        ) {
+
+            throw new Error(
+                "Selling points can only be processed for paid orders"
+            );
+        }
+
+
+        /* ------------------------------------------------------------------
+           DUPLICATE CHECK
+           ------------------------------------------------------------------ */
+
+        if (
+            order.sellingPointsProcessed
+        ) {
+
+            return {
+                alreadyProcessed:
+                    true,
+
+                sellingPoints:
+                    Number(
+                        order.sellingPoints ||
+                        0
+                    ),
+            };
+        }
+
+
+        /* ------------------------------------------------------------------
+           CALCULATE SP
+           ------------------------------------------------------------------ */
+
+        const sellingPoints =
+            calculateOrderSellingPoints(
+                order.subtotal
+            );
+
+
+        /* ------------------------------------------------------------------
+           GUEST ORDER
+           
+           Guests do not have a member
+           referral tree, so there is
+           no member SP distribution.
+           ------------------------------------------------------------------ */
+
+        if (
+            !order.userId
+        ) {
+
+            order.sellingPoints =
+                sellingPoints;
+
+            order.sellingPointsProcessed =
+                true;
+
+            order.sellingPointsProcessedAt =
+                new Date();
+
+            await order.save();
 
 
             return {
+                alreadyProcessed:
+                    false,
 
-                ...linkResult,
-
-                processed,
-
+                sellingPoints,
             };
+        }
 
 
-        } catch (error) {
+        /* ------------------------------------------------------------------
+           MEMBER ORDER
+           ------------------------------------------------------------------ */
 
-            console.error(
-                "CLAIM GUEST ORDERS ERROR:",
-                error
+        const user =
+            await User.findById(
+                order.userId
             );
 
-            throw error;
-        }
-    };
 
+        if (!user) {
+
+            throw new Error(
+                "Order member not found"
+            );
+        }
+
+
+        /* ------------------------------------------------------------------
+           UPDATE ORDER
+           ------------------------------------------------------------------ */
+
+        order.sellingPoints =
+            sellingPoints;
+
+        order.sellingPointsProcessed =
+            true;
+
+        order.sellingPointsProcessedAt =
+            new Date();
+
+
+        await order.save();
+
+
+        /* ------------------------------------------------------------------
+           DISTRIBUTE SP
+           
+           sellingPointService is responsible
+           for the actual referral-tree logic.
+           ------------------------------------------------------------------ */
+
+        if (
+            sellingPoints > 0 &&
+            sellingPointService
+        ) {
+
+            if (
+                typeof
+                    sellingPointService
+                        .processOrderSellingPoints ===
+                "function"
+            ) {
+
+                await
+                    sellingPointService
+                        .processOrderSellingPoints(
+                            order,
+                            user,
+                            sellingPoints
+                        );
+
+            } else if (
+                typeof
+                    sellingPointService
+                        .processSellingPoints ===
+                "function"
+            ) {
+
+                await
+                    sellingPointService
+                        .processSellingPoints(
+                            order,
+                            user,
+                            sellingPoints
+                        );
+            }
+        }
+
+
+        return {
+            alreadyProcessed:
+                false,
+
+            sellingPoints,
+        };
+
+
+    } catch (error) {
+
+        console.error(
+            "PROCESS SELLING POINTS ERROR:",
+            error
+        );
+
+        throw error;
+    }
+};
+
+
+/* ==========================================================================
+   UPDATE PAYMENT STATUS
+   ========================================================================== */
+
+const updatePaymentStatus = async (
+    orderId,
+    paymentStatus,
+    paymentData = {}
+) => {
+
+    try {
+
+        if (
+            !mongoose.Types.ObjectId.isValid(
+                orderId
+            )
+        ) {
+
+            throw new Error(
+                "Invalid order ID"
+            );
+        }
+
+
+        const normalizedStatus =
+            String(
+                paymentStatus || ""
+            )
+                .trim()
+                .toUpperCase();
+
+
+        const allowedStatuses = [
+            "PENDING",
+            "PAID",
+            "FAILED",
+            "CANCELLED",
+            "REFUNDED",
+        ];
+
+
+        if (
+            !allowedStatuses.includes(
+                normalizedStatus
+            )
+        ) {
+
+            throw new Error(
+                `Invalid payment status: ${paymentStatus}`
+            );
+        }
+
+
+        const updateData = {
+
+            paymentStatus:
+                normalizedStatus,
+        };
+
+
+        /* ------------------------------------------------------------------
+           PHONEPE ORDER ID
+           ------------------------------------------------------------------ */
+
+        if (
+            paymentData.phonePeOrderId
+        ) {
+
+            updateData.phonePeOrderId =
+                paymentData.phonePeOrderId;
+        }
+
+
+        /* ------------------------------------------------------------------
+           PHONEPE TRANSACTION ID
+           ------------------------------------------------------------------ */
+
+        if (
+            paymentData.phonePeTransactionId
+        ) {
+
+            updateData.phonePeTransactionId =
+                paymentData.phonePeTransactionId;
+        }
+
+
+        /* ------------------------------------------------------------------
+           PAYMENT RESPONSE
+           ------------------------------------------------------------------ */
+
+        if (
+            paymentData.paymentResponse
+        ) {
+
+            updateData.paymentResponse =
+                paymentData.paymentResponse;
+        }
+
+
+        /* ------------------------------------------------------------------
+           PAID DATE
+           ------------------------------------------------------------------ */
+
+        if (
+            normalizedStatus ===
+            "PAID"
+        ) {
+
+            updateData.paidAt =
+                paymentData.paidAt
+                    ? new Date(
+                        paymentData.paidAt
+                    )
+                    : new Date();
+        }
+
+
+        /* ------------------------------------------------------------------
+           UPDATE
+           ------------------------------------------------------------------ */
+
+        const order =
+            await Order.findByIdAndUpdate(
+
+                orderId,
+
+                {
+                    $set:
+                        updateData,
+                },
+
+                {
+                    new:
+                        true,
+
+                    runValidators:
+                        true,
+                }
+            );
+
+
+        if (!order) {
+
+            throw new Error(
+                "Order not found"
+            );
+        }
+
+
+        /* ------------------------------------------------------------------
+           PROCESS SP AFTER PAYMENT
+           ------------------------------------------------------------------ */
+
+        if (
+            normalizedStatus ===
+            "PAID"
+        ) {
+
+            try {
+
+                await processSellingPoints(
+                    order._id
+                );
+
+            } catch (spError) {
+
+                /*
+                 * Payment itself succeeded.
+                 *
+                 * SP processing failure must be logged
+                 * separately rather than changing payment
+                 * status back to failed.
+                 */
+
+                console.error(
+                    "SELLING POINT PROCESSING ERROR AFTER PAYMENT:",
+                    spError
+                );
+            }
+        }
+
+
+        return order;
+
+
+    } catch (error) {
+
+        console.error(
+            "UPDATE PAYMENT STATUS ERROR:",
+            error
+        );
+
+        throw error;
+    }
+};
+/* ==========================================================================
+   UPDATE ORDER STATUS
+   ========================================================================== */
+
+const updateOrderStatus = async (
+    orderId,
+    status
+) => {
+
+    try {
+
+        if (
+            !mongoose.Types.ObjectId.isValid(
+                orderId
+            )
+        ) {
+
+            throw new Error(
+                "Invalid order ID"
+            );
+        }
+
+
+        const normalizedStatus =
+            String(
+                status || ""
+            )
+                .trim()
+                .toUpperCase();
+
+
+        const allowedStatuses = [
+            "PLACED",
+            "CONFIRMED",
+            "PROCESSING",
+            "SHIPPED",
+            "OUT_FOR_DELIVERY",
+            "DELIVERED",
+            "CANCELLED",
+        ];
+
+
+        if (
+            !allowedStatuses.includes(
+                normalizedStatus
+            )
+        ) {
+
+            throw new Error(
+                `Invalid order status: ${status}`
+            );
+        }
+
+
+        const order =
+            await Order.findById(
+                orderId
+            );
+
+
+        if (!order) {
+
+            throw new Error(
+                "Order not found"
+            );
+        }
+
+
+        /* ------------------------------------------------------------------
+           DO NOT ALLOW DELIVERED ORDER TO BE REOPENED
+           ------------------------------------------------------------------ */
+
+        if (
+            String(
+                order.status || ""
+            ).toUpperCase() ===
+            "DELIVERED" &&
+            normalizedStatus !==
+            "DELIVERED"
+        ) {
+
+            throw new Error(
+                "Delivered order cannot be moved to another status"
+            );
+        }
+
+
+        /* ------------------------------------------------------------------
+           DO NOT ALLOW CANCELLED ORDER TO BE REOPENED
+           ------------------------------------------------------------------ */
+
+        if (
+            String(
+                order.status || ""
+            ).toUpperCase() ===
+            "CANCELLED" &&
+            normalizedStatus !==
+            "CANCELLED"
+        ) {
+
+            throw new Error(
+                "Cancelled order cannot be reopened"
+            );
+        }
+
+
+        order.status =
+            normalizedStatus;
+
+
+        /* ------------------------------------------------------------------
+           STATUS DATES
+           ------------------------------------------------------------------ */
+
+        if (
+            normalizedStatus ===
+            "CONFIRMED"
+        ) {
+
+            order.confirmedAt =
+                new Date();
+        }
+
+
+        if (
+            normalizedStatus ===
+            "SHIPPED"
+        ) {
+
+            order.shippedAt =
+                new Date();
+        }
+
+
+        if (
+            normalizedStatus ===
+            "OUT_FOR_DELIVERY"
+        ) {
+
+            order.outForDeliveryAt =
+                new Date();
+        }
+
+
+        if (
+            normalizedStatus ===
+            "DELIVERED"
+        ) {
+
+            order.deliveredAt =
+                new Date();
+        }
+
+
+        if (
+            normalizedStatus ===
+            "CANCELLED"
+        ) {
+
+            order.cancelledAt =
+                new Date();
+        }
+
+
+        await order.save();
+
+
+        return order;
+
+
+    } catch (error) {
+
+        console.error(
+            "UPDATE ORDER STATUS ERROR:",
+            error
+        );
+
+        throw error;
+    }
+};
+
+
+/* ==========================================================================
+   UPDATE STATUS
+   ==========================================================================
+
+   Alias used by older controller/routes.
+
+   ========================================================================== */
+
+const updateStatus = async (
+    orderId,
+    status
+) => {
+
+    return updateOrderStatus(
+        orderId,
+        status
+    );
+};
+
+
+/* ==========================================================================
+   CANCEL ORDER
+   ========================================================================== */
+
+const cancelOrder = async (
+    orderId,
+    userId = null,
+    reason = ""
+) => {
+
+    try {
+
+        if (
+            !mongoose.Types.ObjectId.isValid(
+                orderId
+            )
+        ) {
+
+            throw new Error(
+                "Invalid order ID"
+            );
+        }
+
+
+        const query = {
+            _id: orderId,
+        };
+
+
+        /* ------------------------------------------------------------------
+           MEMBER OWNERSHIP
+           ------------------------------------------------------------------ */
+
+        if (userId) {
+
+            if (
+                !mongoose.Types.ObjectId.isValid(
+                    userId
+                )
+            ) {
+
+                throw new Error(
+                    "Invalid user ID"
+                );
+            }
+
+
+            query.userId =
+                userId;
+        }
+
+
+        const order =
+            await Order.findOne(
+                query
+            );
+
+
+        if (!order) {
+
+            throw new Error(
+                "Order not found"
+            );
+        }
+
+
+        /* ------------------------------------------------------------------
+           PAYMENT CHECK
+           ------------------------------------------------------------------ */
+
+        const paymentStatus =
+            String(
+                order.paymentStatus ||
+                ""
+            )
+                .trim()
+                .toUpperCase();
+
+
+        if (
+            paymentStatus ===
+            "PAID"
+        ) {
+
+            throw new Error(
+                "Paid order cannot be cancelled from this action"
+            );
+        }
+
+
+        /* ------------------------------------------------------------------
+           STATUS CHECK
+           ------------------------------------------------------------------ */
+
+        const currentStatus =
+            String(
+                order.status ||
+                ""
+            )
+                .trim()
+                .toUpperCase();
+
+
+        if (
+            [
+                "SHIPPED",
+                "OUT_FOR_DELIVERY",
+                "DELIVERED",
+            ].includes(
+                currentStatus
+            )
+        ) {
+
+            throw new Error(
+                "Order cannot be cancelled after shipping"
+            );
+        }
+
+
+        if (
+            currentStatus ===
+            "CANCELLED"
+        ) {
+
+            return order;
+        }
+
+
+        /* ------------------------------------------------------------------
+           CANCEL
+           ------------------------------------------------------------------ */
+
+        order.status =
+            "CANCELLED";
+
+
+        order.cancelledAt =
+            new Date();
+
+
+        order.cancellationReason =
+            String(
+                reason || ""
+            ).trim();
+
+
+        await order.save();
+
+
+        return order;
+
+
+    } catch (error) {
+
+        console.error(
+            "CANCEL ORDER ERROR:",
+            error
+        );
+
+        throw error;
+    }
+};
+
+
+/* ==========================================================================
+   DELETE ORDER
+   ========================================================================== */
+
+const deleteOrder = async (
+    orderId
+) => {
+
+    try {
+
+        if (
+            !mongoose.Types.ObjectId.isValid(
+                orderId
+            )
+        ) {
+
+            throw new Error(
+                "Invalid order ID"
+            );
+        }
+
+
+        const order =
+            await Order.findById(
+                orderId
+            );
+
+
+        if (!order) {
+
+            throw new Error(
+                "Order not found"
+            );
+        }
+
+
+        /* ------------------------------------------------------------------
+           PAID ORDERS SHOULD NOT BE DELETED
+           ------------------------------------------------------------------ */
+
+        if (
+            String(
+                order.paymentStatus ||
+                ""
+            ).toUpperCase() ===
+            "PAID"
+        ) {
+
+            throw new Error(
+                "Paid orders cannot be deleted"
+            );
+        }
+
+
+        /* ------------------------------------------------------------------
+           DELETE ORDER ITEMS FIRST
+           ------------------------------------------------------------------ */
+
+        await OrderItem.deleteMany({
+            orderId:
+                order._id,
+        });
+
+
+        /* ------------------------------------------------------------------
+           DELETE ORDER
+           ------------------------------------------------------------------ */
+
+        await Order.deleteOne({
+            _id:
+                order._id,
+        });
+
+
+        return {
+            success:
+                true,
+
+            orderId:
+                order._id,
+        };
+
+
+    } catch (error) {
+
+        console.error(
+            "DELETE ORDER ERROR:",
+            error
+        );
+
+        throw error;
+    }
+};
+
+
+/* ==========================================================================
+   GET MANAGER ORDERS
+   ========================================================================== */
+
+const getManagerOrders = async (
+    managerId
+) => {
+
+    try {
+
+        if (!managerId) {
+
+            throw new Error(
+                "Manager ID is required"
+            );
+        }
+
+
+        if (
+            !mongoose.Types.ObjectId.isValid(
+                managerId
+            )
+        ) {
+
+            throw new Error(
+                "Invalid manager ID"
+            );
+        }
+
+
+        const manager =
+            await User.findById(
+                managerId
+            )
+                .select(
+                    "_id name userId role referralCode"
+                )
+                .lean();
+
+
+        if (!manager) {
+
+            throw new Error(
+                "Manager not found"
+            );
+        }
+
+
+        /* ------------------------------------------------------------------
+           FIND MEMBERS UNDER MANAGER
+           ------------------------------------------------------------------ */
+
+        const members =
+            await User.find({
+                managerId:
+                    manager._id,
+            })
+                .select(
+                    "_id name userId email mobile"
+                )
+                .lean();
+
+
+        const memberIds =
+            members.map(
+                (member) =>
+                    member._id
+            );
+
+
+        /* ------------------------------------------------------------------
+           INCLUDE MANAGER'S OWN ORDERS
+           ------------------------------------------------------------------ */
+
+        memberIds.push(
+            manager._id
+        );
+
+
+        /* ------------------------------------------------------------------
+           FETCH ORDERS
+           ------------------------------------------------------------------ */
+
+        const orders =
+            await Order.find({
+
+                userId: {
+                    $in:
+                        memberIds,
+                },
+
+            })
+                .populate(
+                    "userId",
+                    "name userId email mobile role referralCode"
+                )
+                .sort({
+                    createdAt: -1,
+                })
+                .lean();
+
+
+        if (!orders.length) {
+            return [];
+        }
+
+
+        /* ------------------------------------------------------------------
+           FETCH ITEMS
+           ------------------------------------------------------------------ */
+
+        const orderIds =
+            orders.map(
+                (order) =>
+                    order._id
+            );
+
+
+        const items =
+            await OrderItem.find({
+
+                orderId: {
+                    $in:
+                        orderIds,
+                },
+
+            })
+                .populate(
+                    "productId",
+                    "name productName images price category brand"
+                )
+                .lean();
+
+
+        /* ------------------------------------------------------------------
+           GROUP ITEMS
+           ------------------------------------------------------------------ */
+
+        const itemsByOrder = {};
+
+
+        for (
+            const item
+            of items
+        ) {
+
+            const key =
+                item.orderId.toString();
+
+
+            if (
+                !itemsByOrder[key]
+            ) {
+
+                itemsByOrder[key] =
+                    [];
+            }
+
+
+            itemsByOrder[key].push(
+                item
+            );
+        }
+
+
+        /* ------------------------------------------------------------------
+           RETURN
+           ------------------------------------------------------------------ */
+
+        return orders.map(
+            (order) => ({
+
+                ...order,
+
+                items:
+                    itemsByOrder[
+                        order._id.toString()
+                    ] || [],
+
+            })
+        );
+
+
+    } catch (error) {
+
+        console.error(
+            "GET MANAGER ORDERS ERROR:",
+            error
+        );
+
+        throw error;
+    }
+};
+
+
+/* ==========================================================================
+   GET ORDER STATS
+   ========================================================================== */
+
+const getOrderStats = async (
+    filters = {}
+) => {
+
+    try {
+
+        const {
+            userId,
+            orderType,
+        } = filters;
+
+
+        const query = {};
+
+
+        if (userId) {
+
+            if (
+                mongoose.Types.ObjectId.isValid(
+                    userId
+                )
+            ) {
+
+                query.userId =
+                    userId;
+            }
+        }
+
+
+        if (orderType) {
+
+            query.orderType =
+                orderType;
+        }
+
+
+        /* ------------------------------------------------------------------
+           TOTAL ORDERS
+           ------------------------------------------------------------------ */
+
+        const totalOrders =
+            await Order.countDocuments(
+                query
+            );
+
+
+        /* ------------------------------------------------------------------
+           PAID ORDERS
+           ------------------------------------------------------------------ */
+
+        const paidOrders =
+            await Order.countDocuments({
+                ...query,
+
+                paymentStatus:
+                    "PAID",
+            });
+
+
+        /* ------------------------------------------------------------------
+           PENDING PAYMENT
+           ------------------------------------------------------------------ */
+
+        const pendingPaymentOrders =
+            await Order.countDocuments({
+                ...query,
+
+                paymentStatus:
+                    "PENDING",
+            });
+
+
+        /* ------------------------------------------------------------------
+           FAILED PAYMENT
+           ------------------------------------------------------------------ */
+
+        const failedPaymentOrders =
+            await Order.countDocuments({
+                ...query,
+
+                paymentStatus:
+                    "FAILED",
+            });
+
+
+        /* ------------------------------------------------------------------
+           CANCELLED
+           ------------------------------------------------------------------ */
+
+        const cancelledOrders =
+            await Order.countDocuments({
+                ...query,
+
+                status:
+                    "CANCELLED",
+            });
+
+
+        /* ------------------------------------------------------------------
+           DELIVERED
+           ------------------------------------------------------------------ */
+
+        const deliveredOrders =
+            await Order.countDocuments({
+                ...query,
+
+                status:
+                    "DELIVERED",
+            });
+
+
+        /* ------------------------------------------------------------------
+           TOTAL REVENUE
+           ------------------------------------------------------------------ */
+
+        const revenueResult =
+            await Order.aggregate([
+
+                {
+                    $match: {
+                        ...query,
+
+                        paymentStatus:
+                            "PAID",
+                    },
+                },
+
+                {
+                    $group: {
+
+                        _id:
+                            null,
+
+                        totalRevenue: {
+                            $sum:
+                                "$finalAmount",
+                        },
+
+                    },
+                },
+
+            ]);
+
+
+        const totalRevenue =
+            Number(
+                revenueResult?.[0]
+                    ?.totalRevenue || 0
+            );
+
+
+        /* ------------------------------------------------------------------
+           TOTAL SUBTOTAL
+           ------------------------------------------------------------------ */
+
+        const subtotalResult =
+            await Order.aggregate([
+
+                {
+                    $match: {
+                        ...query,
+
+                        paymentStatus:
+                            "PAID",
+                    },
+                },
+
+                {
+                    $group: {
+
+                        _id:
+                            null,
+
+                        totalSubtotal: {
+                            $sum:
+                                "$subtotal",
+                        },
+
+                    },
+                },
+
+            ]);
+
+
+        const totalSubtotal =
+            Number(
+                subtotalResult?.[0]
+                    ?.totalSubtotal || 0
+            );
+
+
+        /* ------------------------------------------------------------------
+           TOTAL DELIVERY
+           ------------------------------------------------------------------ */
+
+        const deliveryResult =
+            await Order.aggregate([
+
+                {
+                    $match: {
+                        ...query,
+
+                        paymentStatus:
+                            "PAID",
+                    },
+                },
+
+                {
+                    $group: {
+
+                        _id:
+                            null,
+
+                        totalDelivery: {
+                            $sum:
+                                "$deliveryCharge",
+                        },
+
+                    },
+                },
+
+            ]);
+
+
+        const totalDelivery =
+            Number(
+                deliveryResult?.[0]
+                    ?.totalDelivery || 0
+            );
+
+
+        return {
+
+            totalOrders,
+
+            paidOrders,
+
+            pendingPaymentOrders,
+
+            failedPaymentOrders,
+
+            cancelledOrders,
+
+            deliveredOrders,
+
+            totalRevenue,
+
+            totalSubtotal,
+
+            totalDelivery,
+
+        };
+
+
+    } catch (error) {
+
+        console.error(
+            "GET ORDER STATS ERROR:",
+            error
+        );
+
+        throw error;
+    }
+};
 
 /* ==========================================================================
    MODULE EXPORTS
@@ -2824,9 +3140,28 @@ const claimGuestOrders =
 
 module.exports = {
 
+    /* ------------------------------------------------------------------
+       ORDER CREATION
+       ------------------------------------------------------------------ */
+
     createOrder,
 
     placeOrder,
+
+    /*
+     * IMPORTANT:
+     * Required by:
+     *
+     * order.controller.js
+     * → orderService.placeGuestOrder()
+     */
+
+    placeGuestOrder,
+
+
+    /* ------------------------------------------------------------------
+       ORDER FETCHING
+       ------------------------------------------------------------------ */
 
     getOrderById,
 
@@ -2836,26 +3171,61 @@ module.exports = {
 
     getOrdersByMobile,
 
+
+    /* ------------------------------------------------------------------
+       GUEST ORDER MANAGEMENT
+       ------------------------------------------------------------------ */
+
     linkGuestOrdersToUser,
 
     claimGuestOrders,
 
+
+    /* ------------------------------------------------------------------
+       SELLING POINTS
+       ------------------------------------------------------------------ */
+
     processSellingPoints,
 
+    calculateOrderSellingPoints,
+
+
+    /* ------------------------------------------------------------------
+       PAYMENT
+       ------------------------------------------------------------------ */
+
     updatePaymentStatus,
+
+
+    /* ------------------------------------------------------------------
+       ORDER STATUS
+       ------------------------------------------------------------------ */
 
     updateOrderStatus,
 
     updateStatus,
 
+
+    /* ------------------------------------------------------------------
+       ORDER MANAGEMENT
+       ------------------------------------------------------------------ */
+
     cancelOrder,
 
     deleteOrder,
 
+
+    /* ------------------------------------------------------------------
+       MANAGER
+       ------------------------------------------------------------------ */
+
     getManagerOrders,
 
-    getOrderStats,
 
-    calculateOrderSellingPoints,
+    /* ------------------------------------------------------------------
+       STATISTICS
+       ------------------------------------------------------------------ */
+
+    getOrderStats,
 
 };

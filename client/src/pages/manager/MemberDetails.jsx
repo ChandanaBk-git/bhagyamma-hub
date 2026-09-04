@@ -604,8 +604,8 @@ const MemberDetails = () => {
         <Alert
           severity="error"
           sx={{
-            mb: 2,
-            borderRadius: 3,
+            mb: 1,
+            borderRadius: 0,
           }}
         >
           {error ||
@@ -625,7 +625,7 @@ const MemberDetails = () => {
             )
           }
           sx={{
-            borderRadius: 5,
+            borderRadius: 0,
             textTransform: "none",
             fontWeight: 700,
           }}
@@ -993,9 +993,9 @@ const MemberDetails = () => {
         minHeight: "100vh",
         backgroundColor: "#f5f7fa",
         p: {
-          xs: 1.5,
-          sm: 2,
-          md: 3,
+          xs: 1,
+          sm: 1.25,
+          md: 1.5,
         },
       }}
     >
@@ -1016,8 +1016,8 @@ const MemberDetails = () => {
             xs: "column",
             sm: "row",
           },
-          gap: 2,
-          mb: 2,
+          gap: 1,
+          mb: 1,
         }}
       >
 
@@ -1026,8 +1026,8 @@ const MemberDetails = () => {
           <Typography
             sx={{
               fontSize: {
-                xs: 24,
-                sm: 30,
+                xs: 20,
+                sm: 24,
               },
               fontWeight: 800,
               color: "#172033",
@@ -1058,7 +1058,7 @@ const MemberDetails = () => {
             )
           }
           sx={{
-            borderRadius: 5,
+            borderRadius: 0,
             textTransform: "none",
             fontWeight: 700,
             px: 3,
@@ -1077,18 +1077,17 @@ const MemberDetails = () => {
       <Card
         elevation={0}
         sx={{
-          borderRadius: 4,
-          mb: 2,
-          boxShadow:
-            "0 6px 22px rgba(0,0,0,0.07)",
+          borderRadius: 0,
+          mb: 1,
+          boxShadow: "none",
         }}
       >
 
         <CardContent
           sx={{
             p: {
-              xs: 2,
-              sm: 3,
+              xs: 1.25,
+              sm: 1.5,
             },
           }}
         >
@@ -1104,17 +1103,17 @@ const MemberDetails = () => {
                 xs: "column",
                 sm: "row",
               },
-              gap: 2,
+              gap: 1,
             }}
           >
 
             <Avatar
               sx={{
-                width: 78,
-                height: 78,
+                width: 54,
+                height: 54,
                 bgcolor: "#5DBB63",
                 color: "#145A1B",
-                fontSize: 32,
+                fontSize: 22,
                 fontWeight: 800,
               }}
             >
@@ -1132,8 +1131,8 @@ const MemberDetails = () => {
               <Typography
                 sx={{
                   fontSize: {
-                    xs: 22,
-                    sm: 28,
+                    xs: 18,
+                    sm: 22,
                   },
                   fontWeight: 800,
                   wordBreak: "break-word",
@@ -1431,8 +1430,8 @@ const MemberDetails = () => {
             sm: "repeat(2, 1fr)",
             lg: "repeat(4, 1fr)",
           },
-          gap: 2,
-          mb: 2,
+          gap: 1,
+          mb: 1,
         }}
       >
 
@@ -2142,8 +2141,8 @@ const MemberDetails = () => {
       <Alert
         severity="info"
         sx={{
-          mt: 2,
-          borderRadius: 3,
+          mt: 1,
+          borderRadius: 0,
           fontSize: {
             xs: 11,
             sm: 13,
@@ -2176,10 +2175,10 @@ const SectionCard = ({
     <Card
       elevation={0}
       sx={{
-        borderRadius: 4,
-        mb: 2,
-        boxShadow:
-          "0 6px 22px rgba(0,0,0,0.07)",
+        borderRadius: 0,
+        mb: 1,
+        boxShadow: "none",
+        border: "1px solid #2E7D32",
       }}
     >
 
@@ -2189,10 +2188,10 @@ const SectionCard = ({
           alignItems: "center",
           gap: 1,
           px: {
-            xs: 2,
-            sm: 2.5,
+            xs: 1.25,
+            sm: 1.5,
           },
-          py: 1.7,
+          py: 1,
           borderBottom:
             "1px solid #eeeeee",
         }}
@@ -2211,8 +2210,8 @@ const SectionCard = ({
         <Typography
           sx={{
             fontSize: {
-              xs: 17,
-              sm: 20,
+              xs: 14,
+              sm: 16,
             },
             fontWeight: 800,
             color: "#172033",
@@ -2227,13 +2226,13 @@ const SectionCard = ({
       <CardContent
         sx={{
           p: {
-            xs: 2,
-            sm: 2.5,
+            xs: 1.25,
+            sm: 1.5,
           },
           "&:last-child": {
             pb: {
-              xs: 2,
-              sm: 2.5,
+              xs: 1.25,
+              sm: 1.5,
             },
           },
         }}
@@ -2266,7 +2265,7 @@ const InfoGrid = ({
           md: "repeat(3, 1fr)",
           lg: "repeat(4, 1fr)",
         },
-        gap: 2,
+        gap: 1,
       }}
     >
       {children}
@@ -2328,8 +2327,8 @@ const InfoItem = ({
 
         <Typography
           fontSize={{
-            xs: 13,
-            sm: 14,
+            xs: 12,
+            sm: 13,
           }}
           fontWeight={600}
           sx={{
@@ -2365,7 +2364,7 @@ const StatItem = ({
         display: "flex",
         alignItems: "center",
         gap: 1.2,
-        minHeight: 65,
+        minHeight: 46,
       }}
     >
 
@@ -2373,7 +2372,7 @@ const StatItem = ({
         sx={{
           width: 45,
           height: 45,
-          borderRadius: "50%",
+          borderRadius: 0,
           backgroundColor: "#EAF6EC",
           color: "#2E7D32",
           display: "flex",
@@ -2401,7 +2400,7 @@ const StatItem = ({
 
 
         <Typography
-          fontSize={17}
+          fontSize={14}
           fontWeight={800}
           sx={{
             overflowWrap: "anywhere",
@@ -2434,10 +2433,10 @@ const SummaryCard = ({
     <Card
       elevation={0}
       sx={{
-        borderRadius: 4,
+        borderRadius: 0,
         height: "100%",
-        boxShadow:
-          "0 6px 22px rgba(0,0,0,0.07)",
+        boxShadow: "none",
+        border: "1px solid #2E7D32",
       }}
     >
 
@@ -2447,7 +2446,7 @@ const SummaryCard = ({
           sx={{
             display: "flex",
             alignItems: "center",
-            gap: 1.5,
+            gap: 1,
           }}
         >
 
@@ -2455,7 +2454,7 @@ const SummaryCard = ({
             sx={{
               width: 56,
               height: 56,
-              borderRadius: "50%",
+              borderRadius: 0,
               backgroundColor: "#EAF6EC",
               color: "#2E7D32",
               display: "flex",
@@ -2484,8 +2483,8 @@ const SummaryCard = ({
 
             <Typography
               fontSize={{
-                xs: 23,
-                sm: 26,
+                xs: 18,
+                sm: 20,
               }}
               fontWeight={800}
             >
@@ -2586,8 +2585,8 @@ const HistoryRow = ({
           xs: "flex-start",
           sm: "center",
         },
-        gap: 2,
-        py: 1.6,
+        gap: 1,
+        py: 1,
         borderBottom:
           "1px solid #eeeeee",
         "&:last-child": {
@@ -2642,8 +2641,8 @@ const HistoryRow = ({
 
         <Typography
           fontSize={{
-            xs: 14,
-            sm: 16,
+            xs: 13,
+            sm: 14,
           }}
           fontWeight={800}
         >
@@ -2665,8 +2664,8 @@ const HistoryRow = ({
             color={color}
             sx={{
               mt: 0.5,
-              height: 23,
-              fontSize: 10,
+              height: 20,
+              fontSize: 9,
             }}
           />
 
@@ -2706,8 +2705,8 @@ const DownlineRow = ({
       sx={{
         display: "flex",
         alignItems: "center",
-        gap: 1.5,
-        py: 1.5,
+        gap: 1,
+        py: 0.8,
         borderBottom:
           "1px solid #eeeeee",
         "&:last-child": {
@@ -2718,8 +2717,8 @@ const DownlineRow = ({
 
       <Avatar
         sx={{
-          width: 44,
-          height: 44,
+          width: 32,
+          height: 32,
           bgcolor: "#E8F5E9",
           color: "#2E7D32",
           fontWeight: 800,
@@ -2819,7 +2818,7 @@ const EmptyState = ({
 
     <Box
       sx={{
-        py: 4,
+        py: 2,
         textAlign: "center",
       }}
     >

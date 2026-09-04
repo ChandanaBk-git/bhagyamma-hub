@@ -16,39 +16,89 @@ const ProductSearch = ({
     <Box
       sx={{
         width: "100%",
-        maxWidth: 600,
+        maxWidth: 650,
         mx: "auto",
       }}
     >
       <TextField
         fullWidth
-        placeholder="Search products, category, brand..."
         value={searchTerm}
-        onChange={(e) =>
-          setSearchTerm(e.target.value)
-        }
+        onChange={(e) => setSearchTerm(e.target.value)}
+        placeholder="Search products, category, brand..."
+        variant="outlined"
         InputProps={{
           startAdornment: (
             <InputAdornment position="start">
-              <SearchIcon color="success" />
+              <SearchIcon
+                sx={{
+                  color: "#2E7D32",
+                  fontSize: {
+                    xs: 20,
+                    sm: 22,
+                  },
+                }}
+              />
             </InputAdornment>
           ),
 
-          endAdornment: searchTerm && (
+          endAdornment: searchTerm ? (
             <InputAdornment position="end">
               <IconButton
-                onClick={() =>
-                  setSearchTerm("")
-                }
+                size="small"
+                onClick={() => setSearchTerm("")}
+                sx={{
+                  color: "#777",
+                  p: 0.5,
+                }}
               >
-                <ClearIcon />
+                <ClearIcon
+                  sx={{
+                    fontSize: 17,
+                  }}
+                />
               </IconButton>
             </InputAdornment>
-          ),
+          ) : null,
         }}
         sx={{
           "& .MuiOutlinedInput-root": {
-            borderRadius: 4,
+            height: {
+              xs: 42,
+              sm: 46,
+            },
+
+            bgcolor: "#fff",
+
+            borderRadius: 0,
+
+            fontSize: {
+              xs: "0.68rem",
+              sm: "0.75rem",
+            },
+
+            color: "#333",
+
+            "& fieldset": {
+              borderColor: "#D5DCD6",
+            },
+
+            "&:hover fieldset": {
+              borderColor: "#A5C9A8",
+            },
+
+            "&.Mui-focused fieldset": {
+              borderColor: "#2E7D32",
+              borderWidth: "1px",
+            },
+          },
+
+          "& .MuiInputBase-input": {
+            py: 0,
+
+            "&::placeholder": {
+              color: "#999",
+              opacity: 1,
+            },
           },
         }}
       />

@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import logo from "../../assets/images/logo.png";
 
 import {
   AppBar,
@@ -19,7 +20,6 @@ import {
 
 import {
   Menu as MenuIcon,
-  ShoppingBag,
   ShoppingCartOutlined,
   Inventory2Outlined,
   PersonOutline,
@@ -196,9 +196,9 @@ const Navbar = () => {
             disableGutters
             sx={{
               minHeight: {
-                xs: 62,
-                sm: 70,
-                md: 76,
+                xs: 64,
+                sm: 68,
+                md: 72,
               },
 
               px: {
@@ -242,7 +242,7 @@ const Navbar = () => {
 
 
             {/* =================================================
-                LOGO
+                BRAND LOGO
             ================================================= */}
 
             <Box
@@ -251,61 +251,50 @@ const Navbar = () => {
                 navigate("/");
               }}
               sx={{
+                position: {
+                  xs: "absolute",
+                  md: "static",
+                },
+
+                left: {
+                  xs: "50%",
+                  md: "auto",
+                },
+
+                transform: {
+                  xs: "translateX(-50%)",
+                  md: "none",
+                },
+
                 display: "flex",
                 alignItems: "center",
-                gap: {
-                  xs: 0.7,
-                  sm: 1,
-                },
 
                 cursor: "pointer",
 
-                minWidth: 0,
-
-                flexShrink: 1,
+                flexShrink: 0,
               }}
             >
-              <ShoppingBag
+              <Box
+                component="img"
+                src={logo}
+                alt="Bhagyamma Hub"
                 sx={{
-                  color: "#2E7D32",
-
-                  fontSize: {
-                    xs: 27,
-                    sm: 32,
-                    md: 34,
+                  width: {
+                    xs: 48,
+                    sm: 54,
+                    md: 64,
                   },
 
-                  flexShrink: 0,
+                  height: {
+                    xs: 48,
+                    sm: 54,
+                    md: 64,
+                  },
+
+                  objectFit: "contain",
+                  display: "block",
                 }}
               />
-
-              <Typography
-                sx={{
-                  fontWeight: 700,
-
-                  color: "#2E7D32",
-
-                  letterSpacing: {
-                    xs: 0.2,
-                    sm: 0.5,
-                    md: 1,
-                  },
-
-                  fontSize: {
-                    xs: "1rem",
-                    sm: "1.25rem",
-                    md: "1.5rem",
-                  },
-
-                  whiteSpace: "nowrap",
-
-                  overflow: "hidden",
-
-                  textOverflow: "ellipsis",
-                }}
-              >
-                Bhagyamma Hub
-              </Typography>
             </Box>
 
 
@@ -336,10 +325,10 @@ const Navbar = () => {
                   sx={{
                     color: "#333",
 
-                    px: 1.8,
-                    py: 1,
+                    px: 1.25,
+                    py: 0.7,
 
-                    borderRadius: 2,
+                    borderRadius: 0,
 
                     textTransform: "none",
 
@@ -371,10 +360,10 @@ const Navbar = () => {
                 sx={{
                   color: "#333",
 
-                  px: 1.8,
-                  py: 1,
+                  px: 1.25,
+                  py: 0.7,
 
-                  borderRadius: 2,
+                  borderRadius: 0,
 
                   textTransform: "none",
 
@@ -405,10 +394,10 @@ const Navbar = () => {
                 sx={{
                   color: "#333",
 
-                  px: 1.8,
-                  py: 1,
+                  px: 1.25,
+                  py: 0.7,
 
-                  borderRadius: 2,
+                  borderRadius: 0,
 
                   textTransform: "none",
 
@@ -438,11 +427,13 @@ const Navbar = () => {
                     variant="outlined"
                     color="success"
                     sx={{
-                      ml: 1,
+                      ml: 0.5,
 
                       textTransform: "none",
 
-                      borderRadius: 2,
+                      borderRadius: 0,
+
+                      height: 34,
 
                       fontWeight: 700,
                     }}
@@ -458,7 +449,9 @@ const Navbar = () => {
                     sx={{
                       textTransform: "none",
 
-                      borderRadius: 2,
+                      borderRadius: 0,
+
+                      height: 34,
 
                       fontWeight: 700,
                     }}
@@ -482,11 +475,13 @@ const Navbar = () => {
                     variant="outlined"
                     color="success"
                     sx={{
-                      ml: 1,
+                      ml: 0.5,
 
                       textTransform: "none",
 
-                      borderRadius: 2,
+                      borderRadius: 0,
+
+                      height: 34,
 
                       fontWeight: 700,
                     }}
@@ -504,7 +499,9 @@ const Navbar = () => {
                     sx={{
                       textTransform: "none",
 
-                      borderRadius: 2,
+                      borderRadius: 0,
+
+                      height: 34,
 
                       fontWeight: 700,
                     }}
@@ -566,6 +563,57 @@ const Navbar = () => {
 
 
       {/* =====================================================
+          ANNOUNCEMENT BAR
+      ===================================================== */}
+
+      <Box
+        sx={{
+          height: {
+            xs: 22,
+            md: 24,
+          },
+
+          display: "flex",
+
+          alignItems: "center",
+
+          justifyContent: "center",
+
+          overflow: "hidden",
+
+          bgcolor: "#1B5E20",
+
+          color: "#fff",
+
+          borderBottom: "1px solid #154A18",
+        }}
+      >
+        <Typography
+          sx={{
+            fontSize: {
+              xs: "0.5rem",
+              sm: "0.55rem",
+              md: "0.6rem",
+            },
+
+            fontWeight: 700,
+
+            letterSpacing: {
+              xs: 0.6,
+              md: 1,
+            },
+
+            whiteSpace: "nowrap",
+
+            textTransform: "uppercase",
+          }}
+        >
+          Quality • Trust • Wellness • Family • Bhagyamma Hub
+        </Typography>
+      </Box>
+
+
+      {/* =====================================================
           MOBILE DRAWER
       ===================================================== */}
 
@@ -578,12 +626,13 @@ const Navbar = () => {
         }}
         sx={{
           "& .MuiDrawer-paper": {
-            width: {
-              xs: "82vw",
-              sm: 320,
-            },
+            width: "40vw",
 
-            maxWidth: 340,
+            minWidth: "40vw",
+
+            maxWidth: "40vw",
+
+            borderRadius: 0,
 
             boxSizing: "border-box",
           },
@@ -600,31 +649,34 @@ const Navbar = () => {
 
           <Box
             sx={{
-              p: 2.5,
+              minHeight: 64,
+
+              px: 1,
+
+              py: 1,
 
               display: "flex",
 
               alignItems: "center",
 
-              gap: 1,
+              justifyContent: "center",
+
+              borderBottom: "1px solid #E1E5E2",
+
+              overflow: "hidden",
             }}
           >
-            <ShoppingBag
+            <Box
+              component="img"
+              src={logo}
+              alt="Bhagyamma Hub"
               sx={{
-                color: "#2E7D32",
-                fontSize: 30,
+                width: 42,
+                height: 42,
+                objectFit: "contain",
+                display: "block",
               }}
             />
-
-            <Typography
-              variant="h6"
-              sx={{
-                color: "#2E7D32",
-                fontWeight: "bold",
-              }}
-            >
-              Bhagyamma Hub
-            </Typography>
           </Box>
 
           <Divider />
@@ -632,7 +684,12 @@ const Navbar = () => {
 
           {/* MENU */}
 
-          <List>
+          <List
+            disablePadding
+            sx={{
+              pt: 0.5,
+            }}
+          >
 
             {navItems.map((item) => (
               <ListItem
@@ -643,6 +700,21 @@ const Navbar = () => {
                   component={NavLink}
                   to={item.path}
                   onClick={closeDrawer}
+                  sx={{
+                    minHeight: 42,
+                    px: 1,
+                    py: 0.4,
+                    borderRadius: 0,
+                    overflow: "hidden",
+                    "&.active": {
+                      bgcolor: "#E8F5E9",
+                      color: "#1B5E20",
+                      fontWeight: 700,
+                    },
+                    "&:hover": {
+                      bgcolor: "#F5F9F5",
+                    },
+                  }}
                 >
                   <ListItemText
                     primary={item.name}
@@ -657,6 +729,15 @@ const Navbar = () => {
             <ListItem disablePadding>
               <ListItemButton
                 onClick={handleCartClick}
+                sx={{
+                  minHeight: 42,
+                  px: 1,
+                  py: 0.4,
+                  borderRadius: 0,
+                  "&:hover": {
+                    bgcolor: "#F5F9F5",
+                  },
+                }}
               >
                 <ShoppingCartOutlined
                   sx={{
@@ -679,6 +760,20 @@ const Navbar = () => {
                 component={NavLink}
                 to="/orders"
                 onClick={closeDrawer}
+                sx={{
+                  minHeight: 42,
+                  px: 1,
+                  py: 0.4,
+                  borderRadius: 0,
+                  "&.active": {
+                    bgcolor: "#E8F5E9",
+                    color: "#1B5E20",
+                    fontWeight: 700,
+                  },
+                  "&:hover": {
+                    bgcolor: "#F5F9F5",
+                  },
+                }}
               >
                 <Inventory2Outlined
                   sx={{
@@ -694,7 +789,7 @@ const Navbar = () => {
             </ListItem>
 
 
-            <Divider sx={{ my: 2 }} />
+            <Divider sx={{ my: 0.5 }} />
 
 
             {/* LOGGED OUT */}
@@ -706,6 +801,20 @@ const Navbar = () => {
                     component={NavLink}
                     to="/login"
                     onClick={closeDrawer}
+                    sx={{
+                      minHeight: 42,
+                      px: 1,
+                      py: 0.4,
+                      borderRadius: 0,
+                      "&.active": {
+                        bgcolor: "#E8F5E9",
+                        color: "#1B5E20",
+                        fontWeight: 700,
+                      },
+                      "&:hover": {
+                        bgcolor: "#F5F9F5",
+                      },
+                    }}
                   >
                     <ListItemText
                       primary="Login"
@@ -718,6 +827,20 @@ const Navbar = () => {
                     component={NavLink}
                     to="/register"
                     onClick={closeDrawer}
+                    sx={{
+                      minHeight: 42,
+                      px: 1,
+                      py: 0.4,
+                      borderRadius: 0,
+                      "&.active": {
+                        bgcolor: "#E8F5E9",
+                        color: "#1B5E20",
+                        fontWeight: 700,
+                      },
+                      "&:hover": {
+                        bgcolor: "#F5F9F5",
+                      },
+                    }}
                   >
                     <ListItemText
                       primary="Register"
@@ -737,6 +860,20 @@ const Navbar = () => {
                     component={NavLink}
                     to={profilePath}
                     onClick={closeDrawer}
+                    sx={{
+                      minHeight: 42,
+                      px: 1,
+                      py: 0.4,
+                      borderRadius: 0,
+                      "&.active": {
+                        bgcolor: "#E8F5E9",
+                        color: "#1B5E20",
+                        fontWeight: 700,
+                      },
+                      "&:hover": {
+                        bgcolor: "#F5F9F5",
+                      },
+                    }}
                   >
                     <PersonOutline
                       sx={{
@@ -754,6 +891,15 @@ const Navbar = () => {
                 <ListItem disablePadding>
                   <ListItemButton
                     onClick={handleLogout}
+                    sx={{
+                      minHeight: 42,
+                      px: 1,
+                      py: 0.4,
+                      borderRadius: 0,
+                      "&:hover": {
+                        bgcolor: "#F5F9F5",
+                      },
+                    }}
                   >
                     <LogoutOutlined
                       sx={{

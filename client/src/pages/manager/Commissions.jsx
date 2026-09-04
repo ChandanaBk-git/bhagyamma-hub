@@ -827,9 +827,9 @@ const Commissions = () => {
         minHeight: "100vh",
         backgroundColor: "#f5f7fa",
         padding: {
-          xs: "16px",
-          sm: "24px",
-          md: "32px",
+          xs: "8px",
+          sm: "12px",
+          md: "16px",
         },
         boxSizing: "border-box",
         overflowX: "hidden",
@@ -841,7 +841,7 @@ const Commissions = () => {
 
       <Box
         sx={{
-          marginBottom: "24px",
+          marginBottom: "10px",
         }}
       >
         <Box
@@ -849,21 +849,21 @@ const Commissions = () => {
             display: "flex",
             alignItems: "center",
             gap: "10px",
-            marginBottom: "8px",
+            marginBottom: "4px",
           }}
         >
           <TrendingUpIcon
             sx={{
               color: "#2e7d32",
-              fontSize: "30px",
+              fontSize: "24px",
             }}
           />
 
           <Typography
             sx={{
               fontSize: {
-                xs: "24px",
-                sm: "30px",
+                xs: "20px",
+                sm: "24px",
               },
               fontWeight: 700,
               color: "#202124",
@@ -892,8 +892,8 @@ const Commissions = () => {
         <Alert
           severity="error"
           sx={{
-            marginBottom: "20px",
-            borderRadius: "12px",
+            marginBottom: "8px",
+            borderRadius: 0,
           }}
         >
           {error}
@@ -908,21 +908,21 @@ const Commissions = () => {
         elevation={0}
         sx={{
           padding: {
-            xs: "20px",
-            sm: "28px",
+            xs: "10px",
+            sm: "14px",
           },
-          borderRadius: "20px",
-          marginBottom: "24px",
+          borderRadius: 0,
+          marginBottom: "10px",
           backgroundColor: "#fff",
-          boxShadow:
-            "0 6px 20px rgba(0,0,0,0.07)",
+          boxShadow: "none",
+          border: "1px solid #2E7D32",
         }}
       >
         <Typography
           sx={{
             fontSize: "14px",
             color: "#666",
-            marginBottom: "8px",
+            marginBottom: "4px",
           }}
         >
           Commission Earned by Manager
@@ -931,8 +931,8 @@ const Commissions = () => {
         <Typography
           sx={{
             fontSize: {
-              xs: "30px",
-              sm: "36px",
+              xs: "22px",
+              sm: "26px",
             },
             fontWeight: 800,
             color: "#2e7d32",
@@ -946,7 +946,7 @@ const Commissions = () => {
 
         <Typography
           sx={{
-            marginTop: "10px",
+            marginTop: "4px",
             fontSize: "14px",
             color: "#666",
           }}
@@ -967,7 +967,7 @@ const Commissions = () => {
               xs: "16px",
               sm: "32px",
             },
-            marginTop: "18px",
+            marginTop: "8px",
           }}
         >
           <Box>
@@ -1046,11 +1046,10 @@ const Commissions = () => {
       <Paper
         elevation={0}
         sx={{
-          borderRadius: "20px",
+          borderRadius: 0,
           backgroundColor: "#fff",
           overflow: "hidden",
-          boxShadow:
-            "0 6px 20px rgba(0,0,0,0.07)",
+          boxShadow: "none",
         }}
       >
         {/* HEADER */}
@@ -1071,7 +1070,7 @@ const Commissions = () => {
               },
               fontWeight: 700,
               color: "#202124",
-              marginBottom: "6px",
+              marginBottom: "3px",
             }}
           >
             Commission by Member
@@ -1081,7 +1080,7 @@ const Commissions = () => {
             sx={{
               color: "#666",
               fontSize: "14px",
-              marginBottom: "18px",
+              marginBottom: "8px",
             }}
           >
             Each member is shown only once.
@@ -1117,9 +1116,9 @@ const Commissions = () => {
 
               "& .MuiOutlinedInput-root":
                 {
-                  borderRadius: "14px",
-                  backgroundColor:
-                    "#ffffff",
+                  borderRadius: 0,
+                  backgroundColor: "#ffffff",
+                  minHeight: 36,
                 },
             }}
           />
@@ -1136,24 +1135,49 @@ const Commissions = () => {
           }}
         >
           <Table
+            size="small"
             sx={{
-              minWidth: "850px",
+              width: "680px",
+              minWidth: "680px",
+              tableLayout: "fixed",
+              "& .MuiTableCell-root": {
+                py: 0.35,
+                px: 0.8,
+                fontSize: "11px",
+                lineHeight: 1.2,
+              },
+              "& .MuiTableRow-root": {
+                height: 32,
+              },
             }}
           >
-            <TableHead>
+            <TableHead
+              sx={{
+                "& .MuiTableCell-root": {
+                  py: 0.45,
+                  px: 0.8,
+                  fontSize: "11px",
+                  lineHeight: 1.2,
+                },
+              }}
+            >
               <TableRow
                 sx={{
                   backgroundColor:
                     "#f4f6f8",
+                  height: 32,
                 }}
               >
                 {/* # */}
 
                 <TableCell
                   sx={{
-                    width: "60px",
+                    width: "40px",
                     fontWeight: 700,
                     color: "#202124",
+                    py: 0.45,
+                    px: 0.8,
+                    fontSize: "11px",
                   }}
                 >
                   #
@@ -1163,7 +1187,7 @@ const Commissions = () => {
 
                 <TableCell
                   sx={{
-                    minWidth: "240px",
+                    width: "190px",
                     fontWeight: 700,
                     color: "#202124",
                   }}
@@ -1175,7 +1199,7 @@ const Commissions = () => {
 
                 <TableCell
                   sx={{
-                    minWidth: "130px",
+                    width: "120px",
                     fontWeight: 700,
                     color: "#202124",
                   }}
@@ -1188,7 +1212,7 @@ const Commissions = () => {
                 <TableCell
                   align="center"
                   sx={{
-                    minWidth: "110px",
+                    width: "80px",
                     fontWeight: 700,
                     color: "#202124",
                   }}
@@ -1201,7 +1225,7 @@ const Commissions = () => {
                 <TableCell
                   align="center"
                   sx={{
-                    minWidth: "160px",
+                    width: "150px",
                     fontWeight: 700,
                     color: "#202124",
                   }}
@@ -1214,7 +1238,7 @@ const Commissions = () => {
                 <TableCell
                   align="right"
                   sx={{
-                    minWidth: "150px",
+                    width: "100px",
                     fontWeight: 700,
                     color: "#202124",
                   }}
@@ -1356,10 +1380,10 @@ const Commissions = () => {
               "space-between",
             alignItems: "center",
             flexWrap: "wrap",
-            gap: "12px",
+            gap: "6px",
             padding: {
-              xs: "16px 18px",
-              sm: "18px 24px",
+              xs: "8px 10px",
+              sm: "10px 14px",
             },
             borderTop:
               "1px solid #eeeeee",

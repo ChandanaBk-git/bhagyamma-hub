@@ -264,7 +264,7 @@ const SellingPoints = () => {
 
           color: "#292929",
 
-          mb: 3,
+          mb: 1.5,
         }}
       >
         Selling Points
@@ -284,7 +284,7 @@ const SellingPoints = () => {
             lg: "repeat(4, 1fr)",
           },
 
-          gap: 2,
+          gap: 1,
         }}
       >
         {/* CURRENT SELLING POINTS */}
@@ -293,12 +293,13 @@ const SellingPoints = () => {
           sx={{
             bgcolor: "#FFFFFF",
 
-            borderRadius: 3,
+            borderRadius: 0,
 
-            p: 2.5,
+            p: 1.5,
 
-            boxShadow:
-              "0 2px 8px rgba(0,0,0,0.08)",
+            border: "1px solid #2E7D32",
+
+            boxShadow: "none",
           }}
         >
           <Box
@@ -340,12 +341,13 @@ const SellingPoints = () => {
           sx={{
             bgcolor: "#FFFFFF",
 
-            borderRadius: 3,
+            borderRadius: 0,
 
-            p: 2.5,
+            p: 1.5,
 
-            boxShadow:
-              "0 2px 8px rgba(0,0,0,0.08)",
+            border: "1px solid #2E7D32",
+
+            boxShadow: "none",
           }}
         >
           <Typography
@@ -370,12 +372,13 @@ const SellingPoints = () => {
           sx={{
             bgcolor: "#FFFFFF",
 
-            borderRadius: 3,
+            borderRadius: 0,
 
-            p: 2.5,
+            p: 1.5,
 
-            boxShadow:
-              "0 2px 8px rgba(0,0,0,0.08)",
+            border: "1px solid #2E7D32",
+
+            boxShadow: "none",
           }}
         >
           <Typography
@@ -403,17 +406,18 @@ const SellingPoints = () => {
         sx={{
           bgcolor: "#FFFFFF",
 
-          borderRadius: 3,
+          borderRadius: 0,
 
           p: {
-            xs: 2,
-            sm: 3,
+            xs: 1.25,
+            sm: 1.5,
           },
 
-          mt: 3,
+          mt: 1.5,
 
-          boxShadow:
-            "0 2px 8px rgba(0,0,0,0.08)",
+          border: "1px solid #2E7D32",
+
+          boxShadow: "none",
         }}
       >
         <Box
@@ -425,7 +429,7 @@ const SellingPoints = () => {
 
             alignItems: "center",
 
-            mb: 2,
+            mb: 1,
 
             flexWrap: "wrap",
 
@@ -476,7 +480,7 @@ const SellingPoints = () => {
 
         <Box
           sx={{
-            mt: 2,
+            mt: 1,
 
             display: "flex",
 
@@ -531,18 +535,19 @@ const SellingPoints = () => {
         sx={{
           bgcolor: "#FFFFFF",
 
-          borderRadius: 3,
+          borderRadius: 0,
 
-          mt: 3,
+          mt: 1.5,
 
           p: {
-            xs: 1.5,
-            sm: 2,
-            md: 3,
+            xs: 1,
+            sm: 1.5,
+            md: 1.5,
           },
 
-          boxShadow:
-            "0 2px 8px rgba(0,0,0,0.08)",
+          border: "1px solid #2E7D32",
+
+          boxShadow: "none",
         }}
       >
         {/* HISTORY HEADER */}
@@ -556,7 +561,7 @@ const SellingPoints = () => {
 
             alignItems: "center",
 
-            mb: 2,
+            mb: 1,
 
             flexWrap: "wrap",
 
@@ -613,7 +618,7 @@ const SellingPoints = () => {
               flexDirection:
                 "column",
 
-              gap: 2,
+              gap: 1,
             }}
           >
             {transactions.map(
@@ -782,13 +787,13 @@ const SellingPoints = () => {
                     }
                     sx={{
                       border:
-                        "1px solid #E5E7EB",
+                        "1px solid #2E7D32",
 
-                      borderRadius: 3,
+                      borderRadius: 0,
 
                       p: {
-                        xs: 1.5,
-                        sm: 2.5,
+                        xs: 1,
+                        sm: 1.25,
                       },
 
                       bgcolor: "#FAFAFA",
@@ -861,11 +866,13 @@ const SellingPoints = () => {
                           mt: 2,
 
                           p: {
-                            xs: 2,
-                            sm: 2.5,
+                            xs: 1.25,
+                            sm: 1.5,
                           },
 
-                          borderRadius: 3,
+                          borderRadius: 0,
+
+                          border: "1px solid #2E7D32",
 
                           bgcolor: "#F1F8F3",
                         }}
@@ -894,9 +901,9 @@ const SellingPoints = () => {
                             justifyContent:
                               "space-between",
 
-                            mb: 1.5,
+                            mb: 0.75,
 
-                            gap: 2,
+                            gap: 1,
                           }}
                         >
                           <Typography>
@@ -924,9 +931,9 @@ const SellingPoints = () => {
                             justifyContent:
                               "space-between",
 
-                            mb: 1.5,
+                            mb: 0.75,
 
-                            gap: 2,
+                            gap: 1,
                           }}
                         >
                           <Typography>
@@ -954,9 +961,9 @@ const SellingPoints = () => {
                             justifyContent:
                               "space-between",
 
-                            mb: 1.5,
+                            mb: 0.75,
 
-                            gap: 2,
+                            gap: 1,
                           }}
                         >
                           <Typography
@@ -1000,9 +1007,9 @@ const SellingPoints = () => {
                             justifyContent:
                               "space-between",
 
-                            mb: 1.5,
+                            mb: 0.75,
 
-                            gap: 2,
+                            gap: 1,
                           }}
                         >
                           <Typography>
@@ -1027,9 +1034,9 @@ const SellingPoints = () => {
                             justifyContent:
                               "space-between",
 
-                            mb: 1.5,
+                            mb: 0.75,
 
-                            gap: 2,
+                            gap: 1,
                           }}
                         >
                           <Typography>
@@ -1113,9 +1120,11 @@ const SellingPoints = () => {
                         sx={{
                           mt: 2,
 
-                          p: 2,
+                          p: 1.25,
 
-                          borderRadius: 3,
+                          borderRadius: 0,
+
+                          border: "1px solid #2E7D32",
 
                           bgcolor: "#F1F8F3",
                         }}

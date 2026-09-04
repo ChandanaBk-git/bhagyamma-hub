@@ -6,6 +6,7 @@ import {
   Link,
   Divider,
 } from "@mui/material";
+
 import {
   Email,
   Phone,
@@ -21,118 +22,214 @@ const Footer = () => {
     <Box
       component="footer"
       sx={{
-        backgroundColor: "#2E7D32",
+        bgcolor: "#1B5E20",
         color: "#fff",
-        mt: 8,
-        pt: 5,
-        pb: 2,
+        mt: 0,
+        pt: {
+          xs: 2,
+          sm: 3,
+        },
+        pb: 1.2,
       }}
     >
-      <Container maxWidth="lg">
-        <Grid container spacing={4}>
-          {/* Company Info */}
+      <Container
+        maxWidth="lg"
+        sx={{
+          px: {
+            xs: 1.5,
+            sm: 2,
+            md: 3,
+          },
+        }}
+      >
+        <Grid
+          container
+          spacing={{
+            xs: 1.5,
+            sm: 2.5,
+          }}
+        >
+          {/* Company */}
           <Grid size={{ xs: 12, md: 4 }}>
-            <Typography variant="h5" fontWeight="bold" gutterBottom>
+            <Typography
+              fontWeight={700}
+              sx={{
+                fontSize: {
+                  xs: "0.85rem",
+                  sm: "0.95rem",
+                },
+                mb: 0.4,
+              }}
+            >
               Hucharaddi
             </Typography>
 
-            <Typography variant="body2" sx={{ lineHeight: 1.8 }}>
+            <Typography
+              sx={{
+                fontSize: {
+                  xs: "0.58rem",
+                  sm: "0.68rem",
+                },
+                lineHeight: 1.45,
+                opacity: 0.9,
+                maxWidth: 350,
+              }}
+            >
               Your trusted destination for quality products and smart business
-              opportunities. We are committed to providing excellent service
-              and empowering our customers.
+              opportunities.
             </Typography>
           </Grid>
 
           {/* Quick Links */}
-          <Grid size={{ xs: 12, md: 4 }}>
-            <Typography variant="h6" fontWeight="bold" gutterBottom>
+          <Grid size={{ xs: 6, md: 4 }}>
+            <Typography
+              fontWeight={700}
+              sx={{
+                fontSize: {
+                  xs: "0.72rem",
+                  sm: "0.82rem",
+                },
+                mb: 0.6,
+              }}
+            >
               Quick Links
             </Typography>
 
-            <Typography>
-              <Link href="/" color="inherit" underline="hover">
+            <Box
+              sx={{
+                display: "flex",
+                flexDirection: "column",
+                gap: 0.15,
+              }}
+            >
+              <Link
+                href="/"
+                color="inherit"
+                underline="hover"
+                sx={{ fontSize: "0.6rem" }}
+              >
                 Home
               </Link>
-            </Typography>
 
-            <Typography>
-              <Link href="/products" color="inherit" underline="hover">
+              <Link
+                href="/products"
+                color="inherit"
+                underline="hover"
+                sx={{ fontSize: "0.6rem" }}
+              >
                 Products
               </Link>
-            </Typography>
 
-            <Typography>
-              <Link href="/about" color="inherit" underline="hover">
+              <Link
+                href="/about"
+                color="inherit"
+                underline="hover"
+                sx={{ fontSize: "0.6rem" }}
+              >
                 About Us
               </Link>
-            </Typography>
 
-            <Typography>
-              <Link href="/contact" color="inherit" underline="hover">
+              <Link
+                href="/contact"
+                color="inherit"
+                underline="hover"
+                sx={{ fontSize: "0.6rem" }}
+              >
                 Contact Us
               </Link>
-            </Typography>
+            </Box>
           </Grid>
 
-          {/* Contact Details */}
-          <Grid size={{ xs: 12, md: 4 }}>
-            <Typography variant="h6" fontWeight="bold" gutterBottom>
+          {/* Contact */}
+          <Grid size={{ xs: 6, md: 4 }}>
+            <Typography
+              fontWeight={700}
+              sx={{
+                fontSize: {
+                  xs: "0.72rem",
+                  sm: "0.82rem",
+                },
+                mb: 0.6,
+              }}
+            >
               Contact Us
             </Typography>
 
-            <Box display="flex" alignItems="center" mb={1}>
-              <Person sx={{ mr: 1 }} fontSize="small" />
-              <Typography variant="body2">
-                <strong>Prop :</strong> Hucharaddi
+            <Box display="flex" alignItems="center" mb={0.35}>
+              <Person sx={{ mr: 0.5, fontSize: 14 }} />
+
+              <Typography sx={{ fontSize: "0.58rem" }}>
+                <strong>Prop:</strong> Hucharaddi
               </Typography>
             </Box>
 
-            <Box display="flex" alignItems="center" mb={1}>
-              <Email sx={{ mr: 1 }} fontSize="small" />
-              <Typography variant="body2">
+            <Box display="flex" alignItems="center" mb={0.35}>
+              <Email sx={{ mr: 0.5, fontSize: 14 }} />
+
+              <Typography
+                sx={{
+                  fontSize: "0.58rem",
+                  wordBreak: "break-word",
+                }}
+              >
                 bhagyammahub@gmail.com
               </Typography>
             </Box>
 
-            <Box display="flex" alignItems="center" mb={1}>
-              <Phone sx={{ mr: 1 }} fontSize="small" />
-              <Typography variant="body2">
+            <Box display="flex" alignItems="center" mb={0.35}>
+              <Phone sx={{ mr: 0.5, fontSize: 14 }} />
+
+              <Typography sx={{ fontSize: "0.58rem" }}>
                 +91 90191 74672
               </Typography>
             </Box>
 
-            <Box display="flex" alignItems="flex-start" mb={2}>
-              <LocationOn sx={{ mr: 1 }} fontSize="small" />
-              <Typography variant="body2">
+            <Box display="flex" alignItems="center" mb={0.7}>
+              <LocationOn sx={{ mr: 0.5, fontSize: 14 }} />
+
+              <Typography sx={{ fontSize: "0.58rem" }}>
                 Gadag, Karnataka - 582101
               </Typography>
             </Box>
 
-            <Box display="flex" gap={2}>
+            <Box display="flex" gap={0.8}>
               <Link href="#" color="inherit">
-                <Facebook />
+                <Facebook sx={{ fontSize: 16 }} />
               </Link>
 
               <Link href="#" color="inherit">
-                <Instagram />
+                <Instagram sx={{ fontSize: 16 }} />
               </Link>
 
               <Link href="#" color="inherit">
-                <YouTube />
+                <YouTube sx={{ fontSize: 16 }} />
               </Link>
             </Box>
           </Grid>
         </Grid>
 
-        <Divider sx={{ my: 3, borderColor: "rgba(255,255,255,0.3)" }} />
+        <Divider
+          sx={{
+            my: {
+              xs: 1.2,
+              sm: 1.8,
+            },
+            borderColor: "rgba(255,255,255,0.18)",
+          }}
+        />
 
         <Typography
-          variant="body2"
           align="center"
-          sx={{ opacity: 0.9 }}
+          sx={{
+            fontSize: {
+              xs: "0.52rem",
+              sm: "0.62rem",
+            },
+            opacity: 0.85,
+          }}
         >
-          © {new Date().getFullYear()} <strong>Hucharaddi</strong>. All Rights
-          Reserved.
+          © {new Date().getFullYear()}{" "}
+          <strong>Hucharaddi</strong>. All Rights Reserved.
         </Typography>
       </Container>
     </Box>

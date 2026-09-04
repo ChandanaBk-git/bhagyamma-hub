@@ -8,6 +8,7 @@ import {
   TextField,
   Button,
 } from "@mui/material";
+
 import {
   Person,
   Email,
@@ -17,139 +18,558 @@ import {
 
 const Contact = () => {
   return (
-    <Container maxWidth="lg" sx={{ py: 8 }}>
-      {/* Page Heading */}
-      <Box textAlign="center" mb={6}>
-        <Typography
-          variant="h3"
-          fontWeight="bold"
-          color="success.main"
-          gutterBottom
+    <Box
+      sx={{
+        width: "100%",
+        minHeight: "100vh",
+        bgcolor: "#F8FAF8",
+        py: {
+          xs: 2.5,
+          sm: 3.5,
+          md: 4.5,
+        },
+      }}
+    >
+      <Container
+        maxWidth="lg"
+        sx={{
+          px: {
+            xs: 1.5,
+            sm: 2,
+            md: 3,
+          },
+        }}
+      >
+        {/* =====================================================
+            HEADING
+        ===================================================== */}
+
+        <Box
+          sx={{
+            textAlign: "center",
+            maxWidth: 650,
+            mx: "auto",
+
+            mb: {
+              xs: 2,
+              sm: 2.5,
+              md: 3,
+            },
+          }}
         >
-          Contact Us
-        </Typography>
+          <Typography
+            component="h1"
+            sx={{
+              color: "#1B5E20",
+              fontWeight: 700,
 
-        <Typography variant="h6" color="text.secondary">
-          We'd love to hear from you! Feel free to contact us for any queries or
-          support.
-        </Typography>
-      </Box>
+              fontSize: {
+                xs: "1.25rem",
+                sm: "1.6rem",
+                md: "1.9rem",
+              },
 
-      <Grid container spacing={4}>
-        {/* Contact Information */}
-        <Grid size={{ xs: 12, md: 5 }}>
-          <Card elevation={4} sx={{ borderRadius: 3, height: "100%" }}>
-            <CardContent sx={{ p: 4 }}>
-              <Typography
-                variant="h5"
-                fontWeight="bold"
-                color="success.main"
-                gutterBottom
-              >
-                Contact Information
-              </Typography>
+              lineHeight: 1.2,
+            }}
+          >
+            Contact Us
+          </Typography>
 
-              <Box display="flex" alignItems="center" mt={3}>
-                <Person color="success" sx={{ mr: 2 }} />
-                <Box>
-                  <Typography fontWeight="bold">Owner</Typography>
-                  <Typography color="text.secondary">
-                    Prakash Reddy
-                  </Typography>
-                </Box>
-              </Box>
+          <Typography
+            sx={{
+              mt: 0.5,
+              color: "#666",
 
-              <Box display="flex" alignItems="center" mt={3}>
-                <Email color="success" sx={{ mr: 2 }} />
-                <Box>
-                  <Typography fontWeight="bold">Email</Typography>
-                  <Typography color="text.secondary">
-                    bhagyammahub@gmail.com
-                  </Typography>
-                </Box>
-              </Box>
+              fontSize: {
+                xs: "0.62rem",
+                sm: "0.72rem",
+                md: "0.82rem",
+              },
 
-              <Box display="flex" alignItems="center" mt={3}>
-                <Phone color="success" sx={{ mr: 2 }} />
-                <Box>
-                  <Typography fontWeight="bold">Mobile</Typography>
-                  <Typography color="text.secondary">
-                    +91 90191 74672
-                  </Typography>
-                </Box>
-              </Box>
+              lineHeight: 1.5,
+            }}
+          >
+            We'd love to hear from you! Feel free to contact us for
+            any queries or support.
+          </Typography>
+        </Box>
 
-              <Box display="flex" alignItems="center" mt={3}>
-                <LocationOn color="success" sx={{ mr: 2 }} />
-                <Box>
-                  <Typography fontWeight="bold">Location</Typography>
-                  <Typography color="text.secondary">
-                    Bengaluru, Karnataka, India
-                  </Typography>
-                </Box>
-              </Box>
-            </CardContent>
-          </Card>
-        </Grid>
+        {/* =====================================================
+            MAIN CONTENT
+        ===================================================== */}
 
-        {/* Contact Form */}
-        <Grid size={{ xs: 12, md: 7 }}>
-          <Card elevation={4} sx={{ borderRadius: 3 }}>
-            <CardContent sx={{ p: 4 }}>
-              <Typography
-                variant="h5"
-                fontWeight="bold"
-                color="success.main"
-                gutterBottom
-              >
-                Send Us a Message
-              </Typography>
+        <Grid
+          container
+          spacing={{
+            xs: 1.5,
+            sm: 2,
+            md: 2.5,
+          }}
+          alignItems="stretch"
+        >
+          {/* ===================================================
+              CONTACT INFORMATION
+          =================================================== */}
 
-              <TextField
-                fullWidth
-                label="Full Name"
-                margin="normal"
-              />
-
-              <TextField
-                fullWidth
-                label="Email Address"
-                type="email"
-                margin="normal"
-              />
-
-              <TextField
-                fullWidth
-                label="Subject"
-                margin="normal"
-              />
-
-              <TextField
-                fullWidth
-                label="Message"
-                multiline
-                rows={5}
-                margin="normal"
-              />
-
-              <Button
-                variant="contained"
-                color="success"
-                size="large"
+          <Grid size={{ xs: 12, md: 5 }}>
+            <Card
+              elevation={0}
+              sx={{
+                height: "100%",
+                borderRadius: 0,
+                border: "1px solid #DDE4DE",
+                bgcolor: "#fff",
+                boxShadow: "none",
+              }}
+            >
+              <CardContent
                 sx={{
-                  mt: 3,
-                  px: 5,
-                  borderRadius: 2,
-                  textTransform: "none",
+                  p: {
+                    xs: 1.5,
+                    sm: 2,
+                    md: 2.2,
+                  },
+
+                  "&:last-child": {
+                    pb: {
+                      xs: 1.5,
+                      sm: 2,
+                      md: 2.2,
+                    },
+                  },
                 }}
               >
-                Send Message
-              </Button>
-            </CardContent>
-          </Card>
+                <Typography
+                  sx={{
+                    color: "#1B5E20",
+                    fontWeight: 700,
+
+                    fontSize: {
+                      xs: "0.85rem",
+                      sm: "0.95rem",
+                      md: "1.05rem",
+                    },
+
+                    lineHeight: 1.3,
+
+                    pb: 0.8,
+
+                    borderBottom: "1px solid #E5EAE6",
+                  }}
+                >
+                  Contact Information
+                </Typography>
+
+                {/* OWNER */}
+
+                <Box
+                  sx={{
+                    display: "flex",
+                    alignItems: "center",
+                    mt: {
+                      xs: 1.4,
+                      sm: 1.7,
+                    },
+                  }}
+                >
+                  <Person
+                    sx={{
+                      color: "#1B5E20",
+                      fontSize: {
+                        xs: 19,
+                        sm: 21,
+                      },
+                      mr: 1,
+                      flexShrink: 0,
+                    }}
+                  />
+
+                  <Box sx={{ minWidth: 0 }}>
+                    <Typography
+                      sx={{
+                        fontWeight: 600,
+                        color: "#333",
+                        fontSize: {
+                          xs: "0.62rem",
+                          sm: "0.7rem",
+                        },
+                      }}
+                    >
+                      Owner
+                    </Typography>
+
+                    <Typography
+                      sx={{
+                        color: "#777",
+                        fontSize: {
+                          xs: "0.58rem",
+                          sm: "0.66rem",
+                        },
+                      }}
+                    >
+                      Prakash Reddy
+                    </Typography>
+                  </Box>
+                </Box>
+
+                {/* EMAIL */}
+
+                <Box
+                  sx={{
+                    display: "flex",
+                    alignItems: "center",
+                    mt: 1.5,
+                  }}
+                >
+                  <Email
+                    sx={{
+                      color: "#1B5E20",
+                      fontSize: {
+                        xs: 19,
+                        sm: 21,
+                      },
+                      mr: 1,
+                      flexShrink: 0,
+                    }}
+                  />
+
+                  <Box sx={{ minWidth: 0 }}>
+                    <Typography
+                      sx={{
+                        fontWeight: 600,
+                        color: "#333",
+                        fontSize: {
+                          xs: "0.62rem",
+                          sm: "0.7rem",
+                        },
+                      }}
+                    >
+                      Email
+                    </Typography>
+
+                    <Typography
+                      sx={{
+                        color: "#777",
+                        fontSize: {
+                          xs: "0.58rem",
+                          sm: "0.66rem",
+                        },
+
+                        overflow: "hidden",
+                        textOverflow: "ellipsis",
+                        whiteSpace: "nowrap",
+                      }}
+                    >
+                      bhagyammahub@gmail.com
+                    </Typography>
+                  </Box>
+                </Box>
+
+                {/* PHONE */}
+
+                <Box
+                  sx={{
+                    display: "flex",
+                    alignItems: "center",
+                    mt: 1.5,
+                  }}
+                >
+                  <Phone
+                    sx={{
+                      color: "#1B5E20",
+                      fontSize: {
+                        xs: 19,
+                        sm: 21,
+                      },
+                      mr: 1,
+                      flexShrink: 0,
+                    }}
+                  />
+
+                  <Box>
+                    <Typography
+                      sx={{
+                        fontWeight: 600,
+                        color: "#333",
+                        fontSize: {
+                          xs: "0.62rem",
+                          sm: "0.7rem",
+                        },
+                      }}
+                    >
+                      Mobile
+                    </Typography>
+
+                    <Typography
+                      sx={{
+                        color: "#777",
+                        fontSize: {
+                          xs: "0.58rem",
+                          sm: "0.66rem",
+                        },
+                      }}
+                    >
+                      +91 90191 74672
+                    </Typography>
+                  </Box>
+                </Box>
+
+                {/* LOCATION */}
+
+                <Box
+                  sx={{
+                    display: "flex",
+                    alignItems: "center",
+                    mt: 1.5,
+                  }}
+                >
+                  <LocationOn
+                    sx={{
+                      color: "#1B5E20",
+                      fontSize: {
+                        xs: 19,
+                        sm: 21,
+                      },
+                      mr: 1,
+                      flexShrink: 0,
+                    }}
+                  />
+
+                  <Box sx={{ minWidth: 0 }}>
+                    <Typography
+                      sx={{
+                        fontWeight: 600,
+                        color: "#333",
+                        fontSize: {
+                          xs: "0.62rem",
+                          sm: "0.7rem",
+                        },
+                      }}
+                    >
+                      Location
+                    </Typography>
+
+                    <Typography
+                      sx={{
+                        color: "#777",
+                        fontSize: {
+                          xs: "0.58rem",
+                          sm: "0.66rem",
+                        },
+                      }}
+                    >
+                      Bengaluru, Karnataka, India
+                    </Typography>
+                  </Box>
+                </Box>
+              </CardContent>
+            </Card>
+          </Grid>
+
+          {/* ===================================================
+              CONTACT FORM
+          =================================================== */}
+
+          <Grid size={{ xs: 12, md: 7 }}>
+            <Card
+              elevation={0}
+              sx={{
+                height: "100%",
+                borderRadius: 0,
+                border: "1px solid #DDE4DE",
+                bgcolor: "#fff",
+                boxShadow: "none",
+              }}
+            >
+              <CardContent
+                sx={{
+                  p: {
+                    xs: 1.5,
+                    sm: 2,
+                    md: 2.2,
+                  },
+
+                  "&:last-child": {
+                    pb: {
+                      xs: 1.5,
+                      sm: 2,
+                      md: 2.2,
+                    },
+                  },
+                }}
+              >
+                <Typography
+                  sx={{
+                    color: "#1B5E20",
+                    fontWeight: 700,
+
+                    fontSize: {
+                      xs: "0.85rem",
+                      sm: "0.95rem",
+                      md: "1.05rem",
+                    },
+
+                    lineHeight: 1.3,
+
+                    pb: 0.8,
+                    mb: 0.5,
+
+                    borderBottom: "1px solid #E5EAE6",
+                  }}
+                >
+                  Send Us a Message
+                </Typography>
+
+                {/* NAME */}
+
+                <TextField
+                  fullWidth
+                  size="small"
+                  label="Full Name"
+                  margin="dense"
+                  sx={{
+                    mt: 0.8,
+
+                    "& .MuiInputBase-root": {
+                      borderRadius: 0,
+                      fontSize: {
+                        xs: "0.62rem",
+                        sm: "0.7rem",
+                      },
+                    },
+
+                    "& .MuiInputLabel-root": {
+                      fontSize: {
+                        xs: "0.62rem",
+                        sm: "0.7rem",
+                      },
+                    },
+                  }}
+                />
+
+                {/* EMAIL */}
+
+                <TextField
+                  fullWidth
+                  size="small"
+                  label="Email Address"
+                  type="email"
+                  margin="dense"
+                  sx={{
+                    "& .MuiInputBase-root": {
+                      borderRadius: 0,
+                      fontSize: {
+                        xs: "0.62rem",
+                        sm: "0.7rem",
+                      },
+                    },
+
+                    "& .MuiInputLabel-root": {
+                      fontSize: {
+                        xs: "0.62rem",
+                        sm: "0.7rem",
+                      },
+                    },
+                  }}
+                />
+
+                {/* SUBJECT */}
+
+                <TextField
+                  fullWidth
+                  size="small"
+                  label="Subject"
+                  margin="dense"
+                  sx={{
+                    "& .MuiInputBase-root": {
+                      borderRadius: 0,
+                      fontSize: {
+                        xs: "0.62rem",
+                        sm: "0.7rem",
+                      },
+                    },
+
+                    "& .MuiInputLabel-root": {
+                      fontSize: {
+                        xs: "0.62rem",
+                        sm: "0.7rem",
+                      },
+                    },
+                  }}
+                />
+
+                {/* MESSAGE */}
+
+                <TextField
+                  fullWidth
+                  size="small"
+                  label="Message"
+                  multiline
+                  rows={3}
+                  margin="dense"
+                  sx={{
+                    "& .MuiInputBase-root": {
+                      borderRadius: 0,
+                      fontSize: {
+                        xs: "0.62rem",
+                        sm: "0.7rem",
+                      },
+                    },
+
+                    "& .MuiInputLabel-root": {
+                      fontSize: {
+                        xs: "0.62rem",
+                        sm: "0.7rem",
+                      },
+                    },
+                  }}
+                />
+
+                {/* SEND BUTTON */}
+
+                <Button
+                  variant="contained"
+                  disableElevation
+                  sx={{
+                    mt: 1.2,
+
+                    height: {
+                      xs: 30,
+                      sm: 33,
+                    },
+
+                    px: {
+                      xs: 2,
+                      sm: 2.5,
+                    },
+
+                    borderRadius: 0,
+
+                    bgcolor: "#1B5E20",
+                    color: "#fff",
+
+                    textTransform: "none",
+
+                    fontWeight: 600,
+
+                    fontSize: {
+                      xs: "0.58rem",
+                      sm: "0.68rem",
+                    },
+
+                    "&:hover": {
+                      bgcolor: "#154A19",
+                    },
+                  }}
+                >
+                  Send Message
+                </Button>
+              </CardContent>
+            </Card>
+          </Grid>
         </Grid>
-      </Grid>
-    </Container>
+      </Container>
+    </Box>
   );
 };
 

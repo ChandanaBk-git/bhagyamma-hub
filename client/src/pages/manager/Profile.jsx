@@ -129,7 +129,7 @@ const InfoItem = ({
 
           flexShrink: 0,
 
-          borderRadius: 2,
+          borderRadius: 0,
 
           bgcolor: "#E8F5E9",
 
@@ -211,17 +211,17 @@ const StatCard = ({
         height: "100%",
 
         border:
-          "1px solid #E5E7EB",
+          "1px solid #2E7D32",
 
-        borderRadius: 3,
+        borderRadius: 0,
       }}
     >
 
       <CardContent
         sx={{
           p: {
-            xs: 1.6,
-            sm: 2,
+            xs: 1,
+            sm: 1.25,
           },
 
           "&:last-child": {
@@ -257,7 +257,7 @@ const StatCard = ({
 
               flexShrink: 0,
 
-              borderRadius: 2,
+              borderRadius: 0,
 
               bgcolor:
                 "#E8F5E9",
@@ -463,7 +463,9 @@ const Profile = () => {
         <Alert
           severity="error"
           sx={{
-            borderRadius: 2,
+            borderRadius: 0,
+
+            border: "1px solid #2E7D32",
           }}
         >
           {error}
@@ -584,9 +586,9 @@ const Profile = () => {
           justifyContent:
             "space-between",
 
-          gap: 1.5,
+          gap: 1,
 
-          mb: 2,
+          mb: 1.25,
         }}
       >
 
@@ -647,9 +649,11 @@ const Profile = () => {
               sm: "auto",
             },
 
-            minHeight: 42,
+            minHeight: 38,
 
-            borderRadius: 2,
+            borderRadius: 0,
+
+            borderColor: "#2E7D32",
           }}
         >
           Dashboard
@@ -666,19 +670,19 @@ const Profile = () => {
         elevation={0}
         sx={{
           border:
-            "1px solid #E5E7EB",
+            "1px solid #2E7D32",
 
-          borderRadius: 3,
+          borderRadius: 0,
 
-          mb: 2,
+          mb: 1.25,
         }}
       >
 
         <CardContent
           sx={{
             p: {
-              xs: 1.7,
-              sm: 2.5,
+              xs: 1.25,
+              sm: 1.5,
             },
 
             "&:last-child": {
@@ -724,6 +728,8 @@ const Profile = () => {
                   xs: 76,
                   sm: 92,
                 },
+
+                borderRadius: 0,
 
                 bgcolor:
                   "#C8E6C9",
@@ -798,6 +804,9 @@ const Profile = () => {
                 <Chip
                   size="small"
                   label={role}
+                  sx={{
+                    borderRadius: 0,
+                  }}
                   color="success"
                   variant="outlined"
                 />
@@ -810,6 +819,9 @@ const Profile = () => {
                       ? "Active"
                       : "Inactive"
                   }
+                  sx={{
+                    borderRadius: 0,
+                  }}
                   color={
                     isActive
                       ? "success"
@@ -835,11 +847,13 @@ const Profile = () => {
       <Grid
         container
         spacing={{
-          xs: 1.3,
-          sm: 2,
+          xs: 0.75,
+          sm: 1,
         }}
         sx={{
-          mb: 2,
+          width: "100%",
+          m: 0,
+          mb: 1.25,
         }}
       >
 
@@ -848,6 +862,9 @@ const Profile = () => {
           xs={12}
           sm={6}
           md={3}
+          sx={{
+            minWidth: 0,
+          }}
         >
 
           <StatCard
@@ -867,6 +884,9 @@ const Profile = () => {
           xs={12}
           sm={6}
           md={3}
+          sx={{
+            minWidth: 0,
+          }}
         >
 
           <StatCard
@@ -890,17 +910,9 @@ const Profile = () => {
           xs={12}
           sm={6}
           md={3}
-        >
-
-
-        </Grid>
-
-
-        <Grid
-          item
-          xs={12}
-          sm={6}
-          md={3}
+          sx={{
+            minWidth: 0,
+          }}
         >
 
           <StatCard
@@ -927,7 +939,11 @@ const Profile = () => {
 
       <Grid
         container
-        spacing={2}
+        spacing={1}
+        sx={{
+          width: "100%",
+          m: 0,
+        }}
       >
 
         {/* CONTACT */}
@@ -936,25 +952,30 @@ const Profile = () => {
           item
           xs={12}
           md={6}
+          sx={{
+            width: "100%",
+            minWidth: 0,
+          }}
         >
 
           <Card
             elevation={0}
             sx={{
+              width: "100%",
               height: "100%",
 
               border:
-                "1px solid #E5E7EB",
+                "1px solid #2E7D32",
 
-              borderRadius: 3,
+              borderRadius: 0,
             }}
           >
 
             <CardContent
               sx={{
                 p: {
-                  xs: 1.7,
-                  sm: 2.5,
+                  xs: 1.25,
+                  sm: 1.5,
                 },
               }}
             >
@@ -975,7 +996,7 @@ const Profile = () => {
                 color="text.secondary"
                 sx={{
                   mt: 0.4,
-                  mb: 2,
+                  mb: 1,
                 }}
               >
                 Registered manager contact details.
@@ -983,7 +1004,7 @@ const Profile = () => {
 
 
               <Stack
-                spacing={2}
+                spacing={1}
               >
 
                 <InfoItem
@@ -1033,25 +1054,30 @@ const Profile = () => {
           item
           xs={12}
           md={6}
+          sx={{
+            width: "100%",
+            minWidth: 0,
+          }}
         >
 
           <Card
             elevation={0}
             sx={{
+              width: "100%",
               height: "100%",
 
               border:
-                "1px solid #E5E7EB",
+                "1px solid #2E7D32",
 
-              borderRadius: 3,
+              borderRadius: 0,
             }}
           >
 
             <CardContent
               sx={{
                 p: {
-                  xs: 1.7,
-                  sm: 2.5,
+                  xs: 1.25,
+                  sm: 1.5,
                 },
               }}
             >
@@ -1072,7 +1098,7 @@ const Profile = () => {
                 color="text.secondary"
                 sx={{
                   mt: 0.4,
-                  mb: 2,
+                  mb: 1,
                 }}
               >
                 Read-only account information.
@@ -1080,7 +1106,7 @@ const Profile = () => {
 
 
               <Stack
-                spacing={2}
+                spacing={1}
               >
 
                 <InfoItem
@@ -1137,9 +1163,11 @@ const Profile = () => {
       <Alert
         severity="info"
         sx={{
-          mt: 2,
+          mt: 1,
 
-          borderRadius: 2,
+          borderRadius: 0,
+
+          border: "1px solid #2E7D32",
 
           fontSize: {
             xs: 11,

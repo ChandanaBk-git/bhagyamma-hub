@@ -1,4 +1,5 @@
 import { useState } from "react";
+
 import {
   Grid,
   TextField,
@@ -10,7 +11,11 @@ import {
   CardMedia,
 } from "@mui/material";
 
-const ProductForm = ({ initialValues, onSubmit, loading }) => {
+const ProductForm = ({
+  initialValues,
+  onSubmit,
+  loading,
+}) => {
   const [form, setForm] = useState(
     initialValues || {
       productName: "",
@@ -35,6 +40,10 @@ const ProductForm = ({ initialValues, onSubmit, loading }) => {
 
   const [previewImages, setPreviewImages] = useState([]);
 
+  // =====================================================
+  // HANDLE CHANGE
+  // =====================================================
+
   const handleChange = (e) => {
     const { name, value } = e.target;
 
@@ -44,8 +53,12 @@ const ProductForm = ({ initialValues, onSubmit, loading }) => {
     }));
   };
 
+  // =====================================================
+  // HANDLE IMAGE CHANGE
+  // =====================================================
+
   const handleImageChange = (e) => {
-    const files = Array.from(e.target.files);
+    const files = Array.from(e.target.files || []);
 
     setForm((prev) => ({
       ...prev,
@@ -58,6 +71,10 @@ const ProductForm = ({ initialValues, onSubmit, loading }) => {
 
     setPreviewImages(previews);
   };
+
+  // =====================================================
+  // SUBMIT
+  // =====================================================
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -76,7 +93,7 @@ const ProductForm = ({ initialValues, onSubmit, loading }) => {
 
     console.log("============= FormData =============");
 
-    for (let pair of formData.entries()) {
+    for (const pair of formData.entries()) {
       console.log(pair[0], pair[1]);
     }
 
@@ -85,11 +102,53 @@ const ProductForm = ({ initialValues, onSubmit, loading }) => {
     onSubmit(formData);
   };
 
-  return (
-    <Box component="form" onSubmit={handleSubmit}>
-      <Grid container spacing={3}>
+  // =====================================================
+  // COMMON FIELD STYLE
+  // =====================================================
 
-        <Grid item xs={12} md={6}>
+  const fieldSx = {
+    "& .MuiInputBase-root": {
+      fontSize: {
+        xs: "0.75rem",
+        sm: "0.8rem",
+      },
+    },
+
+    "& .MuiInputLabel-root": {
+      fontSize: {
+        xs: "0.75rem",
+        sm: "0.8rem",
+      },
+    },
+
+    "& .MuiInputBase-input": {
+      py: {
+        xs: 1.15,
+        sm: 1.25,
+      },
+    },
+  };
+
+  return (
+    <Box
+      component="form"
+      onSubmit={handleSubmit}
+      sx={{
+        width: "100%",
+      }}
+    >
+      <Grid
+        container
+        spacing={{
+          xs: 1.5,
+          sm: 2,
+        }}
+      >
+        {/* =================================================
+            BASIC INFORMATION
+        ================================================= */}
+
+        <Grid item xs={12} sm={6}>
           <TextField
             fullWidth
             required
@@ -97,10 +156,11 @@ const ProductForm = ({ initialValues, onSubmit, loading }) => {
             name="productName"
             value={form.productName}
             onChange={handleChange}
+            sx={fieldSx}
           />
         </Grid>
 
-        <Grid item xs={12} md={6}>
+        <Grid item xs={12} sm={6}>
           <TextField
             fullWidth
             required
@@ -108,68 +168,93 @@ const ProductForm = ({ initialValues, onSubmit, loading }) => {
             name="category"
             value={form.category}
             onChange={handleChange}
+            sx={fieldSx}
           />
         </Grid>
 
-        <Grid item xs={12}>
+        <Grid item xs={12} sm={6}>
           <TextField
             fullWidth
             label="Brand"
             name="brand"
             value={form.brand}
             onChange={handleChange}
+            sx={fieldSx}
           />
         </Grid>
+
+        <Grid item xs={12} sm={6}>
+          <TextField
+            fullWidth
+            label="SKU"
+            name="sku"
+            value={form.sku}
+            onChange={handleChange}
+            sx={fieldSx}
+          />
+        </Grid>
+
+        {/* =================================================
+            DESCRIPTION
+        ================================================= */}
 
         <Grid item xs={12}>
           <TextField
             fullWidth
             multiline
-            rows={4}
+            rows={3}
             label="Description"
             name="description"
             value={form.description}
             onChange={handleChange}
+            sx={fieldSx}
           />
         </Grid>
 
-        <Grid item xs={12}>
+        {/* =================================================
+            PRODUCT DETAILS
+        ================================================= */}
+
+        <Grid item xs={12} sm={6}>
           <TextField
             fullWidth
             multiline
-            rows={3}
+            rows={2}
             label="Benefits"
             name="benefits"
             value={form.benefits}
             onChange={handleChange}
+            sx={fieldSx}
           />
         </Grid>
 
-        <Grid item xs={12}>
+        <Grid item xs={12} sm={6}>
           <TextField
             fullWidth
             multiline
-            rows={3}
+            rows={2}
             label="Ingredients"
             name="ingredients"
             value={form.ingredients}
             onChange={handleChange}
+            sx={fieldSx}
           />
         </Grid>
 
-        <Grid item xs={12}>
+        <Grid item xs={12} sm={6}>
           <TextField
             fullWidth
             multiline
-            rows={3}
+            rows={2}
             label="Usage"
             name="usage"
             value={form.usage}
             onChange={handleChange}
+            sx={fieldSx}
           />
         </Grid>
 
-        <Grid item xs={12}>
+        <Grid item xs={12} sm={6}>
           <TextField
             fullWidth
             multiline
@@ -178,70 +263,74 @@ const ProductForm = ({ initialValues, onSubmit, loading }) => {
             name="storage"
             value={form.storage}
             onChange={handleChange}
+            sx={fieldSx}
           />
         </Grid>
 
-        <Grid item xs={12} md={4}>
+        {/* =================================================
+            PRODUCT SPECIFICATIONS
+        ================================================= */}
+
+        <Grid item xs={12} sm={4}>
           <TextField
             fullWidth
             label="Weight"
             name="weight"
             value={form.weight}
             onChange={handleChange}
+            sx={fieldSx}
           />
         </Grid>
 
-        <Grid item xs={12} md={4}>
+        <Grid item xs={12} sm={4}>
           <TextField
             fullWidth
             label="Quantity"
             name="quantity"
             value={form.quantity}
             onChange={handleChange}
+            sx={fieldSx}
           />
         </Grid>
 
-        <Grid item xs={12} md={4}>
+        <Grid item xs={12} sm={4}>
           <TextField
             fullWidth
             label="Shelf Life"
             name="shelfLife"
             value={form.shelfLife}
             onChange={handleChange}
+            sx={fieldSx}
           />
         </Grid>
 
-        <Grid item xs={12} md={6}>
+        <Grid item xs={12} sm={6}>
           <TextField
             fullWidth
             label="Manufacturer"
             name="manufacturer"
             value={form.manufacturer}
             onChange={handleChange}
+            sx={fieldSx}
           />
         </Grid>
 
-        <Grid item xs={12} md={6}>
+        <Grid item xs={12} sm={6}>
           <TextField
             fullWidth
             label="Country Of Origin"
             name="countryOfOrigin"
             value={form.countryOfOrigin}
             onChange={handleChange}
+            sx={fieldSx}
           />
         </Grid>
 
-        <Grid item xs={12} md={6}>
-          <TextField
-            fullWidth
-            label="SKU"
-            name="sku"
-            value={form.sku}
-            onChange={handleChange}
-          />
-        </Grid>
+        {/* =================================================
+            PRICE + STATUS
+        ================================================= */}
 
-        <Grid item xs={12} md={6}>
+        <Grid item xs={12} sm={6}>
           <TextField
             fullWidth
             required
@@ -250,10 +339,14 @@ const ProductForm = ({ initialValues, onSubmit, loading }) => {
             name="price"
             value={form.price}
             onChange={handleChange}
+            inputProps={{
+              min: 0,
+            }}
+            sx={fieldSx}
           />
         </Grid>
 
-        <Grid item xs={12} md={6}>
+        <Grid item xs={12} sm={6}>
           <TextField
             select
             fullWidth
@@ -261,19 +354,46 @@ const ProductForm = ({ initialValues, onSubmit, loading }) => {
             name="status"
             value={form.status}
             onChange={handleChange}
+            sx={fieldSx}
           >
-            <MenuItem value="Active">Active</MenuItem>
-            <MenuItem value="Inactive">Inactive</MenuItem>
+            <MenuItem value="Active">
+              Active
+            </MenuItem>
+
+            <MenuItem value="Inactive">
+              Inactive
+            </MenuItem>
           </TextField>
         </Grid>
 
-        <Grid item xs={12} md={6}>
+        {/* =================================================
+            IMAGE UPLOAD
+        ================================================= */}
+
+        <Grid item xs={12}>
           <Button
             variant="outlined"
             component="label"
             fullWidth
+            sx={{
+              minHeight: 42,
+              borderRadius: 0,
+              borderColor: "#2E7D32",
+              color: "#2E7D32",
+              textTransform: "none",
+              fontSize: {
+                xs: "0.7rem",
+                sm: "0.78rem",
+              },
+              fontWeight: 600,
+
+              "&:hover": {
+                borderColor: "#1B5E20",
+                bgcolor: "#F1F8F2",
+              },
+            }}
           >
-            Upload Images
+            Upload Product Images
 
             <input
               hidden
@@ -285,32 +405,60 @@ const ProductForm = ({ initialValues, onSubmit, loading }) => {
           </Button>
         </Grid>
 
+        {/* =================================================
+            IMAGE PREVIEW
+        ================================================= */}
+
         {previewImages.length > 0 && (
           <Grid item xs={12}>
-            <Typography variant="h6" gutterBottom>
+            <Typography
+              sx={{
+                mb: 1,
+                fontWeight: 600,
+                color: "#333",
+                fontSize: {
+                  xs: "0.72rem",
+                  sm: "0.8rem",
+                },
+              }}
+            >
               Image Preview ({previewImages.length})
             </Typography>
 
             <Box
-              display="flex"
-              gap={2}
-              flexWrap="wrap"
+              sx={{
+                display: "flex",
+                gap: 1,
+                flexWrap: "wrap",
+              }}
             >
               {previewImages.map((image, index) => (
                 <Card
                   key={index}
+                  elevation={0}
                   sx={{
-                    width: 150,
-                    height: 150,
+                    width: {
+                      xs: 75,
+                      sm: 90,
+                    },
+                    height: {
+                      xs: 75,
+                      sm: 90,
+                    },
+                    borderRadius: 0,
+                    border: "1px solid #E0E0E0",
+                    overflow: "hidden",
                   }}
                 >
                   <CardMedia
                     component="img"
                     image={image}
+                    alt={`Preview ${index + 1}`}
                     sx={{
                       width: "100%",
                       height: "100%",
-                      objectFit: "cover",
+                      objectFit: "contain",
+                      bgcolor: "#F8F8F8",
                     }}
                   />
                 </Card>
@@ -319,18 +467,46 @@ const ProductForm = ({ initialValues, onSubmit, loading }) => {
           </Grid>
         )}
 
+        {/* =================================================
+            SAVE BUTTON
+        ================================================= */}
+
         <Grid item xs={12}>
           <Button
             fullWidth
             type="submit"
             variant="contained"
-            size="large"
             disabled={loading}
+            sx={{
+              minHeight: {
+                xs: 40,
+                sm: 44,
+              },
+              mt: 0.5,
+              borderRadius: 0,
+              bgcolor: "#1B5E20",
+              textTransform: "none",
+              fontWeight: 700,
+              fontSize: {
+                xs: "0.72rem",
+                sm: "0.8rem",
+              },
+              boxShadow: "none",
+
+              "&:hover": {
+                bgcolor: "#154A19",
+                boxShadow: "none",
+              },
+
+              "&:disabled": {
+                bgcolor: "#A5A5A5",
+                color: "#fff",
+              },
+            }}
           >
             {loading ? "Saving..." : "Save Product"}
           </Button>
         </Grid>
-
       </Grid>
     </Box>
   );

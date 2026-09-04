@@ -1,4 +1,5 @@
 import { useState } from "react";
+
 import {
   Box,
   Paper,
@@ -17,40 +18,94 @@ const ProductTabs = ({ product }) => {
   const tabData = [
     {
       label: "Description",
-      value: product.description,
+      value: product?.description,
     },
     {
       label: "Benefits",
-      value: product.benefits,
+      value: product?.benefits,
     },
     {
       label: "Ingredients",
-      value: product.ingredients,
+      value: product?.ingredients,
     },
     {
       label: "Usage",
-      value: product.usage,
+      value: product?.usage,
     },
     {
       label: "Storage",
-      value: product.storage,
+      value: product?.storage,
     },
   ];
 
   return (
     <Paper
-      elevation={2}
+      elevation={0}
       sx={{
-        mt: 5,
-        borderRadius: 3,
+        mt: {
+          xs: 3,
+          sm: 4,
+        },
+        borderRadius: 0,
+        border: "1px solid #E1E6E2",
         overflow: "hidden",
+        bgcolor: "#fff",
       }}
     >
+      {/* TABS */}
       <Tabs
         value={value}
         onChange={handleChange}
         variant="scrollable"
-        scrollButtons="auto"
+        scrollButtons={false}
+        sx={{
+          minHeight: {
+            xs: 38,
+            sm: 42,
+          },
+
+          borderBottom: "1px solid #E8ECE9",
+
+          "& .MuiTab-root": {
+            minHeight: {
+              xs: 38,
+              sm: 42,
+            },
+
+            minWidth: {
+              xs: 90,
+              sm: 110,
+            },
+
+            px: {
+              xs: 1.2,
+              sm: 2,
+            },
+
+            py: 0,
+
+            textTransform: "none",
+
+            fontSize: {
+              xs: "0.6rem",
+              sm: "0.7rem",
+            },
+
+            fontWeight: 600,
+
+            color: "#777",
+          },
+
+          "& .Mui-selected": {
+            color: "#1B5E20",
+            fontWeight: 700,
+          },
+
+          "& .MuiTabs-indicator": {
+            height: 2,
+            bgcolor: "#1B5E20",
+          },
+        }}
       >
         {tabData.map((tab) => (
           <Tab
@@ -60,14 +115,42 @@ const ProductTabs = ({ product }) => {
         ))}
       </Tabs>
 
-      <Box p={4}>
+      {/* CONTENT */}
+      <Box
+        sx={{
+          px: {
+            xs: 1.5,
+            sm: 2.5,
+            md: 3,
+          },
+
+          py: {
+            xs: 1.5,
+            sm: 2,
+            md: 2.5,
+          },
+
+          minHeight: {
+            xs: 80,
+            sm: 100,
+          },
+        }}
+      >
         <Typography
           sx={{
             whiteSpace: "pre-line",
-            lineHeight: 2,
+            color: "#666",
+
+            fontSize: {
+              xs: "0.62rem",
+              sm: "0.7rem",
+              md: "0.78rem",
+            },
+
+            lineHeight: 1.6,
           }}
         >
-          {tabData[value].value ||
+          {tabData[value]?.value ||
             `No ${tabData[
               value
             ].label.toLowerCase()} available.`}

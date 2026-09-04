@@ -1,16 +1,25 @@
 import { useState } from "react";
 import { Outlet } from "react-router-dom";
-import { Box, IconButton } from "@mui/material";
 
-import MenuIcon from "@mui/icons-material/Menu";
+import {
+  Box,
+  IconButton,
+} from "@mui/material";
+
 import CloseIcon from "@mui/icons-material/Close";
 
 import ManagerSidebar from "../components/manager/Sidebar";
 import ManagerNavbar from "../components/manager/Navbar";
 
+
 const ManagerLayout = () => {
   const [mobileOpen, setMobileOpen] =
     useState(false);
+
+
+  /* =====================================================
+     TOGGLE MOBILE SIDEBAR
+  ===================================================== */
 
   const handleToggleSidebar = () => {
     setMobileOpen(
@@ -18,17 +27,27 @@ const ManagerLayout = () => {
     );
   };
 
+
+  /* =====================================================
+     CLOSE MOBILE SIDEBAR
+  ===================================================== */
+
   const handleCloseSidebar = () => {
     setMobileOpen(false);
   };
+
 
   return (
     <Box
       sx={{
         minHeight: "100vh",
+
         width: "100%",
+
         display: "flex",
+
         bgcolor: "#F5F7FA",
+
         overflowX: "hidden",
       }}
     >
@@ -43,6 +62,14 @@ const ManagerLayout = () => {
             xs: "none",
             md: "block",
           },
+
+          width: 260,
+
+          minWidth: 260,
+
+          maxWidth: 260,
+
+          height: "100vh",
 
           flexShrink: 0,
         }}
@@ -65,10 +92,11 @@ const ManagerLayout = () => {
             },
 
             position: "fixed",
+
             inset: 0,
 
             bgcolor:
-              "rgba(15, 23, 42, 0.55)",
+              "rgba(15, 23, 42, 0.45)",
 
             zIndex: 1199,
           }}
@@ -90,12 +118,24 @@ const ManagerLayout = () => {
           position: "fixed",
 
           top: 0,
+
           left: 0,
+
           bottom: 0,
 
-          width: {
-            xs: "min(280px, 82vw)",
-          },
+          /*
+           * =============================================
+           * MOBILE SIDEBAR = 40% OF VIEWPORT WIDTH
+           * =============================================
+           */
+
+          width: "40vw",
+
+          minWidth: "40vw",
+
+          maxWidth: "40vw",
+
+          height: "100vh",
 
           zIndex: 1200,
 
@@ -106,25 +146,37 @@ const ManagerLayout = () => {
           transition:
             "transform 0.25s ease",
 
-          boxShadow:
-            mobileOpen
-              ? "8px 0 25px rgba(0,0,0,0.18)"
-              : "none",
+          boxShadow: mobileOpen
+            ? "8px 0 20px rgba(0,0,0,0.16)"
+            : "none",
+
+          overflow: "hidden",
+
+          boxSizing: "border-box",
         }}
       >
 
-        {/* Close button */}
+        {/* =================================================
+            CLOSE BUTTON
+        ================================================= */}
 
         <IconButton
           onClick={handleCloseSidebar}
           aria-label="Close menu"
           sx={{
             position: "absolute",
-            top: 10,
-            right: 8,
+
+            top: 8,
+
+            right: 6,
+
             zIndex: 10,
 
-            color: "#fff",
+            width: 38,
+
+            height: 38,
+
+            color: "#FFFFFF",
 
             bgcolor:
               "rgba(255,255,255,0.08)",
@@ -135,10 +187,27 @@ const ManagerLayout = () => {
             },
           }}
         >
-          <CloseIcon />
+          <CloseIcon
+            fontSize="small"
+          />
         </IconButton>
 
-        <ManagerSidebar />
+
+        {/* =================================================
+            SIDEBAR
+        ================================================= */}
+
+        <Box
+          sx={{
+            width: "100%",
+
+            height: "100%",
+
+            overflow: "hidden",
+          }}
+        >
+          <ManagerSidebar />
+        </Box>
 
       </Box>
 
@@ -172,16 +241,15 @@ const ManagerLayout = () => {
         <Box
           sx={{
             flexShrink: 0,
+
             width: "100%",
           }}
         >
-
           <ManagerNavbar
             onMenuClick={
               handleToggleSidebar
             }
           />
-
         </Box>
 
 
@@ -202,26 +270,35 @@ const ManagerLayout = () => {
 
             overflowY: "auto",
 
+            boxSizing: "border-box",
+
             p: {
-              xs: 1.5,
-              sm: 2,
-              md: 3,
+              xs: 0,
+              sm: 1,
+              md: 2,
             },
 
             pb: {
-              xs: 3,
-              md: 3,
+              xs: 0,
+              sm: 1,
+              md: 2,
             },
 
-            boxSizing: "border-box",
+            m: 0,
           }}
         >
 
           <Box
             sx={{
               width: "100%",
+
               maxWidth: "100%",
+
               minWidth: 0,
+
+              margin: 0,
+
+              padding: 0,
             }}
           >
             <Outlet />
@@ -234,5 +311,6 @@ const ManagerLayout = () => {
     </Box>
   );
 };
+
 
 export default ManagerLayout;

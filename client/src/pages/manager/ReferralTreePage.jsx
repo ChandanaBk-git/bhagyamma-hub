@@ -302,27 +302,24 @@ const ReferralNode = ({
           boxSizing: "border-box",
 
           border:
-            `2px solid ${layer.border}`,
+            `1px solid ${layer.border}`,
 
           backgroundColor:
             layer.background,
 
-          borderRadius: {
-            xs: 2.5,
-            sm: 3,
-          },
+          borderRadius: 0,
 
           p: {
-            xs: 1.5,
-            sm: 2,
+            xs: 1,
+            sm: 1.25,
           },
 
           transition:
             "all 0.2s ease",
 
           "&:hover": {
-            boxShadow:
-              `0 8px 22px ${layer.border}22`,
+            backgroundColor:
+              layer.background,
           },
         }}
       >
@@ -360,7 +357,7 @@ const ReferralNode = ({
                 sm: 48,
               },
 
-              borderRadius: "50%",
+              borderRadius: 0,
 
               flexShrink: 0,
 
@@ -519,7 +516,7 @@ const ReferralNode = ({
 
                 p: 0,
 
-                borderRadius: "50%",
+                borderRadius: 0,
 
                 color:
                   layer.text,
@@ -564,7 +561,7 @@ const ReferralNode = ({
 
             <Divider
               sx={{
-                my: 1.4,
+                my: 0.75,
 
                 borderColor:
                   `${layer.border}25`,
@@ -776,7 +773,7 @@ const ReferralNode = ({
 
             <Divider
               sx={{
-                my: 1.4,
+                my: 0.75,
 
                 borderColor:
                   `${layer.border}25`,
@@ -873,7 +870,7 @@ const ReferralNode = ({
 
           <Box
             sx={{
-              mt: 1.2,
+              mt: 0.75,
 
               display: "flex",
 
@@ -931,7 +928,7 @@ const ReferralNode = ({
 
           <Box
             sx={{
-              mt: 1.2,
+              mt: 0.75,
 
               ml: {
                 xs: 1,
@@ -958,7 +955,7 @@ const ReferralNode = ({
               flexDirection:
                 "column",
 
-              gap: 1.2,
+              gap: 0.75,
             }}
           >
 
@@ -1275,9 +1272,9 @@ const ReferralTreePage = () => {
       <Box
         sx={{
           mb: {
-            xs: 1.5,
-            sm: 2,
-            md: 2.5,
+            xs: 1,
+            sm: 1.25,
+            md: 1.5,
           },
         }}
       >
@@ -1336,19 +1333,19 @@ const ReferralTreePage = () => {
         variant="outlined"
         sx={{
           mb: {
-            xs: 1.5,
-            sm: 2,
+            xs: 1,
+            sm: 1.25,
           },
 
           minHeight: {
-            xs: 44,
-            sm: 46,
+            xs: 38,
+            sm: 40,
           },
 
-          borderRadius: 3,
+          borderRadius: 0,
 
           borderColor:
-            "#86EFAC",
+            "#2E7D32",
 
           color:
             "#2E7D32",
@@ -1377,9 +1374,11 @@ const ReferralTreePage = () => {
         <Alert
           severity="error"
           sx={{
-            mb: 2,
+            mb: 1,
 
-            borderRadius: 2,
+            borderRadius: 0,
+
+            border: "1px solid #2E7D32",
           }}
           action={
 
@@ -1416,14 +1415,14 @@ const ReferralTreePage = () => {
           },
 
           gap: {
-            xs: 1.2,
-            sm: 1.5,
-            md: 2,
+            xs: 0.75,
+            sm: 1,
+            md: 1.25,
           },
 
           mb: {
-            xs: 1.5,
-            sm: 2,
+            xs: 1,
+            sm: 1.25,
           },
         }}
       >
@@ -1500,12 +1499,9 @@ const ReferralTreePage = () => {
           boxSizing: "border-box",
 
           border:
-            "1px solid #E2E8F0",
+            "1px solid #2E7D32",
 
-          borderRadius: {
-            xs: 3,
-            sm: 4,
-          },
+          borderRadius: 0,
 
           overflow: "hidden",
 
@@ -1519,9 +1515,9 @@ const ReferralTreePage = () => {
         <Box
           sx={{
             p: {
-              xs: 1.5,
-              sm: 2,
-              md: 2.5,
+              xs: 1,
+              sm: 1.25,
+              md: 1.5,
             },
           }}
         >
@@ -1614,7 +1610,7 @@ const ReferralTreePage = () => {
               md: 2.5,
             },
 
-            py: 1.3,
+            py: 0.75,
 
             backgroundColor:
               "#F8FAFC",
@@ -1687,9 +1683,9 @@ const ReferralTreePage = () => {
         <Box
           sx={{
             p: {
-              xs: 1.2,
-              sm: 2,
-              md: 2.5,
+              xs: 0.75,
+              sm: 1,
+              md: 1.25,
             },
 
             width: "100%",
@@ -1728,9 +1724,11 @@ const ReferralTreePage = () => {
           <InfoOutlined />
         }
         sx={{
-          mt: 1.5,
+          mt: 1,
 
-          borderRadius: 3,
+          borderRadius: 0,
+
+          border: "1px solid #2E7D32",
 
           fontSize: {
             xs: 11,
@@ -1773,15 +1771,15 @@ const StatCard = ({
       sx={{
         minWidth: 0,
 
-        borderRadius: 4,
+        borderRadius: 0,
 
         border:
-          "1px solid #E2E8F0",
+          "1px solid #2E7D32",
 
         p: {
-          xs: 1.3,
-          sm: 1.7,
-          md: 2,
+          xs: 0.9,
+          sm: 1.1,
+          md: 1.25,
         },
 
         display: "flex",
@@ -1796,8 +1794,7 @@ const StatCard = ({
         backgroundColor:
           "#FFFFFF",
 
-        boxShadow:
-          "0 5px 18px rgba(15,23,42,0.06)",
+        boxShadow: "none",
       }}
     >
 
@@ -1813,7 +1810,7 @@ const StatCard = ({
             sm: 42,
           },
 
-          borderRadius: "50%",
+          borderRadius: 0,
 
           flexShrink: 0,
 

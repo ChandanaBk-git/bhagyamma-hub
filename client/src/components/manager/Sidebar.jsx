@@ -24,39 +24,12 @@ import AccountBalanceWalletIcon from "@mui/icons-material/AccountBalanceWallet";
 import HomeIcon from "@mui/icons-material/Home";
 import StarsIcon from "@mui/icons-material/Stars";
 
-const Sidebar = () => {
 
-  const navigate =
-    useNavigate();
+/* =====================================================
+   MENU ITEMS
+===================================================== */
 
-
-  /* =====================================================
-     LOGOUT
-  ===================================================== */
-
-  const handleLogout = () => {
-
-    localStorage.removeItem(
-      "token"
-    );
-
-    localStorage.removeItem(
-      "user"
-    );
-
-    navigate(
-      "/login"
-    );
-
-  };
-
-
-  /* =====================================================
-     MENU
-  ===================================================== */
-
-  const menuItems = [
-
+const menuItems = [
   {
     title: "Dashboard",
     icon: <DashboardIcon />,
@@ -86,11 +59,12 @@ const Sidebar = () => {
     icon: <AccountBalanceWalletIcon />,
     path: "/manager/commissions",
   },
+
   {
-  title: "Selling Points",
-  icon: <StarsIcon />,
-  path: "/manager/selling-points",
-},
+    title: "Selling Points",
+    icon: <StarsIcon />,
+    path: "/manager/selling-points",
+  },
 
   {
     title: "Products",
@@ -109,28 +83,39 @@ const Sidebar = () => {
     icon: <PersonIcon />,
     path: "/manager/profile",
   },
-  
 ];
 
 
-  return (
+/* =====================================================
+   SIDEBAR
+===================================================== */
 
+const Sidebar = () => {
+  const navigate = useNavigate();
+
+
+  /* =====================================================
+     LOGOUT
+  ===================================================== */
+
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+
+    sessionStorage.removeItem("token");
+    sessionStorage.removeItem("user");
+
+    window.dispatchEvent(
+      new Event("auth-logout")
+    );
+
+    navigate("/login");
+  };
+
+
+  return (
     <Box
       sx={{
-        /*
-        =================================================
-        IMPORTANT
-
-        Desktop:
-        260px sidebar
-
-        Mobile:
-        Fill the mobile drawer width.
-
-        Do NOT use xs: 0 here.
-        =================================================
-        */
-
         width: {
           xs: "100%",
           md: 260,
@@ -144,7 +129,7 @@ const Sidebar = () => {
 
         bgcolor: "#0F172A",
 
-        color: "#fff",
+        color: "#FFFFFF",
 
         display: "flex",
 
@@ -158,76 +143,111 @@ const Sidebar = () => {
       }}
     >
 
+{/* =================================================
+    BRAND
+================================================= */}
+
+<Box
+  sx={{
+    minHeight: {
+      xs: 105,
+      md: 122,
+    },
+
+    width: "100%",
+
+    px: {
+      xs: 0.8,
+      sm: 1,
+      md: 2,
+    },
+
+    py: {
+      xs: 1.8,
+      md: 3,
+    },
+
+    display: "flex",
+
+    flexDirection: "column",
+
+    justifyContent: "center",
+
+    alignItems: "center",
+
+    textAlign: "center",
+
+    boxSizing: "border-box",
+
+    flexShrink: 0,
+
+    overflow: "hidden",
+
+    /*
+     * Leave room for the close button
+     */
+    pr: {
+      xs: 4.5,
+      sm: 1,
+      md: 2,
+    },
+  }}
+>
+  <Typography
+    sx={{
+      width: "100%",
+
+      fontSize: {
+        xs: 12,
+        sm: 14,
+        md: 23,
+      },
+
+      lineHeight: 1.15,
+
+      fontWeight: 800,
+
+      color: "#FFFFFF",
+
+      whiteSpace: "nowrap",
+
+      overflow: "hidden",
+
+      textOverflow: "ellipsis",
+    }}
+  >
+    Bhagyamma Hub
+  </Typography>
+
+  <Typography
+    sx={{
+      mt: 0.45,
+
+      fontSize: {
+        xs: 8,
+        sm: 10,
+        md: 13,
+      },
+
+      lineHeight: 1.2,
+
+      color:
+        "rgba(255,255,255,0.68)",
+
+      whiteSpace: "nowrap",
+    }}
+  >
+    Manager Panel
+  </Typography>
+</Box>
+
       {/* =================================================
-          BRAND
+          DIVIDER
       ================================================= */}
-
-      <Box
-        sx={{
-          minHeight: 122,
-
-          px: 2,
-
-          py: 3,
-
-          pr: {
-            xs: 5,
-            md: 2,
-          },
-
-          display: "flex",
-
-          flexDirection: "column",
-
-          justifyContent: "center",
-
-          textAlign: "center",
-
-          boxSizing: "border-box",
-
-          flexShrink: 0,
-        }}
-      >
-
-        <Typography
-          sx={{
-            fontSize: {
-              xs: 21,
-              md: 23,
-            },
-
-            lineHeight: 1.1,
-
-            fontWeight: 800,
-
-            whiteSpace: "normal",
-
-            overflowWrap: "anywhere",
-          }}
-        >
-          Bhagyamma Hub
-        </Typography>
-
-
-        <Typography
-          sx={{
-            mt: 0.5,
-
-            fontSize: 13,
-
-            color:
-              "rgba(255,255,255,0.68)",
-          }}
-        >
-          Manager Panel
-        </Typography>
-
-      </Box>
-
 
       <Divider
         sx={{
-          bgcolor: "#334155",
+          borderColor: "#334155",
 
           flexShrink: 0,
         }}
@@ -239,25 +259,34 @@ const Sidebar = () => {
       ================================================= */}
 
       <List
+        disablePadding
         sx={{
-          px: 1,
+          px: {
+            xs: 0.6,
+            md: 1,
+          },
 
-          py: 2,
+          py: {
+            xs: 1.5,
+            md: 2,
+          },
 
           overflowY: "auto",
+
+          overflowX: "hidden",
 
           flex: 1,
 
           minHeight: 0,
 
           "&::-webkit-scrollbar": {
-            width: 4,
+            width: 3,
           },
 
           "&::-webkit-scrollbar-thumb": {
             bgcolor: "#334155",
 
-            borderRadius: 10,
+            borderRadius: 3,
           },
 
           "&::-webkit-scrollbar-track": {
@@ -266,117 +295,211 @@ const Sidebar = () => {
         }}
       >
 
-        {menuItems.map(
-          (
-            item
-          ) => (
+        {menuItems.map((item) => (
+          <ListItemButton
+            key={item.path}
 
-<ListItemButton
-  key={item.path}
-  component={NavLink}
-  to={item.path}
-  end={item.path === "/"}
-  sx={{
-                minHeight: 48,
+            component={NavLink}
 
-                mx: 0,
+            to={item.path}
 
-                mb: 0.7,
+            end={item.path === "/"}
 
-                px: {
-                  xs: 1.8,
-                  md: 1.8,
+            sx={{
+              width: "100%",
+
+              minWidth: 0,
+
+              minHeight: {
+                xs: 46,
+                md: 48,
+              },
+
+              mx: 0,
+
+              mb: {
+                xs: 0.5,
+                md: 0.7,
+              },
+
+              px: {
+                xs: 0.7,
+                sm: 1,
+                md: 1.8,
+              },
+
+              py: 0.4,
+
+              borderRadius: 2,
+
+              color: "#FFFFFF",
+
+              boxSizing: "border-box",
+
+              overflow: "hidden",
+
+              transition:
+                "background-color 0.2s ease",
+
+              "&.active": {
+                bgcolor: "#2563EB",
+
+                color: "#FFFFFF",
+              },
+
+              "&:hover": {
+                bgcolor:
+                  "rgba(37,99,235,0.75)",
+              },
+            }}
+          >
+
+            {/* =================================================
+                ICON
+            ================================================= */}
+
+            <ListItemIcon
+              sx={{
+                minWidth: {
+                  xs: 28,
+                  sm: 30,
+                  md: 42,
                 },
 
-                borderRadius: 2,
-
-                color: "#fff",
-
-                transition:
-                  "background-color 0.2s ease",
-
-                "&.active": {
-                  bgcolor: "#2563EB",
+                width: {
+                  xs: 28,
+                  sm: 30,
+                  md: 42,
                 },
 
-                "&:hover": {
-                  bgcolor:
-                    "rgba(37,99,235,0.75)",
+                mr: {
+                  xs: 0.3,
+                  sm: 0.5,
+                  md: 0,
+                },
+
+                color: "#FFFFFF",
+
+                display: "flex",
+
+                alignItems: "center",
+
+                justifyContent: "center",
+
+                flexShrink: 0,
+
+                "& svg": {
+                  fontSize: {
+                    xs: 19,
+                    sm: 20,
+                    md: 22,
+                  },
                 },
               }}
             >
-
-              <ListItemIcon
-                sx={{
-                  minWidth: 42,
-
-                  color: "#fff",
-
-                  display: "flex",
-
-                  alignItems: "center",
-
-                  justifyContent:
-                    "center",
-                }}
-              >
-                {item.icon}
-              </ListItemIcon>
+              {item.icon}
+            </ListItemIcon>
 
 
-              <ListItemText
-                primary={
-                  item.title
-                }
-                primaryTypographyProps={{
-                  fontSize: 15,
+            {/* =================================================
+                TEXT
+            ================================================= */}
 
-                  fontWeight: 500,
+            <ListItemText
+              primary={item.title}
 
-                  whiteSpace:
-                    "nowrap",
-                }}
-              />
+              sx={{
+                minWidth: 0,
 
-            </ListItemButton>
+                m: 0,
 
-          )
-        )}
+                overflow: "hidden",
+              }}
+
+              primaryTypographyProps={{
+                fontSize: {
+                  xs: 11,
+                  sm: 11.5,
+                  md: 15,
+                },
+
+                fontWeight: 500,
+
+                color: "#FFFFFF",
+
+                lineHeight: 1.2,
+
+                whiteSpace: "nowrap",
+
+                overflow: "hidden",
+
+                textOverflow: "ellipsis",
+              }}
+            />
+
+          </ListItemButton>
+        ))}
 
       </List>
 
 
       {/* =================================================
-          LOGOUT
+          LOGOUT DIVIDER
       ================================================= */}
 
       <Divider
         sx={{
-          bgcolor: "#334155",
+          borderColor: "#334155",
 
           flexShrink: 0,
         }}
       />
 
 
+      {/* =================================================
+          LOGOUT
+      ================================================= */}
+
       <List
+        disablePadding
         sx={{
-          p: 1,
+          p: {
+            xs: 0.6,
+            md: 1,
+          },
 
           flexShrink: 0,
         }}
       >
 
         <ListItemButton
-          onClick={
-            handleLogout
-          }
+          onClick={handleLogout}
+
           sx={{
-            minHeight: 48,
+            width: "100%",
+
+            minWidth: 0,
+
+            minHeight: {
+              xs: 46,
+              md: 48,
+            },
+
+            px: {
+              xs: 0.7,
+              sm: 1,
+              md: 1.8,
+            },
+
+            py: 0.4,
 
             borderRadius: 2,
 
-            color: "#fff",
+            color: "#FFFFFF",
+
+            overflow: "hidden",
+
+            boxSizing: "border-box",
 
             "&:hover": {
               bgcolor: "#DC2626",
@@ -386,16 +509,41 @@ const Sidebar = () => {
 
           <ListItemIcon
             sx={{
-              minWidth: 42,
+              minWidth: {
+                xs: 28,
+                sm: 30,
+                md: 42,
+              },
 
-              color: "#fff",
+              width: {
+                xs: 28,
+                sm: 30,
+                md: 42,
+              },
+
+              mr: {
+                xs: 0.3,
+                sm: 0.5,
+                md: 0,
+              },
+
+              color: "#FFFFFF",
 
               display: "flex",
 
               alignItems: "center",
 
-              justifyContent:
-                "center",
+              justifyContent: "center",
+
+              flexShrink: 0,
+
+              "& svg": {
+                fontSize: {
+                  xs: 19,
+                  sm: 20,
+                  md: 22,
+                },
+              },
             }}
           >
             <LogoutIcon />
@@ -404,13 +552,33 @@ const Sidebar = () => {
 
           <ListItemText
             primary="Logout"
+
+            sx={{
+              minWidth: 0,
+
+              m: 0,
+
+              overflow: "hidden",
+            }}
+
             primaryTypographyProps={{
-              fontSize: 15,
+              fontSize: {
+                xs: 11,
+                sm: 11.5,
+                md: 15,
+              },
 
               fontWeight: 500,
 
-              whiteSpace:
-                "nowrap",
+              color: "#FFFFFF",
+
+              lineHeight: 1.2,
+
+              whiteSpace: "nowrap",
+
+              overflow: "hidden",
+
+              textOverflow: "ellipsis",
             }}
           />
 
@@ -419,9 +587,7 @@ const Sidebar = () => {
       </List>
 
     </Box>
-
   );
-
 };
 
 

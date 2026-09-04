@@ -6,6 +6,7 @@ import {
 } from "@mui/material";
 
 import ShoppingCartOutlinedIcon from "@mui/icons-material/ShoppingCartOutlined";
+import ArrowForwardOutlinedIcon from "@mui/icons-material/ArrowForwardOutlined";
 
 import {
   useLocation,
@@ -16,8 +17,16 @@ const EmptyCart = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
+  // =====================================================
+  // MEMBER CART CHECK
+  // =====================================================
+
   const isMemberCart =
     location.pathname.startsWith("/member/");
+
+  // =====================================================
+  // CONTINUE SHOPPING
+  // =====================================================
 
   const handleContinueShopping = () => {
     if (isMemberCart) {
@@ -28,79 +37,191 @@ const EmptyCart = () => {
   };
 
   return (
-    <Container maxWidth="sm">
-      <Box
+    <Box
+      sx={{
+        width: "100%",
+        minHeight: "100vh",
+        bgcolor: "#F8FAF8",
+      }}
+    >
+      <Container
+        maxWidth="sm"
         sx={{
-          minHeight: "70vh",
-
-          display: "flex",
-
-          flexDirection: "column",
-
-          justifyContent: "center",
-
-          alignItems: "center",
-
-          textAlign: "center",
-
-          px: 2,
+          px: {
+            xs: 1.5,
+            sm: 2,
+          },
         }}
       >
-        <ShoppingCartOutlinedIcon
+        <Box
           sx={{
-            fontSize: {
-              xs: 90,
-              sm: 120,
+            minHeight: {
+              xs: "55vh",
+              sm: "60vh",
             },
 
-            color: "#9E9E9E",
+            display: "flex",
 
-            mb: 3,
-          }}
-        />
+            flexDirection: "column",
 
-        <Typography
-          variant="h4"
-          fontWeight="bold"
-          gutterBottom
-          sx={{
-            fontSize: {
-              xs: "1.7rem",
-              sm: "2.2rem",
-            },
+            justifyContent: "center",
+
+            alignItems: "center",
+
+            textAlign: "center",
+
+            py: 4,
           }}
         >
-          Your Cart is Empty
-        </Typography>
+          {/* =================================================
+              CART ICON
+          ================================================= */}
 
-        <Typography
-          color="text.secondary"
-          sx={{
-            mb: 4,
-            maxWidth: 450,
-          }}
-        >
-          Looks like you haven't added any
-          products yet. Explore our products
-          and start shopping.
-        </Typography>
+          <Box
+            sx={{
+              width: {
+                xs: 58,
+                sm: 68,
+              },
 
-        <Button
-          variant="contained"
-          color="success"
-          size="large"
-          onClick={handleContinueShopping}
-          sx={{
-            textTransform: "none",
-            fontWeight: 600,
-            px: 4,
-            borderRadius: 2,
-          }}
-        >
-          Continue Shopping
-        </Button>
-      </Box>
-    </Container>
+              height: {
+                xs: 58,
+                sm: 68,
+              },
+
+              display: "flex",
+
+              alignItems: "center",
+
+              justifyContent: "center",
+
+              bgcolor: "#EAF3EB",
+
+              border: "1px solid #D5E4D7",
+
+              borderRadius: 0,
+
+              mb: {
+                xs: 1.5,
+                sm: 2,
+              },
+            }}
+          >
+            <ShoppingCartOutlinedIcon
+              sx={{
+                fontSize: {
+                  xs: 30,
+                  sm: 36,
+                },
+
+                color: "#2E7D32",
+              }}
+            />
+          </Box>
+
+          {/* =================================================
+              TITLE
+          ================================================= */}
+
+          <Typography
+            component="h1"
+            sx={{
+              color: "#222",
+
+              fontWeight: 700,
+
+              fontSize: {
+                xs: "1.05rem",
+                sm: "1.3rem",
+              },
+
+              lineHeight: 1.25,
+            }}
+          >
+            Your Cart is Empty
+          </Typography>
+
+          {/* =================================================
+              DESCRIPTION
+          ================================================= */}
+
+          <Typography
+            sx={{
+              mt: 0.6,
+
+              color: "#777",
+
+              maxWidth: 380,
+
+              fontSize: {
+                xs: "0.62rem",
+                sm: "0.7rem",
+              },
+
+              lineHeight: 1.5,
+            }}
+          >
+            Looks like you haven't added any
+            products yet. Explore our products
+            and start shopping.
+          </Typography>
+
+          {/* =================================================
+              CONTINUE SHOPPING
+          ================================================= */}
+
+          <Button
+            variant="contained"
+            color="success"
+            onClick={handleContinueShopping}
+            endIcon={
+              <ArrowForwardOutlinedIcon
+                sx={{
+                  fontSize: 16,
+                }}
+              />
+            }
+            sx={{
+              mt: {
+                xs: 1.8,
+                sm: 2.2,
+              },
+
+              minHeight: {
+                xs: 36,
+                sm: 40,
+              },
+
+              px: {
+                xs: 1.8,
+                sm: 2.5,
+              },
+
+              py: 0.6,
+
+              borderRadius: 0,
+
+              boxShadow: "none",
+
+              textTransform: "none",
+
+              fontWeight: 700,
+
+              fontSize: {
+                xs: "0.65rem",
+                sm: "0.72rem",
+              },
+
+              "&:hover": {
+                boxShadow: "none",
+              },
+            }}
+          >
+            Continue Shopping
+          </Button>
+        </Box>
+      </Container>
+    </Box>
   );
 };
 

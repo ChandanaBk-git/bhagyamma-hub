@@ -28,15 +28,14 @@ import {
 // =====================================================
 
 const COLORS = {
-  primary: "#2E7D32",
-  primaryDark: "#1B5E20",
-  primaryLight: "#E8F5E9",
-  greenLight: "#C8E6C9",
+  primary: "#1B5E20",
+  green: "#2E7D32",
+  gold: "#B08D3C",
   text: "#222222",
   secondaryText: "#666666",
-  background: "#F7F9F7",
+  background: "#F7F8F7",
   white: "#FFFFFF",
-  border: "#E0E7E1",
+  border: "#E1E6E2",
 };
 
 // =====================================================
@@ -216,27 +215,26 @@ const SectionHeading = ({ title, description }) => {
   return (
     <Box
       sx={{
-        width: "100%",
-        maxWidth: 760,
-        mx: "auto",
         textAlign: "center",
+        maxWidth: 700,
+        mx: "auto",
         mb: {
-          xs: 4,
-          md: 5,
+          xs: 2.5,
+          sm: 3.5,
         },
       }}
     >
       <Typography
         component="h2"
         sx={{
+          color: COLORS.primary,
+          fontWeight: 700,
           fontSize: {
-            xs: "1.7rem",
-            sm: "2rem",
-            md: "2.25rem",
+            xs: "1.2rem",
+            sm: "1.5rem",
+            md: "1.8rem",
           },
-          fontWeight: 800,
-          lineHeight: 1.25,
-          color: COLORS.text,
+          lineHeight: 1.2,
         }}
       >
         {title}
@@ -245,14 +243,14 @@ const SectionHeading = ({ title, description }) => {
       {description && (
         <Typography
           sx={{
-            mt: 1.5,
+            mt: 0.7,
             color: COLORS.secondaryText,
             fontSize: {
-              xs: "0.88rem",
-              sm: "0.95rem",
-              md: "1rem",
+              xs: "0.65rem",
+              sm: "0.75rem",
+              md: "0.85rem",
             },
-            lineHeight: 1.7,
+            lineHeight: 1.5,
           }}
         >
           {description}
@@ -263,7 +261,7 @@ const SectionHeading = ({ title, description }) => {
 };
 
 // =====================================================
-// ABOUT PAGE
+// ABOUT
 // =====================================================
 
 const About = () => {
@@ -271,9 +269,8 @@ const About = () => {
     <Box
       sx={{
         width: "100%",
-        minHeight: "100vh",
         bgcolor: COLORS.background,
-        overflow: "hidden",
+        color: COLORS.text,
       }}
     >
       {/* =================================================
@@ -282,9 +279,7 @@ const About = () => {
 
       <Box
         sx={{
-          width: "100%",
-          background:
-            "linear-gradient(135deg, #1B5E20 0%, #2E7D32 55%, #388E3C 100%)",
+          bgcolor: COLORS.primary,
           color: COLORS.white,
         }}
       >
@@ -292,20 +287,20 @@ const About = () => {
           maxWidth="lg"
           sx={{
             py: {
-              xs: 6,
-              sm: 7,
-              md: 8,
+              xs: 3,
+              sm: 4,
+              md: 5,
             },
             px: {
-              xs: 2,
-              sm: 3,
-              md: 4,
+              xs: 1.5,
+              sm: 2,
+              md: 3,
             },
           }}
         >
           <Box
             sx={{
-              maxWidth: 850,
+              maxWidth: 760,
               mx: "auto",
               textAlign: "center",
             }}
@@ -313,13 +308,13 @@ const About = () => {
             <Typography
               component="h1"
               sx={{
+                fontWeight: 700,
                 fontSize: {
-                  xs: "2rem",
-                  sm: "2.6rem",
-                  md: "3.2rem",
+                  xs: "1.45rem",
+                  sm: "1.9rem",
+                  md: "2.4rem",
                 },
-                fontWeight: 800,
-                lineHeight: 1.15,
+                lineHeight: 1.2,
               }}
             >
               About Bhagyamma Hub
@@ -327,16 +322,14 @@ const About = () => {
 
             <Typography
               sx={{
-                mt: 2,
-                maxWidth: 720,
-                mx: "auto",
-                color: "rgba(255,255,255,0.92)",
+                mt: 1,
+                color: "rgba(255,255,255,0.88)",
                 fontSize: {
-                  xs: "0.9rem",
-                  sm: "1rem",
-                  md: "1.05rem",
+                  xs: "0.68rem",
+                  sm: "0.78rem",
+                  md: "0.9rem",
                 },
-                lineHeight: 1.75,
+                lineHeight: 1.55,
               }}
             >
               Experience the goodness of Ayurveda with premium herbal
@@ -349,21 +342,21 @@ const About = () => {
       </Box>
 
       {/* =================================================
-          MAIN CONTENT
+          MAIN
       ================================================= */}
 
       <Container
         maxWidth="lg"
         sx={{
           px: {
-            xs: 2,
-            sm: 3,
-            md: 4,
+            xs: 1.5,
+            sm: 2,
+            md: 3,
           },
           py: {
-            xs: 6,
-            sm: 7,
-            md: 9,
+            xs: 3,
+            sm: 5,
+            md: 6,
           },
         }}
       >
@@ -381,14 +374,14 @@ const About = () => {
             sx={{
               display: "grid",
               gridTemplateColumns: {
-                xs: "1fr",
+                xs: "repeat(2, 1fr)",
                 sm: "repeat(2, 1fr)",
                 md: "repeat(4, 1fr)",
               },
               gap: {
-                xs: 2,
-                sm: 2.5,
-                md: 3,
+                xs: 1,
+                sm: 1.5,
+                md: 2,
               },
             }}
           >
@@ -397,52 +390,49 @@ const About = () => {
                 key={item.title}
                 elevation={0}
                 sx={{
-                  height: "100%",
-                  minHeight: {
-                    xs: 210,
-                    sm: 225,
-                    md: 250,
-                  },
-                  borderRadius: 4,
+                  borderRadius: 0,
                   border: `1px solid ${COLORS.border}`,
                   bgcolor: COLORS.white,
-                  transition: "all 0.25s ease",
-
-                  "&:hover": {
-                    transform: "translateY(-6px)",
-                    boxShadow:
-                      "0 14px 32px rgba(46,125,50,0.13)",
-                  },
+                  height: "100%",
                 }}
               >
                 <CardContent
                   sx={{
-                    height: "100%",
                     p: {
-                      xs: 2.5,
-                      sm: 3,
+                      xs: 1.3,
+                      sm: 1.8,
+                      md: 2,
                     },
+                    textAlign: "center",
                     display: "flex",
                     flexDirection: "column",
                     alignItems: "center",
-                    justifyContent: "center",
-                    textAlign: "center",
+                    height: "100%",
+                    boxSizing: "border-box",
                   }}
                 >
                   <Box
                     sx={{
-                      width: 58,
-                      height: 58,
-                      borderRadius: "50%",
+                      width: {
+                        xs: 34,
+                        sm: 40,
+                      },
+                      height: {
+                        xs: 34,
+                        sm: 40,
+                      },
                       bgcolor: item.background,
                       color: item.color,
                       display: "flex",
                       alignItems: "center",
                       justifyContent: "center",
-                      mb: 2,
+                      mb: 1,
 
                       "& svg": {
-                        fontSize: 28,
+                        fontSize: {
+                          xs: 18,
+                          sm: 21,
+                        },
                       },
                     }}
                   >
@@ -451,12 +441,13 @@ const About = () => {
 
                   <Typography
                     sx={{
-                      fontWeight: 800,
+                      fontWeight: 700,
                       fontSize: {
-                        xs: "0.95rem",
-                        sm: "1rem",
+                        xs: "0.62rem",
+                        sm: "0.72rem",
+                        md: "0.8rem",
                       },
-                      lineHeight: 1.4,
+                      lineHeight: 1.35,
                     }}
                   >
                     {item.title}
@@ -464,13 +455,14 @@ const About = () => {
 
                   <Typography
                     sx={{
-                      mt: 1.2,
+                      mt: 0.6,
                       color: COLORS.secondaryText,
                       fontSize: {
-                        xs: "0.82rem",
-                        sm: "0.87rem",
+                        xs: "0.52rem",
+                        sm: "0.6rem",
+                        md: "0.68rem",
                       },
-                      lineHeight: 1.65,
+                      lineHeight: 1.45,
                     }}
                   >
                     {item.description}
@@ -488,9 +480,9 @@ const About = () => {
         <Box
           sx={{
             mt: {
-              xs: 8,
-              sm: 10,
-              md: 12,
+              xs: 4,
+              sm: 6,
+              md: 7,
             },
           }}
         >
@@ -504,11 +496,12 @@ const About = () => {
               display: "grid",
               gridTemplateColumns: {
                 xs: "1fr",
-                md: "repeat(2, 1fr)",
+                sm: "repeat(2, 1fr)",
               },
               gap: {
-                xs: 2.5,
-                md: 3,
+                xs: 1,
+                sm: 1.5,
+                md: 2,
               },
             }}
           >
@@ -517,73 +510,77 @@ const About = () => {
                 key={item.title}
                 elevation={0}
                 sx={{
-                  minHeight: {
-                    xs: 200,
-                    md: 220,
-                  },
-                  borderRadius: 4,
+                  borderRadius: 0,
                   border: `1px solid ${COLORS.border}`,
                   bgcolor: COLORS.white,
-                  transition: "all 0.25s ease",
-
-                  "&:hover": {
-                    transform: "translateY(-5px)",
-                    boxShadow:
-                      "0 12px 28px rgba(0,0,0,0.08)",
-                  },
                 }}
               >
                 <CardContent
                   sx={{
-                    height: "100%",
                     p: {
-                      xs: 3,
-                      sm: 4,
+                      xs: 1.5,
+                      sm: 2,
                     },
+                    display: "flex",
+                    gap: 1.2,
+                    alignItems: "flex-start",
                   }}
                 >
                   <Box
                     sx={{
-                      width: 54,
-                      height: 54,
-                      borderRadius: 2,
+                      width: {
+                        xs: 38,
+                        sm: 44,
+                      },
+                      height: {
+                        xs: 38,
+                        sm: 44,
+                      },
+                      flexShrink: 0,
                       bgcolor: item.background,
                       color: item.color,
                       display: "flex",
                       alignItems: "center",
                       justifyContent: "center",
-                      mb: 2,
 
                       "& svg": {
-                        fontSize: 27,
+                        fontSize: {
+                          xs: 19,
+                          sm: 22,
+                        },
                       },
                     }}
                   >
                     {item.icon}
                   </Box>
 
-                  <Typography
-                    sx={{
-                      fontWeight: 800,
-                      fontSize: "1.08rem",
-                    }}
-                  >
-                    {item.title}
-                  </Typography>
+                  <Box>
+                    <Typography
+                      sx={{
+                        fontWeight: 700,
+                        fontSize: {
+                          xs: "0.72rem",
+                          sm: "0.82rem",
+                        },
+                      }}
+                    >
+                      {item.title}
+                    </Typography>
 
-                  <Typography
-                    sx={{
-                      mt: 1.2,
-                      color: COLORS.secondaryText,
-                      fontSize: {
-                        xs: "0.85rem",
-                        sm: "0.9rem",
-                      },
-                      lineHeight: 1.7,
-                    }}
-                  >
-                    {item.description}
-                  </Typography>
+                    <Typography
+                      sx={{
+                        mt: 0.4,
+                        color: COLORS.secondaryText,
+                        fontSize: {
+                          xs: "0.57rem",
+                          sm: "0.68rem",
+                        },
+                        lineHeight: 1.5,
+                      }}
+                    >
+                      {item.description}
+                    </Typography>
+                  </Box>
                 </CardContent>
               </Card>
             ))}
@@ -597,9 +594,9 @@ const About = () => {
         <Box
           sx={{
             mt: {
-              xs: 8,
-              sm: 10,
-              md: 12,
+              xs: 4,
+              sm: 6,
+              md: 7,
             },
           }}
         >
@@ -616,11 +613,11 @@ const About = () => {
                 sm: "repeat(4, 1fr)",
               },
               gap: {
-                xs: 1.5,
-                sm: 2,
-                md: 2.5,
+                xs: 1,
+                sm: 1.5,
+                md: 2,
               },
-              maxWidth: 1050,
+              maxWidth: 950,
               mx: "auto",
             }}
           >
@@ -629,50 +626,51 @@ const About = () => {
                 key={item.title}
                 elevation={0}
                 sx={{
-                  minHeight: {
-                    xs: 125,
-                    sm: 145,
-                  },
-                  borderRadius: 3,
+                  borderRadius: 0,
                   border: `1px solid ${COLORS.border}`,
                   bgcolor: COLORS.white,
-                  transition: "all 0.2s ease",
-
-                  "&:hover": {
-                    transform: "translateY(-4px)",
-                    boxShadow:
-                      "0 8px 20px rgba(0,0,0,0.08)",
-                  },
                 }}
               >
                 <CardContent
                   sx={{
-                    height: "100%",
+                    minHeight: {
+                      xs: 85,
+                      sm: 100,
+                    },
                     p: {
-                      xs: 1.5,
-                      sm: 2,
+                      xs: 1,
+                      sm: 1.5,
                     },
                     display: "flex",
                     flexDirection: "column",
                     alignItems: "center",
                     justifyContent: "center",
                     textAlign: "center",
+                    boxSizing: "border-box",
                   }}
                 >
                   <Box
                     sx={{
-                      width: 46,
-                      height: 46,
-                      borderRadius: "50%",
+                      width: {
+                        xs: 30,
+                        sm: 36,
+                      },
+                      height: {
+                        xs: 30,
+                        sm: 36,
+                      },
                       bgcolor: item.background,
                       color: item.color,
                       display: "flex",
                       alignItems: "center",
                       justifyContent: "center",
-                      mb: 1.2,
+                      mb: 0.7,
 
                       "& svg": {
-                        fontSize: 23,
+                        fontSize: {
+                          xs: 16,
+                          sm: 19,
+                        },
                       },
                     }}
                   >
@@ -683,10 +681,10 @@ const About = () => {
                     sx={{
                       fontWeight: 700,
                       fontSize: {
-                        xs: "0.72rem",
-                        sm: "0.8rem",
+                        xs: "0.56rem",
+                        sm: "0.65rem",
                       },
-                      lineHeight: 1.4,
+                      lineHeight: 1.35,
                     }}
                   >
                     {item.title}
@@ -698,16 +696,15 @@ const About = () => {
         </Box>
 
         {/* =================================================
-            SIMPLE SHOPPING PROCESS
-            VERTICAL TIMELINE
+            SHOPPING PROCESS
         ================================================= */}
 
         <Box
           sx={{
             mt: {
-              xs: 9,
-              sm: 10,
-              md: 12,
+              xs: 4,
+              sm: 6,
+              md: 7,
             },
           }}
         >
@@ -718,226 +715,104 @@ const About = () => {
 
           <Box
             sx={{
-              maxWidth: 850,
-              mx: "auto",
-              mt: {
-                xs: 5,
-                sm: 6,
-                md: 7,
+              display: "grid",
+              gridTemplateColumns: {
+                xs: "1fr",
+                sm: "repeat(5, 1fr)",
               },
-              position: "relative",
+              gap: {
+                xs: 0.8,
+                sm: 1,
+              },
+              maxWidth: 1000,
+              mx: "auto",
             }}
           >
-            {/* =================================================
-                VERTICAL CONNECTING LINE
-            ================================================= */}
-
-            <Box
-              sx={{
-                position: "absolute",
-
-                left: {
-                  xs: 31,
-                  sm: 35,
-                  md: 39,
-                },
-
-                top: 35,
-                bottom: 35,
-
-                width: 4,
-
-                bgcolor: COLORS.greenLight,
-
-                borderRadius: 10,
-
-                zIndex: 0,
-              }}
-            />
-
-            {/* =================================================
-                TIMELINE ITEMS
-            ================================================= */}
-
-            <Box
-              sx={{
-                display: "flex",
-                flexDirection: "column",
-                gap: {
-                  xs: 4,
-                  sm: 5,
-                  md: 6,
-                },
-              }}
-            >
-              {shoppingSteps.map((step) => (
-                <Box
-                  key={step.number}
+            {shoppingSteps.map((step) => (
+              <Box
+                key={step.number}
+                sx={{
+                  position: "relative",
+                  textAlign: "center",
+                  border: `1px solid ${COLORS.border}`,
+                  bgcolor: COLORS.white,
+                  p: {
+                    xs: 1.2,
+                    sm: 1.3,
+                  },
+                }}
+              >
+                {/* Step Number */}
+                <Typography
                   sx={{
-                    position: "relative",
-                    zIndex: 1,
+                    position: "absolute",
+                    top: 5,
+                    right: 7,
+                    fontSize: "0.48rem",
+                    fontWeight: 700,
+                    color: "#999",
+                  }}
+                >
+                  0{step.number}
+                </Typography>
 
+                <Box
+                  sx={{
+                    width: {
+                      xs: 34,
+                      sm: 40,
+                    },
+                    height: {
+                      xs: 34,
+                      sm: 40,
+                    },
+                    mx: "auto",
+                    mb: 0.8,
+                    bgcolor: step.background,
+                    color: step.color,
                     display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
 
-                    alignItems: "flex-start",
-
-                    minHeight: {
-                      xs: 90,
-                      sm: 100,
+                    "& svg": {
+                      fontSize: {
+                        xs: 18,
+                        sm: 21,
+                      },
                     },
                   }}
                 >
-                  {/* =================================================
-                      STEP CIRCLE
-                  ================================================= */}
-
-                  <Box
-                    sx={{
-                      width: {
-                        xs: 68,
-                        sm: 76,
-                      },
-
-                      height: {
-                        xs: 68,
-                        sm: 76,
-                      },
-
-                      flexShrink: 0,
-
-                      borderRadius: "50%",
-
-                      bgcolor: step.color,
-
-                      color: COLORS.white,
-
-                      border: `6px solid ${step.background}`,
-
-                      display: "flex",
-
-                      flexDirection: "column",
-
-                      alignItems: "center",
-
-                      justifyContent: "center",
-
-                      boxShadow:
-                        "0 6px 16px rgba(0,0,0,0.14)",
-
-                      "& svg": {
-                        fontSize: {
-                          xs: 22,
-                          sm: 25,
-                        },
-                      },
-                    }}
-                  >
-                    {step.icon}
-
-                    <Typography
-                      sx={{
-                        fontSize: "0.55rem",
-                        fontWeight: 800,
-                        lineHeight: 1,
-                        mt: 0.3,
-                      }}
-                    >
-                      STEP {step.number}
-                    </Typography>
-                  </Box>
-
-                  {/* =================================================
-                      CONTENT CARD
-                  ================================================= */}
-
-                  <Card
-                    elevation={0}
-                    sx={{
-                      ml: {
-                        xs: 2,
-                        sm: 3,
-                      },
-
-                      flex: 1,
-
-                      minHeight: {
-                        xs: 105,
-                        sm: 110,
-                      },
-
-                      borderRadius: 3,
-
-                      border: `1px solid ${COLORS.border}`,
-
-                      bgcolor: COLORS.white,
-
-                      transition: "all 0.25s ease",
-
-                      "&:hover": {
-                        transform: "translateX(5px)",
-                        boxShadow:
-                          "0 10px 25px rgba(0,0,0,0.08)",
-                      },
-                    }}
-                  >
-                    <CardContent
-                      sx={{
-                        p: {
-                          xs: 2,
-                          sm: 2.5,
-                          md: 3,
-                        },
-
-                        "&:last-child": {
-                          pb: {
-                            xs: 2,
-                            sm: 2.5,
-                            md: 3,
-                          },
-                        },
-                      }}
-                    >
-                      <Typography
-                        component="h3"
-                        sx={{
-                          fontWeight: 800,
-
-                          color: step.color,
-
-                          fontSize: {
-                            xs: "1rem",
-                            sm: "1.08rem",
-                            md: "1.15rem",
-                          },
-
-                          lineHeight: 1.3,
-                        }}
-                      >
-                        {step.title}
-                      </Typography>
-
-                      <Typography
-                        sx={{
-                          mt: 1,
-
-                          color: COLORS.secondaryText,
-
-                          fontSize: {
-                            xs: "0.82rem",
-                            sm: "0.87rem",
-                            md: "0.92rem",
-                          },
-
-                          lineHeight: 1.65,
-                        }}
-                      >
-                        {step.description}
-                      </Typography>
-                    </CardContent>
-                  </Card>
+                  {step.icon}
                 </Box>
-              ))}
-            </Box>
+
+                <Typography
+                  sx={{
+                    fontWeight: 700,
+                    fontSize: {
+                      xs: "0.62rem",
+                      sm: "0.67rem",
+                    },
+                    lineHeight: 1.3,
+                  }}
+                >
+                  {step.title}
+                </Typography>
+
+                <Typography
+                  sx={{
+                    mt: 0.5,
+                    color: COLORS.secondaryText,
+                    fontSize: {
+                      xs: "0.5rem",
+                      sm: "0.55rem",
+                    },
+                    lineHeight: 1.4,
+                  }}
+                >
+                  {step.description}
+                </Typography>
+              </Box>
+            ))}
           </Box>
         </Box>
 
@@ -948,62 +823,58 @@ const About = () => {
         <Box
           sx={{
             mt: {
-              xs: 8,
-              sm: 10,
-              md: 12,
+              xs: 4,
+              sm: 6,
+              md: 7,
             },
           }}
         >
-          <Card
-            elevation={0}
+          <Box
             sx={{
-              borderRadius: 4,
-              border: "1px solid #A5D6A7",
-              bgcolor: "#EAF6EC",
+              borderLeft: `3px solid ${COLORS.gold}`,
+              bgcolor: "#F5F7F5",
+              px: {
+                xs: 1.5,
+                sm: 2.5,
+              },
+              py: {
+                xs: 1.5,
+                sm: 2,
+              },
             }}
           >
-            <CardContent
+            <Typography
               sx={{
-                p: {
-                  xs: 3,
-                  sm: 4,
-                  md: 5,
+                fontWeight: 700,
+                color: COLORS.primary,
+                fontSize: {
+                  xs: "0.85rem",
+                  sm: "1rem",
                 },
               }}
             >
-              <Typography
-                sx={{
-                  fontWeight: 800,
-                  color: COLORS.primary,
-                  fontSize: {
-                    xs: "1.3rem",
-                    sm: "1.5rem",
-                  },
-                }}
-              >
-                Our Promise
-              </Typography>
+              Our Promise
+            </Typography>
 
-              <Typography
-                sx={{
-                  mt: 1.5,
-                  color: "#555",
-                  fontSize: {
-                    xs: "0.86rem",
-                    sm: "0.92rem",
-                    md: "0.98rem",
-                  },
-                  lineHeight: 1.8,
-                }}
-              >
-                We are committed to providing premium Ayurvedic products
-                with trusted quality, affordable pricing, secure shopping,
-                fast delivery and excellent customer support. Every order
-                is handled with care so you can shop confidently and enjoy
-                a better wellness experience.
-              </Typography>
-            </CardContent>
-          </Card>
+            <Typography
+              sx={{
+                mt: 0.6,
+                color: COLORS.secondaryText,
+                fontSize: {
+                  xs: "0.6rem",
+                  sm: "0.72rem",
+                  md: "0.8rem",
+                },
+                lineHeight: 1.55,
+              }}
+            >
+              We are committed to providing premium Ayurvedic products
+              with trusted quality, affordable pricing, secure shopping,
+              fast delivery and excellent customer support. Every order
+              is handled with care so you can shop confidently and enjoy
+              a better wellness experience.
+            </Typography>
+          </Box>
         </Box>
       </Container>
     </Box>

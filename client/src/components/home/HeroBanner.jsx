@@ -29,13 +29,16 @@ const MovingRow = ({ direction = "left" }) => {
       sx={{
         width: "100%",
         overflow: "hidden",
+
         bgcolor: "#1B5E20",
         color: "#fff",
+
         py: {
-          xs: 1,
-          sm: 1.2,
-          md: 1.4,
+          xs: "3px",
+          sm: "5px",
+          md: "7px",
         },
+
         position: "relative",
       }}
     >
@@ -54,6 +57,7 @@ const MovingRow = ({ direction = "left" }) => {
             "0%": {
               transform: "translateX(0)",
             },
+
             "100%": {
               transform: "translateX(-50%)",
             },
@@ -63,6 +67,7 @@ const MovingRow = ({ direction = "left" }) => {
             "0%": {
               transform: "translateX(-50%)",
             },
+
             "100%": {
               transform: "translateX(0)",
             },
@@ -75,27 +80,28 @@ const MovingRow = ({ direction = "left" }) => {
             component="span"
             sx={{
               display: "inline-block",
+
               px: {
-                xs: 2,
-                sm: 3,
-                md: 4,
+                xs: "8px",
+                sm: "14px",
+                md: "22px",
               },
 
               fontSize: {
-                xs: "0.7rem",
-                sm: "0.82rem",
-                md: "0.95rem",
+                xs: "0.46rem",
+                sm: "0.6rem",
+                md: "0.78rem",
               },
 
               fontWeight: 800,
 
               letterSpacing: {
-                xs: 1,
-                sm: 1.4,
-                md: 1.8,
+                xs: "0.4px",
+                sm: "0.7px",
+                md: "1.1px",
               },
 
-              lineHeight: 1.5,
+              lineHeight: 1.35,
             }}
           >
             {marqueeText}
@@ -118,39 +124,50 @@ const HeroBanner = () => {
 
         width: "100%",
 
+        // =================================================
+        // COMPACT HERO SIZE
+        // =================================================
+
         height: {
-          xs: "70vh",
-          sm: "72vh",
+          xs: "240px",
+          sm: "320px",
           md: "calc(100vh - 75px)",
         },
 
         minHeight: {
-          xs: 520,
-          md: 650,
+          xs: "240px",
+          sm: "320px",
+          md: "600px",
+        },
+
+        maxHeight: {
+          xs: "240px",
+          sm: "320px",
+          md: "none",
         },
 
         overflow: "hidden",
 
+        // =================================================
+        // BACKGROUND
+        // =================================================
+
         backgroundImage: `
           linear-gradient(
-            rgba(0,0,0,.45),
-            rgba(0,0,0,.45)
+            rgba(0, 0, 0, 0.42),
+            rgba(0, 0, 0, 0.42)
           ),
           url(${banner})
         `,
 
         backgroundRepeat: "no-repeat",
 
-        backgroundSize: {
-          xs: "cover",
-          sm: "cover",
-          md: "cover",
-        },
+        backgroundSize: "cover",
 
         backgroundPosition: {
-          xs: "center",
-          sm: "center",
-          md: "center",
+          xs: "center center",
+          sm: "center center",
+          md: "center center",
         },
 
         backgroundColor: "#f8f5ef",
@@ -161,8 +178,7 @@ const HeroBanner = () => {
       }}
     >
       {/* =================================================
-          TOP MOVING TEXT
-          LEFT → RIGHT
+          TOP MARQUEE
       ================================================= */}
 
       <Box
@@ -170,7 +186,6 @@ const HeroBanner = () => {
           position: "absolute",
 
           top: 0,
-
           left: 0,
 
           width: "100%",
@@ -183,68 +198,110 @@ const HeroBanner = () => {
 
       {/* =================================================
           HERO CONTENT
+          FIXED TO LOWER PART OF HERO
       ================================================= */}
 
       <Container
         maxWidth="lg"
+        disableGutters
         sx={{
-          position: "relative",
+          position: "absolute",
+
+          left: 0,
+          right: 0,
+
+          bottom: {
+            xs: "25px",
+            sm: "32px",
+            md: "70px",
+          },
 
           zIndex: 3,
 
+          width: "100%",
+
           px: {
-            xs: 3,
-            sm: 4,
-            md: 6,
+            xs: "16px",
+            sm: "24px",
+            md: "48px",
           },
         }}
       >
         <Stack
-          spacing={{
-            xs: 2,
-            sm: 2.5,
-            md: 3,
+          sx={{
+            width: "100%",
+
+            maxWidth: {
+              xs: "320px",
+              sm: "560px",
+              md: "700px",
+            },
+
+            gap: {
+              xs: "5px",
+              sm: "10px",
+              md: "18px",
+            },
           }}
-          maxWidth={700}
         >
-          {/* HERO TITLE */}
+          {/* =================================================
+              TITLE
+          ================================================= */}
 
           <Typography
-            variant="h2"
-            fontWeight={900}
-            color="#fff"
+            component="h1"
             sx={{
+              margin: 0,
+
+              color: "#fff",
+
+              fontWeight: 900,
+
               fontSize: {
-                xs: "2.2rem",
-                sm: "3rem",
-                md: "4rem",
+                xs: "1.05rem",
+                sm: "1.8rem",
+                md: "3.8rem",
               },
 
               lineHeight: 1.1,
 
               textShadow:
-                "0 3px 10px rgba(0,0,0,.4)",
+                "0 2px 6px rgba(0,0,0,.7)",
             }}
           >
             Bhagyamma Hub
           </Typography>
 
-          {/* HERO DESCRIPTION */}
+          {/* =================================================
+              DESCRIPTION
+          ================================================= */}
 
           <Typography
             sx={{
-              color: "#F5F5F5",
+              margin: 0,
+
+              color: "#fff",
 
               fontSize: {
-                xs: 16,
-                sm: 18,
-                md: 20,
+                xs: "0.60rem",
+                sm: "0.78rem",
+                md: "1.15rem",
               },
 
-              lineHeight: 1.6,
+              lineHeight: {
+                xs: 1.3,
+                sm: 1.4,
+                md: 1.55,
+              },
+
+              maxWidth: {
+                xs: "290px",
+                sm: "500px",
+                md: "650px",
+              },
 
               textShadow:
-                "0 2px 8px rgba(0,0,0,.5)",
+                "0 1px 4px rgba(0,0,0,.8)",
             }}
           >
             Experience the power of nature with premium
@@ -252,58 +309,123 @@ const HeroBanner = () => {
             for a healthier lifestyle.
           </Typography>
 
-          {/* BUTTONS */}
+          {/* =================================================
+              BUTTONS
+              SMALL + SIDE BY SIDE
+          ================================================= */}
 
           <Stack
-            direction={{
-              xs: "column",
-              sm: "row",
+            direction="row"
+            spacing={{
+              xs: "7px",
+              sm: "10px",
+              md: "14px",
             }}
-            spacing={2}
             sx={{
-              width: {
-                xs: "100%",
-                sm: "auto",
+              width: "fit-content",
+
+              maxWidth: "100%",
+
+              mt: {
+                xs: "3px",
+                sm: "5px",
+                md: "8px",
               },
             }}
           >
+            {/* =================================================
+                SHOP NOW
+            ================================================= */}
+
             <Button
               component={Link}
               to="/products"
               variant="contained"
               color="success"
-              size="large"
               sx={{
-                px: 5,
-                py: 1.5,
+                minWidth: "auto",
 
-                borderRadius: 3,
+                width: {
+                  xs: "105px",
+                  sm: "125px",
+                  md: "150px",
+                },
+
+                height: {
+                  xs: "28px",
+                  sm: "36px",
+                  md: "46px",
+                },
+
+                padding: 0,
+
+                borderRadius: {
+                  xs: "14px",
+                  sm: "18px",
+                  md: "23px",
+                },
 
                 textTransform: "none",
 
                 fontWeight: 700,
 
-                width: {
-                  xs: "100%",
-                  sm: "auto",
+                fontSize: {
+                  xs: "0.60rem",
+                  sm: "0.74rem",
+                  md: "0.92rem",
+                },
+
+                lineHeight: 1,
+
+                whiteSpace: "nowrap",
+
+                boxShadow:
+                  "0 2px 5px rgba(0,0,0,.25)",
+
+                "&:hover": {
+                  bgcolor: "#43A047",
                 },
               }}
             >
               Shop Now
             </Button>
 
+            {/* =================================================
+                LEARN MORE
+            ================================================= */}
+
             <Button
               component={Link}
               to="/about"
               variant="outlined"
-              size="large"
               sx={{
-                px: 5,
-                py: 1.5,
+                minWidth: "auto",
 
-                borderRadius: 3,
+                width: {
+                  xs: "105px",
+                  sm: "125px",
+                  md: "150px",
+                },
 
-                borderColor: "#fff",
+                height: {
+                  xs: "28px",
+                  sm: "36px",
+                  md: "46px",
+                },
+
+                padding: 0,
+
+                borderRadius: {
+                  xs: "14px",
+                  sm: "18px",
+                  md: "23px",
+                },
+
+                border:
+                  "1px solid rgba(255,255,255,0.95)",
+
+                bgcolor:
+                  "rgba(0,0,0,0.18)",
 
                 color: "#fff",
 
@@ -311,16 +433,23 @@ const HeroBanner = () => {
 
                 fontWeight: 700,
 
-                width: {
-                  xs: "100%",
-                  sm: "auto",
+                fontSize: {
+                  xs: "0.60rem",
+                  sm: "0.74rem",
+                  md: "0.92rem",
                 },
+
+                lineHeight: 1,
+
+                whiteSpace: "nowrap",
+
+                backdropFilter: "blur(2px)",
 
                 "&:hover": {
                   borderColor: "#fff",
 
                   bgcolor:
-                    "rgba(255,255,255,.15)",
+                    "rgba(0,0,0,0.28)",
                 },
               }}
             >
@@ -331,8 +460,7 @@ const HeroBanner = () => {
       </Container>
 
       {/* =================================================
-          BOTTOM MOVING TEXT
-          RIGHT → LEFT
+          BOTTOM MARQUEE
       ================================================= */}
 
       <Box
@@ -340,7 +468,6 @@ const HeroBanner = () => {
           position: "absolute",
 
           bottom: 0,
-
           left: 0,
 
           width: "100%",

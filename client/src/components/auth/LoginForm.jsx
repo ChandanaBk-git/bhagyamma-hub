@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { motion } from "framer-motion";
 
 import {
   Alert,
@@ -31,6 +32,65 @@ import {
 } from "react-router-dom";
 
 import { login } from "../../services/auth.service";
+
+const pageVariants = {
+  hidden: {
+    opacity: 0,
+  },
+  visible: {
+    opacity: 1,
+    transition: {
+      duration: 0.35,
+    },
+  },
+};
+
+const cardVariants = {
+  hidden: {
+    opacity: 0,
+    y: 35,
+  },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: {
+      duration: 0.6,
+      ease: [0.22, 1, 0.36, 1],
+    },
+  },
+};
+
+const iconVariants = {
+  hidden: {
+    opacity: 0,
+    scale: 0.8,
+  },
+  visible: {
+    opacity: 1,
+    scale: 1,
+    transition: {
+      duration: 0.45,
+      delay: 0.15,
+      ease: "easeOut",
+    },
+  },
+};
+
+const contentVariants = {
+  hidden: {
+    opacity: 0,
+    y: 12,
+  },
+  visible: (delay = 0) => ({
+    opacity: 1,
+    y: 0,
+    transition: {
+      duration: 0.4,
+      delay,
+      ease: "easeOut",
+    },
+  }),
+};
 
 const LoginForm = () => {
   const navigate = useNavigate();
@@ -208,6 +268,11 @@ const LoginForm = () => {
 
   return (
     <Box
+      component={motion.div}
+      variants={pageVariants}
+      initial="hidden"
+      animate="visible"
+      viewport={{ once: true }}
       sx={{
         minHeight: "100vh",
 
@@ -218,13 +283,13 @@ const LoginForm = () => {
         justifyContent: "center",
 
         px: {
-          xs: 1.5,
-          sm: 2,
+          xs: 1,
+          sm: 1.5,
         },
 
         py: {
-          xs: 3,
-          sm: 5,
+          xs: 2,
+          sm: 3,
         },
 
         background:
@@ -279,11 +344,11 @@ const LoginForm = () => {
             minWidth: "auto",
 
             px: {
-              xs: 1,
-              sm: 1.5,
+              xs: 0.75,
+              sm: 1,
             },
 
-            borderRadius: 2,
+            borderRadius: 0,
 
             "&:hover": {
               backgroundColor:
@@ -301,22 +366,22 @@ const LoginForm = () => {
       ================================================== */}
 
       <Card
+        component={motion.div}
+        variants={cardVariants}
+        initial="hidden"
+        animate="visible"
         elevation={0}
         sx={{
           width: "100%",
 
           maxWidth: 460,
 
-          borderRadius: {
-            xs: 2.5,
-            sm: 4,
-          },
+          borderRadius: 0,
 
           border:
-            "1px solid #e5e7eb",
+            "1px solid #2E7D32",
 
-          boxShadow:
-            "0 20px 50px rgba(0,0,0,0.08)",
+          boxShadow: "none",
 
           overflow: "hidden",
 
@@ -339,19 +404,23 @@ const LoginForm = () => {
             color: "#fff",
 
             px: {
-              xs: 2.5,
-              sm: 4,
+              xs: 1.5,
+              sm: 2,
             },
 
             py: {
-              xs: 3,
-              sm: 4,
+              xs: 2,
+              sm: 2.5,
             },
 
             textAlign: "center",
           }}
         >
           <Box
+            component={motion.div}
+            variants={iconVariants}
+            initial="hidden"
+            animate="visible"
             sx={{
               width: {
                 xs: 52,
@@ -365,9 +434,9 @@ const LoginForm = () => {
 
               mx: "auto",
 
-              mb: 1.5,
+              mb: 1,
 
-              borderRadius: "50%",
+              borderRadius: 0,
 
               bgcolor:
                 "rgba(255,255,255,0.16)",
@@ -390,6 +459,11 @@ const LoginForm = () => {
           </Box>
 
           <Typography
+            component={motion.h4}
+            variants={contentVariants}
+            initial="hidden"
+            animate="visible"
+            custom={0.22}
             variant="h4"
             fontWeight={800}
             sx={{
@@ -403,8 +477,13 @@ const LoginForm = () => {
           </Typography>
 
           <Typography
+            component={motion.p}
+            variants={contentVariants}
+            initial="hidden"
+            animate="visible"
+            custom={0.32}
             sx={{
-              mt: 1,
+              mt: 0.5,
 
               color:
                 "rgba(255,255,255,0.88)",
@@ -428,8 +507,8 @@ const LoginForm = () => {
         <CardContent
           sx={{
             p: {
-              xs: 2.5,
-              sm: 4,
+              xs: 1.5,
+              sm: 2,
             },
           }}
         >
@@ -438,9 +517,11 @@ const LoginForm = () => {
             <Alert
               severity="error"
               sx={{
-                mb: 3,
+                mb: 1.25,
 
-                borderRadius: 2,
+                borderRadius: 0,
+
+                border: "1px solid #2E7D32",
               }}
             >
               {error}
@@ -449,12 +530,16 @@ const LoginForm = () => {
 
 
           <Box
-            component="form"
+            component={motion.form}
+            variants={contentVariants}
+            initial="hidden"
+            animate="visible"
+            custom={0.42}
             onSubmit={handleSubmit}
             noValidate
           >
 
-            <Stack spacing={2.2}>
+            <Stack spacing={1.25}>
 
               {/* EMAIL */}
 
@@ -536,6 +621,11 @@ const LoginForm = () => {
               {/* REMEMBER / FORGOT PASSWORD */}
 
               <Box
+                component={motion.div}
+                variants={contentVariants}
+                initial="hidden"
+                animate="visible"
+                custom={0.52}
                 sx={{
                   display: "flex",
 
@@ -601,6 +691,16 @@ const LoginForm = () => {
               {/* LOGIN BUTTON */}
 
               <Button
+                component={motion.button}
+                whileHover={{
+                  y: -2,
+                }}
+                whileTap={{
+                  y: 0,
+                }}
+                transition={{
+                  duration: 0.18,
+                }}
                 fullWidth
                 type="submit"
                 variant="contained"
@@ -608,16 +708,16 @@ const LoginForm = () => {
                 size="large"
                 disabled={loading}
                 sx={{
-                  mt: 1,
+                  mt: 0.5,
 
                   py: {
-                    xs: 1.35,
-                    sm: 1.5,
+                    xs: 1,
+                    sm: 1.1,
                   },
 
-                  minHeight: 48,
+                  minHeight: 42,
 
-                  borderRadius: 2.5,
+                  borderRadius: 0,
 
                   textTransform:
                     "none",
@@ -650,8 +750,21 @@ const LoginForm = () => {
 
 
           <Divider
+            component={motion.hr}
+            initial={{
+              opacity: 0,
+              scaleX: 0.8,
+            }}
+            animate={{
+              opacity: 1,
+              scaleX: 1,
+            }}
+            transition={{
+              duration: 0.4,
+              delay: 0.65,
+            }}
             sx={{
-              my: 3,
+              my: 1.5,
             }}
           />
 
@@ -659,6 +772,19 @@ const LoginForm = () => {
           {/* REGISTER */}
 
           <Typography
+            component={motion.p}
+            initial={{
+              opacity: 0,
+              y: 8,
+            }}
+            animate={{
+              opacity: 1,
+              y: 0,
+            }}
+            transition={{
+              duration: 0.35,
+              delay: 0.72,
+            }}
             textAlign="center"
             color="text.secondary"
             fontSize={14}
@@ -667,19 +793,37 @@ const LoginForm = () => {
           </Typography>
 
           <Button
-            component={Link}
+            component={motion(Link)}
+            whileHover={{
+              y: -2,
+            }}
+            whileTap={{
+              y: 0,
+            }}
+            initial={{
+              opacity: 0,
+              y: 10,
+            }}
+            animate={{
+              opacity: 1,
+              y: 0,
+            }}
+            transition={{
+              duration: 0.4,
+              delay: 0.78,
+            }}
             to="/register"
             fullWidth
             variant="outlined"
             color="success"
             sx={{
-              mt: 1.5,
+              mt: 0.75,
 
-              py: 1.25,
+              py: 1,
 
-              minHeight: 46,
+              minHeight: 42,
 
-              borderRadius: 2.5,
+              borderRadius: 0,
 
               textTransform:
                 "none",

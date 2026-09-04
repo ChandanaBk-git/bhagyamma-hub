@@ -7,22 +7,17 @@ const ProductGrid = ({ products = [] }) => {
     return (
       <Box
         sx={{
-          py: 10,
-
+          py: 5,
           display: "flex",
-
           justifyContent: "center",
-
           alignItems: "center",
-
           textAlign: "center",
         }}
       >
         <Typography
           sx={{
             color: "#777",
-
-            fontSize: "1rem",
+            fontSize: "0.8rem",
           }}
         >
           No Products Available
@@ -35,26 +30,26 @@ const ProductGrid = ({ products = [] }) => {
     <Box
       sx={{
         width: "100%",
-
         display: "grid",
 
         gridTemplateColumns: {
-          xs: "1fr",
-          sm: "repeat(2, minmax(0, 1fr))",
+          xs: "repeat(2, minmax(0, 1fr))",
+          sm: "repeat(3, minmax(0, 1fr))",
           md: "repeat(3, minmax(0, 1fr))",
-          lg: "repeat(4, minmax(0, 1fr))",
+          lg: "repeat(5, minmax(0, 1fr))",
         },
 
         gap: {
-          xs: 2,
-          sm: 2.5,
-          md: 3,
-          lg: 3.5,
+          xs: 1,
+          sm: 1.5,
+          md: 2,
+          lg: 1.5,
         },
 
         pb: {
-          xs: 4,
-          md: 7,
+          xs: 3,
+          sm: 4,
+          md: 5,
         },
 
         alignItems: "stretch",
@@ -65,7 +60,6 @@ const ProductGrid = ({ products = [] }) => {
           key={product._id}
           sx={{
             minWidth: 0,
-
             display: "flex",
 
             "& > *": {

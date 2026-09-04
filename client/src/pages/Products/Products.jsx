@@ -1,11 +1,11 @@
 import { useEffect, useMemo, useState } from "react";
 
 import {
+  Alert,
   Box,
   Container,
-  Typography,
   CircularProgress,
-  Alert,
+  Typography,
 } from "@mui/material";
 
 import ProductBanner from "../../components/products/ProductBanner";
@@ -94,92 +94,36 @@ const Products = () => {
         bgcolor: "#F8FAF8",
       }}
     >
-      {/* =================================================
-          PRODUCT HERO
-      ================================================= */}
-
+      {/* PRODUCT BANNER */}
       <ProductBanner />
-
-      {/* =================================================
-          PRODUCT CONTENT
-      ================================================= */}
 
       <Container
         maxWidth="xl"
         sx={{
           px: {
-            xs: 2,
-            sm: 3,
-            md: 4,
+            xs: 1.5,
+            sm: 2,
+            md: 3,
           },
 
           py: {
-            xs: 4,
-            sm: 5,
-            md: 6,
+            xs: 2.5,
+            sm: 3.5,
+            md: 4.5,
           },
         }}
       >
-        {/* =================================================
-            PAGE HEADING
-        ================================================= */}
 
+
+        {/* SEARCH */}
         <Box
           sx={{
-            textAlign: "center",
-            maxWidth: 750,
+            maxWidth: 650,
             mx: "auto",
             mb: {
-              xs: 3,
-              md: 4,
-            },
-          }}
-        >
-          <Typography
-            component="h1"
-            sx={{
-              fontWeight: 800,
-              color: "#222",
-
-              fontSize: {
-                xs: "1.7rem",
-                sm: "2rem",
-                md: "2.4rem",
-              },
-            }}
-          >
-            Our Products
-          </Typography>
-
-          <Typography
-            sx={{
-              mt: 1,
-              color: "#666",
-
-              fontSize: {
-                xs: "0.85rem",
-                sm: "0.95rem",
-              },
-
-              lineHeight: 1.7,
-            }}
-          >
-            Explore our collection of premium herbal, Ayurvedic,
-            skincare and wellness products.
-          </Typography>
-        </Box>
-
-        {/* =================================================
-            SEARCH
-        ================================================= */}
-
-        <Box
-          sx={{
-            maxWidth: 700,
-            mx: "auto",
-            mb: {
-              xs: 4,
-              md: 5,
+              xs: 2,
+              sm: 2.5,
+              md: 3,
             },
           }}
         >
@@ -189,48 +133,54 @@ const Products = () => {
           />
         </Box>
 
-        {/* =================================================
-            LOADING
-        ================================================= */}
-
+        {/* LOADING */}
         {loading && (
           <Box
             sx={{
-              minHeight: 350,
+              minHeight: 180,
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
               flexDirection: "column",
-              gap: 2,
+              gap: 1,
             }}
           >
-            <CircularProgress color="success" />
+            <CircularProgress
+              color="success"
+              size={28}
+            />
 
             <Typography
               color="text.secondary"
-              fontSize="0.9rem"
+              sx={{
+                fontSize: {
+                  xs: "0.62rem",
+                  sm: "0.72rem",
+                },
+              }}
             >
               Loading products...
             </Typography>
           </Box>
         )}
 
-        {/* =================================================
-            ERROR
-        ================================================= */}
-
+        {/* ERROR */}
         {!loading && error && (
           <Box
             sx={{
-              maxWidth: 650,
+              maxWidth: 600,
               mx: "auto",
-              py: 5,
+              py: 3,
             }}
           >
             <Alert
               severity="error"
               sx={{
-                borderRadius: 2,
+                borderRadius: 0,
+                fontSize: {
+                  xs: "0.65rem",
+                  sm: "0.75rem",
+                },
               }}
             >
               {error}
@@ -238,16 +188,13 @@ const Products = () => {
           </Box>
         )}
 
-        {/* =================================================
-            NO PRODUCTS
-        ================================================= */}
-
+        {/* NO PRODUCTS */}
         {!loading &&
           !error &&
           filteredProducts.length === 0 && (
             <Box
               sx={{
-                minHeight: 300,
+                minHeight: 180,
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
@@ -258,7 +205,10 @@ const Products = () => {
               <Typography
                 sx={{
                   fontWeight: 700,
-                  fontSize: "1.2rem",
+                  fontSize: {
+                    xs: "0.85rem",
+                    sm: "1rem",
+                  },
                   color: "#333",
                 }}
               >
@@ -267,9 +217,12 @@ const Products = () => {
 
               <Typography
                 sx={{
-                  mt: 1,
+                  mt: 0.5,
                   color: "#777",
-                  fontSize: "0.9rem",
+                  fontSize: {
+                    xs: "0.6rem",
+                    sm: "0.7rem",
+                  },
                 }}
               >
                 Try searching with a different product name,
@@ -278,10 +231,7 @@ const Products = () => {
             </Box>
           )}
 
-        {/* =================================================
-            PRODUCT COUNT
-        ================================================= */}
-
+        {/* PRODUCT COUNT + GRID */}
         {!loading &&
           !error &&
           filteredProducts.length > 0 && (
@@ -289,17 +239,19 @@ const Products = () => {
               <Box
                 sx={{
                   display: "flex",
-                  justifyContent: "space-between",
                   alignItems: "center",
-                  mb: 2.5,
+                  mb: {
+                    xs: 1,
+                    sm: 1.5,
+                  },
                 }}
               >
                 <Typography
                   sx={{
                     color: "#555",
                     fontSize: {
-                      xs: "0.82rem",
-                      sm: "0.9rem",
+                      xs: "0.65rem",
+                      sm: "0.75rem",
                     },
                     fontWeight: 600,
                   }}
@@ -310,10 +262,6 @@ const Products = () => {
                     : "Products"}
                 </Typography>
               </Box>
-
-              {/* =================================================
-                  PRODUCT GRID
-              ================================================= */}
 
               <ProductGrid
                 products={filteredProducts}
