@@ -5,17 +5,17 @@ import {
   CardContent,
   Chip,
   CircularProgress,
-  Divider,
   Grid,
   Stack,
   Typography,
 } from "@mui/material";
+
 import PaymentScannerCard from "../../components/members/dashboard/PaymentScannerCard";
+
 import {
   AccountCircle,
   CheckCircle,
   Groups,
-  LocalMall,
   PersonAdd,
   ShoppingCart,
   WorkspacePremium,
@@ -32,43 +32,57 @@ import SupervisorProgress from "../../components/members/dashboard/SupervisorPro
 import RecentOrders from "../../components/members/dashboard/RecentOrders";
 import RecentCommission from "../../components/members/dashboard/RecentCommission";
 
+
 /* =========================================================
    GETTING STARTED
-   Visible ONLY when Selling Points < 40
+   SHOW ONLY WHEN SELLING POINTS < 40
 ========================================================= */
 
-const GettingStarted = ({ member, summary }) => {
-  const navigate = useNavigate();
+const GettingStarted = ({
+  member,
+  summary,
+}) => {
 
-  const sellingPoints = Number(
-    member?.sellingPoints ??
+  const navigate =
+    useNavigate();
+
+
+  const sellingPoints =
+    Number(
+      member?.sellingPoints ??
       summary?.sellingPoints ??
       0
-  );
+    );
+
 
   /* -------------------------------------------------------
-     40 SP OR ABOVE = NORMAL DASHBOARD
+     40 SP OR ABOVE
   ------------------------------------------------------- */
 
   if (sellingPoints >= 40) {
     return null;
   }
 
+
   /* -------------------------------------------------------
-     PROFILE COMPLETION CHECK
+     PROFILE CHECK
   ------------------------------------------------------- */
 
-  const hasEmail = Boolean(member?.email);
+  const hasEmail =
+    Boolean(member?.email);
 
-  const hasAddress = Boolean(member?.address);
+  const hasAddress =
+    Boolean(member?.address);
 
-  const hasCity = Boolean(member?.city);
+  const hasCity =
+    Boolean(member?.city);
 
-  const hasState = Boolean(member?.state);
+  const hasState =
+    Boolean(member?.state);
 
-  const hasPincode = Boolean(
-    member?.pincode
-  );
+  const hasPincode =
+    Boolean(member?.pincode);
+
 
   const profileCompleted =
     hasEmail &&
@@ -77,283 +91,339 @@ const GettingStarted = ({ member, summary }) => {
     hasState &&
     hasPincode;
 
+
   /* -------------------------------------------------------
      STEPS
   ------------------------------------------------------- */
 
   const steps = [
+
     {
       number: 1,
 
-      title: "Account Created",
+      title:
+        "Account Created",
 
       description:
-        "Your Bhagyamma Hub account has already been created successfully. You can now complete your profile details.",
+        "Your Bhagyamma Hub account has already been created successfully.",
 
       completed: true,
 
-      icon: <PersonAdd />,
+      icon:
+        <PersonAdd />,
     },
+
 
     {
       number: 2,
 
-      title: "Complete Your Profile",
+      title:
+        "Complete Your Profile",
 
       description:
-        "Go to My Profile → Edit Profile. Add your email, delivery address, city, state and pincode, then save your details.",
+        "Complete your email and delivery address details from My Profile.",
 
-      completed: profileCompleted,
+      completed:
+        profileCompleted,
 
-      icon: <AccountCircle />,
+      icon:
+        <AccountCircle />,
 
-      action: "profile",
+      action:
+        "profile",
     },
+
 
     {
       number: 3,
 
-      title: "Explore Products",
+      title:
+        "Explore Products",
 
       description:
-        "Open Products to view the available products, understand them and place an order whenever you are ready.",
+        "View the available products and place an order whenever you are ready.",
 
       completed: false,
 
-      icon: <ShoppingCart />,
+      icon:
+        <ShoppingCart />,
 
-      action: "products",
+      action:
+        "products",
     },
+
 
     {
       number: 4,
 
-      title: "Build Your Network",
+      title:
+        "Build Your Network",
 
       description:
-        "After you understand the business, you can share your own referral code with people you personally refer to Bhagyamma Hub.",
+        "Share your referral code with people you personally refer to Bhagyamma Hub.",
 
       completed: false,
 
-      icon: <Groups />,
+      icon:
+        <Groups />,
     },
+
   ];
 
+
   /* -------------------------------------------------------
-     ACTION HANDLER
+     ACTION
   ------------------------------------------------------- */
 
-  const handleAction = (action) => {
-    if (action === "profile") {
-      navigate("/member/profile");
-      return;
-    }
+  const handleAction =
+    (action) => {
 
-    if (action === "products") {
-      navigate("/member/products");
-    }
-  };
+      if (
+        action === "profile"
+      ) {
+
+        navigate(
+          "/member/profile"
+        );
+
+        return;
+      }
+
+
+      if (
+        action === "products"
+      ) {
+
+        navigate(
+          "/member/products"
+        );
+      }
+
+    };
+
+
+  /* =======================================================
+     UI
+  ======================================================= */
 
   return (
+
     <Card
       elevation={0}
       sx={{
-        mb: {
-          xs: 2,
-          sm: 3,
-        },
 
-        borderRadius: {
-          xs: 2,
-          sm: 3,
-        },
+        width: "100%",
+
+        margin: 0,
+
+        padding: 0,
+
+        borderRadius: 0,
 
         border:
-          "1px solid #DDE7DE",
+          "1px solid #E1E1E1",
+
+        boxShadow: "none",
 
         overflow: "hidden",
 
-        width: "100%",
+        boxSizing:
+          "border-box",
+
+        mb: {
+          xs: 1.5,
+          sm: 2,
+        },
+
       }}
     >
-      {/* =================================================
+
+      {/* ===================================================
           HEADER
-      ================================================= */}
+      =================================================== */}
 
       <Box
         sx={{
+
           background:
             "linear-gradient(135deg, #2E7D32 0%, #43A047 100%)",
 
-          color: "#fff",
+          color: "#FFFFFF",
 
           px: {
-            xs: 2,
-            sm: 3,
-            md: 4,
+            xs: 1.5,
+            sm: 2,
+            md: 3,
           },
 
           py: {
-            xs: 2,
-            sm: 3,
-            md: 3.5,
-          },
-        }}
-      >
-        <Stack
-          direction={{
-            xs: "column",
-            sm: "row",
-          }}
-          spacing={{
             xs: 1.5,
             sm: 2,
-          }}
+            md: 2.5,
+          },
+
+        }}
+      >
+
+        <Stack
+          direction="row"
+          spacing={1.5}
           justifyContent="space-between"
-          alignItems={{
-            xs: "flex-start",
-            sm: "center",
-          }}
+          alignItems="center"
         >
+
           <Box
             sx={{
-              width: "100%",
+              minWidth: 0,
+              flex: 1,
             }}
           >
+
             <Stack
               direction="row"
               spacing={1}
               alignItems="center"
             >
+
               <WorkspacePremium
                 sx={{
                   fontSize: {
-                    xs: 22,
-                    sm: 28,
+                    xs: 21,
+                    sm: 25,
                   },
                 }}
               />
 
               <Typography
-                fontWeight={800}
                 sx={{
                   fontSize: {
-                    xs: "1.25rem",
-                    sm: "1.5rem",
+                    xs: "17px",
+                    sm: "20px",
                   },
+
+                  fontWeight: 800,
+
+                  lineHeight: 1.2,
                 }}
               >
                 Getting Started
               </Typography>
+
             </Stack>
+
 
             <Typography
               sx={{
-                mt: 1,
-
-                opacity: 0.95,
-
-                lineHeight: 1.6,
+                mt: 0.6,
 
                 fontSize: {
-                  xs: "0.82rem",
-                  sm: "0.95rem",
+                  xs: "11px",
+                  sm: "13px",
                 },
 
-                maxWidth: 750,
+                lineHeight: 1.5,
+
+                opacity: 0.95,
               }}
             >
-              You are new to Bhagyamma Hub.
-              Follow these simple steps to
-              understand your account and
-              get started.
+              Follow these simple steps
+              to get started with
+              Bhagyamma Hub.
             </Typography>
+
           </Box>
+
 
           <Chip
             label={`${sellingPoints} SP`}
             sx={{
-              backgroundColor: "#fff",
+              height: {
+                xs: 27,
+                sm: 31,
+              },
 
-              color: "#2E7D32",
+              backgroundColor:
+                "#FFFFFF",
+
+              color:
+                "#2E7D32",
 
               fontWeight: 800,
 
               fontSize: {
-                xs: 12,
-                sm: 14,
+                xs: 11,
+                sm: 13,
               },
 
-              alignSelf: {
-                xs: "flex-start",
-                sm: "center",
-              },
+              flexShrink: 0,
             }}
           />
+
         </Stack>
+
       </Box>
 
-      {/* =================================================
+
+      {/* ===================================================
           CONTENT
-      ================================================= */}
+      =================================================== */}
 
       <CardContent
         sx={{
-          px: {
+          p: {
             xs: 1.5,
-            sm: 3,
-            md: 4,
+            sm: 2,
+            md: 3,
           },
 
-          py: {
-            xs: 2,
-            sm: 3,
-            md: 4,
+          "&:last-child": {
+            pb: {
+              xs: 1.5,
+              sm: 2,
+              md: 3,
+            },
           },
         }}
       >
-        {/* INTRODUCTION */}
 
-        <Box
+        <Typography
           sx={{
-            mb: 2.5,
+            fontSize: {
+              xs: "14px",
+              sm: "16px",
+            },
+
+            fontWeight: 800,
+
+            lineHeight: 1.3,
           }}
         >
-          <Typography
-            fontWeight={800}
-            sx={{
-              fontSize: {
-                xs: "1rem",
-                sm: "1.1rem",
-              },
-            }}
-          >
-            What you need to know
-          </Typography>
+          What you need to know
+        </Typography>
 
-          <Typography
-            variant="body2"
-            color="text.secondary"
-            sx={{
-              mt: 0.7,
 
-              lineHeight: 1.7,
+        <Typography
+          sx={{
+            mt: 0.5,
 
-              fontSize: {
-                xs: "0.82rem",
-                sm: "0.9rem",
-              },
-            }}
-          >
-            You currently have{" "}
-            <strong>
-              {sellingPoints} Selling Points
-            </strong>
-            . These instructions are shown
-            while your SP is below 40 so you
-            can understand the platform.
-          </Typography>
-        </Box>
+            color:
+              "text.secondary",
+
+            fontSize: {
+              xs: "11px",
+              sm: "13px",
+            },
+
+            lineHeight: 1.5,
+          }}
+        >
+          You currently have{" "}
+          <strong>
+            {sellingPoints} Selling Points
+          </strong>
+          .
+        </Typography>
+
 
         {/* =================================================
             STEPS
@@ -362,293 +432,319 @@ const GettingStarted = ({ member, summary }) => {
         <Grid
           container
           spacing={{
-            xs: 1.5,
-            sm: 2,
+            xs: 1,
+            sm: 1.5,
+          }}
+          sx={{
+            mt: 0.5,
           }}
         >
-          {steps.map((step) => (
-            <Grid
-              item
-              xs={12}
-              sm={6}
-              md={3}
-              key={step.number}
-            >
-              <Box
-                sx={{
-                  height: "100%",
 
-                  p: {
-                    xs: 2,
-                    sm: 2.5,
-                  },
+          {steps.map(
+            (step) => (
 
-                  borderRadius: 2,
-
-                  border:
-                    "1px solid #E1E8E1",
-
-                  backgroundColor:
-                    step.completed
-                      ? "#F1F8F2"
-                      : "#FAFAFA",
-
-                  display: "flex",
-
-                  flexDirection:
-                    "column",
-
-                  boxSizing:
-                    "border-box",
-                }}
+              <Grid
+                item
+                xs={12}
+                sm={6}
+                md={3}
+                key={step.number}
               >
-                {/* ICON */}
 
                 <Box
                   sx={{
-                    width: {
-                      xs: 42,
-                      sm: 46,
+
+                    height:
+                      "100%",
+
+                    p: {
+                      xs: 1.5,
+                      sm: 2,
                     },
 
-                    height: {
-                      xs: 42,
-                      sm: 46,
-                    },
+                    border:
+                      "1px solid #E1E1E1",
 
-                    borderRadius:
-                      "50%",
-
-                    display: "flex",
-
-                    alignItems:
-                      "center",
-
-                    justifyContent:
-                      "center",
+                    borderRadius: 0,
 
                     backgroundColor:
                       step.completed
-                        ? "#2E7D32"
-                        : "#E8F5E9",
+                        ? "#F4FAF4"
+                        : "#FFFFFF",
 
-                    color:
-                      step.completed
-                        ? "#fff"
-                        : "#2E7D32",
+                    boxSizing:
+                      "border-box",
 
-                    mb: 1.5,
-
-                    flexShrink: 0,
                   }}
                 >
-                  {step.completed ? (
-                    <CheckCircle
-                      sx={{
-                        fontSize: {
-                          xs: 22,
-                          sm: 25,
-                        },
-                      }}
-                    />
-                  ) : (
-                    step.icon
-                  )}
+
+                  {/* ICON */}
+
+                  <Box
+                    sx={{
+                      width: {
+                        xs: 36,
+                        sm: 42,
+                      },
+
+                      height: {
+                        xs: 36,
+                        sm: 42,
+                      },
+
+                      display: "flex",
+
+                      alignItems:
+                        "center",
+
+                      justifyContent:
+                        "center",
+
+                      borderRadius: 0,
+
+                      backgroundColor:
+                        step.completed
+                          ? "#2E7D32"
+                          : "#E8F5E9",
+
+                      color:
+                        step.completed
+                          ? "#FFFFFF"
+                          : "#2E7D32",
+
+                      mb: 1,
+
+                    }}
+                  >
+
+                    {step.completed ? (
+                      <CheckCircle
+                        sx={{
+                          fontSize: {
+                            xs: 19,
+                            sm: 22,
+                          },
+                        }}
+                      />
+                    ) : (
+                      step.icon
+                    )}
+
+                  </Box>
+
+
+                  {/* STEP */}
+
+                  <Typography
+                    sx={{
+                      fontSize: {
+                        xs: "9px",
+                        sm: "10px",
+                      },
+
+                      fontWeight: 800,
+
+                      color:
+                        "#2E7D32",
+                    }}
+                  >
+                    STEP {step.number}
+                  </Typography>
+
+
+                  {/* TITLE */}
+
+                  <Typography
+                    sx={{
+                      mt: 0.4,
+
+                      fontSize: {
+                        xs: "13px",
+                        sm: "15px",
+                      },
+
+                      fontWeight: 800,
+
+                      lineHeight: 1.3,
+                    }}
+                  >
+                    {step.title}
+                  </Typography>
+
+
+                  {/* DESCRIPTION */}
+
+                  <Typography
+                    sx={{
+                      mt: 0.7,
+
+                      fontSize: {
+                        xs: "10px",
+                        sm: "12px",
+                      },
+
+                      color:
+                        "text.secondary",
+
+                      lineHeight: 1.5,
+                    }}
+                  >
+                    {step.description}
+                  </Typography>
+
+
+                  {/* ACTION */}
+
+                  <Box
+                    sx={{
+                      mt: 1.5,
+                    }}
+                  >
+
+                    {step.completed ? (
+
+                      <Chip
+                        label="Completed"
+                        size="small"
+                        color="success"
+                        icon={
+                          <CheckCircle />
+                        }
+                        sx={{
+                          height: 25,
+
+                          fontSize: 10,
+
+                          fontWeight: 700,
+                        }}
+                      />
+
+                    ) : step.action ? (
+
+                      <Button
+                        variant="outlined"
+                        color="success"
+                        size="small"
+                        fullWidth
+                        onClick={() =>
+                          handleAction(
+                            step.action
+                          )
+                        }
+                        sx={{
+                          minHeight: 34,
+
+                          borderRadius: 0,
+
+                          textTransform:
+                            "none",
+
+                          fontWeight: 700,
+
+                          fontSize: {
+                            xs: "10px",
+                            sm: "12px",
+                          },
+                        }}
+                      >
+                        {step.action ===
+                        "profile"
+                          ? "My Profile"
+                          : "View Products"}
+                      </Button>
+
+                    ) : (
+
+                      <Chip
+                        label="Learn More"
+                        size="small"
+                        variant="outlined"
+                        color="success"
+                        sx={{
+                          height: 25,
+
+                          fontSize: 10,
+
+                          fontWeight: 700,
+                        }}
+                      />
+
+                    )}
+
+                  </Box>
+
                 </Box>
 
-                {/* STEP NUMBER */}
+              </Grid>
 
-                <Typography
-                  variant="caption"
-                  fontWeight={800}
-                  color="success.main"
-                  sx={{
-                    fontSize: {
-                      xs: "0.68rem",
-                      sm: "0.72rem",
-                    },
-                  }}
-                >
-                  STEP {step.number}
-                </Typography>
+            )
+          )}
 
-                {/* TITLE */}
-
-                <Typography
-                  fontWeight={800}
-                  sx={{
-                    mt: 0.5,
-
-                    fontSize: {
-                      xs: "0.95rem",
-                      sm: "1rem",
-                    },
-
-                    lineHeight: 1.4,
-                  }}
-                >
-                  {step.title}
-                </Typography>
-
-                {/* DESCRIPTION */}
-
-                <Typography
-                  variant="body2"
-                  color="text.secondary"
-                  sx={{
-                    mt: 1,
-
-                    lineHeight: 1.65,
-
-                    fontSize: {
-                      xs: "0.78rem",
-                      sm: "0.85rem",
-                    },
-
-                    flexGrow: 1,
-                  }}
-                >
-                  {step.description}
-                </Typography>
-
-                {/* STATUS / ACTION */}
-
-                <Box
-                  sx={{
-                    mt: 2,
-                  }}
-                >
-                  {step.completed ? (
-                    <Chip
-                      label="Completed"
-                      size="small"
-                      color="success"
-                      icon={
-                        <CheckCircle />
-                      }
-                      sx={{
-                        fontWeight: 700,
-
-                        fontSize: {
-                          xs: 11,
-                          sm: 12,
-                        },
-                      }}
-                    />
-                  ) : step.action ? (
-                    <Button
-                      variant="outlined"
-                      color="success"
-                      size="small"
-                      fullWidth
-                      onClick={() =>
-                        handleAction(
-                          step.action
-                        )
-                      }
-                      sx={{
-                        minHeight: 40,
-
-                        borderRadius: 2,
-
-                        textTransform:
-                          "none",
-
-                        fontWeight: 800,
-
-                        fontSize: {
-                          xs: "0.78rem",
-                          sm: "0.82rem",
-                        },
-                      }}
-                    >
-                      {step.action ===
-                      "profile"
-                        ? "Go to My Profile"
-                        : "View Products"}
-                    </Button>
-                  ) : (
-                    <Chip
-                      label="Learn More"
-                      size="small"
-                      variant="outlined"
-                      color="success"
-                      sx={{
-                        fontWeight: 700,
-
-                        fontSize: {
-                          xs: 11,
-                          sm: 12,
-                        },
-                      }}
-                    />
-                  )}
-                </Box>
-              </Box>
-            </Grid>
-          ))}
         </Grid>
+
 
         {/* =================================================
             PROFILE REMINDER
         ================================================= */}
 
         {!profileCompleted && (
+
           <Box
             sx={{
-              mt: 2.5,
+              mt: 1.5,
 
               p: {
-                xs: 1.8,
+                xs: 1.5,
                 sm: 2,
               },
-
-              borderRadius: 2,
 
               backgroundColor:
                 "#FFF8E1",
 
               border:
                 "1px solid #FFE082",
+
+              borderRadius: 0,
+
+              boxSizing:
+                "border-box",
             }}
           >
+
             <Typography
-              fontWeight={800}
               sx={{
                 fontSize: {
-                  xs: "0.88rem",
-                  sm: "0.95rem",
+                  xs: "12px",
+                  sm: "14px",
                 },
+
+                fontWeight: 800,
               }}
             >
               Profile not completed yet
             </Typography>
 
-            <Typography
-              variant="body2"
-              color="text.secondary"
-              sx={{
-                mt: 0.5,
 
-                lineHeight: 1.6,
+            <Typography
+              sx={{
+                mt: 0.4,
 
                 fontSize: {
-                  xs: "0.78rem",
-                  sm: "0.85rem",
+                  xs: "10px",
+                  sm: "12px",
                 },
+
+                color:
+                  "text.secondary",
+
+                lineHeight: 1.5,
               }}
             >
-              Please open{" "}
-              <strong>My Profile</strong>,
-              select{" "}
-              <strong>
-                Edit Profile
-              </strong>
-              , fill in your email and
-              complete your delivery address,
-              city, state and pincode. Then
-              press <strong>Save Changes</strong>.
+              Please complete your
+              email and delivery
+              address from My Profile.
             </Typography>
+
 
             <Button
               variant="contained"
@@ -662,27 +758,30 @@ const GettingStarted = ({ member, summary }) => {
                 )
               }
               sx={{
-                mt: 1.5,
+                mt: 1,
 
-                minHeight: 42,
+                minHeight: 34,
 
-                borderRadius: 2,
+                borderRadius: 0,
 
                 textTransform:
                   "none",
 
-                fontWeight: 800,
+                fontWeight: 700,
 
                 fontSize: {
-                  xs: "0.78rem",
-                  sm: "0.85rem",
+                  xs: "10px",
+                  sm: "12px",
                 },
               }}
             >
-              Complete My Profile
+              Complete Profile
             </Button>
+
           </Box>
+
         )}
+
 
         {/* =================================================
             SP INFORMATION
@@ -690,46 +789,50 @@ const GettingStarted = ({ member, summary }) => {
 
         <Box
           sx={{
-            mt: 2.5,
+            mt: 1.5,
 
             p: {
-              xs: 1.8,
+              xs: 1.5,
               sm: 2,
             },
-
-            borderRadius: 2,
 
             backgroundColor:
               "#F5F9F5",
 
             border:
               "1px solid #E1EAE1",
+
+            borderRadius: 0,
           }}
         >
+
           <Typography
-            fontWeight={800}
             sx={{
               fontSize: {
-                xs: "0.88rem",
-                sm: "0.95rem",
+                xs: "12px",
+                sm: "14px",
               },
+
+              fontWeight: 800,
             }}
           >
             Your Selling Points
           </Typography>
 
-          <Typography
-            variant="body2"
-            color="text.secondary"
-            sx={{
-              mt: 0.5,
 
-              lineHeight: 1.6,
+          <Typography
+            sx={{
+              mt: 0.4,
 
               fontSize: {
-                xs: "0.78rem",
-                sm: "0.85rem",
+                xs: "10px",
+                sm: "12px",
               },
+
+              color:
+                "text.secondary",
+
+              lineHeight: 1.5,
             }}
           >
             You currently have{" "}
@@ -737,14 +840,15 @@ const GettingStarted = ({ member, summary }) => {
               {sellingPoints} SP
             </strong>
             . Once you reach{" "}
-            <strong>40 SP</strong>, this
-            Getting Started section will
-            automatically disappear and
-            you will continue with your
-            normal member dashboard.
+            <strong>40 SP</strong>,
+            this Getting Started
+            section will disappear.
           </Typography>
+
         </Box>
+
       </CardContent>
+
     </Card>
   );
 };
@@ -755,50 +859,70 @@ const GettingStarted = ({ member, summary }) => {
 ========================================================= */
 
 const Dashboard = () => {
+
   const [dashboard, setDashboard] =
     useState(null);
 
   const [loading, setLoading] =
     useState(true);
 
+
   /* =======================================================
      LOAD DASHBOARD
   ======================================================= */
 
   useEffect(() => {
+
     loadDashboard();
+
   }, []);
 
-  const loadDashboard = async () => {
-    try {
-      const data =
-        await getDashboard();
 
-      console.log(
-        "MEMBER DASHBOARD:",
-        data
-      );
+  const loadDashboard =
+    async () => {
 
-      setDashboard(data);
-    } catch (error) {
-      console.error(
-        "Dashboard error:",
-        error
-      );
-    } finally {
-      setLoading(false);
-    }
-  };
+      try {
+
+        const data =
+          await getDashboard();
+
+        console.log(
+          "MEMBER DASHBOARD:",
+          data
+        );
+
+        setDashboard(data);
+
+      } catch (error) {
+
+        console.error(
+          "Dashboard error:",
+          error
+        );
+
+      } finally {
+
+        setLoading(false);
+
+      }
+
+    };
+
 
   /* =======================================================
      LOADING
   ======================================================= */
 
   if (loading) {
+
     return (
+
       <Box
         sx={{
-          minHeight: "70vh",
+          width: "100%",
+
+          minHeight:
+            "70vh",
 
           display: "flex",
 
@@ -808,15 +932,22 @@ const Dashboard = () => {
           alignItems:
             "center",
 
-          px: 2,
+          margin: 0,
+
+          padding: 0,
         }}
       >
+
         <CircularProgress
           color="success"
         />
+
       </Box>
+
     );
+
   }
+
 
   /* =======================================================
      DATA
@@ -828,102 +959,181 @@ const Dashboard = () => {
   const summary =
     dashboard?.summary || {};
 
+
   const sellingPoints =
     Number(
       member?.sellingPoints ??
-        summary?.sellingPoints ??
-        0
+      summary?.sellingPoints ??
+      0
     );
+
 
   /* =======================================================
      MAIN DASHBOARD
   ======================================================= */
 
-  return (
+return (
+  <Box
+    sx={{
+      width: "100%",
+      maxWidth: "100%",
+      minWidth: 0,
+
+      margin: 0,
+      padding: 0,
+
+      backgroundColor: "#F5F7FA",
+
+      minHeight: "100vh",
+
+      boxSizing: "border-box",
+
+      overflowX: "hidden",
+
+      borderRadius: "0 !important",
+
+      /* ==========================================
+         REMOVE ALL CURVED CONTAINERS
+      ========================================== */
+
+      "& .MuiCard-root": {
+        borderRadius: "0 !important",
+      },
+
+      "& .MuiPaper-root": {
+        borderRadius: "0 !important",
+      },
+
+      "& .MuiCardContent-root": {
+        borderRadius: "0 !important",
+      },
+
+      /* ==========================================
+         REMOVE CURVES FROM COMMON MUI CONTAINERS
+      ========================================== */
+
+      "& .MuiAlert-root": {
+        borderRadius: "0 !important",
+      },
+
+      /* ==========================================
+         KEEP BUTTONS / CHIPS NORMAL
+      ========================================== */
+
+      "& .MuiButton-root": {
+        borderRadius: "0 !important",
+      },
+
+      "& .MuiChip-root": {
+        borderRadius: "0 !important",
+      },
+    }}
+  >
+
     <Box
       sx={{
-        p: {
-          xs: 1,
-          sm: 2,
-          md: 3,
+        width: "100%",
+        maxWidth: {
+          xs: "100%",
+          sm: "100%",
+          md: "1400px",
         },
 
-        bgcolor: "#F5F7FA",
+        minWidth: 0,
 
-        minHeight: "100vh",
+        margin: {
+          xs: 0,
+          md: "0 auto",
+        },
 
-        width: "100%",
+        padding: {
+          xs: 0,
+          sm: 0,
+          md: "0 8px",
+        },
 
         boxSizing: "border-box",
 
         overflowX: "hidden",
+
+        borderRadius: "0 !important",
+
+        /* Force every child container square */
+
+        "& .MuiCard-root": {
+          borderRadius: "0 !important",
+        },
+
+        "& .MuiPaper-root": {
+          borderRadius: "0 !important",
+        },
+
+        "& > *": {
+          width: "100%",
+          maxWidth: "100%",
+          boxSizing: "border-box",
+          borderRadius: "0 !important",
+        },
       }}
     >
-      <Box
-        sx={{
-          width: "100%",
 
-          maxWidth: 1400,
+      {/* HEADER */}
 
-          mx: "auto",
-        }}
-      >
-        {/* =================================================
-            HEADER
-        ================================================= */}
+      <DashboardHeader
+        user={dashboard?.member}
+        summary={dashboard?.summary}
+      />
 
-        <DashboardHeader
-          user={
-            dashboard?.member
-          }
-          summary={
-            dashboard?.summary
-          }
+
+      {/* GETTING STARTED */}
+
+      {sellingPoints < 40 && (
+        <GettingStarted
+          member={member}
+          summary={summary}
         />
+      )}
 
-        {/* =================================================
-            GETTING STARTED
 
-            ONLY FOR SP BELOW 40
-        ================================================= */}
+      {/* DASHBOARD STATS */}
 
-        {sellingPoints < 40 && (
-          <GettingStarted
-            member={member}
-            summary={summary}
-          />
-        )}
+      <DashboardStats
+        data={dashboard}
+      />
 
-        {/* =================================================
-            NORMAL DASHBOARD
-        ================================================= */}
 
-        <DashboardStats
-          data={dashboard}
-        />
+      {/* PAYMENT */}
 
-        <PaymentScannerCard />
+      <PaymentScannerCard />
 
-        <SupervisorProgress
-          summary={
-            dashboard?.summary
-          }
-        />
 
-        <RecentOrders
-          orders={
-            dashboard?.recentOrders
-          }
-        />
+      {/* SUPERVISOR */}
 
-        <RecentCommission
-          commissions={
-            dashboard?.recentCommissions
-          }
-        />
-      </Box>
+      <SupervisorProgress
+        summary={dashboard?.summary}
+      />
+
+
+      {/* RECENT ORDERS */}
+
+      <RecentOrders
+        orders={dashboard?.recentOrders}
+      />
+
+
+      {/* RECENT COMMISSION */}
+
+      <RecentCommission
+        commissions={
+          dashboard?.recentCommissions
+        }
+      />
+
     </Box>
-  );
+
+  </Box>
+);
 };
+
 
 export default Dashboard;

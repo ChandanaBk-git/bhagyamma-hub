@@ -23,7 +23,9 @@ import { getMyOrders } from "../../services/order.service";
 import OrdersSummary from "../../components/members/orders/OrdersSummary";
 import OrdersTable from "../../components/members/orders/OrdersTable";
 
+
 const Orders = () => {
+
   const navigate = useNavigate();
 
   const [orders, setOrders] =
@@ -31,6 +33,7 @@ const Orders = () => {
 
   const [loading, setLoading] =
     useState(true);
+
 
   /* =====================================================
      LOAD ORDERS
@@ -40,8 +43,11 @@ const Orders = () => {
     loadOrders();
   }, []);
 
+
   const loadOrders = async () => {
+
     try {
+
       setLoading(true);
 
       const data =
@@ -57,48 +63,74 @@ const Orders = () => {
           ? data
           : []
       );
+
     } catch (error) {
+
       console.error(
         "Failed to load orders:",
         error
       );
 
       setOrders([]);
+
     } finally {
+
       setLoading(false);
+
     }
+
   };
+
 
   /* =====================================================
      LOADING
   ===================================================== */
 
   if (loading) {
+
     return (
       <Box
         sx={{
+          width: "100%",
+
           minHeight: "60vh",
 
           display: "flex",
 
-          alignItems: "center",
+          alignItems:
+            "center",
 
-          justifyContent: "center",
+          justifyContent:
+            "center",
+
+          margin: 0,
+
+          padding: 0,
+
+          boxSizing:
+            "border-box",
         }}
       >
+
         <CircularProgress
           color="success"
+          size={28}
         />
+
       </Box>
     );
+
   }
+
 
   /* =====================================================
      EMPTY ORDERS
   ===================================================== */
 
   if (orders.length === 0) {
+
     return (
+
       <Box
         sx={{
           width: "100%",
@@ -107,74 +139,96 @@ const Orders = () => {
 
           display: "flex",
 
-          alignItems: "center",
+          alignItems:
+            "center",
 
-          justifyContent: "center",
+          justifyContent:
+            "center",
 
-          px: {
-            xs: 1,
-            sm: 2,
+          margin: 0,
+
+          padding: {
+            xs: "20px 8px",
+            sm: "30px 14px",
           },
 
-          py: {
-            xs: 3,
-            sm: 5,
-          },
+          boxSizing:
+            "border-box",
 
-          boxSizing: "border-box",
+          backgroundColor:
+            "#F5F7FA",
+
+          overflowX:
+            "hidden",
         }}
       >
+
         <Card
           elevation={0}
           sx={{
             width: "100%",
 
-            maxWidth: 650,
+            maxWidth: "650px",
 
-            borderRadius: {
-              xs: 2.5,
-              sm: 4,
-            },
+            borderRadius:
+              "0 !important",
 
             border:
               "1px solid #DDE7DE",
 
             backgroundColor:
               "#FFFFFF",
+
+            boxShadow:
+              "none",
+
+            boxSizing:
+              "border-box",
           }}
         >
+
           <CardContent
             sx={{
-              textAlign: "center",
+              textAlign:
+                "center",
 
               px: {
-                xs: 2.5,
+                xs: 2,
                 sm: 5,
               },
 
               py: {
-                xs: 4,
-                sm: 6,
+                xs: 3,
+                sm: 5,
+              },
+
+              "&:last-child": {
+                pb: {
+                  xs: 3,
+                  sm: 5,
+                },
               },
             }}
           >
+
             {/* ICON */}
 
             <Box
               sx={{
                 width: {
-                  xs: 75,
-                  sm: 95,
+                  xs: 65,
+                  sm: 85,
                 },
 
                 height: {
-                  xs: 75,
-                  sm: 95,
+                  xs: 65,
+                  sm: 85,
                 },
 
                 mx: "auto",
 
-                borderRadius: "50%",
+                borderRadius:
+                  "50%",
 
                 backgroundColor:
                   "#E8F5E9",
@@ -191,45 +245,54 @@ const Orders = () => {
                   "center",
               }}
             >
+
               <ShoppingBag
                 sx={{
                   fontSize: {
-                    xs: 38,
-                    sm: 50,
+                    xs: 34,
+                    sm: 44,
                   },
                 }}
               />
+
             </Box>
+
 
             {/* TITLE */}
 
             <Typography
-              variant="h5"
-              fontWeight={800}
               sx={{
-                mt: 3,
+                mt: {
+                  xs: 2,
+                  sm: 3,
+                },
 
                 fontSize: {
-                  xs: "1.25rem",
-                  sm: "1.5rem",
+                  xs: "18px",
+                  sm: "23px",
                 },
+
+                lineHeight: 1.3,
+
+                fontWeight: 800,
               }}
             >
               You Have No Orders Yet
             </Typography>
+
 
             {/* MESSAGE */}
 
             <Typography
               color="text.secondary"
               sx={{
-                mt: 1.5,
+                mt: 1,
 
-                lineHeight: 1.7,
+                lineHeight: 1.6,
 
                 fontSize: {
-                  xs: "0.85rem",
-                  sm: "0.95rem",
+                  xs: "12px",
+                  sm: "14px",
                 },
 
                 maxWidth: 500,
@@ -244,6 +307,7 @@ const Orders = () => {
               ready.
             </Typography>
 
+
             {/* BUTTONS */}
 
             <Stack
@@ -251,159 +315,398 @@ const Orders = () => {
                 xs: "column",
                 sm: "row",
               }}
-              spacing={1.5}
+
+              spacing={{
+                xs: 1,
+                sm: 1.5,
+              }}
+
               justifyContent="center"
+
               sx={{
-                mt: 3,
+                mt: {
+                  xs: 2,
+                  sm: 3,
+                },
               }}
             >
+
               <Button
                 variant="contained"
+
                 color="success"
-                size="large"
+
                 startIcon={
                   <ShoppingCart />
                 }
+
                 onClick={() =>
                   navigate(
                     "/member/products"
                   )
                 }
+
                 sx={{
-                  minHeight: 46,
+                  width: {
+                    xs: "100%",
+                    sm: "auto",
+                  },
+
+                  minHeight: {
+                    xs: 40,
+                    sm: 46,
+                  },
 
                   px: 3,
 
-                  borderRadius: 2,
+                  borderRadius:
+                    "0 !important",
 
                   textTransform:
                     "none",
 
                   fontWeight: 800,
 
-                  width: {
-                    xs: "100%",
-                    sm: "auto",
+                  fontSize: {
+                    xs: "12px",
+                    sm: "14px",
                   },
                 }}
               >
                 Shop Now
               </Button>
 
+
               <Button
                 variant="outlined"
+
                 color="success"
-                size="large"
+
                 startIcon={
                   <ArrowBack />
                 }
+
                 onClick={() =>
                   navigate(
                     "/member/dashboard"
                   )
                 }
+
                 sx={{
-                  minHeight: 46,
+                  width: {
+                    xs: "100%",
+                    sm: "auto",
+                  },
+
+                  minHeight: {
+                    xs: 40,
+                    sm: 46,
+                  },
 
                   px: 3,
 
-                  borderRadius: 2,
+                  borderRadius:
+                    "0 !important",
 
                   textTransform:
                     "none",
 
                   fontWeight: 700,
 
-                  width: {
-                    xs: "100%",
-                    sm: "auto",
+                  fontSize: {
+                    xs: "12px",
+                    sm: "14px",
                   },
                 }}
               >
                 Back to Dashboard
               </Button>
+
             </Stack>
+
           </CardContent>
+
         </Card>
+
       </Box>
+
     );
   }
+
 
   /* =====================================================
      ORDERS EXIST
   ===================================================== */
 
   return (
+
     <Box
       sx={{
         width: "100%",
 
+        maxWidth: "100%",
+
+        minWidth: 0,
+
         minHeight: "100vh",
 
-        bgcolor: "#F5F7FA",
+        margin: 0,
 
-        boxSizing: "border-box",
+        padding: 0,
+
+        backgroundColor:
+          "#F5F7FA",
+
+        boxSizing:
+          "border-box",
+
+        overflowX:
+          "hidden",
+
+        borderRadius:
+          "0 !important",
+
+        /* Remove outer rounded MUI containers */
+
+        "& .MuiCard-root": {
+          borderRadius:
+            "0 !important",
+        },
+
+        "& .MuiPaper-root": {
+          borderRadius:
+            "0 !important",
+        },
       }}
     >
+
       {/* =================================================
-          PAGE HEADER
+          PAGE CONTENT
       ================================================= */}
 
       <Box
         sx={{
-          mb: {
-            xs: 2,
-            sm: 3,
+          width: "100%",
+
+          maxWidth: {
+            xs: "100%",
+            sm: "100%",
+            md: "1400px",
           },
+
+          minWidth: 0,
+
+          margin: {
+            xs: 0,
+            md: "0 auto",
+          },
+
+          padding: {
+            xs: "8px 8px 20px",
+            sm: "14px 14px 24px",
+            md: "20px 8px 30px",
+          },
+
+          boxSizing:
+            "border-box",
+
+          overflowX:
+            "hidden",
+
+          borderRadius:
+            "0 !important",
         }}
       >
-        <Typography
-          variant="h4"
-          fontWeight={800}
+
+        {/* =================================================
+            PAGE HEADER
+        ================================================= */}
+
+        <Box
           sx={{
-            fontSize: {
-              xs: "1.5rem",
-              sm: "2rem",
-              md: "2.2rem",
+            width: "100%",
+
+            margin: 0,
+
+            padding: 0,
+
+            mb: {
+              xs: 1.5,
+              sm: 2,
+              md: 2.5,
             },
           }}
         >
-          My Orders
-        </Typography>
 
-        <Typography
-          color="text.secondary"
+          <Typography
+            component="h1"
+            sx={{
+              margin: 0,
+
+              padding: 0,
+
+              fontSize: {
+                xs: "20px",
+                sm: "25px",
+                md: "30px",
+              },
+
+              lineHeight: {
+                xs: "25px",
+                sm: "31px",
+                md: "36px",
+              },
+
+              fontWeight: 800,
+
+              color:
+                "#292929",
+            }}
+          >
+            My Orders
+          </Typography>
+
+
+          <Typography
+            color="text.secondary"
+            sx={{
+              mt: 0.4,
+
+              fontSize: {
+                xs: "11px",
+                sm: "13px",
+                md: "14px",
+              },
+
+              lineHeight: 1.5,
+            }}
+          >
+            View and track your orders
+            from Bhagyamma Hub.
+          </Typography>
+
+        </Box>
+
+
+        {/* =================================================
+            ORDER SUMMARY
+        ================================================= */}
+
+        <Box
           sx={{
-            mt: 0.5,
+            width: "100%",
 
-            fontSize: {
-              xs: "0.82rem",
-              sm: "0.95rem",
+            maxWidth: "100%",
+
+            minWidth: 0,
+
+            margin: 0,
+
+            padding: 0,
+
+            boxSizing:
+              "border-box",
+
+            overflowX:
+              "hidden",
+
+            borderRadius:
+              "0 !important",
+
+            "& > *": {
+              maxWidth:
+                "100%",
+
+              boxSizing:
+                "border-box",
+            },
+
+            "& .MuiCard-root": {
+              borderRadius:
+                "0 !important",
+            },
+
+            "& .MuiPaper-root": {
+              borderRadius:
+                "0 !important",
             },
           }}
         >
-          View and track your orders
-          from Bhagyamma Hub.
-        </Typography>
+
+          <OrdersSummary
+            orders={orders}
+          />
+
+        </Box>
+
+
+        {/* =================================================
+            ORDERS LIST / TABLE
+        ================================================= */}
+
+        <Box
+          sx={{
+            width: "100%",
+
+            maxWidth: "100%",
+
+            minWidth: 0,
+
+            margin: 0,
+
+            marginTop: {
+              xs: "10px",
+              sm: "14px",
+              md: "18px",
+            },
+
+            padding: 0,
+
+            boxSizing:
+              "border-box",
+
+            overflowX:
+              "auto",
+
+            overflowY:
+              "hidden",
+
+            borderRadius:
+              "0 !important",
+
+            "& > *": {
+              maxWidth:
+                "100%",
+
+              boxSizing:
+                "border-box",
+            },
+
+            "& .MuiCard-root": {
+              borderRadius:
+                "0 !important",
+            },
+
+            "& .MuiPaper-root": {
+              borderRadius:
+                "0 !important",
+            },
+          }}
+        >
+
+          <OrdersTable
+            orders={orders}
+          />
+
+        </Box>
+
       </Box>
 
-      {/* =================================================
-          ORDER SUMMARY
-      ================================================= */}
-
-      <OrdersSummary
-        orders={orders}
-      />
-
-      {/* =================================================
-          ORDER TABLE / LIST
-      ================================================= */}
-
-      <OrdersTable
-        orders={orders}
-      />
     </Box>
+
   );
+
 };
+
 
 export default Orders;

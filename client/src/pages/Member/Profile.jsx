@@ -8,8 +8,6 @@ import {
   Typography,
 } from "@mui/material";
 
-// import KYCInformation from "./KYCInformation";
-
 import ProfileHeader from "../../components/members/profile/ProfileHeader";
 import PersonalInformation from "../../components/members/profile/PersonalInformation";
 import AddressInformation from "../../components/members/profile/AddressInformation";
@@ -23,19 +21,28 @@ import {
   updateProfile,
 } from "../../services/auth.service";
 
+
 const Profile = () => {
-  const [user, setUser] = useState(null);
 
-  const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
+  const [user, setUser] =
+    useState(null);
 
-  const [editOpen, setEditOpen] = useState(false);
+  const [loading, setLoading] =
+    useState(true);
 
-  const [toast, setToast] = useState({
-    open: false,
-    message: "",
-    severity: "success",
-  });
+  const [saving, setSaving] =
+    useState(false);
+
+  const [editOpen, setEditOpen] =
+    useState(false);
+
+  const [toast, setToast] =
+    useState({
+      open: false,
+      message: "",
+      severity: "success",
+    });
+
 
   // =====================================================
   // LOAD PROFILE
@@ -45,24 +52,21 @@ const Profile = () => {
     loadProfile();
   }, []);
 
+
   const loadProfile = async () => {
+
     try {
+
       setLoading(true);
 
-      const response = await getProfile();
+      const response =
+        await getProfile();
 
-      /*
-       * ApiResponse normally returns:
-       *
-       * {
-       *   statusCode,
-       *   message,
-       *   data
-       * }
-       *
-       * Keep a fallback so the page also works
-       * if the API returns the user directly.
-       */
+      console.log(
+        "Profile API:",
+        response
+      );
+
 
       const profile =
         response?.data ||
@@ -72,14 +76,17 @@ const Profile = () => {
       setUser(profile);
 
     } catch (error) {
+
       console.error(
         "Profile loading error:",
         error
       );
 
+
       const message =
         error?.response?.data?.message ||
         "Unable to load profile";
+
 
       setToast({
         open: true,
@@ -88,275 +95,580 @@ const Profile = () => {
       });
 
     } finally {
+
       setLoading(false);
+
     }
+
   };
 
+
   // =====================================================
-  // OPEN EDIT PROFILE
+  // OPEN EDIT
   // =====================================================
 
   const handleOpenEdit = () => {
+
     setEditOpen(true);
+
   };
 
+
   // =====================================================
-  // CLOSE EDIT PROFILE
+  // CLOSE EDIT
   // =====================================================
 
   const handleCloseEdit = () => {
+
     if (saving) {
       return;
     }
 
     setEditOpen(false);
+
   };
+
 
   // =====================================================
   // SAVE PROFILE
   // =====================================================
 
   const handleSave = async (form) => {
+
     try {
+
       setSaving(true);
 
-      /*
-       * Send only the fields supported by
-       * the backend profile update service.
-       */
 
       const payload = {
-        name: form.name,
-        mobile: form.mobile,
 
-        gender: form.gender,
-        dateOfBirth: form.dateOfBirth,
+        name:
+          form.name,
 
-        address: form.address,
-        city: form.city,
-        state: form.state,
-        pincode: form.pincode,
-        country: form.country,
+        mobile:
+          form.mobile,
 
-        bankName: form.bankName,
+        gender:
+          form.gender,
+
+        dateOfBirth:
+          form.dateOfBirth,
+
+        address:
+          form.address,
+
+        city:
+          form.city,
+
+        state:
+          form.state,
+
+        pincode:
+          form.pincode,
+
+        country:
+          form.country,
+
+        bankName:
+          form.bankName,
+
         accountHolderName:
           form.accountHolderName,
+
         accountNumber:
           form.accountNumber,
-        ifscCode: form.ifscCode,
-        branch: form.branch,
+
+        ifscCode:
+          form.ifscCode,
+
+        branch:
+          form.branch,
 
         aadhaarNumber:
           form.aadhaarNumber,
+
         panNumber:
           form.panNumber,
       };
 
-      const response =
-        await updateProfile(payload);
 
-      /*
-       * Backend returns ApiResponse:
-       *
-       * {
-       *   statusCode,
-       *   message,
-       *   data
-       * }
-       */
+      const response =
+        await updateProfile(
+          payload
+        );
+
+
+      console.log(
+        "Profile update response:",
+        response
+      );
+
 
       const updatedUser =
         response?.data ||
         response?.user ||
         response;
 
-      // Update UI immediately
-      setUser(updatedUser);
 
-      // Close dialog
+      setUser(
+        updatedUser
+      );
+
+
       setEditOpen(false);
 
-      // Success message
+
       setToast({
         open: true,
+
         message:
           "Profile updated successfully",
-        severity: "success",
+
+        severity:
+          "success",
       });
 
     } catch (error) {
+
       console.error(
         "Profile update error:",
         error
       );
 
+
       const message =
         error?.response?.data?.message ||
         "Profile update failed";
 
+
       setToast({
         open: true,
+
         message,
-        severity: "error",
+
+        severity:
+          "error",
       });
 
     } finally {
+
       setSaving(false);
+
     }
+
   };
+
 
   // =====================================================
   // CLOSE TOAST
   // =====================================================
 
   const handleCloseToast = () => {
-    setToast((previous) => ({
-      ...previous,
-      open: false,
-    }));
+
+    setToast(
+      (previous) => ({
+        ...previous,
+        open: false,
+      })
+    );
+
   };
+
 
   // =====================================================
   // LOADING
   // =====================================================
 
   if (loading) {
+
     return (
+
       <Box
         sx={{
+          width: "100%",
+
           minHeight: "60vh",
+
           display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
+
+          justifyContent:
+            "center",
+
+          alignItems:
+            "center",
+
+          margin: 0,
+
+          padding: 0,
         }}
       >
-        <CircularProgress color="success" />
+
+        <CircularProgress
+          color="success"
+        />
+
       </Box>
+
     );
+
   }
+
 
   // =====================================================
   // PROFILE NOT FOUND
   // =====================================================
 
   if (!user) {
+
     return (
+
       <Box
         sx={{
-          p: 3,
+          width: "100%",
+
+          margin: 0,
+
+          padding: {
+            xs: 2,
+            sm: 3,
+          },
+
           textAlign: "center",
+
+          boxSizing:
+            "border-box",
         }}
       >
+
         <Typography
-          variant="h6"
-          fontWeight={600}
+          sx={{
+            fontSize: {
+              xs: "17px",
+              sm: "20px",
+            },
+
+            fontWeight: 600,
+          }}
         >
           Unable to load profile
         </Typography>
+
       </Box>
+
     );
+
   }
+
 
   // =====================================================
   // RENDER
   // =====================================================
 
   return (
+
     <Box
       sx={{
         width: "100%",
-        maxWidth: 1400,
-        mx: "auto",
-        p: {
-          xs: 1,
-          sm: 2,
-          md: 3,
+
+        maxWidth: "100%",
+
+        minWidth: 0,
+
+        margin: 0,
+
+        padding: 0,
+
+        boxSizing:
+          "border-box",
+
+        backgroundColor:
+          "#F5F7FA",
+
+        minHeight:
+          "100vh",
+
+        overflowX:
+          "hidden",
+
+        borderRadius:
+          "0 !important",
+
+
+        /* ===============================================
+           REMOVE OUTER CARD/PAPER CURVES
+        =============================================== */
+
+        "& .MuiCard-root": {
+          borderRadius:
+            "0 !important",
         },
-        pb: 6,
+
+        "& .MuiPaper-root": {
+          borderRadius:
+            "0 !important",
+        },
+
+        "& .MuiCardContent-root": {
+          borderRadius:
+            "0 !important",
+        },
+
+
+        /* ===============================================
+           KEEP CONTENT INSIDE MOBILE SCREEN
+        =============================================== */
+
+        "& > *": {
+
+          width: "100%",
+
+          maxWidth: "100%",
+
+          minWidth: 0,
+
+          boxSizing:
+            "border-box",
+        },
+
       }}
     >
-      {/* ===============================================
+
+      {/* =================================================
           PROFILE HEADER
-      ================================================ */}
+      ================================================= */}
 
-      <ProfileHeader user={user} />
+      <Box
+        sx={{
+          width: "100%",
 
-      {/* ===============================================
+          margin: 0,
+
+          padding: 0,
+
+          boxSizing:
+            "border-box",
+
+          overflowX:
+            "hidden",
+        }}
+      >
+
+        <ProfileHeader
+          user={user}
+        />
+
+      </Box>
+
+
+      {/* =================================================
           PERSONAL INFORMATION
-      ================================================ */}
+      ================================================= */}
 
-      <PersonalInformation
-        user={user}
-        onEdit={handleOpenEdit}
-      />
+      <Box
+        sx={{
+          width: "100%",
 
-      {/* ===============================================
+          margin: 0,
+
+          padding: 0,
+
+          boxSizing:
+            "border-box",
+
+          overflowX:
+            "hidden",
+        }}
+      >
+
+        <PersonalInformation
+          user={user}
+          onEdit={
+            handleOpenEdit
+          }
+        />
+
+      </Box>
+
+
+      {/* =================================================
           ADDRESS
-      ================================================ */}
+      ================================================= */}
 
-      <AddressInformation
-        user={user}
-      />
+      <Box
+        sx={{
+          width: "100%",
 
-      {/* ===============================================
-          BANK
-      ================================================ */}
+          margin: 0,
 
-      <BankInformation
-        user={user}
-      />
+          padding: 0,
 
-      {/* ===============================================
+          boxSizing:
+            "border-box",
+
+          overflowX:
+            "hidden",
+        }}
+      >
+
+        <AddressInformation
+          user={user}
+        />
+
+      </Box>
+
+
+      {/* =================================================
+          BANK INFORMATION
+      ================================================= */}
+
+      <Box
+        sx={{
+          width: "100%",
+
+          margin: 0,
+
+          padding: 0,
+
+          boxSizing:
+            "border-box",
+
+          overflowX:
+            "hidden",
+        }}
+      >
+
+        <BankInformation
+          user={user}
+        />
+
+      </Box>
+
+
+      {/* =================================================
           KYC
-      ================================================ */}
+      ================================================= */}
 
-<KYCInformation />
+      <Box
+        sx={{
+          width: "100%",
 
-      {/* ===============================================
+          margin: 0,
+
+          padding: 0,
+
+          boxSizing:
+            "border-box",
+
+          overflowX:
+            "hidden",
+        }}
+      >
+
+        <KYCInformation />
+
+      </Box>
+
+
+      {/* =================================================
           PROFILE COMPLETION
-      ================================================ */}
+      ================================================= */}
 
-      <ProfileCompletion
-        user={user}
-      />
+      <Box
+        sx={{
+          width: "100%",
 
-      {/* ===============================================
+          margin: 0,
+
+          padding: 0,
+
+          boxSizing:
+            "border-box",
+
+          overflowX:
+            "hidden",
+
+          pb: {
+            xs: 2,
+            sm: 4,
+          },
+        }}
+      >
+
+        <ProfileCompletion
+          user={user}
+        />
+
+      </Box>
+
+
+      {/* =================================================
           EDIT PROFILE DIALOG
-      ================================================ */}
+      ================================================= */}
 
       <EditProfileDialog
         open={editOpen}
-        onClose={handleCloseEdit}
+
+        onClose={
+          handleCloseEdit
+        }
+
         user={user}
-        onSave={handleSave}
+
+        onSave={
+          handleSave
+        }
+
         saving={saving}
       />
 
-      {/* ===============================================
+
+      {/* =================================================
           TOAST
-      ================================================ */}
+      ================================================= */}
 
       <Snackbar
         open={toast.open}
+
         autoHideDuration={4000}
-        onClose={handleCloseToast}
+
+        onClose={
+          handleCloseToast
+        }
+
         anchorOrigin={{
           vertical: "bottom",
           horizontal: "center",
         }}
       >
+
         <Alert
-          severity={toast.severity}
-          onClose={handleCloseToast}
+          severity={
+            toast.severity
+          }
+
+          onClose={
+            handleCloseToast
+          }
+
           sx={{
             width: "100%",
+
+            borderRadius:
+              "0 !important",
           }}
         >
+
           {toast.message}
+
         </Alert>
+
       </Snackbar>
+
     </Box>
+
   );
+
 };
+
 
 export default Profile;

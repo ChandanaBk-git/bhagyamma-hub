@@ -5,17 +5,12 @@ import {
 } from "react";
 
 import {
-  useNavigate,
-} from "react-router-dom";
-
-import {
   Alert,
   Avatar,
   Box,
   Button,
   Card,
   CardContent,
-  Chip,
   CircularProgress,
   FormControl,
   Grid,
@@ -23,7 +18,6 @@ import {
   InputLabel,
   MenuItem,
   Select,
-  Stack,
   TextField,
   Typography,
 } from "@mui/material";
@@ -33,10 +27,8 @@ import PeopleIcon from "@mui/icons-material/People";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import PendingIcon from "@mui/icons-material/Pending";
 import VisibilityIcon from "@mui/icons-material/Visibility";
-import AccountBalanceWalletIcon from "@mui/icons-material/AccountBalanceWallet";
-import StarIcon from "@mui/icons-material/Star";
-import PaymentsIcon from "@mui/icons-material/Payments";
-import ShoppingBagIcon from "@mui/icons-material/ShoppingBag";
+
+import { useNavigate } from "react-router-dom";
 
 import {
   getMembers,
@@ -44,33 +36,355 @@ import {
 
 
 /* =====================================================
-   HELPERS
+   MEMBER CARD
 ===================================================== */
 
-const money = (value) => {
+const MemberCard = ({
+  member,
+  onView,
+}) => {
 
-  const amount =
-    Number(value || 0);
+  return (
+    <Card
+      elevation={0}
+      sx={{
+        width: "100%",
+        maxWidth: "100%",
+        minWidth: 0,
 
-  return `₹${amount.toLocaleString(
-    "en-IN",
-    {
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 2,
-    }
-  )}`;
+        border:
+          "1px solid #D9DEE3",
 
-};
+        borderRadius:
+          "0 !important",
+
+        backgroundColor:
+          "#FFFFFF",
+
+        boxShadow:
+          "0 2px 7px rgba(0,0,0,0.04)",
+
+        overflow:
+          "hidden",
+
+        boxSizing:
+          "border-box",
+      }}
+    >
+
+      <CardContent
+        sx={{
+          p: {
+            xs: 1.4,
+            sm: 1.7,
+          },
+
+          "&:last-child": {
+            pb: {
+              xs: 1.4,
+              sm: 1.7,
+            },
+          },
+        }}
+      >
+
+        {/* =================================================
+            MEMBER HEADER
+        ================================================= */}
+
+        <Box
+          sx={{
+            display: "flex",
+
+            alignItems:
+              "center",
+
+            justifyContent:
+              "space-between",
+
+            gap: 1,
+
+            minWidth: 0,
+          }}
+        >
+
+          {/* LEFT SIDE */}
+
+          <Box
+            sx={{
+              display: "flex",
+
+              alignItems:
+                "center",
+
+              gap: 1,
+
+              minWidth: 0,
+
+              flex: 1,
+            }}
+          >
+
+            {/* AVATAR */}
+
+            <Avatar
+              sx={{
+                width: 40,
+                height: 40,
+
+                minWidth: 40,
+
+                bgcolor:
+                  "#E8F5E9",
+
+                color:
+                  "#2E7D32",
+
+                fontSize: 15,
+
+                fontWeight: 800,
+              }}
+            >
+              {(
+                member.name ||
+                "M"
+              )
+                .charAt(0)
+                .toUpperCase()}
+            </Avatar>
 
 
-const number = (value) => {
+            {/* MEMBER DETAILS */}
 
-  return Number(
-    value || 0
-  ).toLocaleString(
-    "en-IN"
+            <Box
+              sx={{
+                minWidth: 0,
+
+                flex: 1,
+              }}
+            >
+
+              {/* NAME */}
+
+              <Typography
+                fontWeight={700}
+                sx={{
+                  fontSize: {
+                    xs: 12.5,
+                    sm: 13.5,
+                  },
+
+                  lineHeight:
+                    1.25,
+
+                  color:
+                    "#252525",
+
+                  overflowWrap:
+                    "anywhere",
+                }}
+              >
+                {member.name || "-"}
+              </Typography>
+
+
+              {/* USER ID */}
+
+              <Typography
+                sx={{
+                  mt: 0.2,
+
+                  fontSize: {
+                    xs: 9.5,
+                    sm: 10.5,
+                  },
+
+                  color:
+                    "#757575",
+
+                  lineHeight:
+                    1.3,
+                }}
+              >
+                {member.userId || "-"}
+              </Typography>
+
+
+              {/* MOBILE */}
+
+              <Typography
+                sx={{
+                  fontSize: {
+                    xs: 9.5,
+                    sm: 10.5,
+                  },
+
+                  color:
+                    "#757575",
+
+                  lineHeight:
+                    1.3,
+                }}
+              >
+                {member.mobile || "-"}
+              </Typography>
+
+            </Box>
+
+          </Box>
+
+
+          {/* ACTIVE STATUS */}
+
+          <Box
+            sx={{
+              flexShrink: 0,
+
+              border:
+                "1px solid #A5D6A7",
+
+              color:
+                "#2E7D32",
+
+              backgroundColor:
+                "#FFFFFF",
+
+              px: 0.9,
+
+              py: 0.35,
+
+              fontSize: 9.5,
+
+              fontWeight: 700,
+
+              whiteSpace:
+                "nowrap",
+            }}
+          >
+            {member.isActive
+              ? "Active"
+              : "Inactive"}
+          </Box>
+
+        </Box>
+
+
+        {/* =================================================
+            PAYMENT STATUS
+        ================================================= */}
+
+        <Box
+          sx={{
+            display: "flex",
+
+            gap: 0.7,
+
+            mt: 1,
+
+            mb: 1,
+          }}
+        >
+
+          <Box
+            sx={{
+              border:
+                "1px solid #FFB74D",
+
+              color:
+                "#EF6C00",
+
+              px: 0.9,
+
+              py: 0.35,
+
+              fontSize: 9.5,
+
+              backgroundColor:
+                "#FFFFFF",
+            }}
+          >
+            {member.paymentStatus ||
+              "Pending"}
+          </Box>
+
+
+          <Box
+            sx={{
+              border:
+                "1px solid #A5D6A7",
+
+              color:
+                "#2E7D32",
+
+              px: 0.9,
+
+              py: 0.35,
+
+              fontSize: 9.5,
+
+              backgroundColor:
+                "#FFFFFF",
+            }}
+          >
+            Paid
+          </Box>
+
+        </Box>
+
+
+        {/* =================================================
+            VIEW DETAILS
+        ================================================= */}
+
+        <Button
+          fullWidth
+          variant="contained"
+          color="success"
+          startIcon={
+            <VisibilityIcon
+              sx={{
+                fontSize:
+                  "18px !important",
+              }}
+            />
+          }
+          onClick={onView}
+          sx={{
+            mt: 0.5,
+
+            minHeight: 38,
+
+            height: 38,
+
+            borderRadius:
+              "0 !important",
+
+            textTransform:
+              "none",
+
+            fontSize: {
+              xs: 12,
+              sm: 13,
+            },
+
+            fontWeight: 700,
+
+            boxShadow:
+              "none",
+
+            "&:hover": {
+              boxShadow:
+                "none",
+            },
+          }}
+        >
+          View Details
+        </Button>
+
+      </CardContent>
+
+    </Card>
   );
-
 };
 
 
@@ -87,7 +401,6 @@ const SummaryCard = ({
 }) => {
 
   return (
-
     <Card
       elevation={0}
       sx={{
@@ -96,24 +409,25 @@ const SummaryCard = ({
         height: "100%",
 
         border:
-          "1px solid #E5E7EB",
+          "1px solid #D9DEE3",
 
-        borderRadius: 3,
+        borderRadius:
+          "0 !important",
+
+        backgroundColor:
+          "#FFFFFF",
+
+        boxShadow:
+          "0 2px 7px rgba(0,0,0,0.04)",
       }}
     >
 
       <CardContent
         sx={{
-          p: {
-            xs: 1.7,
-            sm: 2,
-          },
+          p: 1.4,
 
           "&:last-child": {
-            pb: {
-              xs: 1.7,
-              sm: 2,
-            },
+            pb: 1.4,
           },
         }}
       >
@@ -122,27 +436,23 @@ const SummaryCard = ({
           sx={{
             display: "flex",
 
-            alignItems: "center",
+            alignItems:
+              "center",
 
-            gap: 1.3,
+            gap: 1,
           }}
         >
 
           <Box
             sx={{
-              width: {
-                xs: 40,
-                sm: 46,
-              },
+              width: 40,
 
-              height: {
-                xs: 40,
-                sm: 46,
-              },
+              height: 40,
 
-              flexShrink: 0,
+              minWidth: 40,
 
-              borderRadius: 2,
+              borderRadius:
+                "50%",
 
               bgcolor:
                 `${color}12`,
@@ -151,9 +461,11 @@ const SummaryCard = ({
 
               display: "flex",
 
-              alignItems: "center",
+              alignItems:
+                "center",
 
-              justifyContent: "center",
+              justifyContent:
+                "center",
             }}
           >
             {icon}
@@ -167,36 +479,49 @@ const SummaryCard = ({
           >
 
             <Typography
-              fontSize={{
-                xs: 11,
-                sm: 12,
+              sx={{
+                fontSize: 10.5,
+
+                color:
+                  "#6B7280",
+
+                lineHeight:
+                  1.2,
               }}
-              color="text.secondary"
             >
               {title}
             </Typography>
 
 
             <Typography
-              fontSize={{
-                xs: 20,
-                sm: 23,
+              sx={{
+                fontSize: 20,
+
+                fontWeight: 800,
+
+                lineHeight:
+                  1.2,
+
+                mt: 0.2,
               }}
-              fontWeight={800}
             >
               {value}
             </Typography>
 
 
             {subtitle && (
-
               <Typography
-                fontSize={10.5}
-                color="text.secondary"
+                sx={{
+                  fontSize: 9.5,
+
+                  color:
+                    "#757575",
+
+                  mt: 0.2,
+                }}
               >
                 {subtitle}
               </Typography>
-
             )}
 
           </Box>
@@ -206,583 +531,12 @@ const SummaryCard = ({
       </CardContent>
 
     </Card>
-
   );
-
 };
 
 
 /* =====================================================
-   MEMBER CARD
-===================================================== */
-
-const MemberCard = ({
-  member,
-  onView,
-}) => {
-
-  const wallet =
-    member.wallet || {};
-
-  const commission =
-    member.commission || {};
-
-  const orders =
-    member.orders || {};
-
-
-  return (
-
-    <Card
-      elevation={0}
-      sx={{
-        width: "100%",
-
-        border:
-          "1px solid #E5E7EB",
-
-        borderRadius: 3,
-
-        overflow: "hidden",
-      }}
-    >
-
-      <CardContent
-        sx={{
-          p: {
-            xs: 1.7,
-            sm: 2,
-          },
-
-          "&:last-child": {
-            pb: {
-              xs: 1.7,
-              sm: 2,
-            },
-          },
-        }}
-      >
-
-        {/* MEMBER */}
-
-        <Box
-          sx={{
-            display: "flex",
-
-            alignItems: "flex-start",
-
-            justifyContent:
-              "space-between",
-
-            gap: 1,
-
-            mb: 1.7,
-          }}
-        >
-
-          <Box
-            sx={{
-              display: "flex",
-
-              alignItems: "center",
-
-              gap: 1.2,
-
-              minWidth: 0,
-            }}
-          >
-
-            <Avatar
-              sx={{
-                width: 44,
-
-                height: 44,
-
-                flexShrink: 0,
-
-                bgcolor:
-                  "#E8F5E9",
-
-                color:
-                  "#2E7D32",
-
-                fontWeight: 800,
-              }}
-            >
-              {(
-                member.name ||
-                "M"
-              )
-                .charAt(0)
-                .toUpperCase()}
-            </Avatar>
-
-
-            <Box
-              sx={{
-                minWidth: 0,
-              }}
-            >
-
-              <Typography
-                fontWeight={800}
-                fontSize={15}
-                sx={{
-                  overflowWrap:
-                    "anywhere",
-                }}
-              >
-                {member.name ||
-                  "-"}
-              </Typography>
-
-
-              <Typography
-                fontSize={11}
-                color="text.secondary"
-              >
-                {member.userId ||
-                  "-"}
-              </Typography>
-
-
-              <Typography
-                fontSize={11}
-                color="text.secondary"
-              >
-                {member.mobile ||
-                  "-"}
-              </Typography>
-
-            </Box>
-
-          </Box>
-
-
-          <Chip
-            size="small"
-            label={
-              member.isActive
-                ? "Active"
-                : "Inactive"
-            }
-            color={
-              member.isActive
-                ? "success"
-                : "error"
-            }
-          />
-
-        </Box>
-
-
-        {/* STATUS */}
-
-        <Stack
-          direction="row"
-          spacing={0.7}
-          flexWrap="wrap"
-          useFlexGap
-          sx={{
-            mb: 1.5,
-          }}
-        >
-
-          <Chip
-            size="small"
-            variant="outlined"
-            label={
-              member.kycStatus ||
-              "KYC Pending"
-            }
-            color={
-              String(
-                member.kycStatus ||
-                ""
-              ).toUpperCase() ===
-              "VERIFIED"
-                ? "success"
-                : "warning"
-            }
-          />
-
-
-          <Chip
-            size="small"
-            variant="outlined"
-            label={
-              member.paymentStatus ||
-              "Payment Pending"
-            }
-            color={
-              String(
-                member.paymentStatus ||
-                ""
-              ).toUpperCase() ===
-              "PAID"
-                ? "success"
-                : "warning"
-            }
-          />
-
-        </Stack>
-
-
-        {/* FINANCIAL DATA */}
-
-        <Grid
-          container
-          spacing={1}
-        >
-
-          <Grid
-            item
-            xs={6}
-          >
-
-            <Box
-              sx={{
-                p: 1.1,
-
-                bgcolor: "#F8FAFC",
-
-                borderRadius: 2,
-              }}
-            >
-
-              <Typography
-                fontSize={10}
-                color="text.secondary"
-              >
-                Wallet
-              </Typography>
-
-              <Typography
-                fontSize={14}
-                fontWeight={800}
-              >
-                {money(
-                  wallet.balance
-                )}
-              </Typography>
-
-            </Box>
-
-          </Grid>
-
-
-          <Grid
-            item
-            xs={6}
-          >
-
-            <Box
-              sx={{
-                p: 1.1,
-
-                bgcolor: "#F8FAFC",
-
-                borderRadius: 2,
-              }}
-            >
-
-              <Typography
-                fontSize={10}
-                color="text.secondary"
-              >
-                Selling Points
-              </Typography>
-
-              <Typography
-                fontSize={14}
-                fontWeight={800}
-              >
-                {number(
-                  member.sellingPoints
-                )}
-              </Typography>
-
-            </Box>
-
-          </Grid>
-
-
-          <Grid
-            item
-            xs={6}
-          >
-
-            <Box
-              sx={{
-                p: 1.1,
-
-                bgcolor: "#F8FAFC",
-
-                borderRadius: 2,
-              }}
-            >
-
-              <Typography
-                fontSize={10}
-                color="text.secondary"
-              >
-                Commission
-              </Typography>
-
-              <Typography
-                fontSize={14}
-                fontWeight={800}
-              >
-                {money(
-                  commission.total
-                )}
-              </Typography>
-
-            </Box>
-
-          </Grid>
-
-
-          <Grid
-            item
-            xs={6}
-          >
-
-            <Box
-              sx={{
-                p: 1.1,
-
-                bgcolor: "#F8FAFC",
-
-                borderRadius: 2,
-              }}
-            >
-
-              <Typography
-                fontSize={10}
-                color="text.secondary"
-              >
-                Orders
-              </Typography>
-
-              <Typography
-                fontSize={14}
-                fontWeight={800}
-              >
-                {number(
-                  orders.count
-                )}
-              </Typography>
-
-            </Box>
-
-          </Grid>
-
-        </Grid>
-
-
-        {/* ACTION */}
-
-        <Button
-          fullWidth
-          variant="contained"
-          color="success"
-          startIcon={
-            <VisibilityIcon />
-          }
-          onClick={onView}
-          sx={{
-            mt: 1.5,
-
-            minHeight: 42,
-
-            borderRadius: 2,
-          }}
-        >
-          View Details
-        </Button>
-
-      </CardContent>
-
-    </Card>
-
-  );
-
-};
-
-
-/* =====================================================
-   DESKTOP MEMBER ROW
-===================================================== */
-
-const DesktopMemberRow = ({
-  member,
-  onView,
-}) => {
-
-  const wallet =
-    member.wallet || {};
-
-  const commission =
-    member.commission || {};
-
-  const orders =
-    member.orders || {};
-
-
-  return (
-
-    <Card
-      elevation={0}
-      sx={{
-        display: {
-          xs: "none",
-          md: "block",
-        },
-
-        border:
-          "1px solid #E5E7EB",
-
-        borderRadius: 2,
-
-        mb: 1,
-      }}
-    >
-
-      <Box
-        sx={{
-          display: "grid",
-
-          gridTemplateColumns:
-            "1.5fr 1fr 1fr 1fr 1fr 1fr 110px",
-
-          alignItems: "center",
-
-          gap: 1,
-
-          px: 1.5,
-
-          py: 1.4,
-        }}
-      >
-
-        <Box
-          sx={{
-            minWidth: 0,
-          }}
-        >
-
-          <Typography
-            fontWeight={700}
-            fontSize={13}
-            sx={{
-              overflowWrap:
-                "anywhere",
-            }}
-          >
-            {member.name ||
-              "-"}
-          </Typography>
-
-          <Typography
-            fontSize={10}
-            color="text.secondary"
-          >
-            {member.userId ||
-              "-"}
-          </Typography>
-
-        </Box>
-
-
-        <Typography
-          fontSize={12}
-        >
-          {member.mobile ||
-            "-"}
-        </Typography>
-
-
-        <Typography
-          fontSize={12}
-          fontWeight={700}
-        >
-          {money(
-            wallet.balance
-          )}
-        </Typography>
-
-
-        <Typography
-          fontSize={12}
-          fontWeight={700}
-        >
-          {number(
-            member.sellingPoints
-          )}
-        </Typography>
-
-
-        <Typography
-          fontSize={12}
-          fontWeight={700}
-        >
-          {money(
-            commission.total
-          )}
-        </Typography>
-
-
-        <Box>
-
-          <Typography
-            fontSize={12}
-            fontWeight={700}
-          >
-            {number(
-              orders.count
-            )}
-          </Typography>
-
-          <Typography
-            fontSize={10}
-            color="text.secondary"
-          >
-            {money(
-              orders.salesValue
-            )}
-          </Typography>
-
-        </Box>
-
-
-        <Button
-          size="small"
-          variant="outlined"
-          color="success"
-          onClick={onView}
-          sx={{
-            borderRadius: 1.5,
-
-            minHeight: 36,
-
-            whiteSpace: "nowrap",
-          }}
-        >
-          View
-        </Button>
-
-      </Box>
-
-    </Card>
-
-  );
-
-};
-
-
-/* =====================================================
-   PAGE
+   MEMBERS PAGE
 ===================================================== */
 
 const Members = () => {
@@ -821,14 +575,15 @@ const Members = () => {
   ] = useState("ALL");
 
 
-  useEffect(
-    () => {
+  /* ===================================================
+     LOAD MEMBERS
+  =================================================== */
 
-      loadMembers();
+  useEffect(() => {
 
-    },
-    []
-  );
+    loadMembers();
+
+  }, []);
 
 
   const loadMembers =
@@ -840,29 +595,72 @@ const Members = () => {
 
         setError("");
 
-
         const response =
           await getMembers();
 
+        console.log(
+          "MEMBERS RESPONSE:",
+          response
+        );
 
-        const result =
-          response?.data ||
-          response;
+
+        let result = [];
+
+
+        if (
+          Array.isArray(response)
+        ) {
+
+          result =
+            response;
+
+        }
+
+        else if (
+          Array.isArray(
+            response?.data
+          )
+        ) {
+
+          result =
+            response.data;
+
+        }
+
+        else if (
+          Array.isArray(
+            response?.data?.members
+          )
+        ) {
+
+          result =
+            response.data.members;
+
+        }
+
+        else if (
+          Array.isArray(
+            response?.members
+          )
+        ) {
+
+          result =
+            response.members;
+
+        }
 
 
         setMembers(
-          Array.isArray(result)
-            ? result
-            : []
+          result
         );
+
 
       } catch (err) {
 
         console.error(
-          "Manager members error:",
+          "MEMBERS LOAD ERROR:",
           err
         );
-
 
         setError(
           err?.response?.data?.message ||
@@ -879,118 +677,82 @@ const Members = () => {
 
 
   /* ===================================================
-     FILTER
+     FILTER MEMBERS
   =================================================== */
 
   const filteredMembers =
-    useMemo(
-      () => {
+    useMemo(() => {
 
-        const searchValue =
-          search
-            .trim()
-            .toLowerCase();
-
-
-        return members.filter(
-          (member) => {
-
-            const matchesSearch =
-              !searchValue ||
-              String(
-                member.name || ""
-              )
-                .toLowerCase()
-                .includes(
-                  searchValue
-                ) ||
-              String(
-                member.userId || ""
-              )
-                .toLowerCase()
-                .includes(
-                  searchValue
-                ) ||
-              String(
-                member.mobile || ""
-              )
-                .toLowerCase()
-                .includes(
-                  searchValue
-                );
+      const value =
+        search
+          .trim()
+          .toLowerCase();
 
 
-            let matchesStatus =
-              true;
+      return members.filter(
+        (member) => {
+
+          const matchesSearch =
+            !value ||
+
+            String(
+              member.name || ""
+            )
+              .toLowerCase()
+              .includes(value) ||
+
+            String(
+              member.userId || ""
+            )
+              .toLowerCase()
+              .includes(value) ||
+
+            String(
+              member.mobile || ""
+            )
+              .toLowerCase()
+              .includes(value);
 
 
-            if (
-              status ===
-              "ACTIVE"
-            ) {
-
-              matchesStatus =
-                member.isActive === true;
-
-            }
+          let matchesStatus =
+            true;
 
 
-            if (
-              status ===
-              "INACTIVE"
-            ) {
+          if (
+            status ===
+            "ACTIVE"
+          ) {
 
-              matchesStatus =
-                member.isActive !== true;
-
-            }
-
-
-            if (
-              status ===
-              "KYC_PENDING"
-            ) {
-
-              matchesStatus =
-                String(
-                  member.kycStatus ||
-                  ""
-                ).toUpperCase() !==
-                "VERIFIED";
-
-            }
-
-
-            if (
-              status ===
-              "PAYMENT_PENDING"
-            ) {
-
-              matchesStatus =
-                String(
-                  member.paymentStatus ||
-                  ""
-                ).toUpperCase() !==
-                "PAID";
-
-            }
-
-
-            return (
-              matchesSearch &&
-              matchesStatus
-            );
+            matchesStatus =
+              member.isActive === true;
 
           }
-        );
 
-      },
-      [
-        members,
-        search,
-        status,
-      ]
-    );
+
+          if (
+            status ===
+            "INACTIVE"
+          ) {
+
+            matchesStatus =
+              member.isActive !== true;
+
+          }
+
+
+          return (
+            matchesSearch &&
+            matchesStatus
+          );
+
+        }
+      );
+
+    }, [
+      members,
+      search,
+      status,
+    ]);
 
 
   /* ===================================================
@@ -1008,25 +770,10 @@ const Members = () => {
     ).length;
 
 
-  const pendingKyc =
+  const inactiveMembers =
     members.filter(
       (member) =>
-        String(
-          member.kycStatus ||
-          ""
-        ).toUpperCase() !==
-        "VERIFIED"
-    ).length;
-
-
-  const pendingPayment =
-    members.filter(
-      (member) =>
-        String(
-          member.paymentStatus ||
-          ""
-        ).toUpperCase() !==
-        "PAID"
+        member.isActive !== true
     ).length;
 
 
@@ -1037,25 +784,35 @@ const Members = () => {
   if (loading) {
 
     return (
-
       <Box
         sx={{
-          minHeight: "60vh",
+          width: "100%",
+
+          minHeight:
+            "60vh",
 
           display: "flex",
 
-          alignItems: "center",
+          alignItems:
+            "center",
 
-          justifyContent: "center",
+          justifyContent:
+            "center",
+
+          bgcolor:
+            "#F5F7FA",
+
+          borderRadius:
+            "0 !important",
         }}
       >
 
         <CircularProgress
           color="success"
+          size={28}
         />
 
       </Box>
-
     );
 
   }
@@ -1066,40 +823,102 @@ const Members = () => {
   =================================================== */
 
   return (
-
     <Box
       sx={{
         width: "100%",
 
-        maxWidth: 1600,
-
-        mx: "auto",
+        maxWidth: "100%",
 
         minWidth: 0,
 
-        overflowX: "hidden",
+        margin: 0,
+
+        padding: 0,
+
+        bgcolor:
+          "#F5F7FA",
+
+        overflowX:
+          "hidden",
+
+        boxSizing:
+          "border-box",
+
+        borderRadius:
+          "0 !important",
+
+        "& .MuiCard-root": {
+          borderRadius:
+            "0 !important",
+        },
+
+        "& .MuiPaper-root": {
+          borderRadius:
+            "0 !important",
+        },
       }}
     >
 
       {/* =================================================
-          HEADER
+          CONTENT
       ================================================= */}
 
       <Box
         sx={{
-          mb: 2,
+          width: "100%",
+
+          maxWidth: {
+            xs: "100%",
+            md: 1500,
+          },
+
+          margin: {
+            xs: 0,
+            md: "0 auto",
+          },
+
+          padding: {
+            xs: "8px 8px 20px",
+            sm: "12px 14px 24px",
+            md: "18px 8px 28px",
+          },
+
+          boxSizing:
+            "border-box",
+
+          overflowX:
+            "hidden",
         }}
       >
 
+        {/* =================================================
+            TITLE
+        ================================================= */}
+
         <Typography
+          component="h1"
           sx={{
+            margin: 0,
+
             fontSize: {
-              xs: 22,
-              sm: 27,
-              md: 30,
+              xs: 20,
+              sm: 25,
+              md: 29,
             },
 
+            lineHeight:
+              1.25,
+
             fontWeight: 800,
+
+            color:
+              "#202124",
+
+            mb: {
+              xs: 0.4,
+              sm: 0.7,
+              md: 1,
+            },
           }}
         >
           Members
@@ -1108,552 +927,412 @@ const Members = () => {
 
         <Typography
           sx={{
-            mt: 0.4,
-
             fontSize: {
-              xs: 12,
+              xs: 11,
               sm: 13,
             },
 
-            color: "text.secondary",
+            color:
+              "#6B7280",
+
+            lineHeight:
+              1.4,
+
+            mb: {
+              xs: 1.2,
+              sm: 1.5,
+            },
           }}
         >
-          View members assigned to you and their
-          business performance.
+          View members assigned to you.
         </Typography>
 
-      </Box>
+
+        {/* =================================================
+            ERROR
+        ================================================= */}
+
+        {error && (
+          <Alert
+            severity="error"
+            sx={{
+              mb: 1.5,
+
+              borderRadius:
+                "0 !important",
+            }}
+          >
+            {error}
+          </Alert>
+        )}
 
 
-      {/* =================================================
-          ERROR
-      ================================================= */}
+        {/* =================================================
+            SUMMARY
+        ================================================= */}
 
-      {error && (
-
-        <Alert
-          severity="error"
-          sx={{
-            mb: 2,
-            borderRadius: 2,
+        <Grid
+          container
+          spacing={{
+            xs: 1,
+            sm: 1.3,
           }}
-        >
-          {error}
-        </Alert>
-
-      )}
-
-
-      {/* =================================================
-          SUMMARY
-      ================================================= */}
-
-      <Grid
-        container
-        spacing={{
-          xs: 1.3,
-          sm: 2,
-        }}
-        sx={{
-          mb: 2,
-        }}
-      >
-
-        <Grid
-          item
-          xs={12}
-          sm={6}
-          lg={3}
-        >
-
-          <SummaryCard
-            title="Total Members"
-            value={number(totalMembers)}
-            subtitle="Managed members"
-            icon={
-              <PeopleIcon />
-            }
-          />
-
-        </Grid>
-
-
-        <Grid
-          item
-          xs={12}
-          sm={6}
-          lg={3}
-        >
-
-          <SummaryCard
-            title="Active Members"
-            value={number(activeMembers)}
-            subtitle="Currently active"
-            icon={
-              <CheckCircleIcon />
-            }
-          />
-
-        </Grid>
-
-
-        <Grid
-          item
-          xs={12}
-          sm={6}
-          lg={3}
-        >
-
-          <SummaryCard
-            title="Pending KYC"
-            value={number(pendingKyc)}
-            subtitle="Needs verification"
-            color="#F59E0B"
-            icon={
-              <PendingIcon />
-            }
-          />
-
-        </Grid>
-
-
-        <Grid
-          item
-          xs={12}
-          sm={6}
-          lg={3}
-        >
-
-          <SummaryCard
-            title="Pending Payment"
-            value={number(pendingPayment)}
-            subtitle="Payment pending"
-            color="#F59E0B"
-            icon={
-              <PaymentsIcon />
-            }
-          />
-
-        </Grid>
-
-      </Grid>
-
-
-      {/* =================================================
-          SEARCH + FILTER
-      ================================================= */}
-
-      <Card
-        elevation={0}
-        sx={{
-          border:
-            "1px solid #E5E7EB",
-
-          borderRadius: 3,
-
-          mb: 2,
-        }}
-      >
-
-        <CardContent
           sx={{
-            p: {
+            width: "100%",
+
+            margin: 0,
+
+            mb: {
               xs: 1.5,
               sm: 2,
-            },
-
-            "&:last-child": {
-              pb: {
-                xs: 1.5,
-                sm: 2,
-              },
             },
           }}
         >
 
           <Grid
-            container
-            spacing={1.2}
+            size={{
+              xs: 12,
+              sm: 4,
+            }}
           >
 
-            <Grid
-              item
-              xs={12}
-              md={8}
-            >
-
-              <TextField
-                fullWidth
-                size="small"
-                placeholder="Search name, ID, mobile..."
-                value={search}
-                onChange={(event) =>
-                  setSearch(
-                    event.target.value
-                  )
-                }
-                InputProps={{
-                  startAdornment: (
-                    <InputAdornment
-                      position="start"
-                    >
-                      <SearchIcon
-                        fontSize="small"
-                      />
-                    </InputAdornment>
-                  ),
-                }}
-              />
-
-            </Grid>
-
-
-            <Grid
-              item
-              xs={12}
-              md={4}
-            >
-
-              <FormControl
-                fullWidth
-                size="small"
-              >
-
-                <InputLabel>
-                  Status
-                </InputLabel>
-
-                <Select
-                  value={status}
-                  label="Status"
-                  onChange={(event) =>
-                    setStatus(
-                      event.target.value
-                    )
-                  }
-                >
-
-                  <MenuItem value="ALL">
-                    All Status
-                  </MenuItem>
-
-                  <MenuItem value="ACTIVE">
-                    Active
-                  </MenuItem>
-
-                  <MenuItem value="INACTIVE">
-                    Inactive
-                  </MenuItem>
-
-                  <MenuItem value="KYC_PENDING">
-                    KYC Pending
-                  </MenuItem>
-
-                  <MenuItem value="PAYMENT_PENDING">
-                    Payment Pending
-                  </MenuItem>
-
-                </Select>
-
-              </FormControl>
-
-            </Grid>
+            <SummaryCard
+              title="Total Members"
+              value={
+                totalMembers
+              }
+              subtitle="All members"
+              icon={
+                <PeopleIcon />
+              }
+            />
 
           </Grid>
 
-        </CardContent>
 
-      </Card>
-
-
-      {/* =================================================
-          RESULT COUNT
-      ================================================= */}
-
-      <Box
-        sx={{
-          display: "flex",
-
-          alignItems: "center",
-
-          justifyContent:
-            "space-between",
-
-          mb: 1.3,
-
-          gap: 1,
-        }}
-      >
-
-        <Typography
-          fontWeight={800}
-          fontSize={{
-            xs: 17,
-            sm: 19,
-          }}
-        >
-          Member List
-        </Typography>
-
-
-        <Typography
-          fontSize={12}
-          color="text.secondary"
-        >
-          {filteredMembers.length} result
-          {filteredMembers.length !== 1
-            ? "s"
-            : ""}
-        </Typography>
-
-      </Box>
-
-
-      {/* =================================================
-          EMPTY
-      ================================================= */}
-
-      {filteredMembers.length === 0 ? (
-
-        <Card
-          elevation={0}
-          sx={{
-            border:
-              "1px solid #E5E7EB",
-
-            borderRadius: 3,
-          }}
-        >
-
-          <CardContent
-            sx={{
-              py: 5,
-
-              textAlign: "center",
+          <Grid
+            size={{
+              xs: 12,
+              sm: 4,
             }}
           >
 
-            <PeopleIcon
-              sx={{
-                fontSize: 42,
-
-                color:
-                  "text.disabled",
-
-                mb: 1,
-              }}
+            <SummaryCard
+              title="Active Members"
+              value={
+                activeMembers
+              }
+              subtitle="Currently active"
+              icon={
+                <CheckCircleIcon />
+              }
             />
 
-
-            <Typography
-              fontWeight={800}
-            >
-              No members found
-            </Typography>
+          </Grid>
 
 
-            <Typography
-              fontSize={12}
-              color="text.secondary"
-              sx={{
-                mt: 0.4,
-              }}
-            >
-              Try changing your search or filters.
-            </Typography>
-
-          </CardContent>
-
-        </Card>
-
-      ) : (
-
-        <>
-          {/* =================================================
-              DESKTOP
-          ================================================= */}
-
-          <Box
-            sx={{
-              display: {
-                xs: "none",
-                md: "block",
-              },
-
-              overflowX: "auto",
-
-              pb: 1,
+          <Grid
+            size={{
+              xs: 12,
+              sm: 4,
             }}
           >
 
-            {/* HEADER */}
+            <SummaryCard
+              title="Inactive Members"
+              value={
+                inactiveMembers
+              }
+              subtitle="Currently inactive"
+              color="#F59E0B"
+              icon={
+                <PendingIcon />
+              }
+            />
 
-            <Card
-              elevation={0}
-              sx={{
-                border:
-                  "1px solid #E5E7EB",
+          </Grid>
 
-                borderRadius: 2,
+        </Grid>
 
-                mb: 1,
 
-                bgcolor: "#F8FAFC",
-              }}
-            >
+        {/* =================================================
+            SEARCH
+        ================================================= */}
 
-              <Box
+        <TextField
+          fullWidth
+          value={search}
+          onChange={(e) =>
+            setSearch(
+              e.target.value
+            )
+          }
+          placeholder="Search by name, User ID or mobile"
+          size="small"
+          InputProps={{
+            startAdornment: (
+              <InputAdornment
+                position="start"
+              >
+                <SearchIcon
+                  sx={{
+                    fontSize: 19,
+                  }}
+                />
+              </InputAdornment>
+            ),
+          }}
+          sx={{
+            mb: 1,
+
+            "& .MuiOutlinedInput-root":
+              {
+                borderRadius:
+                  "0 !important",
+
+                backgroundColor:
+                  "#FFFFFF",
+
+                fontSize: {
+                  xs: 12,
+                  sm: 13,
+                },
+              },
+          }}
+        />
+
+
+        {/* =================================================
+            STATUS FILTER
+        ================================================= */}
+
+        <FormControl
+          fullWidth
+          size="small"
+          sx={{
+            mb: 1.5,
+          }}
+        >
+
+          <InputLabel>
+            Status
+          </InputLabel>
+
+          <Select
+            value={status}
+            label="Status"
+            onChange={(e) =>
+              setStatus(
+                e.target.value
+              )
+            }
+            sx={{
+              borderRadius:
+                "0 !important",
+
+              backgroundColor:
+                "#FFFFFF",
+
+              fontSize: {
+                xs: 12,
+                sm: 13,
+              },
+            }}
+          >
+
+            <MenuItem value="ALL">
+              All Status
+            </MenuItem>
+
+            <MenuItem value="ACTIVE">
+              Active
+            </MenuItem>
+
+            <MenuItem value="INACTIVE">
+              Inactive
+            </MenuItem>
+
+          </Select>
+
+        </FormControl>
+
+
+        {/* =================================================
+            LIST HEADER
+        ================================================= */}
+
+        <Box
+          sx={{
+            display: "flex",
+
+            justifyContent:
+              "space-between",
+
+            alignItems:
+              "center",
+
+            mb: 1,
+          }}
+        >
+
+          <Typography
+            sx={{
+              fontSize: {
+                xs: 17,
+                sm: 20,
+              },
+
+              fontWeight: 800,
+            }}
+          >
+            Member List
+          </Typography>
+
+
+          <Typography
+            sx={{
+              fontSize: {
+                xs: 10,
+                sm: 12,
+              },
+
+              color:
+                "text.secondary",
+            }}
+          >
+            {filteredMembers.length} results
+          </Typography>
+
+        </Box>
+
+
+        {/* =================================================
+            MOBILE MEMBER CARDS
+        ================================================= */}
+
+        <Grid
+          container
+          spacing={{
+            xs: 1,
+            sm: 1.3,
+          }}
+          sx={{
+            width: "100%",
+
+            margin: 0,
+          }}
+        >
+
+          {filteredMembers.map(
+            (
+              member,
+              index
+            ) => (
+
+              <Grid
+                size={{
+                  xs: 12,
+                  sm: 6,
+                  md: 4,
+                }}
+                key={
+                  member._id ||
+                  member.id ||
+                  index
+                }
                 sx={{
-                  display: "grid",
-
-                  gridTemplateColumns:
-                    "1.5fr 1fr 1fr 1fr 1fr 1fr 110px",
-
-                  gap: 1,
-
-                  px: 1.5,
-
-                  py: 1.2,
+                  minWidth: 0,
                 }}
               >
 
-                <Typography fontSize={11}>
-                  Member
-                </Typography>
-
-                <Typography fontSize={11}>
-                  Mobile
-                </Typography>
-
-                <Typography fontSize={11}>
-                  Wallet
-                </Typography>
-
-                <Typography fontSize={11}>
-                  Selling Points
-                </Typography>
-
-                <Typography fontSize={11}>
-                  Commission
-                </Typography>
-
-                <Typography fontSize={11}>
-                  Orders
-                </Typography>
-
-                <Typography fontSize={11}>
-                  Action
-                </Typography>
-
-              </Box>
-
-            </Card>
-
-
-            {filteredMembers.map(
-              (
-                member,
-                index
-              ) => (
-
-                <DesktopMemberRow
-                  key={
-                    member._id ||
-                    member.id ||
-                    index
-                  }
+                <MemberCard
                   member={member}
                   onView={() =>
                     navigate(
-                      `/manager/members/${member._id || member.id}/details`
+                      `/manager/members/${
+                        member._id ||
+                        member.id
+                      }/details`
                     )
                   }
                 />
 
-              )
-            )}
+              </Grid>
 
-          </Box>
+            )
+          )}
+
+        </Grid>
 
 
-          {/* =================================================
-              MOBILE + TABLET
-          ================================================= */}
+        {/* =================================================
+            EMPTY
+        ================================================= */}
 
-          <Grid
-            container
-            spacing={1.5}
+        {filteredMembers.length === 0 && (
+
+          <Box
             sx={{
-              display: {
-                xs: "flex",
-                md: "none",
-              },
+              width: "100%",
+
+              py: 5,
+
+              textAlign:
+                "center",
+
+              backgroundColor:
+                "#FFFFFF",
+
+              border:
+                "1px solid #D9DEE3",
+
+              borderRadius:
+                "0 !important",
             }}
           >
 
-            {filteredMembers.map(
-              (
-                member,
-                index
-              ) => (
+            <Typography
+              fontWeight={700}
+            >
+              No members found
+            </Typography>
 
-                <Grid
-                  item
-                  xs={12}
-                  sm={6}
-                  key={
-                    member._id ||
-                    member.id ||
-                    index
-                  }
-                >
+          </Box>
 
-                  <MemberCard
-                    member={member}
-                    onView={() =>
-                      navigate(
-                        `/manager/members/${member._id || member.id}/details`
-                      )
-                    }
-                  />
-
-                </Grid>
-
-              )
-            )}
-
-          </Grid>
-
-        </>
-
-      )}
+        )}
 
 
-      {/* =================================================
-          READ ONLY
-      ================================================= */}
+        {/* =================================================
+            READ ONLY
+        ================================================= */}
 
-      <Alert
-        severity="info"
-        sx={{
-          mt: 2,
+        <Alert
+          severity="info"
+          sx={{
+            mt: 1.5,
 
-          borderRadius: 2,
+            borderRadius:
+              "0 !important",
 
-          fontSize: {
-            xs: 11,
-            sm: 13,
-          },
-        }}
-      >
-        Manager access is read-only. Member records
-        cannot be edited from this panel.
-      </Alert>
+            fontSize: {
+              xs: 10.5,
+              sm: 12,
+            },
+
+            py: {
+              xs: 0.5,
+              sm: 0.8,
+            },
+          }}
+        >
+          Manager access is read-only. Member records
+          cannot be edited from this panel.
+        </Alert>
+
+      </Box>
 
     </Box>
-
   );
-
 };
 
 

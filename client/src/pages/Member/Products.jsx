@@ -9,7 +9,6 @@ import {
   CardMedia,
   Chip,
   CircularProgress,
-  Container,
   Snackbar,
   Stack,
   Typography,
@@ -29,19 +28,24 @@ const Products = () => {
 
   const { addToCart } = useCart();
 
-  const [products, setProducts] = useState([]);
+  const [products, setProducts] =
+    useState([]);
 
-  const [searchTerm, setSearchTerm] = useState("");
+  const [searchTerm, setSearchTerm] =
+    useState("");
 
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] =
+    useState(true);
 
-  const [error, setError] = useState("");
+  const [error, setError] =
+    useState("");
 
-  const [snackbar, setSnackbar] = useState({
-    open: false,
-    severity: "success",
-    message: "",
-  });
+  const [snackbar, setSnackbar] =
+    useState({
+      open: false,
+      severity: "success",
+      message: "",
+    });
 
 
   // =====================================================
@@ -61,9 +65,12 @@ const Products = () => {
 
       setError("");
 
-      const data = await getProducts();
+      const data =
+        await getProducts();
 
-      setProducts(data || []);
+      setProducts(
+        data || []
+      );
 
     } catch (err) {
 
@@ -74,8 +81,8 @@ const Products = () => {
 
       setError(
         err?.response?.data?.message ||
-          err?.message ||
-          "Unable to load products."
+        err?.message ||
+        "Unable to load products."
       );
 
     } finally {
@@ -83,6 +90,7 @@ const Products = () => {
       setLoading(false);
 
     }
+
   };
 
 
@@ -90,98 +98,115 @@ const Products = () => {
   // FILTER PRODUCTS
   // =====================================================
 
-  const filteredProducts = useMemo(() => {
+  const filteredProducts =
+    useMemo(() => {
 
-    const search =
-      searchTerm.trim().toLowerCase();
+      const search =
+        searchTerm
+          .trim()
+          .toLowerCase();
 
-    if (!search) {
-      return products;
-    }
+      if (!search) {
+        return products;
+      }
 
-    return products.filter((product) => {
+      return products.filter(
+        (product) => {
 
-      return (
-        product.productName
-          ?.toLowerCase()
-          .includes(search) ||
+          return (
+            product.productName
+              ?.toLowerCase()
+              .includes(search) ||
 
-        product.category
-          ?.toLowerCase()
-          .includes(search) ||
+            product.category
+              ?.toLowerCase()
+              .includes(search) ||
 
-        product.brand
-          ?.toLowerCase()
-          .includes(search)
+            product.brand
+              ?.toLowerCase()
+              .includes(search)
+          );
+
+        }
       );
 
-    });
-
-  }, [products, searchTerm]);
+    }, [
+      products,
+      searchTerm,
+    ]);
 
 
   // =====================================================
   // CLOSE SNACKBAR
   // =====================================================
 
-  const handleCloseSnackbar = () => {
+  const handleCloseSnackbar =
+    () => {
 
-    setSnackbar((prev) => ({
-      ...prev,
-      open: false,
-    }));
+      setSnackbar(
+        (prev) => ({
+          ...prev,
+          open: false,
+        })
+      );
 
-  };
+    };
 
 
   // =====================================================
   // ADD TO CART
   // =====================================================
 
-  const handleAddToCart = async (product) => {
+  const handleAddToCart =
+    async (product) => {
 
-    try {
+      try {
 
-      const result =
-        await addToCart(product._id);
+        const result =
+          await addToCart(
+            product._id
+          );
 
-      if (result === false) {
+
+        if (result === false) {
+
+          setSnackbar({
+            open: true,
+            severity: "error",
+            message:
+              "Unable to add product to cart.",
+          });
+
+          return;
+        }
+
+
+        setSnackbar({
+          open: true,
+          severity: "success",
+          message:
+            `${product.productName} added to cart successfully.`,
+        });
+
+      } catch (err) {
+
+        console.error(
+          "Add to cart error:",
+          err
+        );
 
         setSnackbar({
           open: true,
           severity: "error",
           message:
+            err?.response?.data?.message ||
+            err?.message ||
             "Unable to add product to cart.",
         });
 
-        return;
       }
 
-      setSnackbar({
-        open: true,
-        severity: "success",
-        message:
-          `${product.productName} added to cart successfully.`,
-      });
-
-    } catch (err) {
-
-      console.error(
-        "Add to cart error:",
-        err
-      );
-
-      setSnackbar({
-        open: true,
-        severity: "error",
-        message:
-          err?.response?.data?.message ||
-          err?.message ||
-          "Unable to add product to cart.",
-      });
-
-    }
-  };
+    };
 
 
   // =====================================================
@@ -191,20 +216,33 @@ const Products = () => {
   if (loading) {
 
     return (
+
       <Box
         sx={{
           width: "100%",
+
           minHeight: "60vh",
 
           display: "flex",
 
-          justifyContent: "center",
+          justifyContent:
+            "center",
 
-          alignItems: "center",
+          alignItems:
+            "center",
+
+          margin: 0,
+
+          padding: 0,
         }}
       >
-        <CircularProgress color="success" />
+
+        <CircularProgress
+          color="success"
+        />
+
       </Box>
+
     );
 
   }
@@ -219,44 +257,109 @@ const Products = () => {
     <Box
       sx={{
         width: "100%",
+
+        maxWidth: "100%",
+
         minWidth: 0,
+
+        margin: 0,
+
+        padding: 0,
+
+        boxSizing:
+          "border-box",
+
+        overflowX:
+          "hidden",
+
+        backgroundColor:
+          "#F5F7FA",
+
+        minHeight:
+          "100vh",
+
+        borderRadius: 0,
       }}
     >
 
-      <Container
-        maxWidth={false}
+
+      {/* =================================================
+          PAGE CONTENT
+      ================================================= */}
+
+      <Box
         sx={{
           width: "100%",
 
-          maxWidth: "1600px",
-
-          mx: "auto",
-
-          px: {
-            xs: 2,
-            sm: 3,
-            md: 4,
+          maxWidth: {
+            xs: "100%",
+            sm: "100%",
+            md: "1600px",
           },
 
-          py: 3,
+          minWidth: 0,
+
+          margin: {
+            xs: 0,
+            sm: 0,
+            md: "0 auto",
+          },
+
+          padding: {
+            xs: "10px 8px 20px",
+            sm: "14px 14px 24px",
+            md: "24px",
+          },
+
+          boxSizing:
+            "border-box",
+
+          overflowX:
+            "hidden",
         }}
       >
+
 
         {/* =================================================
             HEADER
         ================================================= */}
 
-        <Box sx={{ mb: 3 }}>
+        <Box
+          sx={{
+            width: "100%",
+
+            margin: 0,
+
+            padding: 0,
+
+            mb: {
+              xs: 1.5,
+              sm: 2,
+              md: 3,
+            },
+          }}
+        >
 
           <Typography
-            variant="h4"
-            fontWeight={700}
+            component="h1"
             sx={{
+              margin: 0,
+
               fontSize: {
-                xs: "1.5rem",
-                sm: "1.75rem",
-                md: "2rem",
+                xs: "20px",
+                sm: "24px",
+                md: "30px",
               },
+
+              lineHeight: {
+                xs: "25px",
+                sm: "30px",
+                md: "36px",
+              },
+
+              fontWeight: 700,
+
+              color: "#292929",
             }}
           >
             Products
@@ -264,10 +367,22 @@ const Products = () => {
 
 
           <Typography
-            variant="body2"
-            color="text.secondary"
             sx={{
-              mt: 0.5,
+              marginTop: {
+                xs: "3px",
+                sm: "5px",
+              },
+
+              fontSize: {
+                xs: "11px",
+                sm: "13px",
+                md: "14px",
+              },
+
+              lineHeight: 1.5,
+
+              color:
+                "text.secondary",
             }}
           >
             Browse our products and shop what you need.
@@ -282,14 +397,41 @@ const Products = () => {
 
         <Box
           sx={{
-            mb: 4,
             width: "100%",
+
+            margin: 0,
+
+            padding: 0,
+
+            mb: {
+              xs: 1.5,
+              sm: 2,
+              md: 3,
+            },
+
+            boxSizing:
+              "border-box",
+
+            overflow:
+              "hidden",
+
+            "& > *": {
+              width: "100%",
+              maxWidth: "100%",
+              boxSizing:
+                "border-box",
+            },
           }}
         >
 
           <ProductSearch
-            searchTerm={searchTerm}
-            setSearchTerm={setSearchTerm}
+            searchTerm={
+              searchTerm
+            }
+
+            setSearchTerm={
+              setSearchTerm
+            }
           />
 
         </Box>
@@ -301,19 +443,38 @@ const Products = () => {
 
         {error && (
 
-          <Card
+          <Box
             sx={{
-              p: 3,
-              mb: 3,
-              borderRadius: 3,
+              width: "100%",
+
+              margin: 0,
+
+              mb: 2,
+
+              padding: 0,
             }}
           >
 
-            <Typography color="error">
-              {error}
-            </Typography>
+            <Alert
+              severity="error"
+              sx={{
+                width: "100%",
 
-          </Card>
+                boxSizing:
+                  "border-box",
+
+                borderRadius: 0,
+
+                fontSize: {
+                  xs: "12px",
+                  sm: "13px",
+                },
+              }}
+            >
+              {error}
+            </Alert>
+
+          </Box>
 
         )}
 
@@ -325,24 +486,53 @@ const Products = () => {
         {!error &&
           filteredProducts.length === 0 && (
 
-            <Card
+            <Box
               sx={{
-                p: 5,
-                textAlign: "center",
-                borderRadius: 3,
+                width: "100%",
+
+                minHeight: "160px",
+
+                display: "flex",
+
+                justifyContent:
+                  "center",
+
+                alignItems:
+                  "center",
+
+                textAlign:
+                  "center",
+
+                backgroundColor:
+                  "#FFFFFF",
+
+                border:
+                  "1px solid #E0E0E0",
+
+                borderRadius: 0,
+
+                boxSizing:
+                  "border-box",
               }}
             >
 
               <Typography
-                variant="h6"
-                color="text.secondary"
+                sx={{
+                  fontSize: {
+                    xs: "14px",
+                    sm: "16px",
+                  },
+
+                  color:
+                    "text.secondary",
+                }}
               >
                 {searchTerm
                   ? "No products found."
                   : "No products available."}
               </Typography>
 
-            </Card>
+            </Box>
 
         )}
 
@@ -358,12 +548,23 @@ const Products = () => {
               sx={{
                 display: "grid",
 
+                width: "100%",
+
+                maxWidth: "100%",
+
+                minWidth: 0,
+
+                boxSizing:
+                  "border-box",
+
                 gridTemplateColumns:
                   "repeat(4, minmax(0, 1fr))",
 
-                gap: 3,
-
-                width: "100%",
+                gap: {
+                  xs: 1,
+                  sm: 1.5,
+                  md: 2.5,
+                },
 
                 "@media (max-width: 1200px)": {
                   gridTemplateColumns:
@@ -376,8 +577,10 @@ const Products = () => {
                 },
 
                 "@media (max-width: 600px)": {
-                  gridTemplateColumns: "1fr",
-                  gap: 2,
+                  gridTemplateColumns:
+                    "repeat(2, minmax(0, 1fr))",
+
+                  gap: "8px",
                 },
               }}
             >
@@ -400,42 +603,51 @@ const Products = () => {
                   return (
 
                     <Card
-                      key={product._id}
+                      key={
+                        product._id
+                      }
+
+                      elevation={0}
+
                       sx={{
                         width: "100%",
 
-                        height: "100%",
-
                         minWidth: 0,
+
+                        height: "100%",
 
                         display: "flex",
 
                         flexDirection:
                           "column",
 
-                        borderRadius: 3,
+                        overflow:
+                          "hidden",
 
-                        overflow: "hidden",
+                        boxSizing:
+                          "border-box",
 
-                        border: "1px solid",
+                        border:
+                          "1px solid #E0E0E0",
 
-                        borderColor:
-                          "divider",
+                        borderRadius: 0,
 
                         backgroundColor:
-                          "#ffffff",
+                          "#FFFFFF",
+
+                        boxShadow:
+                          "none",
 
                         transition:
-                          "transform 0.2s ease, box-shadow 0.2s ease",
+                          "box-shadow 0.2s ease",
 
                         "&:hover": {
-                          transform:
-                            "translateY(-4px)",
-
-                          boxShadow: 5,
+                          boxShadow:
+                            "0 2px 8px rgba(0,0,0,0.08)",
                         },
                       }}
                     >
+
 
                       {/* =================================
                           IMAGE
@@ -452,7 +664,9 @@ const Products = () => {
                             "hidden",
 
                           backgroundColor:
-                            "#f5f5f5",
+                            "#F5F5F5",
+
+                          flexShrink: 0,
                         }}
                       >
 
@@ -476,13 +690,8 @@ const Products = () => {
                             objectFit:
                               "cover",
 
-                            transition:
-                              "transform 0.3s ease",
-
-                            "&:hover": {
-                              transform:
-                                "scale(1.03)",
-                            },
+                            display:
+                              "block",
                           }}
                         />
 
@@ -496,15 +705,37 @@ const Products = () => {
                       <CardContent
                         sx={{
                           flexGrow: 1,
-                          p: 2,
+
+                          minWidth: 0,
+
+                          padding: {
+                            xs: "8px",
+                            sm: "12px",
+                            md: "16px",
+                          },
+
+                          "&:last-child": {
+                            paddingBottom: {
+                              xs: "8px",
+                              sm: "12px",
+                              md: "16px",
+                            },
+                          },
                         }}
                       >
+
 
                         {/* CATEGORY */}
 
                         <Box
                           sx={{
-                            mb: 1.2,
+                            mb: {
+                              xs: 0.5,
+                              sm: 1,
+                            },
+
+                            maxWidth:
+                              "100%",
                           }}
                         >
 
@@ -522,6 +753,18 @@ const Products = () => {
                               maxWidth:
                                 "100%",
 
+                              height: {
+                                xs: "21px",
+                                sm: "24px",
+                              },
+
+                              borderRadius: 1,
+
+                              fontSize: {
+                                xs: "9px",
+                                sm: "11px",
+                              },
+
                               "& .MuiChip-label":
                                 {
                                   overflow:
@@ -532,6 +775,11 @@ const Products = () => {
 
                                   whiteSpace:
                                     "nowrap",
+
+                                  px: {
+                                    xs: 0.7,
+                                    sm: 1,
+                                  },
                                 },
                             }}
                           />
@@ -542,14 +790,17 @@ const Products = () => {
                         {/* PRODUCT NAME */}
 
                         <Typography
-                          variant="h6"
-                          fontWeight={700}
                           sx={{
-                            fontSize:
-                              "1rem",
+                            fontSize: {
+                              xs: "12px",
+                              sm: "14px",
+                              md: "16px",
+                            },
 
                             lineHeight:
-                              1.5,
+                              1.35,
+
+                            fontWeight: 700,
 
                             display:
                               "-webkit-box",
@@ -563,11 +814,16 @@ const Products = () => {
                             overflow:
                               "hidden",
 
-                            minHeight:
-                              "48px",
+                            minHeight: {
+                              xs: "32px",
+                              sm: "38px",
+                              md: "43px",
+                            },
                           }}
                         >
-                          {product.productName}
+                          {
+                            product.productName
+                          }
                         </Typography>
 
 
@@ -576,13 +832,35 @@ const Products = () => {
                         {product.brand && (
 
                           <Typography
-                            variant="body2"
-                            color="text.secondary"
                             sx={{
-                              mt: 0.5,
+                              marginTop: {
+                                xs: "3px",
+                                sm: "5px",
+                              },
+
+                              fontSize: {
+                                xs: "10px",
+                                sm: "12px",
+                              },
+
+                              lineHeight: 1.4,
+
+                              color:
+                                "text.secondary",
+
+                              overflow:
+                                "hidden",
+
+                              textOverflow:
+                                "ellipsis",
+
+                              whiteSpace:
+                                "nowrap",
                             }}
                           >
-                            {product.brand}
+                            {
+                              product.brand
+                            }
                           </Typography>
 
                         )}
@@ -591,16 +869,29 @@ const Products = () => {
                         {/* DESCRIPTION */}
 
                         <Typography
-                          variant="body2"
-                          color="text.secondary"
                           sx={{
-                            mt: 1,
+                            marginTop: {
+                              xs: "5px",
+                              sm: "8px",
+                            },
+
+                            fontSize: {
+                              xs: "9px",
+                              sm: "11px",
+                              md: "13px",
+                            },
 
                             lineHeight:
-                              1.5,
+                              1.4,
+
+                            color:
+                              "text.secondary",
 
                             display:
-                              "-webkit-box",
+                              {
+                                xs: "none",
+                                sm: "-webkit-box",
+                              },
 
                             WebkitLineClamp:
                               2,
@@ -610,27 +901,36 @@ const Products = () => {
 
                             overflow:
                               "hidden",
-
-                            minHeight:
-                              "42px",
                           }}
                         >
-                          {product.description ||
-                            "No description available."}
+                          {
+                            product.description ||
+                            "No description available."
+                          }
                         </Typography>
 
 
                         {/* PRICE */}
 
                         <Typography
-                          variant="h6"
-                          color="success.main"
-                          fontWeight={800}
                           sx={{
-                            mt: 1.5,
+                            marginTop: {
+                              xs: "7px",
+                              sm: "10px",
+                            },
 
-                            fontSize:
-                              "1.35rem",
+                            fontSize: {
+                              xs: "14px",
+                              sm: "17px",
+                              md: "20px",
+                            },
+
+                            lineHeight: 1.2,
+
+                            color:
+                              "success.main",
+
+                            fontWeight: 800,
                           }}
                         >
                           ₹
@@ -651,19 +951,33 @@ const Products = () => {
 
                       <Box
                         sx={{
-                          px: 2,
-                          pb: 2,
+                          width: "100%",
+
+                          padding: {
+                            xs: "0 8px 8px",
+                            sm: "0 12px 12px",
+                            md: "0 16px 16px",
+                          },
+
+                          boxSizing:
+                            "border-box",
                         }}
                       >
 
-                        <Stack spacing={1}>
+                        <Stack
+                          spacing={{
+                            xs: 0.7,
+                            sm: 1,
+                          }}
+                        >
 
-                          {/* =================================
-                              VIEW DETAILS
-                          ================================== */}
+
+                          {/* VIEW DETAILS */}
 
                           <Button
-                            component={Link}
+                            component={
+                              Link
+                            }
 
                             to={`/products/${product._id}`}
 
@@ -674,20 +988,35 @@ const Products = () => {
                             fullWidth
 
                             sx={{
+                              minHeight: {
+                                xs: "30px",
+                                sm: "36px",
+                              },
+
+                              padding:
+                                {
+                                  xs: "3px 5px",
+                                  sm: "5px 8px",
+                                },
+
                               textTransform:
                                 "none",
 
-                              borderRadius:
-                                2,
+                              borderRadius: 1,
+
+                              fontSize: {
+                                xs: "10px",
+                                sm: "12px",
+                              },
+
+                              lineHeight: 1.2,
                             }}
                           >
                             View Details
                           </Button>
 
 
-                          {/* =================================
-                              ADD TO CART
-                          ================================== */}
+                          {/* ADD TO CART */}
 
                           <Button
                             variant="contained"
@@ -703,11 +1032,28 @@ const Products = () => {
                             }
 
                             sx={{
+                              minHeight: {
+                                xs: "30px",
+                                sm: "36px",
+                              },
+
+                              padding:
+                                {
+                                  xs: "3px 5px",
+                                  sm: "5px 8px",
+                                },
+
                               textTransform:
                                 "none",
 
-                              borderRadius:
-                                2,
+                              borderRadius: 1,
+
+                              fontSize: {
+                                xs: "10px",
+                                sm: "12px",
+                              },
+
+                              lineHeight: 1.2,
                             }}
                           >
                             Add to Cart
@@ -728,7 +1074,7 @@ const Products = () => {
 
         )}
 
-      </Container>
+      </Box>
 
 
       {/* ===================================================
@@ -736,9 +1082,13 @@ const Products = () => {
       =================================================== */}
 
       <Snackbar
-        open={snackbar.open}
+        open={
+          snackbar.open
+        }
 
-        autoHideDuration={3000}
+        autoHideDuration={
+          3000
+        }
 
         onClose={
           handleCloseSnackbar
@@ -746,7 +1096,7 @@ const Products = () => {
 
         anchorOrigin={{
           vertical: "bottom",
-          horizontal: "right",
+          horizontal: "center",
         }}
       >
 
@@ -763,15 +1113,26 @@ const Products = () => {
 
           sx={{
             width: "100%",
+
+            borderRadius: 1,
+
+            fontSize: {
+              xs: "11px",
+              sm: "13px",
+            },
           }}
         >
-          {snackbar.message}
+          {
+            snackbar.message
+          }
         </Alert>
 
       </Snackbar>
 
     </Box>
+
   );
+
 };
 
 

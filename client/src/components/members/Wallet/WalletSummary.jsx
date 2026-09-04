@@ -53,23 +53,28 @@ const WalletSummary = ({ wallet = {} }) => {
         maxWidth: "100%",
         minWidth: 0,
         boxSizing: "border-box",
+
         mb: {
-          xs: 2,
-          sm: 2.5,
-          md: 3,
+          xs: 1,
+          sm: 1.5,
+          md: 2,
         },
+
+        overflowX: "hidden",
       }}
     >
       <Grid
         container
         spacing={{
-          xs: 1.5,
-          sm: 2,
-          md: 2.5,
+          xs: 1,
+          sm: 1.5,
+          md: 2,
         }}
         sx={{
           width: "100%",
+          maxWidth: "100%",
           margin: 0,
+          boxSizing: "border-box",
         }}
       >
         {cards.map((card) => (
@@ -81,8 +86,8 @@ const WalletSummary = ({ wallet = {} }) => {
             key={card.title}
             sx={{
               minWidth: 0,
-              width: "100%",
               boxSizing: "border-box",
+              width: "100%",
             }}
           >
             <Card
@@ -91,53 +96,64 @@ const WalletSummary = ({ wallet = {} }) => {
                 width: "100%",
                 maxWidth: "100%",
                 minWidth: 0,
-                boxSizing: "border-box",
 
-                borderRadius: {
-                  xs: 3,
-                  sm: 3.5,
-                  md: 4,
+                height: {
+                  xs: "94px",
+                  sm: "105px",
+                  md: "120px",
                 },
 
-                borderLeft: `4px solid ${card.color}`,
+                minHeight: "0 !important",
+
+                boxSizing: "border-box",
+
+                borderRadius: "0 !important",
+
+                borderLeft: {
+                  xs: `3px solid ${card.color}`,
+                  sm: `4px solid ${card.color}`,
+                },
+
+                borderTop: "1px solid #EEEEEE",
+                borderRight: "1px solid #EEEEEE",
+                borderBottom: "1px solid #EEEEEE",
 
                 backgroundColor: "#FFFFFF",
 
                 boxShadow:
-                  "0 5px 18px rgba(0, 0, 0, 0.07)",
+                  "0 2px 8px rgba(0,0,0,0.06)",
 
                 overflow: "hidden",
 
                 transition:
-                  "transform 0.2s ease, box-shadow 0.2s ease",
+                  "box-shadow 0.2s ease",
 
                 "&:hover": {
-                  transform: {
-                    xs: "none",
-                    sm: "translateY(-3px)",
-                  },
-
                   boxShadow:
-                    "0 8px 24px rgba(0, 0, 0, 0.10)",
+                    "0 4px 12px rgba(0,0,0,0.09)",
                 },
               }}
             >
               <CardContent
                 sx={{
                   width: "100%",
+                  height: "100%",
+
+                  minHeight: "0 !important",
+
                   boxSizing: "border-box",
 
-                  p: {
-                    xs: 1.75,
-                    sm: 2,
-                    md: 2.5,
+                  padding: {
+                    xs: "10px 11px !important",
+                    sm: "12px 14px !important",
+                    md: "15px 16px !important",
                   },
 
                   "&:last-child": {
-                    pb: {
-                      xs: 1.75,
-                      sm: 2,
-                      md: 2.5,
+                    paddingBottom: {
+                      xs: "10px !important",
+                      sm: "12px !important",
+                      md: "15px !important",
                     },
                   },
                 }}
@@ -146,18 +162,16 @@ const WalletSummary = ({ wallet = {} }) => {
                   direction="row"
                   alignItems="center"
                   justifyContent="space-between"
-                  spacing={{
-                    xs: 1.5,
-                    sm: 2,
-                  }}
+                  spacing={1}
                   sx={{
                     width: "100%",
+                    height: "100%",
                     minWidth: 0,
                   }}
                 >
-                  {/* ============================
+                  {/* ================================
                       TEXT
-                  ============================ */}
+                  ================================= */}
 
                   <Box
                     sx={{
@@ -168,21 +182,24 @@ const WalletSummary = ({ wallet = {} }) => {
                   >
                     <Typography
                       component="div"
-                      color="text.secondary"
                       sx={{
+                        color: "#616161",
+
                         fontSize: {
-                          xs: "0.85rem",
-                          sm: "0.9rem",
-                          md: "0.95rem",
+                          xs: "12px",
+                          sm: "13px",
+                          md: "14px",
                         },
 
-                        lineHeight: 1.35,
+                        lineHeight: 1.2,
 
-                        whiteSpace: "normal",
+                        fontWeight: 400,
 
-                        overflowWrap: "break-word",
+                        whiteSpace: "nowrap",
 
-                        wordBreak: "break-word",
+                        overflow: "hidden",
+
+                        textOverflow: "ellipsis",
                       }}
                     >
                       {card.title}
@@ -190,19 +207,24 @@ const WalletSummary = ({ wallet = {} }) => {
 
                     <Typography
                       component="div"
-                      fontWeight={700}
                       sx={{
-                        mt: 0.75,
-
-                        fontSize: {
-                          xs: "1.25rem",
-                          sm: "1.4rem",
-                          md: "1.6rem",
+                        marginTop: {
+                          xs: "5px",
+                          sm: "6px",
+                          md: "7px",
                         },
 
-                        lineHeight: 1.2,
+                        color: "#292929",
 
-                        color: "#2B2B2B",
+                        fontWeight: 700,
+
+                        fontSize: {
+                          xs: "19px",
+                          sm: "21px",
+                          md: "24px",
+                        },
+
+                        lineHeight: 1.1,
 
                         whiteSpace: "nowrap",
 
@@ -218,24 +240,28 @@ const WalletSummary = ({ wallet = {} }) => {
                     </Typography>
                   </Box>
 
-                  {/* ============================
+                  {/* ================================
                       ICON
-                  ============================ */}
+                  ================================= */}
 
                   <Box
                     sx={{
-                      flexShrink: 0,
-
                       width: {
-                        xs: 54,
-                        sm: 60,
-                        md: 66,
+                        xs: 42,
+                        sm: 50,
+                        md: 58,
                       },
 
                       height: {
-                        xs: 54,
-                        sm: 60,
-                        md: 66,
+                        xs: 42,
+                        sm: 50,
+                        md: 58,
+                      },
+
+                      minWidth: {
+                        xs: 42,
+                        sm: 50,
+                        md: 58,
                       },
 
                       borderRadius: "50%",
@@ -250,11 +276,13 @@ const WalletSummary = ({ wallet = {} }) => {
 
                       justifyContent: "center",
 
+                      flexShrink: 0,
+
                       "& svg": {
                         fontSize: {
-                          xs: 28,
-                          sm: 32,
-                          md: 36,
+                          xs: 23,
+                          sm: 27,
+                          md: 32,
                         },
                       },
                     }}

@@ -38,7 +38,6 @@ import {
 
 /* ============================================================
    ORDER STATUSES
-   These must match the backend.
 ============================================================ */
 
 const ORDER_STATUSES = [
@@ -99,72 +98,33 @@ const AdminOrders = () => {
     try {
 
       setLoading(true);
-
       setError("");
 
       const response =
         await getAdminOrders();
-
-
-      console.log(
-        "======================================"
-      );
 
       console.log(
         "ADMIN ORDERS RESPONSE:",
         response
       );
 
-      console.log(
-        "======================================"
-      );
-
-
-      /*
-       * Backend can return either:
-       *
-       * 1. Array
-       *
-       * [
-       *   {...},
-       *   {...}
-       * ]
-       *
-       * OR
-       *
-       * 2. Paginated object
-       *
-       * {
-       *   orders: [...],
-       *   pagination: {...}
-       * }
-       *
-       * Support both.
-       */
-
       let adminOrders = [];
-
 
       if (
         Array.isArray(response)
       ) {
 
-        adminOrders =
-          response;
+        adminOrders = response;
 
       } else if (
-        Array.isArray(
-          response?.orders
-        )
+        Array.isArray(response?.orders)
       ) {
 
         adminOrders =
           response.orders;
 
       } else if (
-        Array.isArray(
-          response?.data
-        )
+        Array.isArray(response?.data)
       ) {
 
         adminOrders =
@@ -181,22 +141,14 @@ const AdminOrders = () => {
 
       }
 
-
       console.log(
         "ADMIN ORDERS ARRAY:",
         adminOrders
       );
 
-      console.log(
-        "ADMIN ORDER COUNT:",
-        adminOrders.length
-      );
-
-
       setOrders(
         adminOrders
       );
-
 
     } catch (err) {
 
@@ -205,17 +157,14 @@ const AdminOrders = () => {
         err
       );
 
-
       const message =
         err?.response?.data?.message ||
         err?.message ||
         "Unable to load orders.";
 
-
       setError(
         message
       );
-
 
     } finally {
 
@@ -238,9 +187,7 @@ const AdminOrders = () => {
     try {
 
       setUpdating(true);
-
       setError("");
-
 
       const response =
         await updatePaymentStatus(
@@ -248,27 +195,15 @@ const AdminOrders = () => {
           paymentStatus
         );
 
-
       console.log(
         "PAYMENT STATUS RESPONSE:",
         response
       );
 
-
-      /*
-       * Depending on the service implementation,
-       * the returned order may be:
-       *
-       * response
-       * response.data
-       * response.data.data
-       */
-
       const updatedOrder =
         response?.data?.data ||
         response?.data ||
         response;
-
 
       setOrders(
         (previous) =>
@@ -283,7 +218,6 @@ const AdminOrders = () => {
           )
       );
 
-
       setSelectedOrder(
         (previous) =>
           previous?._id === orderId
@@ -294,7 +228,6 @@ const AdminOrders = () => {
             : previous
       );
 
-
     } catch (err) {
 
       console.error(
@@ -302,13 +235,11 @@ const AdminOrders = () => {
         err
       );
 
-
       setError(
         err?.response?.data?.message ||
         err?.message ||
         "Unable to update payment status."
       );
-
 
     } finally {
 
@@ -331,9 +262,7 @@ const AdminOrders = () => {
     try {
 
       setUpdating(true);
-
       setError("");
-
 
       const response =
         await updateOrderStatus(
@@ -341,18 +270,15 @@ const AdminOrders = () => {
           status
         );
 
-
       console.log(
         "ORDER STATUS RESPONSE:",
         response
       );
 
-
       const updatedOrder =
         response?.data?.data ||
         response?.data ||
         response;
-
 
       setOrders(
         (previous) =>
@@ -367,7 +293,6 @@ const AdminOrders = () => {
           )
       );
 
-
       setSelectedOrder(
         (previous) =>
           previous?._id === orderId
@@ -378,7 +303,6 @@ const AdminOrders = () => {
             : previous
       );
 
-
     } catch (err) {
 
       console.error(
@@ -386,13 +310,11 @@ const AdminOrders = () => {
         err
       );
 
-
       setError(
         err?.response?.data?.message ||
         err?.message ||
         "Unable to update order status."
       );
-
 
     } finally {
 
@@ -407,9 +329,7 @@ const AdminOrders = () => {
      ORDER STATUS COLOR
   ========================================================== */
 
-  const statusColor = (
-    status
-  ) => {
+  const statusColor = (status) => {
 
     switch (
       String(
@@ -433,7 +353,6 @@ const AdminOrders = () => {
       case "PLACED":
       default:
         return "warning";
-
     }
 
   };
@@ -443,9 +362,7 @@ const AdminOrders = () => {
      PAYMENT STATUS COLOR
   ========================================================== */
 
-  const paymentColor = (
-    status
-  ) => {
+  const paymentColor = (status) => {
 
     switch (
       String(
@@ -463,7 +380,6 @@ const AdminOrders = () => {
       case "PENDING":
       default:
         return "warning";
-
     }
 
   };
@@ -473,14 +389,11 @@ const AdminOrders = () => {
      FORMAT DATE
   ========================================================== */
 
-  const formatDate = (
-    date
-  ) => {
+  const formatDate = (date) => {
 
     if (!date) {
       return "-";
     }
-
 
     try {
 
@@ -506,18 +419,18 @@ const AdminOrders = () => {
   if (loading) {
 
     return (
-
       <Box
-        display="flex"
-        justifyContent="center"
-        alignItems="center"
-        py={8}
+        sx={{
+          minHeight: "120px",
+          width: "100%",
+
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+        }}
       >
-
-        <CircularProgress />
-
+        <CircularProgress size={26} />
       </Box>
-
     );
 
   }
@@ -529,16 +442,57 @@ const AdminOrders = () => {
 
   return (
 
-    <Box>
+    <Box
+      sx={{
+        width: "100%",
+        maxWidth: "100%",
+        minWidth: 0,
+
+        margin: 0,
+
+        padding: {
+          xs: "10px 8px 20px",
+          sm: "14px 14px 24px",
+          md: "20px 0 30px",
+        },
+
+        boxSizing: "border-box",
+
+        overflowX: "hidden",
+      }}
+    >
 
       {/* ======================================================
           PAGE TITLE
       ====================================================== */}
 
       <Typography
-        variant="h4"
-        fontWeight="bold"
-        mb={3}
+        component="h1"
+        sx={{
+          fontSize: {
+            xs: "21px",
+            sm: "24px",
+            md: "28px",
+          },
+
+          lineHeight: {
+            xs: "26px",
+            sm: "30px",
+            md: "34px",
+          },
+
+          fontWeight: 700,
+
+          color: "#292929",
+
+          margin: 0,
+
+          marginBottom: {
+            xs: "12px",
+            sm: "16px",
+            md: "20px",
+          },
+        }}
       >
         Orders
       </Typography>
@@ -553,8 +507,14 @@ const AdminOrders = () => {
         <Alert
           severity="error"
           sx={{
-            mb: 2,
+            mb: 1.5,
+
+            fontSize: {
+              xs: "12px",
+              sm: "13px",
+            },
           }}
+
           onClose={() =>
             setError("")
           }
@@ -571,14 +531,37 @@ const AdminOrders = () => {
 
       {orders.length === 0 ? (
 
-        <Card>
+        <Card
+          elevation={0}
+          sx={{
+            border:
+              "1px solid #E0E0E0",
 
-          <CardContent>
+            borderRadius: {
+              xs: "10px",
+              sm: "12px",
+            },
+          }}
+        >
+
+          <CardContent
+            sx={{
+              padding: {
+                xs: "25px 12px !important",
+                sm: "30px !important",
+              },
+            }}
+          >
 
             <Typography
               align="center"
               color="text.secondary"
-              py={5}
+              sx={{
+                fontSize: {
+                  xs: "13px",
+                  sm: "14px",
+                },
+              }}
             >
               No orders found.
             </Typography>
@@ -593,7 +576,21 @@ const AdminOrders = () => {
            ORDERS LIST
         ==================================================== */
 
-        <Stack spacing={2}>
+        <Box
+          sx={{
+            width: "100%",
+
+            display: "flex",
+
+            flexDirection: "column",
+
+            gap: {
+              xs: "10px",
+              sm: "12px",
+              md: "14px",
+            },
+          }}
+        >
 
           {orders.map(
             (order) => (
@@ -602,45 +599,137 @@ const AdminOrders = () => {
                 key={
                   order._id
                 }
+
+                elevation={0}
+
                 sx={{
-                  borderRadius: 3,
+                  width: "100%",
+                  maxWidth: "100%",
+
+                  border:
+                    "1px solid #E2E2E2",
+
+                  borderRadius: {
+                    xs: "16px",
+                    sm: "18px",
+                    md: "20px",
+                  },
+
+                  backgroundColor:
+                    "#FFFFFF",
+
+                  boxShadow:
+                    "0 2px 8px rgba(0,0,0,0.05)",
+
+                  overflow: "hidden",
                 }}
               >
 
-                <CardContent>
+                <CardContent
+                  sx={{
+                    padding: {
+                      xs: "12px !important",
+                      sm: "15px !important",
+                      md: "18px !important",
+                    },
+                  }}
+                >
 
-                  <Stack
-                    direction={{
-                      xs: "column",
-                      md: "row",
+                  {/* ==========================================
+                      TOP ORDER INFORMATION
+                  ========================================== */}
+
+                  <Box
+                    sx={{
+                      display: "flex",
+
+                      justifyContent:
+                        "space-between",
+
+                      alignItems:
+                        "flex-start",
+
+                      gap: "10px",
+
+                      marginBottom: {
+                        xs: "10px",
+                        sm: "12px",
+                      },
                     }}
-                    justifyContent="space-between"
-                    spacing={2}
                   >
 
-                    {/* ======================================
-                        CUSTOMER
-                    ====================================== */}
+                    {/* CUSTOMER */}
 
-                    <Box>
+                    <Box
+                      sx={{
+                        minWidth: 0,
+                        flex: 1,
+                      }}
+                    >
 
                       <Typography
-                        variant="h6"
-                        fontWeight="bold"
+                        sx={{
+                          fontSize: {
+                            xs: "15px",
+                            sm: "16px",
+                            md: "17px",
+                          },
+
+                          lineHeight: 1.2,
+
+                          fontWeight: 700,
+
+                          color: "#292929",
+
+                          wordBreak:
+                            "break-word",
+
+                          marginBottom:
+                            "3px",
+                        }}
                       >
                         {order.orderNumber ||
                           "Order"}
                       </Typography>
 
 
-                      <Typography>
+                      <Typography
+                        sx={{
+                          fontSize: {
+                            xs: "14px",
+                            sm: "14px",
+                            md: "15px",
+                          },
+
+                          lineHeight: 1.3,
+
+                          color: "#333333",
+
+                          wordBreak:
+                            "break-word",
+                        }}
+                      >
                         {order.customerName ||
                           "Customer"}
                       </Typography>
 
 
                       <Typography
-                        color="text.secondary"
+                        sx={{
+                          fontSize: {
+                            xs: "13px",
+                            sm: "13px",
+                            md: "14px",
+                          },
+
+                          lineHeight: 1.3,
+
+                          color:
+                            "text.secondary",
+
+                          marginTop:
+                            "2px",
+                        }}
                       >
                         {order.customerMobile ||
                           "-"}
@@ -649,36 +738,82 @@ const AdminOrders = () => {
 
                       <Chip
                         size="small"
+
                         label={
                           order.orderType ||
                           "ORDER"
                         }
+
                         sx={{
-                          mt: 1,
+                          marginTop: "5px",
+
+                          height: {
+                            xs: "23px",
+                            sm: "24px",
+                          },
+
+                          fontSize: {
+                            xs: "10px",
+                            sm: "11px",
+                          },
+
+                          backgroundColor:
+                            "#EEEEEE",
+
+                          "& .MuiChip-label": {
+                            padding:
+                              "0 8px",
+                          },
                         }}
                       />
 
                     </Box>
 
 
-                    {/* ======================================
-                        AMOUNT
-                    ====================================== */}
+                    {/* AMOUNT */}
 
-                    <Box>
+                    <Box
+                      sx={{
+                        flexShrink: 0,
+
+                        textAlign: "right",
+                      }}
+                    >
 
                       <Typography
-                        variant="caption"
-                        color="text.secondary"
+                        sx={{
+                          fontSize: {
+                            xs: "11px",
+                            sm: "12px",
+                          },
+
+                          lineHeight: 1.2,
+
+                          color:
+                            "text.secondary",
+
+                          marginBottom:
+                            "2px",
+                        }}
                       >
                         Amount
                       </Typography>
 
 
                       <Typography
-                        variant="h6"
-                        fontWeight="bold"
-                        color="success.main"
+                        sx={{
+                          fontSize: {
+                            xs: "16px",
+                            sm: "18px",
+                          },
+
+                          lineHeight: 1.2,
+
+                          fontWeight: 700,
+
+                          color:
+                            "#43A047",
+                        }}
                       >
                         ₹
                         {Number(
@@ -691,101 +826,238 @@ const AdminOrders = () => {
 
                     </Box>
 
+                  </Box>
 
-                    {/* ======================================
-                        PAYMENT
-                    ====================================== */}
+
+                  <Divider
+                    sx={{
+                      marginBottom: {
+                        xs: "9px",
+                        sm: "11px",
+                      },
+                    }}
+                  />
+
+
+                  {/* ==========================================
+                      STATUS SECTION
+                  ========================================== */}
+
+                  <Box
+                    sx={{
+                      display: "grid",
+
+                      gridTemplateColumns: {
+                        xs: "1fr 1fr",
+                        sm: "1fr 1fr",
+                      },
+
+                      columnGap: {
+                        xs: "10px",
+                        sm: "15px",
+                      },
+
+                      rowGap: {
+                        xs: "8px",
+                        sm: "10px",
+                      },
+
+                      marginBottom: {
+                        xs: "10px",
+                        sm: "12px",
+                      },
+                    }}
+                  >
+
+                    {/* PAYMENT */}
 
                     <Box>
 
                       <Typography
-                        variant="caption"
-                        color="text.secondary"
+                        sx={{
+                          fontSize: {
+                            xs: "11px",
+                            sm: "12px",
+                          },
+
+                          lineHeight: 1.2,
+
+                          color:
+                            "text.secondary",
+
+                          marginBottom:
+                            "4px",
+                        }}
                       >
                         Payment
                       </Typography>
 
 
-                      <Box>
+                      <Chip
+                        size="small"
 
-                        <Chip
-                          size="small"
-                          label={
-                            order.paymentStatus ||
-                            "PENDING"
-                          }
-                          color={
-                            paymentColor(
-                              order.paymentStatus
-                            )
-                          }
-                        />
+                        label={
+                          order.paymentStatus ||
+                          "PENDING"
+                        }
 
-                      </Box>
+                        color={
+                          paymentColor(
+                            order.paymentStatus
+                          )
+                        }
+
+                        sx={{
+                          height: {
+                            xs: "24px",
+                            sm: "25px",
+                          },
+
+                          fontSize: {
+                            xs: "10px",
+                            sm: "11px",
+                          },
+
+                          fontWeight: 500,
+
+                          "& .MuiChip-label": {
+                            padding:
+                              "0 9px",
+                          },
+                        }}
+                      />
 
                     </Box>
 
 
-                    {/* ======================================
-                        ORDER STATUS
-                    ====================================== */}
+                    {/* ORDER STATUS */}
 
                     <Box>
 
                       <Typography
-                        variant="caption"
-                        color="text.secondary"
+                        sx={{
+                          fontSize: {
+                            xs: "11px",
+                            sm: "12px",
+                          },
+
+                          lineHeight: 1.2,
+
+                          color:
+                            "text.secondary",
+
+                          marginBottom:
+                            "4px",
+                        }}
                       >
                         Order Status
                       </Typography>
 
 
-                      <Box>
+                      <Chip
+                        size="small"
 
-                        <Chip
-                          size="small"
-                          label={
-                            order.status ||
-                            "PLACED"
-                          }
-                          color={
-                            statusColor(
-                              order.status
-                            )
-                          }
-                        />
-
-                      </Box>
-
-                    </Box>
-
-
-                    {/* ======================================
-                        VIEW DETAILS
-                    ====================================== */}
-
-                    <Box
-                      display="flex"
-                      alignItems="center"
-                    >
-
-                      <Button
-                        variant="outlined"
-                        startIcon={
-                          <Visibility />
+                        label={
+                          order.status ||
+                          "PLACED"
                         }
-                        onClick={() =>
-                          setSelectedOrder(
-                            order
+
+                        color={
+                          statusColor(
+                            order.status
                           )
                         }
-                      >
-                        View Details
-                      </Button>
+
+                        sx={{
+                          height: {
+                            xs: "24px",
+                            sm: "25px",
+                          },
+
+                          fontSize: {
+                            xs: "10px",
+                            sm: "11px",
+                          },
+
+                          fontWeight: 500,
+
+                          "& .MuiChip-label": {
+                            padding:
+                              "0 9px",
+                          },
+                        }}
+                      />
 
                     </Box>
 
-                  </Stack>
+                  </Box>
+
+
+                  {/* ==========================================
+                      VIEW DETAILS
+                  ========================================== */}
+
+                  <Button
+                    variant="outlined"
+
+                    startIcon={
+                      <Visibility
+                        sx={{
+                          fontSize: {
+                            xs: "17px",
+                            sm: "18px",
+                          },
+                        }}
+                      />
+                    }
+
+                    onClick={() =>
+                      setSelectedOrder(
+                        order
+                      )
+                    }
+
+                    sx={{
+                      minHeight: {
+                        xs: "36px",
+                        sm: "38px",
+                      },
+
+                      padding: {
+                        xs: "5px 12px",
+                        sm: "6px 14px",
+                      },
+
+                      borderRadius: {
+                        xs: "10px",
+                        sm: "10px",
+                      },
+
+                      borderColor:
+                        "#A5D6A7",
+
+                      color:
+                        "#2E7D32",
+
+                      textTransform:
+                        "none",
+
+                      fontSize: {
+                        xs: "12px",
+                        sm: "13px",
+                      },
+
+                      "&:hover": {
+                        borderColor:
+                          "#66BB6A",
+
+                        backgroundColor:
+                          "#F1F8F1",
+                      },
+                    }}
+                  >
+                    View Details
+                  </Button>
 
                 </CardContent>
 
@@ -794,13 +1066,13 @@ const AdminOrders = () => {
             )
           )}
 
-        </Stack>
+        </Box>
 
       )}
 
 
       {/* ======================================================
-          ADMIN ORDER DETAILS DIALOG
+          ORDER DETAILS DIALOG
       ====================================================== */}
 
       <Dialog
@@ -809,13 +1081,38 @@ const AdminOrders = () => {
             selectedOrder
           )
         }
+
         onClose={() =>
           setSelectedOrder(
             null
           )
         }
+
         fullWidth
+
         maxWidth="md"
+
+        PaperProps={{
+          sx: {
+            margin: {
+              xs: "10px",
+              sm: "20px",
+            },
+
+            width: {
+              xs: "calc(100% - 20px)",
+              sm: "auto",
+            },
+
+            maxHeight:
+              "calc(100% - 20px)",
+
+            borderRadius: {
+              xs: "14px",
+              sm: "16px",
+            },
+          },
+        }}
       >
 
         {selectedOrder && (
@@ -826,10 +1123,22 @@ const AdminOrders = () => {
                 TITLE
             ================================================== */}
 
-            <DialogTitle>
+            <DialogTitle
+              sx={{
+                padding: {
+                  xs: "14px 16px",
+                  sm: "18px 24px",
+                },
 
+                fontSize: {
+                  xs: "18px",
+                  sm: "20px",
+                },
+
+                fontWeight: 700,
+              }}
+            >
               Order Details
-
             </DialogTitle>
 
 
@@ -837,18 +1146,37 @@ const AdminOrders = () => {
                 CONTENT
             ================================================== */}
 
-            <DialogContent>
+            <DialogContent
+              dividers
+              sx={{
+                padding: {
+                  xs: "14px",
+                  sm: "20px 24px",
+                },
+              }}
+            >
 
-              <Stack spacing={2}>
+              <Stack
+                spacing={{
+                  xs: 1.2,
+                  sm: 2,
+                }}
+              >
 
-
-                {/* ==============================================
-                    ORDER NUMBER
-                ============================================== */}
+                {/* ORDER NUMBER */}
 
                 <Typography
-                  variant="h6"
-                  fontWeight="bold"
+                  sx={{
+                    fontSize: {
+                      xs: "15px",
+                      sm: "18px",
+                    },
+
+                    fontWeight: 700,
+
+                    wordBreak:
+                      "break-word",
+                  }}
                 >
                   {
                     selectedOrder.orderNumber ||
@@ -857,130 +1185,182 @@ const AdminOrders = () => {
                 </Typography>
 
 
-                {/* ==============================================
-                    CUSTOMER
-                ============================================== */}
+                {/* CUSTOMER */}
 
-                <Typography>
-
+                <Typography
+                  sx={{
+                    fontSize: {
+                      xs: "13px",
+                      sm: "14px",
+                    },
+                  }}
+                >
                   Customer:{" "}
-
                   <strong>
                     {
                       selectedOrder.customerName ||
                       "-"
                     }
                   </strong>
-
                 </Typography>
 
 
-                <Typography>
-
+                <Typography
+                  sx={{
+                    fontSize: {
+                      xs: "13px",
+                      sm: "14px",
+                    },
+                  }}
+                >
                   Mobile:{" "}
-
                   {
                     selectedOrder.customerMobile ||
                     "-"
                   }
-
                 </Typography>
 
 
-                <Typography>
+                <Typography
+                  sx={{
+                    fontSize: {
+                      xs: "13px",
+                      sm: "14px",
+                    },
 
+                    wordBreak:
+                      "break-word",
+                  }}
+                >
                   Email:{" "}
-
                   {
                     selectedOrder.customerEmail ||
                     "-"
                   }
-
                 </Typography>
 
 
-                <Typography>
-
+                <Typography
+                  sx={{
+                    fontSize: {
+                      xs: "13px",
+                      sm: "14px",
+                    },
+                  }}
+                >
                   Order Type:{" "}
-
                   {
                     selectedOrder.orderType ||
                     "-"
                   }
-
                 </Typography>
 
 
-                <Typography>
-
+                <Typography
+                  sx={{
+                    fontSize: {
+                      xs: "13px",
+                      sm: "14px",
+                    },
+                  }}
+                >
                   Date:{" "}
-
                   {
                     formatDate(
                       selectedOrder.createdAt ||
                       selectedOrder.placedAt
                     )
                   }
-
                 </Typography>
 
 
                 <Divider />
 
 
-                {/* ==============================================
-                    DELIVERY DETAILS
-                ============================================== */}
+                {/* DELIVERY DETAILS */}
 
                 <Typography
-                  variant="h6"
-                  fontWeight="bold"
+                  sx={{
+                    fontSize: {
+                      xs: "15px",
+                      sm: "17px",
+                    },
+
+                    fontWeight: 700,
+                  }}
                 >
                   Delivery Details
                 </Typography>
 
 
-                <Typography>
-
+                <Typography
+                  sx={{
+                    fontSize: {
+                      xs: "13px",
+                      sm: "14px",
+                    },
+                  }}
+                >
                   {
-                    selectedOrder.deliveryDetails
+                    selectedOrder
+                      .deliveryDetails
                       ?.name ||
                     selectedOrder.customerName ||
                     "-"
                   }
-
                 </Typography>
 
 
-                <Typography>
-
+                <Typography
+                  sx={{
+                    fontSize: {
+                      xs: "13px",
+                      sm: "14px",
+                    },
+                  }}
+                >
                   Mobile:{" "}
-
                   {
-                    selectedOrder.deliveryDetails
+                    selectedOrder
+                      .deliveryDetails
                       ?.mobile ||
                     selectedOrder.customerMobile ||
                     "-"
                   }
-
                 </Typography>
 
 
-                <Typography>
+                <Typography
+                  sx={{
+                    fontSize: {
+                      xs: "13px",
+                      sm: "14px",
+                    },
 
+                    wordBreak:
+                      "break-word",
+                  }}
+                >
                   {
-                    selectedOrder.deliveryDetails
+                    selectedOrder
+                      .deliveryDetails
                       ?.address ||
                     "-"
                   }
-
                 </Typography>
 
 
-                <Typography>
-
+                <Typography
+                  sx={{
+                    fontSize: {
+                      xs: "13px",
+                      sm: "14px",
+                    },
+                  }}
+                >
                   {
-                    selectedOrder.deliveryDetails
+                    selectedOrder
+                      .deliveryDetails
                       ?.city ||
                     "-"
                   }
@@ -988,37 +1368,46 @@ const AdminOrders = () => {
                   {" - "}
 
                   {
-                    selectedOrder.deliveryDetails
+                    selectedOrder
+                      .deliveryDetails
                       ?.state ||
                     "-"
                   }
-
                 </Typography>
 
 
-                <Typography>
-
+                <Typography
+                  sx={{
+                    fontSize: {
+                      xs: "13px",
+                      sm: "14px",
+                    },
+                  }}
+                >
                   Pincode:{" "}
-
                   {
-                    selectedOrder.deliveryDetails
+                    selectedOrder
+                      .deliveryDetails
                       ?.pincode ||
                     "-"
                   }
-
                 </Typography>
 
 
                 <Divider />
 
 
-                {/* ==============================================
-                    ORDER ITEMS
-                ============================================== */}
+                {/* ORDER ITEMS */}
 
                 <Typography
-                  variant="h6"
-                  fontWeight="bold"
+                  sx={{
+                    fontSize: {
+                      xs: "15px",
+                      sm: "17px",
+                    },
+
+                    fontWeight: 700,
+                  }}
                 >
                   Order Items
                 </Typography>
@@ -1040,18 +1429,31 @@ const AdminOrders = () => {
                           item._id ||
                           index
                         }
+
                         sx={{
-                          p: 1.5,
-                          bgcolor:
+                          padding: {
+                            xs: "9px",
+                            sm: "12px",
+                          },
+
+                          backgroundColor:
                             "#F7F7F7",
-                          borderRadius: 2,
+
+                          borderRadius:
+                            "8px",
                         }}
                       >
 
                         <Typography
-                          fontWeight="bold"
-                        >
+                          sx={{
+                            fontSize: {
+                              xs: "13px",
+                              sm: "14px",
+                            },
 
+                            fontWeight: 700,
+                          }}
+                        >
                           {
                             item.productName ||
                             item.productId?.productName ||
@@ -1059,30 +1461,34 @@ const AdminOrders = () => {
                             item.name ||
                             "Product"
                           }
-
                         </Typography>
 
 
                         <Typography
-                          variant="body2"
+                          sx={{
+                            fontSize: {
+                              xs: "12px",
+                              sm: "13px",
+                            },
+                          }}
                         >
-
                           Quantity:{" "}
-
                           {
                             item.quantity ||
                             0
                           }
-
                         </Typography>
 
 
                         <Typography
-                          variant="body2"
+                          sx={{
+                            fontSize: {
+                              xs: "12px",
+                              sm: "13px",
+                            },
+                          }}
                         >
-
                           Price: ₹
-
                           {
                             Number(
                               item.price ||
@@ -1091,16 +1497,18 @@ const AdminOrders = () => {
                               "en-IN"
                             )
                           }
-
                         </Typography>
 
 
                         <Typography
-                          variant="body2"
+                          sx={{
+                            fontSize: {
+                              xs: "12px",
+                              sm: "13px",
+                            },
+                          }}
                         >
-
                           Total: ₹
-
                           {
                             Number(
                               item.total ||
@@ -1118,7 +1526,6 @@ const AdminOrders = () => {
                               "en-IN"
                             )
                           }
-
                         </Typography>
 
                       </Box>
@@ -1131,6 +1538,12 @@ const AdminOrders = () => {
 
                   <Typography
                     color="text.secondary"
+                    sx={{
+                      fontSize: {
+                        xs: "12px",
+                        sm: "13px",
+                      },
+                    }}
                   >
                     No item details available.
                   </Typography>
@@ -1141,14 +1554,17 @@ const AdminOrders = () => {
                 <Divider />
 
 
-                {/* ==============================================
-                    ORDER TOTAL
-                ============================================== */}
+                {/* ORDER TOTAL */}
 
-                <Typography>
-
+                <Typography
+                  sx={{
+                    fontSize: {
+                      xs: "13px",
+                      sm: "14px",
+                    },
+                  }}
+                >
                   Subtotal: ₹
-
                   {
                     Number(
                       selectedOrder.subtotal ||
@@ -1157,14 +1573,18 @@ const AdminOrders = () => {
                       "en-IN"
                     )
                   }
-
                 </Typography>
 
 
-                <Typography>
-
+                <Typography
+                  sx={{
+                    fontSize: {
+                      xs: "13px",
+                      sm: "14px",
+                    },
+                  }}
+                >
                   Delivery: ₹
-
                   {
                     Number(
                       selectedOrder.deliveryCharge ||
@@ -1173,18 +1593,23 @@ const AdminOrders = () => {
                       "en-IN"
                     )
                   }
-
                 </Typography>
 
 
                 <Typography
-                  variant="h6"
-                  fontWeight="bold"
-                  color="success.main"
+                  sx={{
+                    fontSize: {
+                      xs: "16px",
+                      sm: "18px",
+                    },
+
+                    fontWeight: 700,
+
+                    color:
+                      "success.main",
+                  }}
                 >
-
                   Final Amount: ₹
-
                   {
                     Number(
                       selectedOrder.finalAmount ||
@@ -1193,49 +1618,53 @@ const AdminOrders = () => {
                       "en-IN"
                     )
                   }
-
                 </Typography>
 
 
-                <Typography>
-
+                <Typography
+                  sx={{
+                    fontSize: {
+                      xs: "13px",
+                      sm: "14px",
+                    },
+                  }}
+                >
                   Selling Points:{" "}
-
                   {
                     Number(
                       selectedOrder.sellingPoints ||
                       0
                     )
                   }
-
                 </Typography>
 
 
                 <Divider />
 
 
-                {/* ==============================================
-                    PAYMENT CONTROL
-                ============================================== */}
+                {/* PAYMENT CONTROL */}
 
                 <FormControl
                   fullWidth
+                  size="small"
                 >
 
                   <InputLabel>
                     Payment Status
                   </InputLabel>
 
-
                   <Select
                     label="Payment Status"
+
                     value={
                       selectedOrder.paymentStatus ||
                       "PENDING"
                     }
+
                     disabled={
                       updating
                     }
+
                     onChange={(
                       event
                     ) =>
@@ -1255,6 +1684,7 @@ const AdminOrders = () => {
                           key={
                             status
                           }
+
                           value={
                             status
                           }
@@ -1272,28 +1702,29 @@ const AdminOrders = () => {
                 </FormControl>
 
 
-                {/* ==============================================
-                    ORDER STATUS CONTROL
-                ============================================== */}
+                {/* ORDER STATUS CONTROL */}
 
                 <FormControl
                   fullWidth
+                  size="small"
                 >
 
                   <InputLabel>
                     Order Status
                   </InputLabel>
 
-
                   <Select
                     label="Order Status"
+
                     value={
                       selectedOrder.status ||
                       "PLACED"
                     }
+
                     disabled={
                       updating
                     }
+
                     onChange={(
                       event
                     ) =>
@@ -1313,6 +1744,7 @@ const AdminOrders = () => {
                           key={
                             status
                           }
+
                           value={
                             status
                           }
@@ -1330,9 +1762,7 @@ const AdminOrders = () => {
                 </FormControl>
 
 
-                {/* ==============================================
-                    PAID MESSAGE
-                ============================================== */}
+                {/* PAID MESSAGE */}
 
                 {
                   String(
@@ -1346,6 +1776,13 @@ const AdminOrders = () => {
                       icon={
                         <CheckCircle />
                       }
+
+                      sx={{
+                        fontSize: {
+                          xs: "12px",
+                          sm: "13px",
+                        },
+                      }}
                     >
                       Payment received.
                     </Alert>
@@ -1353,17 +1790,21 @@ const AdminOrders = () => {
                   )
                 }
 
-
               </Stack>
 
             </DialogContent>
 
 
-            {/* ==================================================
-                CLOSE
-            ================================================== */}
+            {/* CLOSE */}
 
-            <DialogActions>
+            <DialogActions
+              sx={{
+                padding: {
+                  xs: "8px 12px",
+                  sm: "12px 20px",
+                },
+              }}
+            >
 
               <Button
                 onClick={() =>
@@ -1371,6 +1812,16 @@ const AdminOrders = () => {
                     null
                   )
                 }
+
+                sx={{
+                  fontSize: {
+                    xs: "12px",
+                    sm: "13px",
+                  },
+
+                  textTransform:
+                    "none",
+                }}
               >
                 Close
               </Button>

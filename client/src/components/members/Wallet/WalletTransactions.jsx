@@ -14,45 +14,108 @@ import {
   AccountBalanceWallet,
 } from "@mui/icons-material";
 
+
 const WalletTransactions = ({
   transactions = [],
 }) => {
 
+  /* =====================================================
+     EMPTY STATE
+  ===================================================== */
+
   if (!transactions.length) {
 
     return (
-
       <Card
-        elevation={2}
+        elevation={0}
         sx={{
-          borderRadius: 4,
+          width: "100%",
+          maxWidth: "100%",
+
+          borderRadius: "0 !important",
+
+          border: "1px solid #E8E8E8",
+
+          backgroundColor: "#FFFFFF",
+
+          boxShadow: "none",
+
+          boxSizing: "border-box",
         }}
       >
 
-        <CardContent>
+        <CardContent
+          sx={{
+            padding: {
+              xs: "14px",
+              sm: "20px",
+              md: "24px",
+            },
+
+            "&:last-child": {
+              paddingBottom: {
+                xs: "14px",
+                sm: "20px",
+                md: "24px",
+              },
+            },
+          }}
+        >
 
           <Box
-            py={8}
-            textAlign="center"
+            sx={{
+              py: {
+                xs: 3,
+                sm: 4,
+              },
+
+              textAlign: "center",
+            }}
           >
 
             <AccountBalanceWallet
               sx={{
-                fontSize: 70,
+                fontSize: {
+                  xs: 45,
+                  sm: 55,
+                  md: 65,
+                },
+
                 color: "#BDBDBD",
               }}
             />
 
             <Typography
-              variant="h6"
-              mt={2}
-              fontWeight="bold"
+              fontWeight={700}
+              sx={{
+                marginTop: {
+                  xs: "8px",
+                  sm: "12px",
+                },
+
+                fontSize: {
+                  xs: "16px",
+                  sm: "18px",
+                },
+
+                lineHeight: 1.25,
+              }}
             >
               No Transactions Found
             </Typography>
 
             <Typography
               color="text.secondary"
+              sx={{
+                marginTop: "5px",
+
+                fontSize: {
+                  xs: "12px",
+                  sm: "14px",
+                },
+
+                lineHeight: 1.4,
+              }}
             >
               Your wallet transactions will appear here.
             </Typography>
@@ -62,196 +125,445 @@ const WalletTransactions = ({
         </CardContent>
 
       </Card>
-
     );
 
   }
 
-  return (
 
+  /* =====================================================
+     TRANSACTION LIST
+  ===================================================== */
+
+  return (
     <Card
-      elevation={2}
+      elevation={0}
       sx={{
-        borderRadius: 4,
+        width: "100%",
+        maxWidth: "100%",
+
+        borderRadius: "0 !important",
+
+        border: "1px solid #E8E8E8",
+
+        backgroundColor: "#FFFFFF",
+
+        boxShadow: "none",
+
+        boxSizing: "border-box",
+
+        overflow: "hidden",
       }}
     >
 
-      <CardContent>
+      <CardContent
+        sx={{
+          padding: {
+            xs: "12px",
+            sm: "18px",
+            md: "22px",
+          },
+
+          "&:last-child": {
+            paddingBottom: {
+              xs: "12px",
+              sm: "18px",
+              md: "22px",
+            },
+          },
+        }}
+      >
+
+        {/* =================================================
+            HEADER
+        ================================================= */}
 
         <Typography
-          variant="h5"
-          fontWeight="bold"
-          mb={3}
+          fontWeight={700}
+          sx={{
+            margin: 0,
+
+            marginBottom: {
+              xs: "10px",
+              sm: "14px",
+              md: "18px",
+            },
+
+            fontSize: {
+              xs: "18px",
+              sm: "20px",
+              md: "23px",
+            },
+
+            lineHeight: 1.25,
+          }}
         >
           Wallet Transactions
         </Typography>
 
-        {
 
-          transactions.map((item) => (
+        {/* =================================================
+            TRANSACTIONS
+        ================================================= */}
 
-            <Box
-              key={item._id}
-              sx={{
-                mb: 3,
-                p: 2,
-                borderRadius: 3,
-                transition: ".3s",
+        <Box
+          sx={{
+            width: "100%",
 
-                "&:hover": {
-                  bgcolor: "#FAFAFA",
-                },
-              }}
-            >
+            display: "flex",
 
-              <Stack
-                direction={{
-                  xs: "column",
-                  md: "row",
+            flexDirection: "column",
+
+            gap: {
+              xs: "7px",
+              sm: "9px",
+            },
+          }}
+        >
+
+          {transactions.map((item, index) => {
+
+            const isCredit =
+              item.type === "CREDIT";
+
+            return (
+
+              <Box
+                key={
+                  item?._id ||
+                  `transaction-${index}`
+                }
+                sx={{
+                  width: "100%",
+
+                  boxSizing: "border-box",
+
+                  padding: {
+                    xs: "9px 10px",
+                    sm: "12px",
+                    md: "14px",
+                  },
+
+                  border: "1px solid #E8E8E8",
+
+                  borderRadius: {
+                    xs: "10px",
+                    sm: "12px",
+                  },
+
+                  backgroundColor: "#FFFFFF",
+
+                  overflow: "hidden",
+
+                  transition:
+                    "background-color 0.2s ease",
+
+                  "&:hover": {
+                    backgroundColor: "#FAFAFA",
+                  },
                 }}
-                justifyContent="space-between"
-                spacing={2}
               >
+
+                {/* =================================================
+                    TOP ROW
+                ================================================= */}
 
                 <Stack
                   direction="row"
-                  spacing={2}
                   alignItems="center"
+                  justifyContent="space-between"
+                  spacing={1}
+                  sx={{
+                    width: "100%",
+                    minWidth: 0,
+                  }}
                 >
 
-                  <Box
+                  {/* ===============================================
+                      LEFT SIDE
+                  =============================================== */}
+
+                  <Stack
+                    direction="row"
+                    alignItems="center"
+                    spacing={{
+                      xs: 1,
+                      sm: 1.5,
+                    }}
                     sx={{
-                      width: 55,
-                      height: 55,
-                      borderRadius: "50%",
-                      bgcolor:
-                        item.type === "CREDIT"
-                          ? "#E8F5E9"
-                          : "#FFEBEE",
-                      display: "flex",
-                      justifyContent: "center",
-                      alignItems: "center",
+                      minWidth: 0,
+                      flex: 1,
                     }}
                   >
 
-                    {
+                    {/* ICON */}
 
-                      item.type === "CREDIT"
+                    <Box
+                      sx={{
+                        width: {
+                          xs: 38,
+                          sm: 45,
+                        },
 
-                        ?
+                        height: {
+                          xs: 38,
+                          sm: 45,
+                        },
+
+                        minWidth: {
+                          xs: 38,
+                          sm: 45,
+                        },
+
+                        borderRadius: "50%",
+
+                        bgcolor: isCredit
+                          ? "#E8F5E9"
+                          : "#FFEBEE",
+
+                        display: "flex",
+
+                        justifyContent: "center",
+
+                        alignItems: "center",
+
+                        flexShrink: 0,
+                      }}
+                    >
+
+                      {isCredit ? (
 
                         <ArrowDownward
                           sx={{
                             color: "#2E7D32",
+
+                            fontSize: {
+                              xs: 20,
+                              sm: 24,
+                            },
                           }}
                         />
 
-                        :
+                      ) : (
 
                         <ArrowUpward
                           sx={{
                             color: "#D32F2F",
+
+                            fontSize: {
+                              xs: 20,
+                              sm: 24,
+                            },
                           }}
                         />
 
-                    }
+                      )}
 
-                  </Box>
+                    </Box>
 
-                  <Box>
 
-                    <Typography
-                      fontWeight="bold"
+                    {/* DESCRIPTION */}
+
+                    <Box
+                      sx={{
+                        minWidth: 0,
+
+                        overflow: "hidden",
+                      }}
                     >
-                      {item.description}
-                    </Typography>
 
-                    <Typography
-                      color="text.secondary"
-                    >
-                      {new Date(
-                        item.createdAt
-                      ).toLocaleDateString()}
-                    </Typography>
+                      <Typography
+                        fontWeight={700}
+                        sx={{
+                          fontSize: {
+                            xs: "13px",
+                            sm: "14px",
+                            md: "15px",
+                          },
 
-                  </Box>
+                          lineHeight: 1.25,
 
-                </Stack>
+                          whiteSpace: "nowrap",
 
-                <Stack
-                  spacing={1}
-                  alignItems="flex-end"
-                >
+                          overflow: "hidden",
 
-                  <Typography
-                    variant="h6"
-                    fontWeight="bold"
-                    color={
-                      item.type === "CREDIT"
-                        ? "success.main"
-                        : "error.main"
-                    }
+                          textOverflow: "ellipsis",
+                        }}
+                      >
+                        {item.description}
+                      </Typography>
+
+
+                      <Typography
+                        color="text.secondary"
+                        sx={{
+                          marginTop: "3px",
+
+                          fontSize: {
+                            xs: "10px",
+                            sm: "11px",
+                            md: "12px",
+                          },
+
+                          lineHeight: 1.2,
+
+                          whiteSpace: "nowrap",
+
+                          overflow: "hidden",
+
+                          textOverflow: "ellipsis",
+                        }}
+                      >
+                        {new Date(
+                          item.createdAt
+                        ).toLocaleDateString(
+                          "en-IN"
+                        )}
+                      </Typography>
+
+                    </Box>
+
+                  </Stack>
+
+
+                  {/* ===============================================
+                      RIGHT SIDE
+                  =============================================== */}
+
+                  <Stack
+                    alignItems="flex-end"
+                    spacing={{
+                      xs: 0.5,
+                      sm: 0.7,
+                    }}
+                    sx={{
+                      flexShrink: 0,
+                    }}
                   >
 
-                    {
+                    <Typography
+                      fontWeight={700}
+                      sx={{
+                        color: isCredit
+                          ? "#2E7D32"
+                          : "#D32F2F",
 
-                      item.type === "CREDIT"
+                        fontSize: {
+                          xs: "15px",
+                          sm: "17px",
+                          md: "19px",
+                        },
 
-                        ?
+                        lineHeight: 1.1,
 
-                        "+"
+                        whiteSpace: "nowrap",
+                      }}
+                    >
 
-                        :
+                      {isCredit
+                        ? "+"
+                        : "-"}
 
-                        "-"
+                      ₹
+                      {Number(
+                        item.amount || 0
+                      ).toLocaleString(
+                        "en-IN"
+                      )}
 
-                    }
+                    </Typography>
 
-                    ₹{item.amount}
 
-                  </Typography>
+                    <Chip
+                      size="small"
+                      color={
+                        isCredit
+                          ? "success"
+                          : "error"
+                      }
+                      label={
+                        item.type
+                      }
+                      sx={{
+                        height: {
+                          xs: "21px",
+                          sm: "23px",
+                        },
 
-                  <Chip
-                    size="small"
-                    color={
-                      item.type === "CREDIT"
-                        ? "success"
-                        : "error"
-                    }
-                    label={item.type}
-                  />
+                        fontSize: {
+                          xs: "9px",
+                          sm: "10px",
+                        },
+
+                        fontWeight: 600,
+                      }}
+                    />
+
+                  </Stack>
 
                 </Stack>
 
-              </Stack>
 
-              <Typography
-                mt={2}
-                color="text.secondary"
-              >
-                Balance :
-                {" "}
-                ₹{item.balanceAfter}
-              </Typography>
+                {/* =================================================
+                    BALANCE
+                ================================================= */}
 
-              <Divider
-                sx={{
-                  mt: 3,
-                }}
-              />
+                <Typography
+                  color="text.secondary"
+                  sx={{
+                    marginTop: {
+                      xs: "7px",
+                      sm: "9px",
+                    },
 
-            </Box>
+                    fontSize: {
+                      xs: "10px",
+                      sm: "11px",
+                      md: "12px",
+                    },
 
-          ))
+                    lineHeight: 1.2,
+                  }}
+                >
+                  Balance: ₹
+                  {Number(
+                    item.balanceAfter || 0
+                  ).toLocaleString(
+                    "en-IN"
+                  )}
+                </Typography>
 
-        }
+
+                {/* =================================================
+                    DIVIDER
+                ================================================= */}
+
+                {index <
+                  transactions.length - 1 && (
+                  <Divider
+                    sx={{
+                      marginTop: {
+                        xs: "8px",
+                        sm: "10px",
+                      },
+
+                      display: "none",
+                    }}
+                  />
+                )}
+
+              </Box>
+
+            );
+
+          })}
+
+        </Box>
 
       </CardContent>
 
     </Card>
-
   );
-
 };
+
 
 export default WalletTransactions;

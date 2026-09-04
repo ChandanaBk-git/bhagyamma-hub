@@ -14,29 +14,33 @@ import {
   ReceiptLong,
 } from "@mui/icons-material";
 
+
 const CommissionSummary = ({
   commissions = [],
 }) => {
+
   const today = new Date();
 
   let todayCommission = 0;
   let monthlyCommission = 0;
   let lifetimeCommission = 0;
 
-  // =====================================================
-  // CALCULATE COMMISSIONS
-  // =====================================================
+
+  /* =====================================================
+     CALCULATE COMMISSIONS
+  ===================================================== */
 
   commissions.forEach((item) => {
+
     const amount = Number(
       item?.commissionAmount || 0
     );
 
     lifetimeCommission += amount;
 
-    const commissionDate = new Date(
-      item?.createdAt
-    );
+    const commissionDate =
+      new Date(item?.createdAt);
+
 
     if (
       commissionDate.toDateString() ===
@@ -44,6 +48,7 @@ const CommissionSummary = ({
     ) {
       todayCommission += amount;
     }
+
 
     if (
       commissionDate.getMonth() ===
@@ -53,13 +58,16 @@ const CommissionSummary = ({
     ) {
       monthlyCommission += amount;
     }
+
   });
 
-  // =====================================================
-  // CARDS
-  // =====================================================
+
+  /* =====================================================
+     CARDS
+  ===================================================== */
 
   const cards = [
+
     {
       title: "Today's Commission",
       subtitle: "Updated Today",
@@ -96,32 +104,49 @@ const CommissionSummary = ({
       bg: "#F3E5F5",
       isMoney: false,
     },
+
   ];
 
-  // =====================================================
-  // UI
-  // =====================================================
+
+  /* =====================================================
+     UI
+  ===================================================== */
 
   return (
+
     <Grid
       container
       spacing={{
-        xs: 2,
-        sm: 2,
-        md: 2.5,
+        xs: 1,
+        sm: 1.5,
+        md: 2,
       }}
       sx={{
         width: "100%",
         maxWidth: "100%",
+
         margin: 0,
-        mb: {
-          xs: 0,
-          sm: 0,
-          md: 0,
+
+        boxSizing: "border-box",
+
+        "& > .MuiGrid-item": {
+          paddingTop: {
+            xs: "4px",
+            sm: "6px",
+            md: "8px",
+          },
+
+          paddingLeft: {
+            xs: "4px",
+            sm: "6px",
+            md: "8px",
+          },
         },
       }}
     >
+
       {cards.map((card) => (
+
         <Grid
           key={card.title}
           size={{
@@ -130,130 +155,161 @@ const CommissionSummary = ({
             md: 3,
           }}
         >
+
           <Card
             elevation={0}
             sx={{
               width: "100%",
+
               minWidth: 0,
 
-              minHeight: {
-                xs: 135,
-                sm: 150,
-                md: 160,
+              height: {
+                xs: "94px",
+                sm: "110px",
+                md: "125px",
               },
 
-              height: "100%",
+              minHeight: "0 !important",
 
               boxSizing: "border-box",
 
-              borderRadius: {
-                xs: "24px",
-                sm: "26px",
-                md: "28px",
-              },
+              borderRadius: "0 !important",
 
               borderLeft: {
-                xs: `4px solid ${card.color}`,
-                sm: `5px solid ${card.color}`,
+                xs: `3px solid ${card.color}`,
+                sm: `4px solid ${card.color}`,
               },
+
+              borderTop: "1px solid #EEEEEE",
+              borderRight: "1px solid #EEEEEE",
+              borderBottom: "1px solid #EEEEEE",
 
               backgroundColor: "#FFFFFF",
 
               boxShadow:
-                "0 6px 20px rgba(0,0,0,0.08)",
+                "0 2px 8px rgba(0,0,0,0.06)",
 
               overflow: "hidden",
 
               transition:
-                "transform 0.2s ease, box-shadow 0.2s ease",
+                "box-shadow 0.2s ease",
 
               "&:hover": {
-                transform: {
-                  xs: "none",
-                  sm: "translateY(-4px)",
-                },
-
                 boxShadow:
-                  "0 10px 28px rgba(0,0,0,0.12)",
+                  "0 4px 12px rgba(0,0,0,0.09)",
               },
             }}
           >
+
             <CardContent
               sx={{
-                height: "100%",
-                boxSizing: "border-box",
+                width: "100%",
 
-                p: {
-                  xs: 2,
-                  sm: 2.25,
-                  md: 2.5,
+                height: "100%",
+
+                minHeight: "0 !important",
+
+                padding: {
+                  xs: "10px 11px !important",
+                  sm: "13px 14px !important",
+                  md: "16px !important",
                 },
 
+                boxSizing: "border-box",
+
                 "&:last-child": {
-                  pb: {
-                    xs: 2,
-                    sm: 2.25,
-                    md: 2.5,
+                  paddingBottom: {
+                    xs: "10px !important",
+                    sm: "13px !important",
+                    md: "16px !important",
                   },
                 },
               }}
             >
+
               <Stack
                 direction="row"
                 justifyContent="space-between"
                 alignItems="center"
-                spacing={1.5}
+                spacing={1}
                 sx={{
+                  width: "100%",
                   height: "100%",
                   minWidth: 0,
                 }}
               >
+
+                {/* ======================================
+                    TEXT
+                ====================================== */}
+
                 <Box
                   sx={{
                     minWidth: 0,
+
                     flex: 1,
+
                     overflow: "hidden",
                   }}
                 >
+
+                  {/* TITLE */}
+
                   <Typography
                     sx={{
                       color: "#616161",
 
                       fontSize: {
-                        xs: "0.9rem",
-                        sm: "0.95rem",
-                        md: "1rem",
+                        xs: "12px",
+                        sm: "13px",
+                        md: "14px",
                       },
 
-                      lineHeight: 1.3,
+                      lineHeight: 1.2,
 
-                      whiteSpace: "normal",
+                      fontWeight: 400,
 
-                      wordBreak: "break-word",
+                      whiteSpace: "nowrap",
+
+                      overflow: "hidden",
+
+                      textOverflow: "ellipsis",
                     }}
                   >
                     {card.title}
                   </Typography>
 
+
+                  {/* VALUE */}
+
                   <Typography
                     sx={{
-                      mt: 0.75,
+                      marginTop: {
+                        xs: "5px",
+                        sm: "6px",
+                        md: "7px",
+                      },
 
                       color: "#292929",
 
                       fontWeight: 700,
 
                       fontSize: {
-                        xs: "1.25rem",
-                        sm: "1.4rem",
-                        md: "1.5rem",
+                        xs: "19px",
+                        sm: "21px",
+                        md: "24px",
                       },
 
-                      lineHeight: 1.2,
+                      lineHeight: 1.1,
 
-                      wordBreak: "break-word",
+                      whiteSpace: "nowrap",
+
+                      overflow: "hidden",
+
+                      textOverflow: "ellipsis",
                     }}
                   >
+
                     {card.isMoney === false
                       ? card.value
                       : `₹${Number(
@@ -261,45 +317,65 @@ const CommissionSummary = ({
                         ).toLocaleString(
                           "en-IN"
                         )}`}
+
                   </Typography>
+
+
+                  {/* SUBTITLE */}
 
                   <Typography
                     sx={{
-                      mt: 0.5,
+                      marginTop: {
+                        xs: "4px",
+                        sm: "5px",
+                        md: "6px",
+                      },
 
                       color: "#757575",
 
                       fontSize: {
-                        xs: "0.72rem",
-                        sm: "0.78rem",
-                        md: "0.82rem",
+                        xs: "10px",
+                        sm: "11px",
+                        md: "12px",
                       },
 
-                      lineHeight: 1.3,
+                      lineHeight: 1.2,
+
+                      whiteSpace: "nowrap",
+
+                      overflow: "hidden",
+
+                      textOverflow: "ellipsis",
                     }}
                   >
                     {card.subtitle}
                   </Typography>
+
                 </Box>
+
+
+                {/* ======================================
+                    ICON
+                ====================================== */}
 
                 <Box
                   sx={{
                     width: {
-                      xs: 54,
-                      sm: 62,
-                      md: 68,
+                      xs: 42,
+                      sm: 50,
+                      md: 58,
                     },
 
                     height: {
-                      xs: 54,
-                      sm: 62,
-                      md: 68,
+                      xs: 42,
+                      sm: 50,
+                      md: 58,
                     },
 
                     minWidth: {
-                      xs: 54,
-                      sm: 62,
-                      md: 68,
+                      xs: 42,
+                      sm: 50,
+                      md: 58,
                     },
 
                     borderRadius: "50%",
@@ -318,22 +394,31 @@ const CommissionSummary = ({
 
                     "& svg": {
                       fontSize: {
-                        xs: 30,
-                        sm: 34,
-                        md: 38,
+                        xs: 23,
+                        sm: 27,
+                        md: 32,
                       },
                     },
                   }}
                 >
                   {card.icon}
                 </Box>
+
               </Stack>
+
             </CardContent>
+
           </Card>
+
         </Grid>
+
       ))}
+
     </Grid>
+
   );
+
 };
+
 
 export default CommissionSummary;

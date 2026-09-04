@@ -3,7 +3,6 @@ import {
   Card,
   CardContent,
   Chip,
-  Divider,
   Stack,
   Typography,
 } from "@mui/material";
@@ -13,75 +12,88 @@ import {
   Groups,
 } from "@mui/icons-material";
 
+
 const CommissionTable = ({
   commissions = [],
 }) => {
-  // =====================================================
-  // EMPTY STATE
-  // =====================================================
+
+  /* =====================================================
+     EMPTY STATE
+  ===================================================== */
 
   if (commissions.length === 0) {
+
     return (
       <Card
         elevation={0}
         sx={{
           width: "100%",
+          maxWidth: "100%",
+
           boxSizing: "border-box",
 
-          borderRadius: {
-            xs: "24px",
-            sm: "26px",
-            md: "28px",
-          },
+          borderRadius: "0 !important",
 
-          border: "1px solid #E8F5E9",
+          border: "1px solid #E8E8E8",
 
           backgroundColor: "#FFFFFF",
 
-          boxShadow:
-            "0 6px 20px rgba(0,0,0,0.07)",
+          boxShadow: "none",
+
+          overflow: "hidden",
         }}
       >
+
         <CardContent
           sx={{
-            p: {
-              xs: 2,
-              sm: 2.5,
-              md: 3,
+            padding: {
+              xs: "14px",
+              sm: "20px",
+              md: "24px",
+            },
+
+            "&:last-child": {
+              paddingBottom: {
+                xs: "14px",
+                sm: "20px",
+                md: "24px",
+              },
             },
           }}
         >
+
           <Typography
             fontWeight={700}
             sx={{
               fontSize: {
-                xs: "1.15rem",
-                sm: "1.3rem",
-                md: "1.5rem",
+                xs: "18px",
+                sm: "20px",
+                md: "23px",
               },
+
+              lineHeight: 1.25,
             }}
           >
             Commission History
           </Typography>
 
+
           <Box
             sx={{
               py: {
-                xs: 5,
-                sm: 6,
+                xs: 4,
+                sm: 5,
               },
-
-              px: 1,
 
               textAlign: "center",
             }}
           >
+
             <CurrencyRupee
               sx={{
                 fontSize: {
-                  xs: 55,
-                  sm: 65,
-                  md: 70,
+                  xs: 48,
+                  sm: 60,
                 },
 
                 color: "#C8E6C9",
@@ -90,13 +102,13 @@ const CommissionTable = ({
 
             <Typography
               sx={{
-                mt: 2,
+                mt: 1.5,
+
                 fontWeight: 700,
 
                 fontSize: {
-                  xs: "1rem",
-                  sm: "1.1rem",
-                  md: "1.25rem",
+                  xs: "15px",
+                  sm: "17px",
                 },
               }}
             >
@@ -106,27 +118,31 @@ const CommissionTable = ({
             <Typography
               color="text.secondary"
               sx={{
-                mt: 1,
+                mt: 0.7,
 
                 fontSize: {
-                  xs: "0.82rem",
-                  sm: "0.9rem",
+                  xs: "12px",
+                  sm: "14px",
                 },
+
+                lineHeight: 1.5,
               }}
             >
-              Start referring members and
-              purchasing products to earn
-              your first commission.
+              Start referring members and purchasing
+              products to earn your first commission.
             </Typography>
+
           </Box>
+
         </CardContent>
       </Card>
     );
   }
 
-  // =====================================================
-  // COMMISSION HISTORY
-  // =====================================================
+
+  /* =====================================================
+     COMMISSION HISTORY
+  ===================================================== */
 
   return (
     <Card
@@ -137,337 +153,430 @@ const CommissionTable = ({
 
         boxSizing: "border-box",
 
-        borderRadius: {
-          xs: "24px",
-          sm: "26px",
-          md: "28px",
-        },
+        borderRadius: "0 !important",
 
-        border: "1px solid #E8F5E9",
+        border: "1px solid #E8E8E8",
 
         backgroundColor: "#FFFFFF",
 
-        boxShadow:
-          "0 6px 20px rgba(0,0,0,0.07)",
+        boxShadow: "none",
 
         overflow: "hidden",
       }}
     >
+
       <CardContent
         sx={{
-          p: {
-            xs: 1.5,
-            sm: 2.5,
-            md: 3,
+          padding: {
+            xs: "12px",
+            sm: "18px",
+            md: "22px",
           },
 
           "&:last-child": {
-            pb: {
-              xs: 1.5,
-              sm: 2.5,
-              md: 3,
+            paddingBottom: {
+              xs: "12px",
+              sm: "18px",
+              md: "22px",
             },
           },
         }}
       >
+
         {/* =================================================
             HEADER
         ================================================= */}
 
         <Stack
-          direction={{
-            xs: "column",
-            sm: "row",
-          }}
+          direction="row"
           justifyContent="space-between"
-          alignItems={{
-            xs: "flex-start",
-            sm: "center",
+          alignItems="center"
+          spacing={1}
+          sx={{
+            marginBottom: {
+              xs: "12px",
+              sm: "16px",
+              md: "20px",
+            },
           }}
-          spacing={1.5}
-          mb={3}
         >
+
           <Typography
             fontWeight={700}
             sx={{
               fontSize: {
-                xs: "1.15rem",
-                sm: "1.3rem",
-                md: "1.5rem",
+                xs: "18px",
+                sm: "20px",
+                md: "23px",
               },
+
+              lineHeight: 1.25,
             }}
           >
             Commission History
           </Typography>
+
 
           <Chip
             label={`${commissions.length} Records`}
             color="success"
             size="small"
             sx={{
+              height: {
+                xs: "24px",
+                sm: "26px",
+              },
+
+              fontSize: {
+                xs: "11px",
+                sm: "12px",
+              },
+
               fontWeight: 500,
             }}
           />
+
         </Stack>
+
 
         {/* =================================================
             COMMISSION RECORDS
         ================================================= */}
 
-        {commissions.map((item, index) => (
-          <Box
-            key={item?._id || index}
-            sx={{
-              width: "100%",
-              boxSizing: "border-box",
+        <Box
+          sx={{
+            width: "100%",
+            maxWidth: "100%",
 
-              mb:
-                index === commissions.length - 1
-                  ? 0
-                  : 2,
+            boxSizing: "border-box",
 
-              p: {
-                xs: 1.5,
-                sm: 2,
-              },
+            display: "flex",
+            flexDirection: "column",
 
-              borderRadius: {
-                xs: "18px",
-                sm: "20px",
-              },
+            gap: {
+              xs: "8px",
+              sm: "10px",
+            },
+          }}
+        >
 
-              backgroundColor: "#FFFFFF",
+          {commissions.map((item, index) => (
 
-              border: "1px solid #EEEEEE",
+            <Box
+              key={item?._id || index}
+              sx={{
+                width: "100%",
+                maxWidth: "100%",
 
-              transition:
-                "background-color .2s ease, transform .2s ease",
+                boxSizing: "border-box",
 
-              "&:hover": {
-                bgcolor: "#FAFAFA",
-
-                transform: {
-                  xs: "none",
-                  sm: "translateY(-2px)",
+                padding: {
+                  xs: "10px 12px",
+                  sm: "14px",
                 },
-              },
-            }}
-          >
-            {/* =================================================
-                USER + COMMISSION AMOUNT
-            ================================================= */}
 
-            <Stack
-              direction={{
-                xs: "column",
-                sm: "row",
+                borderRadius: {
+                  xs: "14px",
+                  sm: "16px",
+                },
+
+                backgroundColor: "#FFFFFF",
+
+                border: "1px solid #E5E5E5",
+
+                overflow: "hidden",
+
+                "&:hover": {
+                  backgroundColor: "#FAFAFA",
+                },
               }}
-              justifyContent="space-between"
-              alignItems={{
-                xs: "stretch",
-                sm: "center",
-              }}
-              spacing={2}
             >
-              {/* USER */}
+
+              {/* ==========================================
+                  USER + AMOUNT
+              ========================================== */}
 
               <Stack
                 direction="row"
-                spacing={1.5}
+                justifyContent="space-between"
                 alignItems="center"
+                spacing={1}
                 sx={{
+                  width: "100%",
                   minWidth: 0,
                 }}
               >
-                <Box
-                  sx={{
-                    width: {
-                      xs: 50,
-                      sm: 60,
-                    },
 
-                    height: {
-                      xs: 50,
-                      sm: 60,
-                    },
+                {/* USER */}
 
-                    minWidth: {
-                      xs: 50,
-                      sm: 60,
-                    },
-
-                    bgcolor: "#E8F5E9",
-
-                    borderRadius: "50%",
-
-                    display: "flex",
-
-                    justifyContent: "center",
-
-                    alignItems: "center",
-
-                    boxShadow:
-                      "0 4px 10px rgba(0,0,0,.06)",
-                  }}
-                >
-                  <Groups
-                    sx={{
-                      color: "#2E7D32",
-
-                      fontSize: {
-                        xs: 25,
-                        sm: 30,
-                      },
-                    }}
-                  />
-                </Box>
-
-                <Box
+                <Stack
+                  direction="row"
+                  spacing={1}
+                  alignItems="center"
                   sx={{
                     minWidth: 0,
+                    flex: 1,
                   }}
                 >
-                  <Typography
-                    fontWeight={700}
+
+                  {/* USER ICON */}
+
+                  <Box
                     sx={{
-                      fontSize: {
-                        xs: "0.95rem",
-                        sm: "1rem",
+                      width: {
+                        xs: 42,
+                        sm: 48,
                       },
 
-                      overflowWrap:
-                        "anywhere",
-                    }}
-                  >
-                    {item?.fromUser?.name ||
-                      "System"}
-                  </Typography>
-
-                  <Typography
-                    color="text.secondary"
-                    sx={{
-                      fontSize: {
-                        xs: "0.78rem",
-                        sm: "0.85rem",
+                      height: {
+                        xs: 42,
+                        sm: 48,
                       },
 
-                      overflowWrap:
-                        "anywhere",
+                      minWidth: {
+                        xs: 42,
+                        sm: 48,
+                      },
+
+                      bgcolor: "#E8F5E9",
+
+                      borderRadius: "50%",
+
+                      display: "flex",
+
+                      justifyContent: "center",
+
+                      alignItems: "center",
                     }}
                   >
-                    {item?.fromUser?.userId ||
-                      "-"}
-                  </Typography>
-                </Box>
+
+                    <Groups
+                      sx={{
+                        color: "#2E7D32",
+
+                        fontSize: {
+                          xs: 21,
+                          sm: 25,
+                        },
+                      }}
+                    />
+
+                  </Box>
+
+
+                  {/* USER DETAILS */}
+
+                  <Box
+                    sx={{
+                      minWidth: 0,
+                      overflow: "hidden",
+                    }}
+                  >
+
+                    <Typography
+                      fontWeight={700}
+                      sx={{
+                        fontSize: {
+                          xs: "14px",
+                          sm: "15px",
+                        },
+
+                        lineHeight: 1.25,
+
+                        whiteSpace: "nowrap",
+
+                        overflow: "hidden",
+
+                        textOverflow: "ellipsis",
+                      }}
+                    >
+                      {item?.fromUser?.name ||
+                        "System"}
+                    </Typography>
+
+
+                    <Typography
+                      color="text.secondary"
+                      sx={{
+                        fontSize: {
+                          xs: "11px",
+                          sm: "12px",
+                        },
+
+                        lineHeight: 1.3,
+
+                        marginTop: "2px",
+
+                        whiteSpace: "nowrap",
+
+                        overflow: "hidden",
+
+                        textOverflow: "ellipsis",
+                      }}
+                    >
+                      {item?.fromUser?.userId ||
+                        "-"}
+                    </Typography>
+
+                  </Box>
+
+                </Stack>
+
+
+                {/* COMMISSION */}
+
+                <Typography
+                  fontWeight={700}
+                  color="success.main"
+                  sx={{
+                    fontSize: {
+                      xs: "19px",
+                      sm: "21px",
+                      md: "23px",
+                    },
+
+                    lineHeight: 1,
+
+                    whiteSpace: "nowrap",
+
+                    flexShrink: 0,
+                  }}
+                >
+                  ₹
+                  {Number(
+                    item?.commissionAmount || 0
+                  ).toLocaleString("en-IN")}
+                </Typography>
+
               </Stack>
 
-              {/* COMMISSION AMOUNT */}
 
-              <Typography
-                fontWeight={700}
-                color="success.main"
+              {/* ==========================================
+                  LEVEL / PERCENTAGE / STATUS
+              ========================================== */}
+
+              <Stack
+                direction="row"
+                spacing={0.7}
+                alignItems="center"
+                flexWrap="wrap"
+                useFlexGap
                 sx={{
-                  fontSize: {
-                    xs: "1.25rem",
-                    sm: "1.4rem",
-                    md: "1.5rem",
+                  marginTop: {
+                    xs: "8px",
+                    sm: "10px",
                   },
-
-                  textAlign: {
-                    xs: "left",
-                    sm: "right",
-                  },
-
-                  whiteSpace: "nowrap",
                 }}
               >
-                ₹
-                {Number(
-                  item?.commissionAmount || 0
-                ).toLocaleString("en-IN")}
-              </Typography>
-            </Stack>
 
-            {/* =================================================
-                LEVEL / PERCENTAGE / STATUS
-            ================================================= */}
+                <Chip
+                  size="small"
+                  label={`L${item?.level ?? 0}`}
+                  color="primary"
+                  sx={{
+                    height: {
+                      xs: "23px",
+                      sm: "25px",
+                    },
 
-            <Stack
-              direction="row"
-              spacing={1}
-              mt={2}
-              flexWrap="wrap"
-              useFlexGap
-            >
-              <Chip
-                size="small"
-                label={`L${item?.level ?? 0}`}
-                color="primary"
-              />
+                    fontSize: {
+                      xs: "11px",
+                      sm: "12px",
+                    },
+                  }}
+                />
 
-<Chip
-  size="small"
-  label={`${Number(
-    item?.percentage ??
-      item?.commissionPercent ??
-      item?.commissionPercentage ??
-      item?.commissionRate ??
-      item?.percent ??
-      item?.rate ??
-      0
-  )}%`}
-  sx={{
-    bgcolor: "#FFF3E0",
-    color: "#EF6C00",
-  }}
-/>
 
-              <Chip
-                size="small"
-                label="Paid"
-                color="success"
-              />
-            </Stack>
+                <Chip
+                  size="small"
+                  label={`${Number(
+                    item?.percentage ??
+                    item?.commissionPercent ??
+                    item?.commissionPercentage ??
+                    item?.commissionRate ??
+                    item?.percent ??
+                    item?.rate ??
+                    0
+                  )}%`}
+                  sx={{
+                    height: {
+                      xs: "23px",
+                      sm: "25px",
+                    },
 
-            {/* =================================================
-                DATE
-            ================================================= */}
+                    bgcolor: "#FFF3E0",
 
-            <Typography
-              color="text.secondary"
-              sx={{
-                mt: 1.5,
+                    color: "#EF6C00",
 
-                fontSize: {
-                  xs: "0.8rem",
-                  sm: "0.88rem",
-                },
-              }}
-            >
-              Earned On:{" "}
-              {item?.createdAt
-                ? new Date(
-                    item.createdAt
-                  ).toLocaleDateString("en-IN")
-                : "-"}
-            </Typography>
+                    fontSize: {
+                      xs: "11px",
+                      sm: "12px",
+                    },
+                  }}
+                />
 
-            {/* =================================================
-                DIVIDER
-            ================================================= */}
 
-            {index !== commissions.length - 1 && (
-              <Divider
+                <Chip
+                  size="small"
+                  label="Paid"
+                  color="success"
+                  sx={{
+                    height: {
+                      xs: "23px",
+                      sm: "25px",
+                    },
+
+                    fontSize: {
+                      xs: "11px",
+                      sm: "12px",
+                    },
+                  }}
+                />
+
+              </Stack>
+
+
+              {/* ==========================================
+                  DATE
+              ========================================== */}
+
+              <Typography
+                color="text.secondary"
                 sx={{
-                  mt: 2.5,
+                  marginTop: {
+                    xs: "7px",
+                    sm: "9px",
+                  },
+
+                  fontSize: {
+                    xs: "11px",
+                    sm: "12px",
+                  },
+
+                  lineHeight: 1.3,
                 }}
-              />
-            )}
-          </Box>
-        ))}
+              >
+                Earned On:{" "}
+                {item?.createdAt
+                  ? new Date(
+                      item.createdAt
+                    ).toLocaleDateString(
+                      "en-IN"
+                    )
+                  : "-"}
+              </Typography>
+
+            </Box>
+
+          ))}
+
+        </Box>
+
       </CardContent>
+
     </Card>
   );
 };
+
 
 export default CommissionTable;

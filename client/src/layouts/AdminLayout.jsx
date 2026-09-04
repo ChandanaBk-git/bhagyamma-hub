@@ -3,126 +3,213 @@ import { Outlet } from "react-router-dom";
 
 import {
   Box,
-  Toolbar,
   CssBaseline,
-  useTheme,
+  Toolbar,
   useMediaQuery,
+  useTheme,
 } from "@mui/material";
 
 import Sidebar from "../components/sidebar/Sidebar";
 import TopNavbar from "../components/navbar/TopNavbar";
 
 const drawerWidth = 260;
+const collapsedDrawerWidth = 80;
 
 const AdminLayout = () => {
   const theme = useTheme();
 
-  // Mobile Detection
-  const isMobile = useMediaQuery(theme.breakpoints.down("md"));
+  // =========================================
+  // MOBILE DETECTION
+  // =========================================
 
-  // Sidebar Open / Close
+  const isMobile = useMediaQuery(
+    theme.breakpoints.down("md")
+  );
+
+  // =========================================
+  // MOBILE SIDEBAR
+  // =========================================
+
   const [mobileOpen, setMobileOpen] = useState(false);
 
-  // Desktop Collapse
+  // =========================================
+  // DESKTOP SIDEBAR COLLAPSE
+  // =========================================
+
   const [collapsed, setCollapsed] = useState(false);
 
-  // Open Drawer
+  // =========================================
+  // MOBILE DRAWER TOGGLE
+  // =========================================
+
   const handleDrawerToggle = () => {
-    setMobileOpen(!mobileOpen);
+    setMobileOpen((prev) => !prev);
   };
 
-  // Collapse Sidebar
+  // =========================================
+  // DESKTOP SIDEBAR COLLAPSE
+  // =========================================
+
   const handleCollapse = () => {
-    setCollapsed(!collapsed);
+    setCollapsed((prev) => !prev);
   };
 
-  // Drawer Width
-  const currentDrawerWidth = collapsed ? 80 : drawerWidth;
+  // =========================================
+  // SIDEBAR WIDTH
+  // =========================================
+
+  const currentDrawerWidth = collapsed
+    ? collapsedDrawerWidth
+    : drawerWidth;
+
   return (
-  <>
-    <CssBaseline />
+    <>
+      <CssBaseline />
 
-    <Box
-      sx={{
-        display: "flex",
-        minHeight: "100vh",
-        bgcolor: "#F5F7FA",
-      }}
-    >
-      {/* Sidebar */}
-
-      <Sidebar
-        drawerWidth={currentDrawerWidth}
-        mobileOpen={mobileOpen}
-        handleDrawerToggle={handleDrawerToggle}
-        collapsed={collapsed}
-      />
-
-      {/* Main Content */}
+      {/* =========================================
+          MAIN APPLICATION CONTAINER
+      ========================================= */}
 
       <Box
-        component="main"
         sx={{
-          flexGrow: 1,
-
-          width: {
-            md: `calc(100% - ${currentDrawerWidth}px)`,
-          },
-
-          ml: {
-            md: `${currentDrawerWidth}px`,
-          },
-
-          transition: "all .3s ease",
-
           display: "flex",
 
-          flexDirection: "column",
+          width: "100%",
+          maxWidth: "100%",
 
           minHeight: "100vh",
+
+          bgcolor: "#F5F7FA",
+
+          overflowX: "hidden",
+
+          boxSizing: "border-box",
         }}
       >
-        {/* Top Navbar */}
+        {/* =========================================
+            SIDEBAR
+        ========================================= */}
 
-        <TopNavbar
+        <Sidebar
           drawerWidth={currentDrawerWidth}
-          collapsed={collapsed}
-          handleCollapse={handleCollapse}
+          mobileOpen={mobileOpen}
           handleDrawerToggle={handleDrawerToggle}
-          isMobile={isMobile}
+          collapsed={collapsed}
         />
 
-        <Toolbar />
-
-                {/* Page Content */}
+        {/* =========================================
+            MAIN CONTENT AREA
+        ========================================= */}
 
         <Box
+          component="main"
           sx={{
             flexGrow: 1,
 
-            p: {
-              xs: 2,
-              sm: 3,
-              md: 4,
+            width: {
+              xs: "100%",
+              md: `calc(100% - ${currentDrawerWidth}px)`,
             },
 
-            bgcolor: "#F5F7FA",
+            maxWidth: {
+              xs: "100%",
+              md: `calc(100% - ${currentDrawerWidth}px)`,
+            },
 
-            overflow: "auto",
+            minWidth: 0,
 
-            transition: "all .3s ease",
+            ml: {
+              xs: 0,
+              md: `${currentDrawerWidth}px`,
+            },
+
+            minHeight: "100vh",
+
+            display: "flex",
+
+            flexDirection: "column",
+
+            boxSizing: "border-box",
+
+            overflowX: "hidden",
+
+            transition:
+              "margin-left 0.3s ease, width 0.3s ease",
           }}
         >
-          <Outlet />
+          {/* =========================================
+              TOP NAVBAR
+          ========================================= */}
+
+          <TopNavbar
+            drawerWidth={currentDrawerWidth}
+            collapsed={collapsed}
+            handleCollapse={handleCollapse}
+            handleDrawerToggle={handleDrawerToggle}
+            isMobile={isMobile}
+          />
+
+          {/* =========================================
+              NAVBAR SPACING
+              
+              IMPORTANT:
+              Only desktop gets spacing.
+              Mobile gets NO extra 64px gap.
+          ========================================= */}
+
+          <Toolbar
+            sx={{
+              display: {
+                xs: "none",
+                md: "block",
+              },
+
+              minHeight: {
+                md: "24px !important",
+              },
+
+              height: {
+                md: "24px",
+              },
+            }}
+          />
+
+          {/* =========================================
+              PAGE CONTENT
+          ========================================= */}
+
+<Box
+  sx={{
+    flexGrow: 1,
+
+    width: "100%",
+    maxWidth: "100%",
+    minWidth: 0,
+
+    p: 0,
+    m: 0,
+
+    bgcolor: "#F5F7FA",
+
+    overflowY: "auto",
+    overflowX: "hidden",
+
+    boxSizing: "border-box",
+
+    // Small spacing below navbar on mobile
+    pt: {
+      xs: "10px",
+      sm: "12px",
+      md: 0,
+    },
+  }}
+>
+            <Outlet />
+          </Box>
         </Box>
-
       </Box>
-
-    </Box>
-
-  </>
-);
-
+    </>
+  );
 };
 
 export default AdminLayout;
