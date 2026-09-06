@@ -15,14 +15,12 @@ import {
 import MenuIcon from "@mui/icons-material/Menu";
 import NotificationsNoneIcon from "@mui/icons-material/NotificationsNone";
 
+import logo from "../../assets/images/logo.png";
 
 const Navbar = ({
   onMenuClick,
 }) => {
-
-  const navigate =
-    useNavigate();
-
+  const navigate = useNavigate();
 
   /* =====================================================
      USER
@@ -31,91 +29,70 @@ const Navbar = ({
   let user = null;
 
   try {
-
-    user =
-      JSON.parse(
-        localStorage.getItem(
-          "user"
-        ) || "null"
-      );
-
+    user = JSON.parse(
+      localStorage.getItem("user") || "null"
+    );
   } catch (error) {
-
     console.error(
       "Unable to read manager user:",
       error
     );
-
   }
-
 
   const name =
     user?.name ||
     user?.fullName ||
     "Manager";
 
-
   const role =
     user?.role ||
     "MANAGER";
 
-
   const initial =
-    name
-      .charAt(0)
-      .toUpperCase();
-
+    name.charAt(0).toUpperCase();
 
   /* =====================================================
      PROFILE
   ===================================================== */
 
-  const handleProfile =
-    () => {
-
-      navigate(
-        "/manager/profile"
-      );
-
-    };
-
+  const handleProfile = () => {
+    navigate("/manager/profile");
+  };
 
   return (
-
     <AppBar
       position="static"
       elevation={0}
       sx={{
         bgcolor: "#FFFFFF",
-
         color: "#0F172A",
 
         borderBottom:
           "1px solid #E5E7EB",
 
         width: "100%",
-
         flexShrink: 0,
+
+        borderRadius: 0,
       }}
     >
-
       <Toolbar
         sx={{
           minHeight: {
-            xs: 60,
-            sm: 64,
-            md: 68,
+            xs: 52,
+            sm: 58,
+            md: 62,
           },
 
           px: {
-            xs: 1.2,
-            sm: 2,
-            md: 3,
+            xs: 0.75,
+            sm: 1.5,
+            md: 2.5,
           },
 
           gap: {
-            xs: 0.5,
-            sm: 1,
+            xs: 0.35,
+            sm: 0.75,
           },
 
           width: "100%",
@@ -123,7 +100,6 @@ const Navbar = ({
           boxSizing: "border-box",
         }}
       >
-
         {/* =================================================
             MOBILE MENU
         ================================================= */}
@@ -137,20 +113,67 @@ const Navbar = ({
               md: "none",
             },
 
-            width: 42,
-
-            height: 42,
+            width: 36,
+            height: 36,
 
             flexShrink: 0,
 
             color: "#0F172A",
           }}
         >
-
-          <MenuIcon />
-
+          <MenuIcon
+            sx={{
+              fontSize: 21,
+            }}
+          />
         </IconButton>
 
+        {/* =================================================
+            LOGO
+        ================================================= */}
+
+        <Box
+          sx={{
+            width: {
+              xs: 32,
+              sm: 38,
+              md: 42,
+            },
+
+            height: {
+              xs: 32,
+              sm: 38,
+              md: 42,
+            },
+
+            flexShrink: 0,
+
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+
+            overflow: "hidden",
+
+            cursor: "pointer",
+          }}
+          onClick={() =>
+            navigate("/manager/dashboard")
+          }
+        >
+          <Box
+            component="img"
+            src={logo}
+            alt="Bhagyamma Hub"
+            sx={{
+              width: "100%",
+              height: "100%",
+
+              objectFit: "contain",
+
+              display: "block",
+            }}
+          />
+        </Box>
 
         {/* =================================================
             BRAND
@@ -176,17 +199,16 @@ const Navbar = ({
 
             gap: {
               xs: 0,
-              sm: 1,
+              sm: 0.75,
             },
           }}
         >
-
           <Typography
             sx={{
               fontSize: {
-                xs: 15,
-                sm: 17,
-                md: 19,
+                xs: 13,
+                sm: 16,
+                md: 18,
               },
 
               fontWeight: 800,
@@ -197,7 +219,8 @@ const Navbar = ({
 
               overflow: "hidden",
 
-              textOverflow: "ellipsis",
+              textOverflow:
+                "ellipsis",
 
               maxWidth: {
                 xs: "100%",
@@ -208,7 +231,6 @@ const Navbar = ({
             Bhagyamma Hub
           </Typography>
 
-
           <Typography
             sx={{
               display: {
@@ -216,7 +238,7 @@ const Navbar = ({
                 sm: "block",
               },
 
-              fontSize: 12,
+              fontSize: 11,
 
               color:
                 "text.secondary",
@@ -224,9 +246,7 @@ const Navbar = ({
           >
             / Manager Panel
           </Typography>
-
         </Box>
-
 
         {/* =================================================
             RIGHT SIDE
@@ -239,102 +259,92 @@ const Navbar = ({
             alignItems: "center",
 
             gap: {
-              xs: 0.2,
-              sm: 0.5,
+              xs: 0.1,
+              sm: 0.4,
             },
 
             flexShrink: 0,
           }}
         >
-
           {/* NOTIFICATIONS */}
 
-          <Tooltip
-            title="Notifications"
-          >
-
+          <Tooltip title="Notifications">
             <IconButton
               aria-label="Notifications"
               sx={{
                 width: {
-                  xs: 40,
-                  sm: 42,
+                  xs: 34,
+                  sm: 38,
                 },
 
                 height: {
-                  xs: 40,
-                  sm: 42,
+                  xs: 34,
+                  sm: 38,
                 },
 
-                color:
-                  "#475569",
+                color: "#475569",
               }}
             >
-
               <NotificationsNoneIcon
-                fontSize="small"
+                sx={{
+                  fontSize: {
+                    xs: 19,
+                    sm: 21,
+                  },
+                }}
               />
-
             </IconButton>
-
           </Tooltip>
-
 
           {/* USER */}
 
           <Box
-            onClick={
-              handleProfile
-            }
+            onClick={handleProfile}
             sx={{
               display: "flex",
 
               alignItems: "center",
 
               gap: {
-                xs: 0.5,
-                sm: 1,
+                xs: 0.4,
+                sm: 0.75,
               },
 
               cursor: "pointer",
 
-              borderRadius: 2,
+              borderRadius: 0,
 
               px: {
-                xs: 0.3,
-                sm: 0.8,
+                xs: 0.2,
+                sm: 0.6,
               },
 
-              py: 0.4,
+              py: 0.25,
 
               "&:hover": {
-                bgcolor:
-                  "#F1F5F9",
+                bgcolor: "#F1F5F9",
               },
             }}
           >
-
             <Avatar
               sx={{
                 width: {
-                  xs: 34,
-                  sm: 38,
+                  xs: 30,
+                  sm: 34,
                 },
 
                 height: {
-                  xs: 34,
-                  sm: 38,
+                  xs: 30,
+                  sm: 34,
                 },
 
-                bgcolor:
-                  "#E8F5E9",
+                bgcolor: "#E8F5E9",
 
-                color:
-                  "#2E7D32",
+                color: "#2E7D32",
 
                 fontSize: {
-                  xs: 14,
-                  sm: 16,
+                  xs: 12,
+                  sm: 14,
                 },
 
                 fontWeight: 800,
@@ -342,7 +352,6 @@ const Navbar = ({
             >
               {initial}
             </Avatar>
-
 
             <Box
               sx={{
@@ -353,40 +362,30 @@ const Navbar = ({
 
                 minWidth: 0,
 
-                maxWidth: 150,
+                maxWidth: 140,
               }}
             >
-
               <Typography
-                fontSize={13}
+                fontSize={12}
                 fontWeight={700}
                 noWrap
               >
                 {name}
               </Typography>
 
-
               <Typography
-                fontSize={10}
+                fontSize={9}
                 color="text.secondary"
                 noWrap
               >
                 {role}
               </Typography>
-
             </Box>
-
           </Box>
-
         </Box>
-
       </Toolbar>
-
     </AppBar>
-
   );
-
 };
-
 
 export default Navbar;
