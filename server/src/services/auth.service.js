@@ -18,10 +18,7 @@ const crypto = require("crypto");
 
 const walletService = require("./wallet.service");
 
-
-// =====================================================
-// CONSTANTS
-// =====================================================
+const orderService = require("./order.service");
 
 const MANAGER_REFERRAL_CODE = "BHMANAGER001";
 
@@ -73,28 +70,26 @@ const register = async (payload) => {
         referralCode,
     } = payload;
 
+    const cleanName =
+        String(name || "").trim();
 
-    // -------------------------------------------------
-    // CLEAN VALUES
-    // -------------------------------------------------
+    const cleanEmail =
+        String(email || "")
+            .trim()
+            .toLowerCase();
 
-    const cleanName = String(name || "")
-        .trim();
+    const cleanMobile =
+        String(mobile || "")
+            .replace(/\D/g, "");
 
-    const cleanEmail = String(email || "")
-        .trim()
-        .toLowerCase();
-
-    const cleanMobile = String(mobile || "")
-        .replace(/\D/g, "");
-
-    const enteredReferralCode = String(referralCode || "")
-        .trim()
-        .toUpperCase();
+    const enteredReferralCode =
+        String(referralCode || "")
+            .trim()
+            .toUpperCase();
 
 
     // -------------------------------------------------
-    // BASIC VALIDATION
+    // VALIDATION
     // -------------------------------------------------
 
     if (!cleanName) {
@@ -103,7 +98,6 @@ const register = async (payload) => {
             "Name is required"
         );
     }
-
 
     if (
         cleanName.length < 3 ||
@@ -115,7 +109,6 @@ const register = async (payload) => {
         );
     }
 
-
     if (!cleanEmail) {
         throw new ApiError(
             400,
@@ -123,9 +116,10 @@ const register = async (payload) => {
         );
     }
 
-
     if (
-        !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(cleanEmail)
+        !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(
+            cleanEmail
+        )
     ) {
         throw new ApiError(
             400,
@@ -133,16 +127,16 @@ const register = async (payload) => {
         );
     }
 
-
     if (
-        !/^[6-9]\d{9}$/.test(cleanMobile)
+        !/^[6-9]\d{9}$/.test(
+            cleanMobile
+        )
     ) {
         throw new ApiError(
             400,
             "Please enter a valid 10-digit Indian mobile number"
         );
     }
-
 
     if (!password) {
         throw new ApiError(
@@ -151,14 +145,12 @@ const register = async (payload) => {
         );
     }
 
-
     if (password.length < 8) {
         throw new ApiError(
             400,
             "Password must contain at least 8 characters"
         );
     }
-
 
     if (!/[A-Z]/.test(password)) {
         throw new ApiError(
@@ -167,14 +159,12 @@ const register = async (payload) => {
         );
     }
 
-
     if (!/[a-z]/.test(password)) {
         throw new ApiError(
             400,
             "Password must contain at least one lowercase letter"
         );
     }
-
 
     if (!/[0-9]/.test(password)) {
         throw new ApiError(
@@ -183,16 +173,16 @@ const register = async (payload) => {
         );
     }
 
-
     if (
-        !/[!@#$%^&*(),.?":{}|<>]/.test(password)
+        !/[!@#$%^&*(),.?":{}|<>]/.test(
+            password
+        )
     ) {
         throw new ApiError(
             400,
             "Password must contain at least one special character"
         );
     }
-
 
     if (!enteredReferralCode) {
         throw new ApiError(
@@ -207,7 +197,9 @@ const register = async (payload) => {
     // -------------------------------------------------
 
     const emailExists =
-        await userRepository.findByEmail(cleanEmail);
+        await userRepository.findByEmail(
+            cleanEmail
+        );
 
     if (emailExists) {
         throw new ApiError(
@@ -222,7 +214,9 @@ const register = async (payload) => {
     // -------------------------------------------------
 
     const mobileExists =
-        await userRepository.findByMobile(cleanMobile);
+        await userRepository.findByMobile(
+            cleanMobile
+        );
 
     if (mobileExists) {
         throw new ApiError(
@@ -233,23 +227,15 @@ const register = async (payload) => {
 
 
     // -------------------------------------------------
-    // REFERRAL VALIDATION
+    // REFERRAL
     // -------------------------------------------------
 
     let sponsorId = null;
-
     let sponsor = null;
 
-
-    /*
-     * DIRECT MANAGER
-     *
-     * BHMANAGER001 does not require
-     * 40 SP.
-     */
-
     if (
-        enteredReferralCode === MANAGER_REFERRAL_CODE
+        enteredReferralCode ===
+        MANAGER_REFERRAL_CODE
     ) {
 
         sponsor =
@@ -257,7 +243,6 @@ const register = async (payload) => {
                 MANAGER_REFERRAL_CODE
             );
 
-
         if (!sponsor) {
             throw new ApiError(
                 400,
@@ -265,21 +250,15 @@ const register = async (payload) => {
             );
         }
 
-
         sponsorId = sponsor._id;
 
     } else {
-
-        /*
-         * NORMAL SPONSOR
-         */
 
         sponsor =
             await userRepository.findByReferralCode(
                 enteredReferralCode
             );
 
-
         if (!sponsor) {
             throw new ApiError(
                 400,
@@ -287,17 +266,10 @@ const register = async (payload) => {
             );
         }
 
-
-        /*
-         * Sponsor must have
-         * at least 40 SP.
-         */
-
         const sponsorSellingPoints =
             Number(
                 sponsor.sellingPoints || 0
             );
-
 
         if (
             sponsorSellingPoints < 40
@@ -308,22 +280,16 @@ const register = async (payload) => {
             );
         }
 
-
         sponsorId = sponsor._id;
     }
 
 
     // -------------------------------------------------
-    // GENERATE USER ID
+    // USER ID / REFERRAL CODE
     // -------------------------------------------------
 
     const userId =
         await generateUserId();
-
-
-    // -------------------------------------------------
-    // GENERATE NEW REFERRAL CODE
-    // -------------------------------------------------
 
     const newReferralCode =
         await generateReferralCode();
@@ -337,55 +303,48 @@ const register = async (payload) => {
 
         userId,
 
-        name: cleanName,
+        name:
+            cleanName,
 
-        email: cleanEmail,
+        email:
+            cleanEmail,
 
-        mobile: cleanMobile,
+        mobile:
+            cleanMobile,
 
         password,
 
         sponsorId,
 
-        referralCode: newReferralCode,
+        referralCode:
+            newReferralCode,
 
+        membershipStatus:
+            "Pending",
 
-        // -------------------------------------------------
-        // MEMBERSHIP
-        // -------------------------------------------------
+        membershipActivationMethod:
+            null,
 
-        /*
-         * Registration does NOT activate
-         * business membership.
-         */
+        membershipActivatedAt:
+            null,
 
-        membershipStatus: "Pending",
+        membershipSPAwarded:
+            false,
 
-        membershipActivationMethod: null,
+        qualifyingPurchaseAmount:
+            0,
 
-        membershipActivatedAt: null,
+        sellingPoints:
+            0,
 
-        membershipSPAwarded: false,
+        pendingPurchaseAmount:
+            0,
 
+        lifetimePurchase:
+            0,
 
-        // -------------------------------------------------
-        // PURCHASE / SP
-        // -------------------------------------------------
-
-        qualifyingPurchaseAmount: 0,
-
-        sellingPoints: 0,
-
-        pendingPurchaseAmount: 0,
-
-        lifetimePurchase: 0,
-
-
-        // -------------------------------------------------
-        // ACCOUNT STATUS
-        // -------------------------------------------------
-
-        isActive: true,
+        isActive:
+            true,
     };
 
 
@@ -393,8 +352,10 @@ const register = async (payload) => {
     // CREATE USER
     // -------------------------------------------------
 
-    const user =
-        await userRepository.create(userData);
+    let user =
+        await userRepository.create(
+            userData
+        );
 
 
     // -------------------------------------------------
@@ -406,19 +367,141 @@ const register = async (payload) => {
     );
 
 
+    // =================================================
+    // GUEST ORDER RECOVERY
+    // =================================================
+
+    let recoveredGuestOrders = {
+
+        claimedCount:
+            0,
+
+        totalPurchaseAmount:
+            0,
+
+        sellingPoints:
+            Number(
+                user.sellingPoints || 0
+            ),
+
+        pendingPurchaseAmount:
+            Number(
+                user.pendingPurchaseAmount || 0
+            ),
+
+        lifetimePurchase:
+            Number(
+                user.lifetimePurchase || 0
+            ),
+
+        qualifyingPurchaseAmount:
+            Number(
+                user.qualifyingPurchaseAmount || 0
+            ),
+
+        membershipStatus:
+            user.membershipStatus ||
+            "Pending",
+
+        membershipActivated:
+            false,
+    };
+
+
+    try {
+
+        if (
+            orderService &&
+            typeof
+                orderService.claimGuestOrdersForMember ===
+                "function"
+        ) {
+
+            recoveredGuestOrders =
+                await orderService.claimGuestOrdersForMember(
+                    user._id,
+                    cleanMobile
+                );
+
+        } else {
+
+            console.warn(
+                "Guest order recovery function is not available."
+            );
+        }
+
+    } catch (guestClaimError) {
+
+        console.error(
+            "GUEST ORDER RECOVERY ERROR:",
+            guestClaimError
+        );
+    }
+
+
     // -------------------------------------------------
-    // GENERATE JWT
+    // GET FINAL USER
+    // -------------------------------------------------
+
+    user =
+        await User.findById(
+            user._id
+        );
+
+    if (!user) {
+        throw new ApiError(
+            500,
+            "User account could not be loaded after registration"
+        );
+    }
+
+
+    // -------------------------------------------------
+    // TOKEN
     // -------------------------------------------------
 
     const token =
-        generateToken(user);
+        generateToken(
+            user
+        );
 
 
     // -------------------------------------------------
     // REMOVE PASSWORD
     // -------------------------------------------------
 
-    user.password = undefined;
+    user.password =
+        undefined;
+
+
+    // -------------------------------------------------
+    // MESSAGE
+    // -------------------------------------------------
+
+    let responseMessage =
+        "Registration successful. Your membership is currently Pending. Complete the ₹2,000 membership qualification to activate it.";
+
+
+    if (
+        recoveredGuestOrders &&
+        Number(
+            recoveredGuestOrders.claimedCount || 0
+        ) > 0
+    ) {
+
+        if (
+            recoveredGuestOrders.membershipActivated
+        ) {
+
+            responseMessage =
+                "Registration successful. Your previous guest orders have been linked to your account and your membership is now Active.";
+
+        } else {
+
+            responseMessage =
+                "Registration successful. Your previous guest orders have been linked to your account.";
+        }
+    }
 
 
     // -------------------------------------------------
@@ -427,14 +510,81 @@ const register = async (payload) => {
 
     return {
 
-        success: true,
+        success:
+            true,
 
         message:
-            "Registration successful. Your membership is currently Pending. Complete the ₹2,000 membership qualification to activate it.",
+            responseMessage,
 
         token,
 
         user,
+
+        guestOrderRecovery: {
+
+            claimedCount:
+                Number(
+                    recoveredGuestOrders
+                        ?.claimedCount || 0
+                ),
+
+            totalPurchaseAmount:
+                Number(
+                    recoveredGuestOrders
+                        ?.totalPurchaseAmount || 0
+                ),
+
+            sellingPoints:
+                Number(
+                    recoveredGuestOrders
+                        ?.sellingPoints ||
+                    user.sellingPoints ||
+                    0
+                ),
+
+            pendingPurchaseAmount:
+                Number(
+                    recoveredGuestOrders
+                        ?.pendingPurchaseAmount ||
+                    user.pendingPurchaseAmount ||
+                    0
+                ),
+
+            lifetimePurchase:
+                Number(
+                    recoveredGuestOrders
+                        ?.lifetimePurchase ||
+                    user.lifetimePurchase ||
+                    0
+                ),
+
+            qualifyingPurchaseAmount:
+                Number(
+                    recoveredGuestOrders
+                        ?.qualifyingPurchaseAmount ||
+                    user.qualifyingPurchaseAmount ||
+                    0
+                ),
+
+            membershipStatus:
+                recoveredGuestOrders
+                    ?.membershipStatus ||
+                user.membershipStatus ||
+                "Pending",
+
+            membershipActivated:
+                Boolean(
+                    recoveredGuestOrders
+                        ?.membershipActivated ||
+                    String(
+                        user.membershipStatus ||
+                        ""
+                    )
+                        .trim()
+                        .toUpperCase() ===
+                    "ACTIVE"
+                ),
+        },
     };
 };
 
@@ -463,7 +613,6 @@ const login = async ({
             cleanEmail
         );
 
-
     if (!user) {
         throw new ApiError(
             404,
@@ -473,7 +622,7 @@ const login = async ({
 
 
     // -------------------------------------------------
-    // CHECK ACCOUNT STATUS
+    // ACCOUNT STATUS
     // -------------------------------------------------
 
     if (!user.isActive) {
@@ -485,14 +634,13 @@ const login = async ({
 
 
     // -------------------------------------------------
-    // CHECK PASSWORD
+    // PASSWORD
     // -------------------------------------------------
 
     const isMatch =
         await user.comparePassword(
             password
         );
-
 
     if (!isMatch) {
         throw new ApiError(
@@ -503,36 +651,95 @@ const login = async ({
 
 
     // -------------------------------------------------
-    // UPDATE LAST LOGIN
+    // LAST LOGIN
     // -------------------------------------------------
 
     await userRepository.updateById(
         user._id,
         {
-            lastLogin: new Date(),
+            lastLogin:
+                new Date(),
         }
     );
 
 
+    // =================================================
+    // GUEST ORDER RECOVERY
+    // =================================================
+
+    try {
+
+        if (
+            orderService &&
+            typeof
+                orderService.claimGuestOrdersForMember ===
+                "function"
+        ) {
+
+            await orderService.claimGuestOrdersForMember(
+                user._id,
+                String(user.mobile || "")
+                    .replace(/\D/g, "")
+            );
+
+        } else {
+
+            console.warn(
+                "Guest order recovery function is not available during login."
+            );
+        }
+
+    } catch (guestClaimError) {
+
+        console.error(
+            "GUEST ORDER RECOVERY ERROR DURING LOGIN:",
+            guestClaimError
+        );
+    }
+
+
     // -------------------------------------------------
-    // GENERATE TOKEN
+    // RELOAD USER
+    // -------------------------------------------------
+
+    const updatedUser =
+        await User.findById(
+            user._id
+        );
+
+    if (!updatedUser) {
+        throw new ApiError(
+            500,
+            "User account could not be loaded after login"
+        );
+    }
+
+
+    // -------------------------------------------------
+    // TOKEN
     // -------------------------------------------------
 
     const token =
-        generateToken(user);
+        generateToken(
+            updatedUser
+        );
 
 
     // -------------------------------------------------
     // REMOVE SENSITIVE DATA
     // -------------------------------------------------
 
-    user.password = undefined;
+    updatedUser.password =
+        undefined;
 
-    user.otp = undefined;
+    updatedUser.otp =
+        undefined;
 
-    user.otpExpires = undefined;
+    updatedUser.otpExpires =
+        undefined;
 
-    user.otpPurpose = undefined;
+    updatedUser.otpPurpose =
+        undefined;
 
 
     // -------------------------------------------------
@@ -541,14 +748,16 @@ const login = async ({
 
     return {
 
-        success: true,
+        success:
+            true,
 
         message:
             "Login successful",
 
         token,
 
-        user,
+        user:
+            updatedUser,
     };
 };
 
@@ -567,12 +776,10 @@ const verifyOtp = async ({
             .trim()
             .toLowerCase();
 
-
     const user =
         await userRepository.findByEmailWithOtp(
             cleanEmail
         );
-
 
     if (!user) {
         throw new ApiError(
@@ -580,11 +787,6 @@ const verifyOtp = async ({
             "User not found"
         );
     }
-
-
-    // -------------------------------------------------
-    // CHECK OTP
-    // -------------------------------------------------
 
     if (
         user.otp !== otp
@@ -595,24 +797,15 @@ const verifyOtp = async ({
         );
     }
 
-
-    // -------------------------------------------------
-    // CHECK OTP PURPOSE
-    // -------------------------------------------------
-
     if (
-        user.otpPurpose !== "LOGIN"
+        user.otpPurpose !==
+        "LOGIN"
     ) {
         throw new ApiError(
             400,
             "Invalid OTP purpose"
         );
     }
-
-
-    // -------------------------------------------------
-    // CHECK OTP EXPIRATION
-    // -------------------------------------------------
 
     if (
         !user.otpExpires ||
@@ -635,45 +828,49 @@ const verifyOtp = async ({
 
 
     // -------------------------------------------------
-    // UPDATE LAST LOGIN
+    // LAST LOGIN
     // -------------------------------------------------
 
     await userRepository.updateById(
         user._id,
         {
-            lastLogin: new Date(),
+            lastLogin:
+                new Date(),
         }
     );
 
 
     // -------------------------------------------------
-    // GENERATE TOKEN
+    // TOKEN
     // -------------------------------------------------
 
     const token =
-        generateToken(user);
+        generateToken(
+            user
+        );
 
 
     // -------------------------------------------------
     // REMOVE SENSITIVE DATA
     // -------------------------------------------------
 
-    user.password = undefined;
+    user.password =
+        undefined;
 
-    user.otp = undefined;
+    user.otp =
+        undefined;
 
-    user.otpExpires = undefined;
+    user.otpExpires =
+        undefined;
 
-    user.otpPurpose = undefined;
+    user.otpPurpose =
+        undefined;
 
-
-    // -------------------------------------------------
-    // RESPONSE
-    // -------------------------------------------------
 
     return {
 
-        success: true,
+        success:
+            true,
 
         message:
             "OTP verified successfully",
@@ -698,14 +895,12 @@ const getProfile = async (
             userId
         );
 
-
     if (!user) {
         throw new ApiError(
             404,
             "User not found"
         );
     }
-
 
     return user;
 };
@@ -734,7 +929,6 @@ const forgotPassword = async ({
             cleanEmail
         );
 
-
     if (!user) {
         throw new ApiError(
             404,
@@ -744,7 +938,7 @@ const forgotPassword = async ({
 
 
     // -------------------------------------------------
-    // CHECK ACCOUNT
+    // ACCOUNT
     // -------------------------------------------------
 
     if (!user.isActive) {
@@ -756,59 +950,43 @@ const forgotPassword = async ({
 
 
     // -------------------------------------------------
-    // GENERATE OTP
+    // OTP
     // -------------------------------------------------
 
     const otp =
         generateOTP();
 
 
-    // -------------------------------------------------
-    // SAVE OTP
-    // -------------------------------------------------
-
     await userRepository.updateOtp(
-
         cleanEmail,
-
         otp,
-
         new Date(
             Date.now() +
             5 * 60 * 1000
         ),
-
         "FORGOT_PASSWORD"
     );
 
 
     // -------------------------------------------------
-    // SEND EMAIL
+    // EMAIL
     // -------------------------------------------------
 
     await sendEmail(
-
         cleanEmail,
-
         "Bhagyamma Hub Password Reset OTP",
-
-        `
-        <h2>Bhagyamma Hub</h2>
-
-        <p>Hello <b>${user.name}</b>,</p>
-
-        <p>Your Password Reset OTP is:</p>
-
-        <h1>${otp}</h1>
-
-        <p>This OTP is valid for 5 minutes.</p>
-        `
+        "<h2>Bhagyamma Hub</h2>" +
+        "<p>Hello <b>" + user.name + "</b>,</p>" +
+        "<p>Your Password Reset OTP is:</p>" +
+        "<h1>" + otp + "</h1>" +
+        "<p>This OTP is valid for 5 minutes.</p>"
     );
 
 
     return {
 
-        success: true,
+        success:
+            true,
 
         message:
             "OTP sent successfully",
@@ -833,7 +1011,7 @@ const resetPassword = async ({
 
 
     // -------------------------------------------------
-    // BASIC PASSWORD VALIDATION
+    // PASSWORD VALIDATION
     // -------------------------------------------------
 
     if (!password) {
@@ -843,14 +1021,12 @@ const resetPassword = async ({
         );
     }
 
-
     if (password.length < 8) {
         throw new ApiError(
             400,
             "Password must contain at least 8 characters"
         );
     }
-
 
     if (!/[A-Z]/.test(password)) {
         throw new ApiError(
@@ -859,14 +1035,12 @@ const resetPassword = async ({
         );
     }
 
-
     if (!/[a-z]/.test(password)) {
         throw new ApiError(
             400,
             "Password must contain at least one lowercase letter"
         );
     }
-
 
     if (!/[0-9]/.test(password)) {
         throw new ApiError(
@@ -875,9 +1049,10 @@ const resetPassword = async ({
         );
     }
 
-
     if (
-        !/[!@#$%^&*(),.?":{}|<>]/.test(password)
+        !/[!@#$%^&*(),.?":{}|<>]/.test(
+            password
+        )
     ) {
         throw new ApiError(
             400,
@@ -895,7 +1070,6 @@ const resetPassword = async ({
             cleanEmail
         );
 
-
     if (!user) {
         throw new ApiError(
             404,
@@ -905,7 +1079,7 @@ const resetPassword = async ({
 
 
     // -------------------------------------------------
-    // CHECK OTP
+    // OTP
     // -------------------------------------------------
 
     if (
@@ -917,24 +1091,15 @@ const resetPassword = async ({
         );
     }
 
-
-    // -------------------------------------------------
-    // CHECK OTP PURPOSE
-    // -------------------------------------------------
-
     if (
-        user.otpPurpose !== "FORGOT_PASSWORD"
+        user.otpPurpose !==
+        "FORGOT_PASSWORD"
     ) {
         throw new ApiError(
             400,
             "Invalid OTP purpose"
         );
     }
-
-
-    // -------------------------------------------------
-    // CHECK OTP EXPIRATION
-    // -------------------------------------------------
 
     if (
         !user.otpExpires ||
@@ -977,13 +1142,10 @@ const resetPassword = async ({
     );
 
 
-    // -------------------------------------------------
-    // RESPONSE
-    // -------------------------------------------------
-
     return {
 
-        success: true,
+        success:
+            true,
 
         message:
             "Password updated successfully",
@@ -1014,7 +1176,6 @@ const resendOtp = async ({
             cleanEmail
         );
 
-
     if (!user) {
         throw new ApiError(
             404,
@@ -1024,7 +1185,7 @@ const resendOtp = async ({
 
 
     // -------------------------------------------------
-    // CHECK ACCOUNT
+    // ACCOUNT
     // -------------------------------------------------
 
     if (!user.isActive) {
@@ -1036,57 +1197,42 @@ const resendOtp = async ({
 
 
     // -------------------------------------------------
-    // GENERATE OTP
+    // OTP
     // -------------------------------------------------
 
     const otp =
         generateOTP();
 
 
-    // -------------------------------------------------
-    // SAVE OTP
-    // -------------------------------------------------
-
     await userRepository.updateOtp(
-
         cleanEmail,
-
         otp,
-
         new Date(
             Date.now() +
             5 * 60 * 1000
         ),
-
         "LOGIN"
     );
 
 
     // -------------------------------------------------
-    // SEND EMAIL
+    // EMAIL
     // -------------------------------------------------
 
     await sendEmail(
-
         cleanEmail,
-
         "Bhagyamma Hub OTP",
-
-        `
-        <h2>Bhagyamma Hub</h2>
-
-        <p>Your OTP is:</p>
-
-        <h1>${otp}</h1>
-
-        <p>This OTP is valid for 5 minutes.</p>
-        `
+        "<h2>Bhagyamma Hub</h2>" +
+        "<p>Your OTP is:</p>" +
+        "<h1>" + otp + "</h1>" +
+        "<p>This OTP is valid for 5 minutes.</p>"
     );
 
 
     return {
 
-        success: true,
+        success:
+            true,
 
         message:
             "OTP resent successfully",

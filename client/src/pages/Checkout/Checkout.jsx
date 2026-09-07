@@ -253,11 +253,15 @@ const Checkout = () => {
 
   /* =======================================================
      CART
+
+     IMPORTANT:
+     clearAll is used ONLY after successful order creation.
   ======================================================= */
 
   const {
     cart,
     loading: cartLoading,
+    clearAll,
   } = useCart();
 
 
@@ -296,7 +300,7 @@ const Checkout = () => {
 
   /* =======================================================
      DELIVERY CHARGE
-     
+
      ALWAYS ₹50 FOR NON-EMPTY CART
   ======================================================= */
 
@@ -437,6 +441,7 @@ const Checkout = () => {
 
     let newValue = value;
 
+
     /* MOBILE */
 
     if (name === "mobile") {
@@ -529,6 +534,10 @@ const Checkout = () => {
 
   const handlePlaceOrder = async () => {
 
+    /* =====================================================
+       DOUBLE CLICK PROTECTION
+    ===================================================== */
+
     if (placingOrder) {
       return;
     }
@@ -579,6 +588,10 @@ const Checkout = () => {
 
     try {
 
+      /* ===================================================
+         LOCK BUTTON IMMEDIATELY
+      =================================================== */
+
       setPlacingOrder(true);
 
 
@@ -618,8 +631,10 @@ const Checkout = () => {
 
       /* ===================================================
          SAVE CART SNAPSHOT
-         
-         DO NOT CLEAR CART HERE.
+
+         This is only for payment recovery.
+
+         We do NOT clear the cart before order creation.
       =================================================== */
 
       const cartSnapshot = {
@@ -679,24 +694,6 @@ const Checkout = () => {
 
       /* ===================================================
          ORDER PAYLOAD
-         
-         IMPORTANT:
-         
-         Backend expects:
-         
-         name
-         mobile
-         email
-         address
-         city
-         state
-         pincode
-         
-         AT TOP LEVEL.
-         
-         We also keep customerName/customerMobile/
-         customerEmail and deliveryDetails for
-         compatibility.
       =================================================== */
 
       const orderPayload = {
@@ -842,6 +839,9 @@ const Checkout = () => {
 
       /* ===================================================
          CREATE ORDER
+
+         IMPORTANT:
+         This must happen before cart clearing.
       =================================================== */
 
       const response =
@@ -885,6 +885,56 @@ const Checkout = () => {
       if (!orderId) {
         throw new Error(
           "Order ID was not returned by the server."
+        );
+      }
+
+
+      /* ===================================================
+         🔥 CLEAR CART AFTER SUCCESSFUL ORDER CREATION
+         
+         IMPORTANT:
+         
+         We clear the cart ONLY after the backend
+         confirms that the order was created.
+         
+         We do NOT clear the cart if createOrder()
+         fails.
+      =================================================== */
+
+      try {
+
+        await clearAll();
+
+        console.log(
+          "======================================"
+        );
+
+        console.log(
+          "CART CLEARED AFTER ORDER CREATION"
+        );
+
+        console.log(
+          "ORDER:",
+          order?.orderNumber ||
+          orderId
+        );
+
+        console.log(
+          "======================================"
+        );
+
+      } catch (cartClearError) {
+
+        /*
+         * The order already exists.
+         *
+         * Do not treat cart-clear failure as
+         * an order-creation failure.
+         */
+
+        console.error(
+          "CART CLEAR ERROR:",
+          cartClearError
         );
       }
 
@@ -1051,14 +1101,14 @@ const Checkout = () => {
       );
 
 
+      /* ===================================================
+         GO TO PAYMENT SCANNER
+      =================================================== */
+
       setSuccess(
         "Order created successfully. Opening payment scanner..."
       );
 
-
-      /* ===================================================
-         GO TO PAYMENT SCANNER
-      =================================================== */
 
       navigate(
         "/payment/scan",
@@ -1112,9 +1162,9 @@ const Checkout = () => {
      BACK TO CART
   ======================================================= */
 
-const handleBackToCart = () => {
-  navigate("/cart");
-};
+  const handleBackToCart = () => {
+    navigate("/cart");
+  };
 
 
   /* =======================================================

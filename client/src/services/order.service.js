@@ -60,22 +60,6 @@ export const createOrder = async (data) => {
       response.data
     );
 
-    /*
-     * IMPORTANT
-     *
-     * Checkout.jsx expects:
-     *
-     * order._id
-     *
-     * Backend response is:
-     *
-     * {
-     *   success,
-     *   message,
-     *   data: order
-     * }
-     */
-
     return (
       response.data?.data ||
       null
@@ -85,6 +69,50 @@ export const createOrder = async (data) => {
 
     console.error(
       "CREATE ORDER ERROR:",
+      error?.response?.data ||
+        error
+    );
+
+    throw error;
+  }
+};
+
+
+/* =========================================================
+   GUEST - PLACE ORDER
+========================================================= */
+
+export const placeGuestOrder = async (
+  data
+) => {
+
+  try {
+
+    console.log(
+      "PLACE GUEST ORDER:",
+      data
+    );
+
+    const response =
+      await api.post(
+        "/orders/guest",
+        data
+      );
+
+    console.log(
+      "PLACE GUEST ORDER RESPONSE:",
+      response.data
+    );
+
+    return (
+      response.data?.data ||
+      null
+    );
+
+  } catch (error) {
+
+    console.error(
+      "PLACE GUEST ORDER ERROR:",
       error?.response?.data ||
         error
     );
@@ -129,18 +157,6 @@ export const getMyOrders = async () => {
       "MY ORDERS RESPONSE:",
       response.data
     );
-
-    /*
-     * Backend:
-     *
-     * {
-     *   success: true,
-     *   message: "...",
-     *   data: [...]
-     * }
-     *
-     * Return only the array.
-     */
 
     return (
       response.data?.data ||
@@ -195,16 +211,6 @@ export const getAdminOrders = async () => {
       "ADMIN ORDERS RESPONSE:",
       response.data
     );
-
-    /*
-     * Returns:
-     *
-     * [
-     *   order,
-     *   order,
-     *   order
-     * ]
-     */
 
     return (
       response.data?.data ||

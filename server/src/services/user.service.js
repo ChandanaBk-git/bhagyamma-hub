@@ -300,14 +300,13 @@ const getDashboard = async (userId) => {
     // Dashboard Summary
     // -------------------------------------------------
 
-    const summary = {
+const summary = {
 
-        walletBalance:
-            totalCommission,
+    walletBalance:
+        Number(wallet?.balance || 0),
 
-        totalCommission:
-            totalCommission,
-
+    totalCommission:
+        Number(wallet?.totalCommission || 0),
         totalWithdrawn:
             wallet?.totalWithdrawn || 0,
 

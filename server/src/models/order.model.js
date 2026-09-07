@@ -6,16 +6,6 @@ const orderSchema = new mongoose.Schema(
     // USER
     // =====================================================
 
-    /*
-     * Guest orders do not have a user.
-     *
-     * Guest:
-     * userId = null
-     *
-     * Member:
-     * userId = ObjectId
-     */
-
     userId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
@@ -29,16 +19,9 @@ const orderSchema = new mongoose.Schema(
 
     orderType: {
       type: String,
-
-      enum: [
-        "GUEST",
-        "MEMBER",
-      ],
-
+      enum: ["GUEST", "MEMBER"],
       required: true,
-
       default: "MEMBER",
-
       index: true,
     },
 
@@ -46,39 +29,23 @@ const orderSchema = new mongoose.Schema(
     // GUEST CUSTOMER INFORMATION
     // =====================================================
 
-    /*
-     * These fields are required for guest orders.
-     *
-     * Mobile is especially important because later
-     * the customer can register and claim previous
-     * purchases after mobile OTP verification.
-     */
-
     customerName: {
       type: String,
-
       trim: true,
-
       default: "",
     },
 
     customerMobile: {
       type: String,
-
       trim: true,
-
       default: "",
-
       index: true,
     },
 
     customerEmail: {
       type: String,
-
       trim: true,
-
       lowercase: true,
-
       default: "",
     },
 
@@ -86,30 +53,14 @@ const orderSchema = new mongoose.Schema(
     // GUEST ORDER LINKING
     // =====================================================
 
-    /*
-     * Later, after mobile OTP verification:
-     *
-     * GUEST ORDER
-     *      ↓
-     * verified mobile
-     *      ↓
-     * MEMBER USER
-     *
-     * membershipLinked prevents the same guest order
-     * from being claimed/counting twice.
-     */
-
     membershipLinked: {
       type: Boolean,
-
       default: false,
-
       index: true,
     },
 
     linkedAt: {
       type: Date,
-
       default: null,
     },
 
@@ -119,13 +70,9 @@ const orderSchema = new mongoose.Schema(
 
     orderNumber: {
       type: String,
-
       required: true,
-
       unique: true,
-
       trim: true,
-
       index: true,
     },
 
@@ -135,45 +82,33 @@ const orderSchema = new mongoose.Schema(
 
     subtotal: {
       type: Number,
-
       required: true,
-
       default: 0,
-
       min: 0,
     },
 
     discount: {
       type: Number,
-
       default: 0,
-
       min: 0,
     },
 
     walletAmount: {
       type: Number,
-
       default: 0,
-
       min: 0,
     },
 
     deliveryCharge: {
       type: Number,
-
       default: 0,
-
       min: 0,
     },
 
     finalAmount: {
       type: Number,
-
       required: true,
-
       default: 0,
-
       min: 0,
     },
 
@@ -181,25 +116,60 @@ const orderSchema = new mongoose.Schema(
     // SELLING POINTS
     // =====================================================
 
+    /*
+     * These fields are especially important for GUEST orders.
+     *
+     * Guest orders do not have a User document yet.
+     *
+     * Therefore the SP calculation must be stored directly
+     * on the order so that it can later be recovered when
+     * the customer registers using the same mobile number.
+     */
+
+    spPreviousCarryForward: {
+      type: Number,
+      default: 0,
+      min: 0,
+    },
+
+    spCalculationTotal: {
+      type: Number,
+      default: 0,
+      min: 0,
+    },
+
+    spCompletedBlocks: {
+      type: Number,
+      default: 0,
+      min: 0,
+    },
+
+    spEligibleAmount: {
+      type: Number,
+      default: 0,
+      min: 0,
+    },
+
+    spCarryForward: {
+      type: Number,
+      default: 0,
+      min: 0,
+    },
+
     sellingPoints: {
       type: Number,
-
       default: 0,
-
       min: 0,
     },
 
     sellingPointsProcessed: {
       type: Boolean,
-
       default: false,
-
       index: true,
     },
 
     sellingPointsProcessedAt: {
       type: Date,
-
       default: null,
     },
 
@@ -209,7 +179,6 @@ const orderSchema = new mongoose.Schema(
 
     status: {
       type: String,
-
       enum: [
         "PLACED",
         "CONFIRMED",
@@ -219,9 +188,7 @@ const orderSchema = new mongoose.Schema(
         "DELIVERED",
         "CANCELLED",
       ],
-
       default: "PLACED",
-
       index: true,
     },
 
@@ -231,27 +198,19 @@ const orderSchema = new mongoose.Schema(
 
     paymentMethod: {
       type: String,
-
-      enum: [
-        "PHONEPE",
-        "COD",
-      ],
-
+      enum: ["PHONEPE", "COD"],
       default: "PHONEPE",
     },
 
     paymentStatus: {
       type: String,
-
       enum: [
         "PENDING",
         "PAID",
         "FAILED",
         "REFUNDED",
       ],
-
       default: "PENDING",
-
       index: true,
     },
 
@@ -261,29 +220,23 @@ const orderSchema = new mongoose.Schema(
 
     merchantOrderId: {
       type: String,
-
       unique: true,
-
       sparse: true,
-
       index: true,
     },
 
     phonePeOrderId: {
       type: String,
-
       default: null,
     },
 
     phonePeTransactionId: {
       type: String,
-
       default: null,
     },
 
     paidAt: {
       type: Date,
-
       default: null,
     },
 
@@ -294,49 +247,37 @@ const orderSchema = new mongoose.Schema(
     deliveryDetails: {
       name: {
         type: String,
-
         trim: true,
-
         default: "",
       },
 
       mobile: {
         type: String,
-
         trim: true,
-
         default: "",
       },
 
       address: {
         type: String,
-
         trim: true,
-
         default: "",
       },
 
       city: {
         type: String,
-
         trim: true,
-
         default: "",
       },
 
       state: {
         type: String,
-
         trim: true,
-
         default: "",
       },
 
       pincode: {
         type: String,
-
         trim: true,
-
         default: "",
       },
     },
@@ -347,41 +288,40 @@ const orderSchema = new mongoose.Schema(
 
     placedAt: {
       type: Date,
-
       default: Date.now,
     },
 
     confirmedAt: {
       type: Date,
-
       default: null,
     },
 
     packedAt: {
       type: Date,
-
       default: null,
     },
 
     shippedAt: {
       type: Date,
-
       default: null,
     },
 
     deliveredAt: {
       type: Date,
-
       default: null,
     },
 
     cancelledAt: {
       type: Date,
-
       default: null,
     },
-  },
 
+    cancellationReason: {
+      type: String,
+      trim: true,
+      default: "",
+    },
+  },
   {
     timestamps: true,
   }
