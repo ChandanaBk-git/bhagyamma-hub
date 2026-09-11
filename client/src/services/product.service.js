@@ -28,37 +28,135 @@ const getAuthHeaders = () => {
 
 
 // =====================================================
+// RETRY DELAY
+// =====================================================
+
+const wait = (milliseconds) => {
+  return new Promise((resolve) => {
+    setTimeout(resolve, milliseconds);
+  });
+};
+
+
+// =====================================================
 // GET ALL PRODUCTS
 // =====================================================
-export const getProducts = async (activeOnly = true) => {
-  try {
-    const endpoint = activeOnly
-      ? "/products?active=true"
-      : "/products";
 
-    const response = await API.get(endpoint);
+export const getProducts = async (
+  activeOnly = true
+) => {
 
-    console.log(
-      "PRODUCT API RESPONSE:",
-      response.data
-    );
+  const endpoint = activeOnly
+    ? "/products?active=true"
+    : "/products";
 
-    return response.data?.data || [];
 
-  } catch (error) {
-    console.error(
-      "Get Products Error:",
-      error.response?.data || error
-    );
+  // ===================================================
+  // RETRY SETTINGS
+  // ===================================================
 
-    throw (
-      error.response?.data || {
-        success: false,
-        message: "Unable to fetch products.",
+  const maxAttempts = 3;
+
+  const retryDelays = [
+    1000,
+    2000,
+    3000,
+  ];
+
+
+  let lastError = null;
+
+
+  // ===================================================
+  // TRY API REQUEST
+  // ===================================================
+
+  for (
+    let attempt = 1;
+    attempt <= maxAttempts;
+    attempt++
+  ) {
+
+    try {
+
+      console.log(
+        `PRODUCT API ATTEMPT ${attempt}/${maxAttempts}`
+      );
+
+
+      const response =
+        await API.get(endpoint);
+
+
+      console.log(
+        "PRODUCT API RESPONSE:",
+        response.data
+      );
+
+
+      const products =
+        response.data?.data || [];
+
+
+      // ===============================================
+      // SUCCESS
+      // ===============================================
+
+      return products;
+
+    } catch (error) {
+
+      lastError = error;
+
+
+      console.error(
+        `Get Products Error - Attempt ${attempt}:`,
+        error.response?.data || error
+      );
+
+
+      // =============================================
+      // IF LAST ATTEMPT, THROW ERROR
+      // =============================================
+
+      if (
+        attempt === maxAttempts
+      ) {
+
+        break;
+
       }
-    );
+
+
+      // =============================================
+      // WAIT BEFORE RETRY
+      // =============================================
+
+      await wait(
+        retryDelays[
+          attempt - 1
+        ]
+      );
+
+    }
+
   }
+
+
+  // ===================================================
+  // ALL ATTEMPTS FAILED
+  // ===================================================
+
+  throw (
+    lastError?.response?.data || {
+      success: false,
+      message:
+        "Unable to fetch products. Please try again.",
+    }
+  );
+
 };
+
 
 // =====================================================
 // GET PRODUCT BY ID
@@ -110,7 +208,9 @@ export const createProduct = async (
 
   try {
 
-    const token = getToken();
+    const token =
+      getToken();
+
 
     if (!token) {
 
@@ -121,6 +221,7 @@ export const createProduct = async (
       };
 
     }
+
 
     const response =
       await API.post(
@@ -136,6 +237,7 @@ export const createProduct = async (
           },
         }
       );
+
 
     return response.data;
 
@@ -170,7 +272,9 @@ export const updateProduct = async (
 
   try {
 
-    const token = getToken();
+    const token =
+      getToken();
+
 
     if (!token) {
 
@@ -181,6 +285,7 @@ export const updateProduct = async (
       };
 
     }
+
 
     const response =
       await API.put(
@@ -196,6 +301,7 @@ export const updateProduct = async (
           },
         }
       );
+
 
     return response.data;
 
@@ -229,7 +335,9 @@ export const deleteProduct = async (
 
   try {
 
-    const token = getToken();
+    const token =
+      getToken();
+
 
     if (!token) {
 
@@ -241,6 +349,7 @@ export const deleteProduct = async (
 
     }
 
+
     const response =
       await API.delete(
         `/products/${id}`,
@@ -251,6 +360,7 @@ export const deleteProduct = async (
           },
         }
       );
+
 
     return response.data;
 

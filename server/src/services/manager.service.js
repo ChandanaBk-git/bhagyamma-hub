@@ -30,8 +30,11 @@ const sellingPointRepository =
 
 const orderRepository =
   require("../repositories/order.repository");
+const WalletTransaction =
+  require("../models/walletTransaction.model");
 
-
+const Withdraw =
+  require("../models/withdraw.model");
 // =====================================================
 // HELPERS
 // =====================================================
@@ -3007,6 +3010,495 @@ const getCommissionPage = async (
 
 };
 
+// =====================================================
+// MANAGER WALLET
+// =====================================================
+//
+// Returns:
+//
+// 1. Manager's own wallet
+// 2. Wallet transactions
+// 3. Withdrawals
+// 4. Commission history
+//
+// =====================================================
+
+const getManagerWallet = async (
+  managerId
+) => {
+
+  const manager =
+    await User.findById(managerId)
+      .select(
+        "name userId email mobile bankName accountHolderName accountNumber ifscCode branch"
+      )
+      .lean();
+
+  if (!manager) {
+    throw new ApiError(
+      404,
+      "Manager not found."
+    );
+  }
+
+  const wallet =
+    await Wallet.findOne({
+      user: manager._id,
+    }).lean();
+
+  const actualWallet =
+    wallet || {
+      _id: null,
+      user: manager._id,
+      balance: 0,
+      totalCommission: 0,
+      totalBonus: 0,
+      totalWithdrawn: 0,
+      pendingWithdrawal: 0,
+    };
+
+  // -----------------------------------------------
+  // WALLET TRANSACTIONS
+  // -----------------------------------------------
+
+  const walletTransactions =
+    wallet?._id
+      ? await WalletTransaction.find({
+          wallet: wallet._id,
+        })
+          .sort({
+            createdAt: -1,
+          })
+          .lean()
+      : [];
+
+  // -----------------------------------------------
+  // WITHDRAWALS
+  // -----------------------------------------------
+
+  const withdrawals =
+    await Withdraw.find({
+      user: manager._id,
+    })
+      .sort({
+        createdAt: -1,
+      })
+      .lean();
+
+  // -----------------------------------------------
+  // COMMISSION HISTORY
+  // -----------------------------------------------
+
+  const commissions =
+    await commissionRepository.findByUser(
+      manager._id
+    );
+
+  // -----------------------------------------------
+  // PENDING WITHDRAWAL
+  // -----------------------------------------------
+
+  const pendingWithdrawal =
+    withdrawals
+      .filter(
+        (item) =>
+          String(
+            item.status || ""
+          ).toUpperCase() ===
+          "PENDING"
+      )
+      .reduce(
+        (total, item) =>
+          total +
+          Number(item.amount || 0),
+        0
+      );
+
+  // -----------------------------------------------
+  // TOTAL COMMISSION
+  // -----------------------------------------------
+
+  const totalCommission =
+    commissions.reduce(
+      (total, item) =>
+        total +
+        Number(
+          item.commissionAmount ||
+          item.amount ||
+          0
+        ),
+      0
+    );
+
+  // -----------------------------------------------
+  // RETURN
+  // -----------------------------------------------
+
+  return {
+
+    user: {
+      _id: manager._id,
+      name: manager.name,
+      userId: manager.userId,
+      email: manager.email,
+      mobile: manager.mobile,
+    },
+
+    wallet: {
+
+      _id:
+        actualWallet._id,
+
+      balance:
+        Number(
+          actualWallet.balance || 0
+        ),
+
+      totalCommission:
+
+        Number(
+          actualWallet.totalCommission ||
+          totalCommission ||
+          0
+        ),
+
+      totalBonus:
+
+        Number(
+          actualWallet.totalBonus || 0
+        ),
+
+      totalWithdrawn:
+
+        Number(
+          actualWallet.totalWithdrawn || 0
+        ),
+
+      pendingWithdrawal:
+
+        pendingWithdrawal,
+
+    },
+
+    walletTransactions,
+
+    withdrawals,
+
+    commissions,
+
+  };
+
+};
+
+
+// =====================================================
+// ALL USER WALLETS
+// =====================================================
+//
+// Shows every user and their wallet summary.
+//
+// =====================================================
+
+const getAllUserWallets = async () => {
+
+  const users =
+    await User.find()
+      .select(
+        "name userId email mobile role isActive"
+      )
+      .sort({
+        createdAt: -1,
+      })
+      .lean();
+
+  if (!users.length) {
+    return [];
+  }
+
+  const userIds =
+    users.map(
+      (user) =>
+        user._id
+    );
+
+  const wallets =
+    await Wallet.find({
+      user: {
+        $in: userIds,
+      },
+    }).lean();
+
+  const walletMap =
+    new Map();
+
+  wallets.forEach(
+    (wallet) => {
+
+      if (
+        wallet &&
+        wallet.user
+      ) {
+
+        walletMap.set(
+          String(wallet.user),
+          wallet
+        );
+
+      }
+
+    }
+  );
+
+  // -----------------------------------------------
+  // GET PENDING WITHDRAWALS
+  // -----------------------------------------------
+
+  const pendingWithdrawals =
+    await Withdraw.find({
+      user: {
+        $in: userIds,
+      },
+
+      status: "PENDING",
+    }).lean();
+
+  const pendingMap =
+    new Map();
+
+  pendingWithdrawals.forEach(
+    (withdraw) => {
+
+      const userId =
+        String(
+          withdraw.user
+        );
+
+      const current =
+        pendingMap.get(
+          userId
+        ) || 0;
+
+      pendingMap.set(
+        userId,
+        current +
+          Number(
+            withdraw.amount || 0
+          )
+      );
+
+    }
+  );
+
+  // -----------------------------------------------
+  // BUILD RESULT
+  // -----------------------------------------------
+
+  return users.map(
+    (user) => {
+
+      const wallet =
+        walletMap.get(
+          String(user._id)
+        );
+
+      const pending =
+        Number(
+          pendingMap.get(
+            String(user._id)
+          ) || 0
+        );
+
+      return {
+
+        user: {
+          _id:
+            user._id,
+
+          name:
+            user.name,
+
+          userId:
+            user.userId,
+
+          email:
+            user.email,
+
+          mobile:
+            user.mobile,
+
+          role:
+            user.role,
+
+          isActive:
+            user.isActive,
+        },
+
+        wallet: {
+
+          _id:
+            wallet?._id || null,
+
+          balance:
+            Number(
+              wallet?.balance || 0
+            ),
+
+          totalCommission:
+            Number(
+              wallet?.totalCommission || 0
+            ),
+
+          totalBonus:
+            Number(
+              wallet?.totalBonus || 0
+            ),
+
+          totalWithdrawn:
+            Number(
+              wallet?.totalWithdrawn || 0
+            ),
+
+          pendingWithdrawal:
+            pending,
+
+        },
+
+      };
+
+    }
+  );
+
+};
+
+
+// =====================================================
+// COMPLETE USER WALLET DETAILS
+// =====================================================
+//
+// Called when Manager clicks a user.
+//
+// =====================================================
+
+const getUserWalletDetails = async (
+  userId
+) => {
+
+  const user =
+    await User.findById(userId)
+      .select(
+        "name userId email mobile role isActive bankName accountHolderName accountNumber ifscCode branch"
+      )
+      .lean();
+
+  if (!user) {
+    throw new ApiError(
+      404,
+      "User not found."
+    );
+  }
+
+  const wallet =
+    await Wallet.findOne({
+      user: user._id,
+    }).lean();
+
+  const walletTransactions =
+    wallet?._id
+      ? await WalletTransaction.find({
+          wallet: wallet._id,
+        })
+          .sort({
+            createdAt: -1,
+          })
+          .lean()
+      : [];
+
+  const withdrawals =
+    await Withdraw.find({
+      user: user._id,
+    })
+      .sort({
+        createdAt: -1,
+      })
+      .lean();
+
+  const commissions =
+    await commissionRepository.findByUser(
+      user._id
+    );
+
+  const pendingWithdrawal =
+    withdrawals
+      .filter(
+        (item) =>
+          String(
+            item.status || ""
+          ).toUpperCase() ===
+          "PENDING"
+      )
+      .reduce(
+        (total, item) =>
+          total +
+          Number(item.amount || 0),
+        0
+      );
+
+  const totalCommission =
+    commissions.reduce(
+      (total, item) =>
+        total +
+        Number(
+          item.commissionAmount ||
+          item.amount ||
+          0
+        ),
+      0
+    );
+
+  return {
+
+    user,
+
+    wallet: {
+
+      _id:
+        wallet?._id || null,
+
+      balance:
+        Number(
+          wallet?.balance || 0
+        ),
+
+      totalCommission:
+        Number(
+          wallet?.totalCommission ||
+          totalCommission ||
+          0
+        ),
+
+      totalBonus:
+        Number(
+          wallet?.totalBonus || 0
+        ),
+
+      totalWithdrawn:
+        Number(
+          wallet?.totalWithdrawn || 0
+        ),
+
+      pendingWithdrawal,
+
+    },
+
+    walletTransactions,
+
+    withdrawals,
+
+    commissions,
+
+  };
+
+};
 
 // =====================================================
 // EXPORTS
@@ -3037,10 +3529,16 @@ module.exports = {
 
   getProfile,
 
-  getManagerProducts,
+  getCommissionPage,
 
   getManagerCommissions,
 
-  getCommissionPage,
+  getManagerProducts,
+
+  getManagerWallet,
+
+  getAllUserWallets,
+
+  getUserWalletDetails,
 
 };

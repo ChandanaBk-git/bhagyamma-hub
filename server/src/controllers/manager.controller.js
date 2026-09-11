@@ -512,6 +512,135 @@ const getSellingPoints = async (
 
 };
 
+// =====================================================
+// MANAGER WALLET
+// =====================================================
+
+const getManagerWallet = async (
+  req,
+  res,
+  next
+) => {
+
+  try {
+
+    const managerId =
+      getManagerId(req);
+
+    const data =
+      await managerService.getManagerWallet(
+        managerId
+      );
+
+    return res.status(200).json({
+
+      success: true,
+
+      data,
+
+    });
+
+  } catch (error) {
+
+    console.error(
+      "MANAGER WALLET ERROR:",
+      error
+    );
+
+    next(error);
+
+  }
+
+};
+
+
+// =====================================================
+// ALL USER WALLETS
+// =====================================================
+
+const getAllUserWallets = async (
+  req,
+  res,
+  next
+) => {
+
+  try {
+
+    const data =
+      await managerService.getAllUserWallets();
+
+    return res.status(200).json({
+
+      success: true,
+
+      data,
+
+    });
+
+  } catch (error) {
+
+    console.error(
+      "ALL USER WALLETS ERROR:",
+      error
+    );
+
+    next(error);
+
+  }
+
+};
+
+
+// =====================================================
+// COMPLETE USER WALLET DETAILS
+// =====================================================
+
+const getUserWalletDetails = async (
+  req,
+  res,
+  next
+) => {
+
+  try {
+
+    const userId =
+      req.params.id;
+
+    if (!userId) {
+
+      throw new ApiError(
+        400,
+        "User ID is required."
+      );
+
+    }
+
+    const data =
+      await managerService.getUserWalletDetails(
+        userId
+      );
+
+    return res.status(200).json({
+
+      success: true,
+
+      data,
+
+    });
+
+  } catch (error) {
+
+    console.error(
+      "USER WALLET DETAILS ERROR:",
+      error
+    );
+
+    next(error);
+
+  }
+
+};
+
 
 /*
 =========================================================
@@ -521,22 +650,28 @@ EXPORT
 
 module.exports = {
 
-    getDashboard,
+  getDashboard,
 
-    getMembers,
+  getMembers,
 
-    getMemberById,
+  getMemberById,
 
-    getMemberDetails,
+  getMemberDetails,
 
-    getCommissionPage,
+  getReferralTree,
 
-    getReferralTree,
+  getProfile,
 
-    getProfile,
+  getManagerProducts,
 
-    getManagerProducts,
+  getSellingPoints,
 
-    getSellingPoints,
+  getCommissionPage,
+
+  getManagerWallet,
+
+  getAllUserWallets,
+
+  getUserWalletDetails,
 
 };

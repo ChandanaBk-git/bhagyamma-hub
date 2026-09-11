@@ -7,6 +7,13 @@ const User = require("../models/user.model");
 const cartService = require("./cart.service");
 const sellingPointService = require("./sellingPoint.service");
 
+const productOrderCommissionService =
+    require("./productOrderCommission.service");
+
+
+/* ==========================================================================
+   GENERATE ORDER NUMBER
+   ========================================================================== */
 
 const generateOrderNumber = async () => {
     const lastOrder = await Order.findOne({})
@@ -21,7 +28,8 @@ const generateOrderNumber = async () => {
             String(lastOrder.orderNumber).match(/(\d+)$/);
 
         if (match) {
-            nextNumber = Number(match[1]) + 1;
+            nextNumber =
+                Number(match[1]) + 1;
         }
     }
 
@@ -29,82 +37,132 @@ const generateOrderNumber = async () => {
 };
 
 
+/* ==========================================================================
+   NORMALIZE MOBILE
+   ========================================================================== */
+
 const normalizeMobile = (mobile) => {
     return String(mobile || "")
         .replace(/\D/g, "");
 };
 
 
+/* ==========================================================================
+   CALCULATE ORDER SELLING POINTS
+   ========================================================================== */
+
 const calculateOrderSellingPoints = (amount) => {
-    const purchaseAmount = Number(amount || 0);
+    const purchaseAmount =
+        Number(amount || 0);
 
     if (purchaseAmount < 100) {
         return 0;
     }
 
-    return Math.floor(purchaseAmount / 100) * 2;
+    return (
+        Math.floor(
+            purchaseAmount / 100
+        ) * 2
+    );
 };
 
 
-const calculateGuestOrderSellingPoints = async (order) => {
-    const currentMobile = normalizeMobile(
-        order.customerMobile
-    );
+/* ==========================================================================
+   CALCULATE GUEST ORDER SELLING POINTS
+   ========================================================================== */
 
-    const purchaseAmount = Math.max(
+const calculateGuestOrderSellingPoints = async (
+    order
+) => {
+    const currentMobile =
+        normalizeMobile(
+            order.customerMobile
+        );
+
+const purchaseAmount =
+    Math.max(
         0,
-        Number(order.subtotal || 0)
+        Number(order.finalAmount || 0) -
+        Number(order.deliveryCharge || 0)
     );
 
     let previousCarry = 0;
 
-    if (currentMobile.length === 10) {
-        const previousOrders = await Order.find({
-            _id: {
-                $ne: order._id,
-            },
+    if (
+        currentMobile.length === 10
+    ) {
+        const previousOrders =
+            await Order.find({
+                _id: {
+                    $ne: order._id,
+                },
 
-            orderType: "GUEST",
+                orderType: "GUEST",
 
-            userId: null,
+                userId: null,
 
-            customerMobile: currentMobile,
+                customerMobile:
+                    currentMobile,
 
-            paymentStatus: "PAID",
+                paymentStatus: "PAID",
 
-            sellingPointsProcessed: true,
-        })
-            .sort({
-                createdAt: 1,
-                _id: 1,
+                sellingPointsProcessed:
+                    true,
             })
-            .select(
-                "subtotal spCarryForward sellingPoints sellingPointsProcessed"
-            )
-            .lean();
+                .sort({
+                    createdAt: 1,
+                    _id: 1,
+                })
+                .select(
+                    "subtotal discount deliveryCharge spEligibleAmount spCarryForward sellingPoints sellingPointsProcessed"
+                )
+                .lean();
 
-        for (const previousOrder of previousOrders) {
+        for (
+            const previousOrder
+            of previousOrders
+        ) {
             if (
                 previousOrder.spCarryForward !==
                     undefined &&
-                previousOrder.spCarryForward !== null
+                previousOrder.spCarryForward !==
+                    null
             ) {
-                previousCarry = Math.max(
-                    0,
-                    Number(
-                        previousOrder.spCarryForward || 0
-                    )
-                );
+                previousCarry =
+                    Math.max(
+                        0,
+                        Number(
+                            previousOrder.spCarryForward ||
+                            0
+                        )
+                    );
             } else {
-                const oldAmount = Math.max(
-                    0,
-                    Number(
-                        previousOrder.subtotal || 0
-                    )
-                );
+                const oldAmount =
+                    Math.max(
+                        0,
+                        Number(
+                            previousOrder.spEligibleAmount
+                        ) > 0
+                            ? Number(
+                                previousOrder.spEligibleAmount
+                            )
+                            : Number(
+                                previousOrder.subtotal ||
+                                0
+                            ) -
+                              Number(
+                                previousOrder.discount ||
+                                0
+                              ) -
+                              Number(
+                                previousOrder.deliveryCharge ||
+                                0
+                              )
+                    );
 
                 const oldTotal =
-                    oldAmount + previousCarry;
+                    oldAmount +
+                    previousCarry;
 
                 previousCarry =
                     oldTotal % 100;
@@ -113,7 +171,8 @@ const calculateGuestOrderSellingPoints = async (order) => {
     }
 
     const calculationTotal =
-        purchaseAmount + previousCarry;
+        purchaseAmount +
+        previousCarry;
 
     const completedBlocks =
         Math.floor(
@@ -128,20 +187,33 @@ const calculateGuestOrderSellingPoints = async (order) => {
 
     return {
         purchaseAmount,
-        previousPendingAmount: previousCarry,
-        totalAmount: calculationTotal,
-        completeBlocks: completedBlocks,
+
+        previousPendingAmount:
+            previousCarry,
+
+        totalAmount:
+            calculationTotal,
+
+        completeBlocks:
+            completedBlocks,
+
         pointsEarned,
+
         pendingAmount,
     };
 };
 
+
+/* ==========================================================================
+   CREATE ORDER
+   ========================================================================== */
 
 const createOrder = async (
     userId,
     orderData = {}
 ) => {
     try {
+
         const {
             customerName = "",
             customerMobile = "",
@@ -157,6 +229,11 @@ const createOrder = async (
             items: guestItems = [],
         } = orderData;
 
+
+        /* ------------------------------------------------------------------
+           DETERMINE GUEST / MEMBER
+           ------------------------------------------------------------------ */
+
         const isGuest =
             !userId ||
             userId === null ||
@@ -167,9 +244,16 @@ const createOrder = async (
                 ? "GUEST"
                 : "MEMBER";
 
+
         let cart = null;
 
+
+        /* ==================================================================
+           MEMBER CART
+           ================================================================== */
+
         if (!isGuest) {
+
             console.log(
                 "======================================"
             );
@@ -188,10 +272,12 @@ const createOrder = async (
                 String(userId)
             );
 
+
             cart =
                 await cartService.getCart(
                     userId
                 );
+
 
             console.log(
                 "CART FOUND:",
@@ -239,14 +325,18 @@ const createOrder = async (
                 "======================================"
             );
 
+
             if (!cart) {
                 throw new Error(
                     "Cart not found"
                 );
             }
 
+
             if (
-                !Array.isArray(cart.items) ||
+                !Array.isArray(
+                    cart.items
+                ) ||
                 cart.items.length === 0
             ) {
                 throw new Error(
@@ -255,49 +345,210 @@ const createOrder = async (
             }
         }
 
+
+        /* ------------------------------------------------------------------
+           INITIALIZE PRICING
+           ------------------------------------------------------------------ */
+
         let subtotal = 0;
         let discount = 0;
         let walletAmount = 0;
         let deliveryCharge = 0;
 
+
+        /* ==================================================================
+           MEMBER PRICING
+           ==================================================================
+
+           IMPORTANT:
+
+           Only an EXISTING REGISTERED ACTIVE MEMBER gets 20% discount.
+
+           Guest:
+               handled separately
+
+           Registered but inactive:
+               0% discount
+
+           Registered + Active:
+               20% discount
+
+           Delivery:
+               always ₹50
+
+           Delivery is never included in discount/commission.
+           ================================================================== */
+
         if (!isGuest) {
+
             subtotal =
                 Number(
                     cart.totalAmount || 0
                 );
 
-            discount =
-                Number(
-                    cart.discount || 0
+
+            /* --------------------------------------------------------------
+               GET REGISTERED MEMBER
+               -------------------------------------------------------------- */
+
+            const buyer =
+                await User.findById(
+                    userId
+                ).lean();
+
+
+            if (!buyer) {
+                throw new Error(
+                    "User not found"
                 );
+            }
+
+
+            /* --------------------------------------------------------------
+               CHECK ACTIVE MEMBERSHIP
+               -------------------------------------------------------------- */
+
+            const isActiveMember =
+                String(
+                    buyer.membershipStatus ||
+                    ""
+                )
+                    .trim()
+                    .toLowerCase() ===
+                "active";
+
+
+            /* --------------------------------------------------------------
+               20% DISCOUNT ONLY FOR ACTIVE MEMBERS
+               -------------------------------------------------------------- */
+
+            discount =
+                isActiveMember
+                    ? Math.round(
+                        (
+                            subtotal * 20
+                        ) / 100 * 100
+                    ) / 100
+                    : 0;
+
+
+            /* --------------------------------------------------------------
+               WALLET
+               -------------------------------------------------------------- */
 
             walletAmount =
                 Number(
                     cart.walletAmount || 0
                 );
 
+
+            /* --------------------------------------------------------------
+               DELIVERY
+               --------------------------------------------------------------
+
+               Always ₹50.
+
+               It is NOT discounted.
+               It is NOT included in commission.
+               -------------------------------------------------------------- */
+
             deliveryCharge = 50;
+
+
+            console.log(
+                "======================================"
+            );
+
+            console.log(
+                "MEMBER ORDER PRICING"
+            );
+
+            console.log(
+                "Member:",
+                buyer.userId
+            );
+
+            console.log(
+                "Membership Status:",
+                buyer.membershipStatus
+            );
+
+            console.log(
+                "Active Member:",
+                isActiveMember
+            );
+
+            console.log(
+                "Original Subtotal: ₹",
+                subtotal
+            );
+
+            console.log(
+                "Member Discount: ₹",
+                discount
+            );
+
+            console.log(
+                "Product Payable: ₹",
+                Math.max(
+                    0,
+                    subtotal - discount
+                )
+            );
+
+            console.log(
+                "Wallet Amount: ₹",
+                walletAmount
+            );
+
+            console.log(
+                "Delivery: ₹",
+                deliveryCharge
+            );
+
+            console.log(
+                "======================================"
+            );
+
         } else {
+
+            /* =================================================================
+               GUEST PRICING
+               =================================================================
+
+               Guests DO NOT receive the 20% member discount.
+
+               Their existing guest pricing is preserved.
+               ================================================================= */
+
             subtotal =
                 Number(
                     guestSubtotal || 0
                 );
+
 
             discount =
                 Number(
                     guestDiscount || 0
                 );
 
+
             walletAmount =
                 Number(
                     guestWalletAmount || 0
                 );
+
 
             deliveryCharge =
                 Number(
                     guestDeliveryCharge || 0
                 );
         }
+
+
+        /* ------------------------------------------------------------------
+           FINAL AMOUNT
+           ------------------------------------------------------------------ */
 
         const finalAmount =
             Math.max(
@@ -308,16 +559,38 @@ const createOrder = async (
                     deliveryCharge
             );
 
-        const sellingPoints =
-            calculateOrderSellingPoints(
-                subtotal
-            );
+
+        /* ------------------------------------------------------------------
+           SELLING POINTS
+           ------------------------------------------------------------------ */
+
+const sellingPointAmount =
+    Math.max(
+        0,
+        finalAmount -
+            deliveryCharge
+    );
+
+const sellingPoints =
+    calculateOrderSellingPoints(
+        sellingPointAmount
+    );
+
+        /* ------------------------------------------------------------------
+           ORDER NUMBER
+           ------------------------------------------------------------------ */
 
         const orderNumber =
             await generateOrderNumber();
 
+
+        /* ==================================================================
+           CREATE ORDER
+           ================================================================== */
+
         const order =
             await Order.create({
+
                 userId:
                     isGuest
                         ? null
@@ -325,133 +598,185 @@ const createOrder = async (
 
                 orderType,
 
+
                 customerName:
                     String(
                         customerName || ""
                     ).trim(),
+
 
                 customerMobile:
                     String(
                         customerMobile || ""
                     ).trim(),
 
+
                 customerEmail:
                     String(
                         customerEmail || ""
                     ).trim(),
 
+
                 orderNumber,
+
 
                 subtotal,
 
+
                 discount,
+
 
                 walletAmount,
 
+
                 deliveryCharge,
+
 
                 finalAmount,
 
+
                 sellingPoints,
+
 
                 sellingPointsProcessed:
                     false,
 
+
                 sellingPointsProcessedAt:
                     null,
+
 
                 spPreviousCarryForward:
                     0,
 
+
                 spCalculationTotal:
                     0,
+
 
                 spCompletedBlocks:
                     0,
 
-                spEligibleAmount:
-                    0,
+
+spEligibleAmount:
+    sellingPointAmount,
 
                 spCarryForward:
                     0,
 
+
                 status:
                     "PLACED",
 
+
                 paymentMethod,
+
 
                 paymentStatus:
                     "PENDING",
 
+
                 phonePeOrderId:
                     null,
+
 
                 phonePeTransactionId:
                     null,
 
+
                 paidAt:
                     null,
+
 
                 membershipLinked:
                     false,
 
+
                 linkedAt:
                     null,
 
+
                 deliveryDetails: {
+
                     name:
                         deliveryDetails.name ||
                         customerName ||
                         "",
+
 
                     mobile:
                         deliveryDetails.mobile ||
                         customerMobile ||
                         "",
 
+
                     address:
                         deliveryDetails.address ||
                         "",
+
 
                     city:
                         deliveryDetails.city ||
                         "",
 
+
                     state:
                         deliveryDetails.state ||
                         "",
+
 
                     pincode:
                         deliveryDetails.pincode ||
                         "",
                 },
 
+
                 placedAt:
                     new Date(),
             });
 
+
+        /* ==================================================================
+           SAVE ORDER ITEMS
+           ================================================================== */
+
         let itemsToSave = [];
 
+
         if (!isGuest) {
+
             itemsToSave =
-                Array.isArray(cart?.items)
+                Array.isArray(
+                    cart?.items
+                )
                     ? cart.items
                     : [];
+
         } else {
+
             itemsToSave =
-                Array.isArray(guestItems)
+                Array.isArray(
+                    guestItems
+                )
                     ? guestItems
                     : [];
         }
 
-        if (itemsToSave.length > 0) {
+
+        if (
+            itemsToSave.length > 0
+        ) {
+
             const orderItems =
                 itemsToSave.map(
                     (item) => {
+
                         const quantity =
                             Number(
-                                item.quantity || 1
+                                item.quantity ||
+                                1
                             );
+
 
                         const price =
                             Number(
@@ -460,20 +785,25 @@ const createOrder = async (
                                 0
                             );
 
+
                         const total =
                             Number(
                                 item.total ||
                                 price * quantity
                             );
 
+
                         return {
+
                             orderId:
                                 order._id,
+
 
                             productId:
                                 item.productId?._id ||
                                 item.productId ||
                                 null,
+
 
                             productName:
                                 item.productId?.name ||
@@ -482,14 +812,18 @@ const createOrder = async (
                                 item.name ||
                                 "Product",
 
+
                             quantity,
 
+
                             price,
+
 
                             total,
                         };
                     }
                 );
+
 
             const validOrderItems =
                 orderItems.filter(
@@ -497,14 +831,21 @@ const createOrder = async (
                         item.productId
                 );
 
+
             if (
                 validOrderItems.length > 0
             ) {
+
                 await OrderItem.insertMany(
                     validOrderItems
                 );
             }
         }
+
+
+        /* ==================================================================
+           LOG ORDER
+           ================================================================== */
 
         console.log(
             "======================================"
@@ -535,6 +876,16 @@ const createOrder = async (
         );
 
         console.log(
+            "Discount: ₹",
+            discount
+        );
+
+        console.log(
+            "Wallet: ₹",
+            walletAmount
+        );
+
+        console.log(
             "Delivery Charge: ₹",
             deliveryCharge
         );
@@ -544,11 +895,15 @@ const createOrder = async (
             finalAmount
         );
 
-        console.log(
-            "Order SP:",
-            sellingPoints
-        );
+console.log(
+    "SP Eligible Amount: ₹",
+    sellingPointAmount
+);
 
+console.log(
+    "Order SP:",
+    sellingPoints
+);
         console.log(
             "Payment Status:",
             "PENDING"
@@ -562,11 +917,13 @@ const createOrder = async (
             "======================================"
         );
 
+
         return await Order.findById(
             order._id
         ).lean();
 
     } catch (error) {
+
         console.error(
             "CREATE ORDER ERROR:",
             error
@@ -577,10 +934,15 @@ const createOrder = async (
 };
 
 
+/* ==========================================================================
+   PLACE ORDER
+   ========================================================================== */
+
 const placeOrder = async (
     userId,
     orderData = {}
 ) => {
+
     return createOrder(
         userId,
         orderData
@@ -588,10 +950,16 @@ const placeOrder = async (
 };
 
 
+/* ==========================================================================
+   PLACE GUEST ORDER
+   ========================================================================== */
+
 const placeGuestOrder = async (
     orderData = {}
 ) => {
+
     try {
+
         const customerName =
             String(
                 orderData.customerName ||
@@ -599,12 +967,14 @@ const placeGuestOrder = async (
                 ""
             ).trim();
 
+
         const customerMobile =
             normalizeMobile(
                 orderData.customerMobile ||
                 orderData.mobile ||
                 ""
             );
+
 
         const customerEmail =
             String(
@@ -615,17 +985,21 @@ const placeGuestOrder = async (
                 .trim()
                 .toLowerCase();
 
+
         const existingDeliveryDetails =
             orderData.deliveryDetails ||
             {};
 
+
         const deliveryDetails = {
+
             name:
                 String(
                     existingDeliveryDetails.name ||
                     customerName ||
                     ""
                 ).trim(),
+
 
             mobile:
                 normalizeMobile(
@@ -634,12 +1008,14 @@ const placeGuestOrder = async (
                     ""
                 ),
 
+
             address:
                 String(
                     existingDeliveryDetails.address ||
                     orderData.address ||
                     ""
                 ).trim(),
+
 
             city:
                 String(
@@ -648,12 +1024,14 @@ const placeGuestOrder = async (
                     ""
                 ).trim(),
 
+
             state:
                 String(
                     existingDeliveryDetails.state ||
                     orderData.state ||
                     ""
                 ).trim(),
+
 
             pincode:
                 String(
@@ -667,11 +1045,13 @@ const placeGuestOrder = async (
                     ),
         };
 
+
         if (!customerName) {
             throw new Error(
                 "Customer name is required"
             );
         }
+
 
         if (
             customerMobile.length !== 10
@@ -681,6 +1061,7 @@ const placeGuestOrder = async (
             );
         }
 
+
         if (
             !deliveryDetails.address
         ) {
@@ -688,6 +1069,7 @@ const placeGuestOrder = async (
                 "Delivery address is required"
             );
         }
+
 
         if (
             !deliveryDetails.city
@@ -697,6 +1079,7 @@ const placeGuestOrder = async (
             );
         }
 
+
         if (
             !deliveryDetails.state
         ) {
@@ -704,6 +1087,7 @@ const placeGuestOrder = async (
                 "State is required"
             );
         }
+
 
         if (
             deliveryDetails.pincode.length !== 6
@@ -713,38 +1097,57 @@ const placeGuestOrder = async (
             );
         }
 
+
         const normalizedOrderData = {
+
             ...orderData,
+
 
             customerName,
 
+
             customerMobile,
+
 
             customerEmail,
 
+
             deliveryDetails,
+
 
             paymentMethod:
                 orderData.paymentMethod ||
                 "PHONEPE",
+
 
             subtotal:
                 Number(
                     orderData.subtotal || 0
                 ),
 
-            discount:
-                Number(
-                    orderData.discount || 0
-                ),
+
+            /*
+             * Guest discount remains whatever
+             * the existing guest flow sends.
+             *
+             * Product member discount is NOT
+             * applied here.
+             */
+discount: 0,
+
 
             walletAmount:
                 Number(
                     orderData.walletAmount || 0
                 ),
 
+
+            /*
+             * Guest delivery is always ₹50.
+             */
             deliveryCharge:
                 50,
+
 
             items:
                 Array.isArray(
@@ -754,12 +1157,14 @@ const placeGuestOrder = async (
                     : [],
         };
 
+
         return await createOrder(
             null,
             normalizedOrderData
         );
 
     } catch (error) {
+
         console.error(
             "PLACE GUEST ORDER ERROR:",
             error
@@ -770,11 +1175,17 @@ const placeGuestOrder = async (
 };
 
 
+/* ==========================================================================
+   GET ORDER BY ID
+   ========================================================================== */
+
 const getOrderById = async (
     orderId,
     userId = null
 ) => {
+
     try {
+
         if (
             !mongoose.Types.ObjectId.isValid(
                 orderId
@@ -785,14 +1196,18 @@ const getOrderById = async (
             );
         }
 
+
         const query = {
-            _id: orderId,
+            _id:
+                orderId,
         };
+
 
         if (userId) {
             query.userId =
                 userId;
         }
+
 
         const order =
             await Order.findOne(
@@ -804,11 +1219,13 @@ const getOrderById = async (
                 )
                 .lean();
 
+
         if (!order) {
             throw new Error(
                 "Order not found"
             );
         }
+
 
         const items =
             await OrderItem.find({
@@ -821,12 +1238,16 @@ const getOrderById = async (
                 )
                 .lean();
 
+
         return {
+
             ...order,
+
             items,
         };
 
     } catch (error) {
+
         console.error(
             "GET ORDER BY ID ERROR:",
             error
@@ -837,13 +1258,20 @@ const getOrderById = async (
 };
 
 
+/* ==========================================================================
+   GET MY ORDERS
+   ========================================================================== */
+
 const getMyOrders = async (
     userId
 ) => {
+
     try {
+
         if (!userId) {
             return [];
         }
+
 
         const orders =
             await Order.find({
@@ -854,15 +1282,18 @@ const getMyOrders = async (
                 })
                 .lean();
 
+
         if (!orders.length) {
             return [];
         }
+
 
         const orderIds =
             orders.map(
                 (order) =>
                     order._id
             );
+
 
         const items =
             await OrderItem.find({
@@ -877,29 +1308,37 @@ const getMyOrders = async (
                 )
                 .lean();
 
+
         const itemsByOrder = {};
+
 
         for (
             const item
             of items
         ) {
+
             const key =
                 item.orderId.toString();
+
 
             if (
                 !itemsByOrder[key]
             ) {
+
                 itemsByOrder[key] =
                     [];
             }
+
 
             itemsByOrder[key].push(
                 item
             );
         }
 
+
         return orders.map(
             (order) => ({
+
                 ...order,
 
                 items:
@@ -910,6 +1349,7 @@ const getMyOrders = async (
         );
 
     } catch (error) {
+
         console.error(
             "GET MY ORDERS ERROR:",
             error
@@ -920,10 +1360,16 @@ const getMyOrders = async (
 };
 
 
+/* ==========================================================================
+   GET ALL ORDERS
+   ========================================================================== */
+
 const getAllOrders = async (
     options = {}
 ) => {
+
     try {
+
         const {
             page = 1,
             limit = 20,
@@ -933,29 +1379,37 @@ const getAllOrders = async (
             search,
         } = options;
 
+
         const filter = {};
+
 
         if (status) {
             filter.status =
                 status;
         }
 
+
         if (paymentStatus) {
             filter.paymentStatus =
                 paymentStatus;
         }
+
 
         if (orderType) {
             filter.orderType =
                 orderType;
         }
 
+
         if (search) {
+
             filter.$or = [
+
                 {
                     orderNumber: {
                         $regex:
                             search,
+
                         $options:
                             "i",
                     },
@@ -965,6 +1419,7 @@ const getAllOrders = async (
                     customerName: {
                         $regex:
                             search,
+
                         $options:
                             "i",
                     },
@@ -974,6 +1429,7 @@ const getAllOrders = async (
                     customerMobile: {
                         $regex:
                             search,
+
                         $options:
                             "i",
                     },
@@ -983,6 +1439,7 @@ const getAllOrders = async (
                     customerEmail: {
                         $regex:
                             search,
+
                         $options:
                             "i",
                     },
@@ -990,14 +1447,19 @@ const getAllOrders = async (
             ];
         }
 
+
         const skip =
-            (Number(page) - 1) *
+            (
+                Number(page) - 1
+            ) *
             Number(limit);
+
 
         const [
             orders,
             total,
         ] = await Promise.all([
+
             Order.find(filter)
                 .populate(
                     "userId",
@@ -1017,11 +1479,15 @@ const getAllOrders = async (
             ),
         ]);
 
+
         if (!orders.length) {
+
             return {
+
                 orders: [],
 
                 pagination: {
+
                     page:
                         Number(page),
 
@@ -1035,11 +1501,13 @@ const getAllOrders = async (
             };
         }
 
+
         const orderIds =
             orders.map(
                 (order) =>
                     order._id
             );
+
 
         const items =
             await OrderItem.find({
@@ -1054,31 +1522,40 @@ const getAllOrders = async (
                 )
                 .lean();
 
+
         const itemsByOrder = {};
+
 
         for (
             const item
             of items
         ) {
+
             const key =
                 item.orderId.toString();
+
 
             if (
                 !itemsByOrder[key]
             ) {
+
                 itemsByOrder[key] =
                     [];
             }
+
 
             itemsByOrder[key].push(
                 item
             );
         }
 
+
         return {
+
             orders:
                 orders.map(
                     (order) => ({
+
                         ...order,
 
                         items:
@@ -1088,7 +1565,9 @@ const getAllOrders = async (
                     })
                 ),
 
+
             pagination: {
+
                 page:
                     Number(page),
 
@@ -1106,6 +1585,7 @@ const getAllOrders = async (
         };
 
     } catch (error) {
+
         console.error(
             "GET ALL ORDERS ERROR:",
             error
@@ -1115,12 +1595,22 @@ const getAllOrders = async (
     }
 };
 
+
+/* ==========================================================================
+   GET ORDERS BY MOBILE
+   ========================================================================== */
+
 const getOrdersByMobile = async (
     mobile
 ) => {
+
     try {
+
         const normalizedMobile =
-            normalizeMobile(mobile);
+            normalizeMobile(
+                mobile
+            );
+
 
         if (
             normalizedMobile.length !== 10
@@ -1129,6 +1619,7 @@ const getOrdersByMobile = async (
                 "Valid 10-digit mobile number is required"
             );
         }
+
 
         const orders =
             await Order.find({
@@ -1140,15 +1631,18 @@ const getOrdersByMobile = async (
                 })
                 .lean();
 
+
         if (!orders.length) {
             return [];
         }
+
 
         const orderIds =
             orders.map(
                 (order) =>
                     order._id
             );
+
 
         const items =
             await OrderItem.find({
@@ -1163,29 +1657,37 @@ const getOrdersByMobile = async (
                 )
                 .lean();
 
+
         const itemsByOrder = {};
+
 
         for (
             const item
             of items
         ) {
+
             const key =
                 item.orderId.toString();
+
 
             if (
                 !itemsByOrder[key]
             ) {
+
                 itemsByOrder[key] =
                     [];
             }
+
 
             itemsByOrder[key].push(
                 item
             );
         }
 
+
         return orders.map(
             (order) => ({
+
                 ...order,
 
                 items:
@@ -1196,6 +1698,7 @@ const getOrdersByMobile = async (
         );
 
     } catch (error) {
+
         console.error(
             "GET ORDERS BY MOBILE ERROR:",
             error
@@ -1214,12 +1717,15 @@ const linkGuestOrdersToUser = async (
     userId,
     mobile
 ) => {
+
     try {
+
         if (!userId) {
             throw new Error(
                 "User ID is required"
             );
         }
+
 
         if (
             !mongoose.Types.ObjectId.isValid(
@@ -1231,8 +1737,12 @@ const linkGuestOrdersToUser = async (
             );
         }
 
+
         const normalizedMobile =
-            normalizeMobile(mobile);
+            normalizeMobile(
+                mobile
+            );
+
 
         if (
             normalizedMobile.length !== 10
@@ -1242,8 +1752,10 @@ const linkGuestOrdersToUser = async (
             );
         }
 
+
         const result =
             await Order.updateMany(
+
                 {
                     orderType:
                         "GUEST",
@@ -1257,6 +1769,7 @@ const linkGuestOrdersToUser = async (
 
                 {
                     $set: {
+
                         userId,
 
                         orderType:
@@ -1271,7 +1784,9 @@ const linkGuestOrdersToUser = async (
                 }
             );
 
+
         return {
+
             matchedCount:
                 result.matchedCount,
 
@@ -1280,6 +1795,7 @@ const linkGuestOrdersToUser = async (
         };
 
     } catch (error) {
+
         console.error(
             "LINK GUEST ORDERS ERROR:",
             error
@@ -1292,25 +1808,27 @@ const linkGuestOrdersToUser = async (
 
 /* ==========================================================================
    CLAIM GUEST ORDERS
-   ==========================================================================
-
-   Backward-compatible function.
-
    ========================================================================== */
 
 const claimGuestOrders = async (
     userId,
     mobile
 ) => {
+
     try {
+
         if (!userId) {
             throw new Error(
                 "User ID is required"
             );
         }
 
+
         const normalizedMobile =
-            normalizeMobile(mobile);
+            normalizeMobile(
+                mobile
+            );
+
 
         if (
             normalizedMobile.length !== 10
@@ -1320,8 +1838,10 @@ const claimGuestOrders = async (
             );
         }
 
+
         const result =
             await Order.updateMany(
+
                 {
                     orderType:
                         "GUEST",
@@ -1341,6 +1861,7 @@ const claimGuestOrders = async (
 
                 {
                     $set: {
+
                         userId,
 
                         orderType:
@@ -1355,7 +1876,9 @@ const claimGuestOrders = async (
                 }
             );
 
+
         return {
+
             matchedCount:
                 result.matchedCount,
 
@@ -1364,6 +1887,7 @@ const claimGuestOrders = async (
         };
 
     } catch (error) {
+
         console.error(
             "CLAIM GUEST ORDERS ERROR:",
             error
@@ -1376,33 +1900,13 @@ const claimGuestOrders = async (
 
 /* ==========================================================================
    CLAIM GUEST ORDERS FOR MEMBER
-   ==========================================================================
-
-   MAIN REGISTRATION RECOVERY FLOW.
-
-   Example:
-
-   Guest order 1 = ₹2,888
-
-   Guest registers later with same mobile.
-
-   This function:
-
-       - finds PAID guest orders
-       - processes oldest first
-       - gives SP
-       - preserves carry-forward
-       - creates ORDER_PURCHASE history
-       - links orders
-       - updates qualifying purchase
-       - activates membership when qualified
-
    ========================================================================== */
 
 const claimGuestOrdersForMember = async (
     userId,
     mobile
 ) => {
+
     try {
 
         /* ------------------------------------------------------------------
@@ -1414,6 +1918,7 @@ const claimGuestOrdersForMember = async (
                 "User ID is required"
             );
         }
+
 
         if (
             !mongoose.Types.ObjectId.isValid(
@@ -1431,7 +1936,10 @@ const claimGuestOrdersForMember = async (
            ------------------------------------------------------------------ */
 
         const normalizedMobile =
-            normalizeMobile(mobile);
+            normalizeMobile(
+                mobile
+            );
+
 
         if (
             normalizedMobile.length !== 10
@@ -1451,6 +1959,7 @@ const claimGuestOrdersForMember = async (
                 userId
             );
 
+
         if (!user) {
             throw new Error(
                 "User not found"
@@ -1459,23 +1968,12 @@ const claimGuestOrdersForMember = async (
 
 
         /* ------------------------------------------------------------------
-           FIND PREVIOUS PAID GUEST ORDERS
-           ------------------------------------------------------------------
-
-           VERY IMPORTANT:
-
-           We do NOT search for:
-
-               sellingPointsProcessed: false
-
-           because guest orders may already have had their
-           guest SP calculated when payment was completed.
-
-           We need to recover those orders into the member account.
+           FIND PAID GUEST ORDERS
            ------------------------------------------------------------------ */
 
         const guestOrders =
             await Order.find({
+
                 orderType:
                     "GUEST",
 
@@ -1504,7 +2002,9 @@ const claimGuestOrdersForMember = async (
         if (
             guestOrders.length === 0
         ) {
+
             return {
+
                 claimedCount:
                     0,
 
@@ -1554,7 +2054,7 @@ const claimGuestOrdersForMember = async (
 
 
         /* ------------------------------------------------------------------
-           PROCESS ORDERS ONE BY ONE
+           PROCESS ORDERS
            ------------------------------------------------------------------ */
 
         let claimedCount =
@@ -1587,20 +2087,6 @@ const claimGuestOrdersForMember = async (
                 purchaseAmount > 0
             ) {
 
-                /*
-                 * Use the existing SP service.
-                 *
-                 * It handles:
-                 *
-                 * previous pendingPurchaseAmount
-                 * current purchase
-                 * complete ₹100 blocks
-                 * SP
-                 * new carry-forward
-                 * lifetime purchase
-                 * ORDER_PURCHASE history
-                 */
-
                 await sellingPointService
                     .updateSellingPoints(
                         user._id,
@@ -1621,11 +2107,14 @@ const claimGuestOrdersForMember = async (
             guestOrder.userId =
                 user._id;
 
+
             guestOrder.orderType =
                 "MEMBER";
 
+
             guestOrder.membershipLinked =
                 true;
+
 
             guestOrder.linkedAt =
                 new Date();
@@ -1690,19 +2179,11 @@ const claimGuestOrdersForMember = async (
 
 
         /* ------------------------------------------------------------------
-           MEMBERSHIP ACTIVATION
-           ------------------------------------------------------------------
-
-           Normally sellingPoint.service.js will activate
-           membership when the user reaches the required SP.
-
-           This is a safety check using the ₹2,000 purchase
-           qualification rule.
-
-           We DO NOT award another 40 SP here.
+           MEMBERSHIP ACTIVATION SAFETY CHECK
            ------------------------------------------------------------------ */
 
         if (
+
             user &&
 
             String(
@@ -1768,6 +2249,7 @@ const claimGuestOrdersForMember = async (
            ------------------------------------------------------------------ */
 
         return {
+
             claimedCount,
 
             totalPurchaseAmount,
@@ -1831,11 +2313,8 @@ const claimGuestOrdersForMember = async (
 const processSellingPoints = async (
     orderId
 ) => {
-    try {
 
-        /* ------------------------------------------------------------------
-           FIND ORDER
-           ------------------------------------------------------------------ */
+    try {
 
         if (
             !mongoose.Types.ObjectId.isValid(
@@ -1879,7 +2358,9 @@ const processSellingPoints = async (
                 `SP SKIPPED: Payment not PAID ${order.orderNumber}`
             );
 
+
             return {
+
                 success:
                     false,
 
@@ -1898,6 +2379,7 @@ const processSellingPoints = async (
         ) {
 
             return {
+
                 success:
                     true,
 
@@ -1923,19 +2405,13 @@ const processSellingPoints = async (
            GUEST ORDER
            ================================================================== */
 
-        if (
-            !order.userId
-        ) {
+        if (!order.userId) {
 
             const calculation =
                 await calculateGuestOrderSellingPoints(
                     order
                 );
 
-
-            /* --------------------------------------------------------------
-               STORE GUEST SP CALCULATION
-               -------------------------------------------------------------- */
 
             order.sellingPoints =
                 Number(
@@ -2044,6 +2520,7 @@ const processSellingPoints = async (
 
 
             return {
+
                 success:
                     true,
 
@@ -2090,7 +2567,9 @@ const processSellingPoints = async (
                 `SP SKIPPED: User not found for ${order.orderNumber}`
             );
 
+
             return {
+
                 success:
                     false,
 
@@ -2129,7 +2608,9 @@ const processSellingPoints = async (
                 `SP SKIPPED: Role ${user.role} not eligible`
             );
 
+
             return {
+
                 success:
                     false,
 
@@ -2143,13 +2624,24 @@ const processSellingPoints = async (
            SP ELIGIBLE AMOUNT
            ------------------------------------------------------------------ */
 
-        const sellingPointAmount =
+const sellingPointAmount =
+    Number(
+        order.spEligibleAmount
+    ) > 0
+        ? Number(
+            order.spEligibleAmount
+        )
+        : Math.max(
+            0,
             Number(
-                order.subtotal ||
+                order.finalAmount ||
                 0
-            );
-
-
+            ) -
+            Number(
+                order.deliveryCharge ||
+                0
+            )
+        );
         if (
             sellingPointAmount <= 0
         ) {
@@ -2157,16 +2649,20 @@ const processSellingPoints = async (
             order.sellingPoints =
                 0;
 
+
             order.sellingPointsProcessed =
                 true;
 
+
             order.sellingPointsProcessedAt =
                 new Date();
+
 
             await order.save();
 
 
             return {
+
                 success:
                     true,
 
@@ -2247,19 +2743,6 @@ const processSellingPoints = async (
             );
 
 
-        /*
-         * IMPORTANT:
-         *
-         * Do NOT calculate:
-         *
-         *     floor(subtotal / 100) * 2
-         *
-         * here again.
-         *
-         * The existing SP service already handles
-         * carry-forward.
-         */
-
         if (
             updatedOrder
         ) {
@@ -2285,6 +2768,7 @@ const processSellingPoints = async (
 
 
         return {
+
             success:
                 true,
 
@@ -2311,6 +2795,8 @@ const processSellingPoints = async (
         throw error;
     }
 };
+
+
 /* ==========================================================================
    UPDATE PAYMENT STATUS
    ========================================================================== */
@@ -2320,6 +2806,7 @@ const updatePaymentStatus = async (
     paymentStatus,
     paymentData = {}
 ) => {
+
     try {
 
         if (
@@ -2362,6 +2849,7 @@ const updatePaymentStatus = async (
 
 
         const updateData = {
+
             paymentStatus:
                 normalizedStatus,
         };
@@ -2370,6 +2858,7 @@ const updatePaymentStatus = async (
         if (
             paymentData.phonePeOrderId
         ) {
+
             updateData.phonePeOrderId =
                 paymentData.phonePeOrderId;
         }
@@ -2378,6 +2867,7 @@ const updatePaymentStatus = async (
         if (
             paymentData.phonePeTransactionId
         ) {
+
             updateData.phonePeTransactionId =
                 paymentData.phonePeTransactionId;
         }
@@ -2386,6 +2876,7 @@ const updatePaymentStatus = async (
         if (
             paymentData.paymentResponse
         ) {
+
             updateData.paymentResponse =
                 paymentData.paymentResponse;
         }
@@ -2395,6 +2886,7 @@ const updatePaymentStatus = async (
             normalizedStatus ===
             "PAID"
         ) {
+
             updateData.paidAt =
                 paymentData.paidAt
                     ? new Date(
@@ -2406,6 +2898,7 @@ const updatePaymentStatus = async (
 
         const order =
             await Order.findByIdAndUpdate(
+
                 orderId,
 
                 {
@@ -2430,16 +2923,18 @@ const updatePaymentStatus = async (
         }
 
 
-        /*
-         * ONLY PAID ORDERS ARE PROCESSED.
-         *
-         * FAILED orders NEVER receive SP.
-         */
+        /* ==================================================================
+           PAID ORDER PROCESSING
+           ================================================================== */
 
         if (
             normalizedStatus ===
             "PAID"
         ) {
+
+            /* --------------------------------------------------------------
+               1. EXISTING SELLING POINT PROCESSING
+               -------------------------------------------------------------- */
 
             try {
 
@@ -2452,13 +2947,66 @@ const updatePaymentStatus = async (
                 /*
                  * Payment is already successful.
                  *
-                 * Do not change PAID to FAILED
-                 * if SP processing has an error.
+                 * Do NOT change payment status
+                 * to FAILED.
                  */
 
                 console.error(
                     "SELLING POINT PROCESSING ERROR AFTER PAYMENT:",
                     spError
+                );
+            }
+
+
+            /* --------------------------------------------------------------
+               2. PRODUCT ORDER COMMISSION
+               --------------------------------------------------------------
+
+               Only registered Active members qualify.
+
+               Product commission service handles:
+
+               Manager:
+                   50%
+
+               Other eligible uplines:
+                   remaining 30%
+
+               Buyer:
+                   20% discount
+
+               Delivery:
+                   excluded
+
+               Wallet deduction:
+                   excluded from commission base
+
+               Joining commission:
+                   completely separate
+               -------------------------------------------------------------- */
+
+            try {
+
+                await productOrderCommissionService
+                    .processProductOrderCommission(
+                        order._id
+                    );
+
+            } catch (
+                commissionError
+            ) {
+
+                /*
+                 * Payment is already PAID.
+                 *
+                 * Do NOT change the order to FAILED.
+                 *
+                 * Commission processing can be retried.
+                 */
+
+                console.error(
+                    "PRODUCT ORDER COMMISSION ERROR AFTER PAYMENT:",
+                    commissionError
                 );
             }
         }
@@ -2488,6 +3036,7 @@ const updateOrderStatus = async (
     orderId,
     status
 ) => {
+
     try {
 
         if (
@@ -2559,6 +3108,7 @@ const updateOrderStatus = async (
             normalizedStatus !==
             "DELIVERED"
         ) {
+
             throw new Error(
                 "Delivered order cannot be moved to another status"
             );
@@ -2571,6 +3121,7 @@ const updateOrderStatus = async (
             normalizedStatus !==
             "CANCELLED"
         ) {
+
             throw new Error(
                 "Cancelled order cannot be reopened"
             );
@@ -2585,6 +3136,7 @@ const updateOrderStatus = async (
             normalizedStatus ===
             "CONFIRMED"
         ) {
+
             order.confirmedAt =
                 new Date();
         }
@@ -2594,6 +3146,7 @@ const updateOrderStatus = async (
             normalizedStatus ===
             "PACKED"
         ) {
+
             order.packedAt =
                 new Date();
         }
@@ -2603,6 +3156,7 @@ const updateOrderStatus = async (
             normalizedStatus ===
             "SHIPPED"
         ) {
+
             order.shippedAt =
                 new Date();
         }
@@ -2612,6 +3166,7 @@ const updateOrderStatus = async (
             normalizedStatus ===
             "OUT_FOR_DELIVERY"
         ) {
+
             order.outForDeliveryAt =
                 new Date();
         }
@@ -2621,6 +3176,7 @@ const updateOrderStatus = async (
             normalizedStatus ===
             "DELIVERED"
         ) {
+
             order.deliveredAt =
                 new Date();
         }
@@ -2630,6 +3186,7 @@ const updateOrderStatus = async (
             normalizedStatus ===
             "CANCELLED"
         ) {
+
             order.cancelledAt =
                 new Date();
         }
@@ -2677,6 +3234,7 @@ const cancelOrder = async (
     userId = null,
     reason = ""
 ) => {
+
     try {
 
         if (
@@ -2729,7 +3287,8 @@ const cancelOrder = async (
 
         const paymentStatus =
             String(
-                order.paymentStatus || ""
+                order.paymentStatus ||
+                ""
             )
                 .trim()
                 .toUpperCase();
@@ -2739,6 +3298,7 @@ const cancelOrder = async (
             paymentStatus ===
             "PAID"
         ) {
+
             throw new Error(
                 "Paid order cannot be cancelled from this action"
             );
@@ -2747,7 +3307,8 @@ const cancelOrder = async (
 
         const currentStatus =
             String(
-                order.status || ""
+                order.status ||
+                ""
             )
                 .trim()
                 .toUpperCase();
@@ -2762,6 +3323,7 @@ const cancelOrder = async (
                 currentStatus
             )
         ) {
+
             throw new Error(
                 "Order cannot be cancelled after shipping"
             );
@@ -2772,6 +3334,7 @@ const cancelOrder = async (
             currentStatus ===
             "CANCELLED"
         ) {
+
             return order;
         }
 
@@ -2814,6 +3377,7 @@ const cancelOrder = async (
 const deleteOrder = async (
     orderId
 ) => {
+
     try {
 
         if (
@@ -2842,12 +3406,14 @@ const deleteOrder = async (
 
         if (
             String(
-                order.paymentStatus || ""
+                order.paymentStatus ||
+                ""
             )
                 .trim()
                 .toUpperCase() ===
             "PAID"
         ) {
+
             throw new Error(
                 "Paid orders cannot be deleted"
             );
@@ -2867,6 +3433,7 @@ const deleteOrder = async (
 
 
         return {
+
             success:
                 true,
 
@@ -2894,12 +3461,19 @@ const getManagerOrders = async (
     managerId,
     options = {}
 ) => {
+
     try {
 
+        // =====================================================
+        // VALIDATE MANAGER
+        // =====================================================
+
         if (!managerId) {
+
             throw new Error(
                 "Manager ID is required"
             );
+
         }
 
 
@@ -2908,11 +3482,17 @@ const getManagerOrders = async (
                 managerId
             )
         ) {
+
             throw new Error(
                 "Invalid manager ID"
             );
+
         }
 
+
+        // =====================================================
+        // VERIFY MANAGER EXISTS
+        // =====================================================
 
         const manager =
             await User.findById(
@@ -2925,51 +3505,17 @@ const getManagerOrders = async (
 
 
         if (!manager) {
+
             throw new Error(
                 "Manager not found"
             );
+
         }
 
 
-        const networkUsers =
-            await User.find({
-                $or: [
-                    {
-                        _id:
-                            manager._id,
-                    },
-
-                    {
-                        managerId:
-                            manager._id,
-                    },
-                ],
-            })
-                .select(
-                    "_id"
-                )
-                .lean();
-
-
-        const userIds =
-            networkUsers.map(
-                (user) =>
-                    user._id
-            );
-
-
-        if (
-            !userIds.some(
-                (id) =>
-                    id.toString() ===
-                    manager._id.toString()
-            )
-        ) {
-            userIds.push(
-                manager._id
-            );
-        }
-
+        // =====================================================
+        // OPTIONS
+        // =====================================================
 
         const {
             page = 1,
@@ -2979,25 +3525,50 @@ const getManagerOrders = async (
         } = options;
 
 
-        const filter = {
-            userId: {
-                $in:
-                    userIds,
-            },
-        };
+        // =====================================================
+        // IMPORTANT
+        // =====================================================
+        //
+        // MANAGER CAN VIEW ALL ORDERS.
+        //
+        // There is NO:
+        //
+        // managerId filter
+        // userId $in filter
+        // managed-member restriction
+        //
+        // =====================================================
 
+        const filter = {};
+
+
+        // =====================================================
+        // ORDER STATUS FILTER
+        // =====================================================
 
         if (status) {
+
             filter.status =
                 status;
+
         }
 
+
+        // =====================================================
+        // PAYMENT STATUS FILTER
+        // =====================================================
 
         if (paymentStatus) {
+
             filter.paymentStatus =
                 paymentStatus;
+
         }
 
+
+        // =====================================================
+        // PAGINATION
+        // =====================================================
 
         const pageNumber =
             Math.max(
@@ -3020,6 +3591,10 @@ const getManagerOrders = async (
             limitNumber;
 
 
+        // =====================================================
+        // GET ALL ORDERS
+        // =====================================================
+
         const [
             orders,
             total,
@@ -3035,20 +3610,32 @@ const getManagerOrders = async (
                 .sort({
                     createdAt: -1,
                 })
-                .skip(skip)
-                .limit(limitNumber)
+                .skip(
+                    skip
+                )
+                .limit(
+                    limitNumber
+                )
                 .lean(),
+
 
             Order.countDocuments(
                 filter
             ),
+
         ]);
 
 
+        // =====================================================
+        // RETURN
+        // =====================================================
+
         return {
+
             orders,
 
             pagination: {
+
                 page:
                     pageNumber,
 
@@ -3062,8 +3649,11 @@ const getManagerOrders = async (
                         total /
                         limitNumber
                     ),
+
             },
+
         };
+
 
     } catch (error) {
 
@@ -3073,9 +3663,10 @@ const getManagerOrders = async (
         );
 
         throw error;
-    }
-};
 
+    }
+
+};
 
 /* ==========================================================================
    GET ORDER STATS
@@ -3084,6 +3675,7 @@ const getManagerOrders = async (
 const getOrderStats = async (
     filters = {}
 ) => {
+
     try {
 
         const {
@@ -3102,6 +3694,7 @@ const getOrderStats = async (
                     userId
                 )
             ) {
+
                 query.userId =
                     userId;
             }
@@ -3109,6 +3702,7 @@ const getOrderStats = async (
 
 
         if (orderType) {
+
             query.orderType =
                 orderType;
         }
@@ -3116,15 +3710,10 @@ const getOrderStats = async (
 
         const [
             totalOrders,
-
             paidOrders,
-
             pendingPaymentOrders,
-
             failedPaymentOrders,
-
             cancelledOrders,
-
             deliveredOrders,
         ] = await Promise.all([
 
@@ -3133,6 +3722,7 @@ const getOrderStats = async (
             ),
 
             Order.countDocuments({
+
                 ...query,
 
                 paymentStatus:
@@ -3140,6 +3730,7 @@ const getOrderStats = async (
             }),
 
             Order.countDocuments({
+
                 ...query,
 
                 paymentStatus:
@@ -3147,6 +3738,7 @@ const getOrderStats = async (
             }),
 
             Order.countDocuments({
+
                 ...query,
 
                 paymentStatus:
@@ -3154,6 +3746,7 @@ const getOrderStats = async (
             }),
 
             Order.countDocuments({
+
                 ...query,
 
                 status:
@@ -3161,6 +3754,7 @@ const getOrderStats = async (
             }),
 
             Order.countDocuments({
+
                 ...query,
 
                 status:
@@ -3171,8 +3765,10 @@ const getOrderStats = async (
 
         const revenueResult =
             await Order.aggregate([
+
                 {
                     $match: {
+
                         ...query,
 
                         paymentStatus:
@@ -3182,10 +3778,12 @@ const getOrderStats = async (
 
                 {
                     $group: {
+
                         _id:
                             null,
 
                         totalRevenue: {
+
                             $sum:
                                 "$finalAmount",
                         },
@@ -3204,8 +3802,10 @@ const getOrderStats = async (
 
         const subtotalResult =
             await Order.aggregate([
+
                 {
                     $match: {
+
                         ...query,
 
                         paymentStatus:
@@ -3215,10 +3815,12 @@ const getOrderStats = async (
 
                 {
                     $group: {
+
                         _id:
                             null,
 
                         totalSubtotal: {
+
                             $sum:
                                 "$subtotal",
                         },
@@ -3237,8 +3839,10 @@ const getOrderStats = async (
 
         const deliveryResult =
             await Order.aggregate([
+
                 {
                     $match: {
+
                         ...query,
 
                         paymentStatus:
@@ -3248,10 +3852,12 @@ const getOrderStats = async (
 
                 {
                     $group: {
+
                         _id:
                             null,
 
                         totalDelivery: {
+
                             $sum:
                                 "$deliveryCharge",
                         },
@@ -3269,6 +3875,7 @@ const getOrderStats = async (
 
 
         return {
+
             totalOrders,
 
             paidOrders,
@@ -3324,11 +3931,6 @@ module.exports = {
 
     claimGuestOrders,
 
-    /*
-     * THIS WAS THE MISSING FUNCTION.
-     *
-     * auth.service.js calls this during registration.
-     */
     claimGuestOrdersForMember,
 
     processSellingPoints,

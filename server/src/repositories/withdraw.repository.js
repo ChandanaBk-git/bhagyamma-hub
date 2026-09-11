@@ -42,13 +42,12 @@ const findById = async (id) => {
   return await Withdraw.findById(id)
     .populate(
       "user",
-      "name userId mobile email bankDetails"
+      "name userId mobile email bankName accountHolderName accountNumber ifscCode branch"
     )
     .populate(
       "wallet"
     );
 };
-
 // ==============================
 // Update Withdraw
 // ==============================
@@ -83,6 +82,8 @@ const findPending = async () => {
     });
 };
 
+const findPendingByUser = async ( userId ) => { return await Withdraw.find({ user: userId, status: "PENDING", }).sort({ createdAt: -1, }); };
+
 module.exports = {
 
   createWithdraw,
@@ -97,4 +98,5 @@ module.exports = {
 
   findPending,
 
+  findPendingByUser,
 };

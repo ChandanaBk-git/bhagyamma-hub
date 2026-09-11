@@ -16,16 +16,14 @@ import {
 } from "@mui/material";
 
 import {
+  AccountBalance,
   AccountBalanceWallet,
   WhatsApp,
 } from "@mui/icons-material";
 
-
-const COMPANY_WHATSAPP =
-  "916363645068";
+const COMPANY_WHATSAPP = "916363645068";
 
 const MIN_WITHDRAWAL = 500;
-
 
 const WithdrawDialog = ({
   open,
@@ -33,166 +31,223 @@ const WithdrawDialog = ({
   wallet = {},
   onSubmit,
 }) => {
+  // =====================================================
+  // WALLET BALANCE
+  // =====================================================
 
-  const balance = Number(
-    wallet?.balance || 0
-  );
+  const balance = Number(wallet?.balance || 0);
 
-  const [amount, setAmount] =
-    useState("");
+  // =====================================================
+  // STATE
+  // =====================================================
 
-  const [error, setError] =
-    useState("");
+  const [amount, setAmount] = useState("");
 
-  const [submitting, setSubmitting] =
-    useState(false);
+  const [error, setError] = useState("");
 
+  const [submitting, setSubmitting] = useState(false);
 
-  /* =====================================================
-     RESET
-  ===================================================== */
+  // =====================================================
+  // USER FROM LOCAL STORAGE
+  // =====================================================
+
+  const user = (() => {
+    try {
+      return JSON.parse(
+        localStorage.getItem("user") || "{}"
+      );
+    } catch {
+      return {};
+    }
+  })();
+
+  // =====================================================
+  // RESET WHEN OPEN
+  // =====================================================
 
   useEffect(() => {
-
     if (open) {
-
       setAmount("");
       setError("");
       setSubmitting(false);
-
     }
-
   }, [open]);
 
+  // =====================================================
+  // BANK DETAILS
+  //
+  // Your User model stores these directly:
+  // bankName
+  // accountHolderName
+  // accountNumber
+  // ifscCode
+  // branch
+  // =====================================================
 
-  /* =====================================================
-     USER
-  ===================================================== */
+  const bankName =
+    user?.bankName ||
+    "";
 
-  const user = (() => {
+  const accountHolderName =
+    user?.accountHolderName ||
+    "";
 
-    try {
+  const accountNumber =
+    user?.accountNumber ||
+    "";
 
-      return JSON.parse(
-        localStorage.getItem(
-          "user"
-        ) || "{}"
-      );
+  const ifscCode =
+    user?.ifscCode ||
+    "";
 
-    } catch {
+  const branch =
+    user?.branch ||
+    "";
 
-      return {};
+  // =====================================================
+  // MASK ACCOUNT NUMBER
+  // =====================================================
 
+  const maskedAccountNumber = () => {
+    if (!accountNumber) {
+      return "Not provided";
     }
 
-  })();
+    const account =
+      String(accountNumber);
 
+    if (account.length <= 4) {
+      return account;
+    }
 
-  /* =====================================================
-     VALIDATE
-  ===================================================== */
+    return (
+      "XXXX XXXX " +
+      account.slice(-4)
+    );
+  };
+
+  // =====================================================
+  // VALIDATE BANK DETAILS
+  // =====================================================
+
+  const hasBankDetails =
+    Boolean(
+      bankName &&
+      accountHolderName &&
+      accountNumber &&
+      ifscCode
+    );
+
+  // =====================================================
+  // VALIDATE AMOUNT
+  // =====================================================
 
   const validateAmount = () => {
-
     const requestedAmount =
       Number(amount);
 
-
-    if (!requestedAmount) {
-
+    if (
+      !amount ||
+      !Number.isFinite(
+        requestedAmount
+      )
+    ) {
       setError(
         "Please enter a withdrawal amount."
       );
 
       return false;
-
     }
-
 
     if (
       requestedAmount <
       MIN_WITHDRAWAL
     ) {
-
       setError(
         `Minimum withdrawal amount is ₹${MIN_WITHDRAWAL}.`
       );
 
       return false;
-
     }
 
-
     if (
-      requestedAmount > balance
+      requestedAmount >
+      balance
     ) {
-
       setError(
         "Withdrawal amount cannot exceed your wallet balance."
       );
 
       return false;
-
     }
 
-
     return true;
-
   };
 
-
-  /* =====================================================
-     WHATSAPP
-  ===================================================== */
+  // =====================================================
+  // WHATSAPP MESSAGE
+  // =====================================================
 
   const openWhatsApp = (
     requestedAmount
   ) => {
-
     const memberName =
       user?.name ||
       user?.fullName ||
       "Member";
-
 
     const memberId =
       user?.userId ||
       user?.memberId ||
       "N/A";
 
+    const mobile =
+      user?.mobile ||
+      user?.phone ||
+      "N/A";
 
     const message = [
-
       "Hello Bhagyamma Hub,",
-
       "",
-
       "I would like to request a withdrawal.",
-
       "",
-
+      "MEMBER DETAILS",
       `Member Name: ${memberName}`,
-
       `Member ID: ${memberId}`,
-
+      `Mobile: ${mobile}`,
+      "",
+      "WITHDRAWAL DETAILS",
       `Withdrawal Amount: ₹${requestedAmount.toLocaleString(
         "en-IN"
       )}`,
-
       `Wallet Balance: ₹${balance.toLocaleString(
         "en-IN"
       )}`,
-
       "",
-
+      "BANK DETAILS",
+      `Bank Name: ${
+        bankName || "Not provided"
+      }`,
+      `Account Holder: ${
+        accountHolderName ||
+        "Not provided"
+      }`,
+      `Account Number: ${
+        accountNumber ||
+        "Not provided"
+      }`,
+      `IFSC Code: ${
+        ifscCode ||
+        "Not provided"
+      }`,
+      `Branch: ${
+        branch || "Not provided"
+      }`,
+      "",
       "Please verify and process my withdrawal request.",
-
       "",
-
       "Thank you.",
-
     ].join("\n");
-
 
     const whatsappUrl =
       `https://wa.me/${COMPANY_WHATSAPP}` +
@@ -200,85 +255,92 @@ const WithdrawDialog = ({
         message
       )}`;
 
-
     window.open(
       whatsappUrl,
       "_blank",
       "noopener,noreferrer"
     );
-
   };
 
-
-  /* =====================================================
-     SUBMIT
-  ===================================================== */
+  // =====================================================
+  // SUBMIT WITHDRAWAL
+  // =====================================================
 
   const handleSubmit = async () => {
-
     setError("");
 
+    // ---------------------------------------
+    // Validate amount
+    // ---------------------------------------
 
     if (!validateAmount()) {
       return;
     }
 
+    // ---------------------------------------
+    // Validate bank details
+    // ---------------------------------------
+
+    if (!hasBankDetails) {
+      setError(
+        "Please update your bank details before requesting a withdrawal."
+      );
+
+      return;
+    }
 
     const requestedAmount =
       Number(amount);
 
-
     try {
-
       setSubmitting(true);
 
+      // -------------------------------------
+      // Create PENDING withdrawal
+      // -------------------------------------
 
       if (onSubmit) {
-
         await onSubmit({
           amount: requestedAmount,
           walletBalance: balance,
         });
-
       }
 
+      // -------------------------------------
+      // Open WhatsApp AFTER successful API
+      // request
+      // -------------------------------------
 
       openWhatsApp(
         requestedAmount
       );
 
+      // -------------------------------------
+      // Close dialog
+      // -------------------------------------
 
       onClose?.();
-
     } catch (err) {
-
       console.error(
         "WITHDRAW REQUEST ERROR:",
         err
       );
 
-
       setError(
         err?.response?.data?.message ||
-        err?.message ||
-        "Failed to submit withdrawal request."
+          err?.message ||
+          "Failed to submit withdrawal request."
       );
-
     } finally {
-
       setSubmitting(false);
-
     }
-
   };
 
-
-  /* =====================================================
-     UI
-  ===================================================== */
+  // =====================================================
+  // UI
+  // =====================================================
 
   return (
-
     <Dialog
       open={open}
       onClose={
@@ -286,14 +348,10 @@ const WithdrawDialog = ({
           ? undefined
           : onClose
       }
-
       fullWidth
-
       maxWidth="sm"
-
       PaperProps={{
         sx: {
-
           width: {
             xs: "calc(100% - 20px)",
             sm: "100%",
@@ -319,11 +377,9 @@ const WithdrawDialog = ({
             "0 8px 30px rgba(0,0,0,0.12)",
 
           overflow: "hidden",
-
         },
       }}
     >
-
       {/* =================================================
           TITLE
       ================================================= */}
@@ -348,7 +404,6 @@ const WithdrawDialog = ({
         Withdraw Funds
       </DialogTitle>
 
-
       {/* =================================================
           CONTENT
       ================================================= */}
@@ -364,7 +419,6 @@ const WithdrawDialog = ({
             "border-box",
         }}
       >
-
         {/* =================================================
             AVAILABLE BALANCE
         ================================================= */}
@@ -396,7 +450,6 @@ const WithdrawDialog = ({
               "0 !important",
           }}
         >
-
           <Stack
             direction="row"
             spacing={{
@@ -405,7 +458,6 @@ const WithdrawDialog = ({
             }}
             alignItems="center"
           >
-
             <Box
               sx={{
                 width: {
@@ -441,7 +493,6 @@ const WithdrawDialog = ({
                   "#2E7D32",
               }}
             >
-
               <AccountBalanceWallet
                 sx={{
                   fontSize: {
@@ -450,16 +501,13 @@ const WithdrawDialog = ({
                   },
                 }}
               />
-
             </Box>
-
 
             <Box
               sx={{
                 minWidth: 0,
               }}
             >
-
               <Typography
                 color="text.secondary"
                 sx={{
@@ -473,7 +521,6 @@ const WithdrawDialog = ({
               >
                 Available Balance
               </Typography>
-
 
               <Typography
                 fontWeight={700}
@@ -494,45 +541,303 @@ const WithdrawDialog = ({
                   "en-IN"
                 )}
               </Typography>
-
             </Box>
-
           </Stack>
-
         </Box>
 
+        {/* =================================================
+            BANK DETAILS
+        ================================================= */}
+
+        <Box
+          sx={{
+            width: "100%",
+
+            padding: {
+              xs: "12px",
+              sm: "14px",
+            },
+
+            marginBottom: {
+              xs: "12px",
+              sm: "16px",
+            },
+
+            boxSizing:
+              "border-box",
+
+            bgcolor:
+              "#FAFAFA",
+
+            border:
+              "1px solid #E5E5E5",
+
+            borderRadius:
+              "0 !important",
+          }}
+        >
+          <Stack
+            direction="row"
+            spacing={1}
+            alignItems="center"
+            sx={{
+              marginBottom: "10px",
+            }}
+          >
+            <AccountBalance
+              sx={{
+                color: "#2E7D32",
+                fontSize: {
+                  xs: 20,
+                  sm: 23,
+                },
+              }}
+            />
+
+            <Typography
+              fontWeight={700}
+              sx={{
+                fontSize: {
+                  xs: "13px",
+                  sm: "15px",
+                },
+              }}
+            >
+              Registered Bank Details
+            </Typography>
+          </Stack>
+
+          {hasBankDetails ? (
+            <Stack
+              spacing={0.7}
+            >
+              <Box
+                sx={{
+                  display: "flex",
+                  justifyContent:
+                    "space-between",
+                  gap: 2,
+                }}
+              >
+                <Typography
+                  color="text.secondary"
+                  sx={{
+                    fontSize: {
+                      xs: "10px",
+                      sm: "12px",
+                    },
+                  }}
+                >
+                  Bank Name
+                </Typography>
+
+                <Typography
+                  fontWeight={600}
+                  sx={{
+                    fontSize: {
+                      xs: "10px",
+                      sm: "12px",
+                    },
+
+                    textAlign: "right",
+                  }}
+                >
+                  {bankName}
+                </Typography>
+              </Box>
+
+              <Box
+                sx={{
+                  display: "flex",
+                  justifyContent:
+                    "space-between",
+                  gap: 2,
+                }}
+              >
+                <Typography
+                  color="text.secondary"
+                  sx={{
+                    fontSize: {
+                      xs: "10px",
+                      sm: "12px",
+                    },
+                  }}
+                >
+                  Account Holder
+                </Typography>
+
+                <Typography
+                  fontWeight={600}
+                  sx={{
+                    fontSize: {
+                      xs: "10px",
+                      sm: "12px",
+                    },
+
+                    textAlign: "right",
+                  }}
+                >
+                  {accountHolderName}
+                </Typography>
+              </Box>
+
+              <Box
+                sx={{
+                  display: "flex",
+                  justifyContent:
+                    "space-between",
+                  gap: 2,
+                }}
+              >
+                <Typography
+                  color="text.secondary"
+                  sx={{
+                    fontSize: {
+                      xs: "10px",
+                      sm: "12px",
+                    },
+                  }}
+                >
+                  Account Number
+                </Typography>
+
+                <Typography
+                  fontWeight={600}
+                  sx={{
+                    fontSize: {
+                      xs: "10px",
+                      sm: "12px",
+                    },
+
+                    textAlign: "right",
+                  }}
+                >
+                  {maskedAccountNumber()}
+                </Typography>
+              </Box>
+
+              <Box
+                sx={{
+                  display: "flex",
+                  justifyContent:
+                    "space-between",
+                  gap: 2,
+                }}
+              >
+                <Typography
+                  color="text.secondary"
+                  sx={{
+                    fontSize: {
+                      xs: "10px",
+                      sm: "12px",
+                    },
+                  }}
+                >
+                  IFSC Code
+                </Typography>
+
+                <Typography
+                  fontWeight={600}
+                  sx={{
+                    fontSize: {
+                      xs: "10px",
+                      sm: "12px",
+                    },
+
+                    textAlign: "right",
+                  }}
+                >
+                  {ifscCode}
+                </Typography>
+              </Box>
+
+              {branch && (
+                <Box
+                  sx={{
+                    display: "flex",
+                    justifyContent:
+                      "space-between",
+                    gap: 2,
+                  }}
+                >
+                  <Typography
+                    color="text.secondary"
+                    sx={{
+                      fontSize: {
+                        xs: "10px",
+                        sm: "12px",
+                      },
+                    }}
+                  >
+                    Branch
+                  </Typography>
+
+                  <Typography
+                    fontWeight={600}
+                    sx={{
+                      fontSize: {
+                        xs: "10px",
+                        sm: "12px",
+                      },
+
+                      textAlign: "right",
+                    }}
+                  >
+                    {branch}
+                  </Typography>
+                </Box>
+              )}
+            </Stack>
+          ) : (
+            <Alert
+              severity="warning"
+              sx={{
+                borderRadius:
+                  "0 !important",
+
+                fontSize: {
+                  xs: "10px",
+                  sm: "11px",
+                },
+
+                padding: {
+                  xs: "5px 10px",
+                  sm: "7px 12px",
+                },
+              }}
+            >
+              Please update your bank
+              details before requesting a
+              withdrawal.
+            </Alert>
+          )}
+        </Box>
 
         {/* =================================================
-            AMOUNT
+            WITHDRAWAL AMOUNT
         ================================================= */}
 
         <TextField
           fullWidth
-
           label="Withdrawal Amount"
-
           type="number"
-
           value={amount}
-
           onChange={(event) => {
-
             setAmount(
               event.target.value
             );
 
             setError("");
-
           }}
-
-          disabled={submitting}
-
+          disabled={
+            submitting ||
+            !hasBankDetails
+          }
           inputProps={{
             min: MIN_WITHDRAWAL,
             max: balance,
             step: 1,
           }}
-
           InputProps={{
             startAdornment: (
               <InputAdornment
@@ -542,14 +847,12 @@ const WithdrawDialog = ({
               </InputAdornment>
             ),
           }}
-
           helperText={
             `Minimum ₹${MIN_WITHDRAWAL} • ` +
             `Maximum ₹${balance.toLocaleString(
               "en-IN"
             )}`
           }
-
           sx={{
             "& .MuiInputBase-root": {
               minHeight: {
@@ -583,13 +886,11 @@ const WithdrawDialog = ({
           }}
         />
 
-
         {/* =================================================
             ERROR
         ================================================= */}
 
         {error && (
-
           <Alert
             severity="error"
             sx={{
@@ -607,20 +908,11 @@ const WithdrawDialog = ({
                 xs: "11px",
                 sm: "12px",
               },
-
-              "& .MuiAlert-icon": {
-                fontSize: {
-                  xs: "18px",
-                  sm: "20px",
-                },
-              },
             }}
           >
             {error}
           </Alert>
-
         )}
-
 
         {/* =================================================
             DIVIDER
@@ -639,7 +931,6 @@ const WithdrawDialog = ({
             },
           }}
         />
-
 
         {/* =================================================
             WHATSAPP INFORMATION
@@ -667,7 +958,6 @@ const WithdrawDialog = ({
               "0 !important",
           }}
         >
-
           <Stack
             direction="row"
             spacing={{
@@ -676,7 +966,6 @@ const WithdrawDialog = ({
             }}
             alignItems="flex-start"
           >
-
             <WhatsApp
               sx={{
                 color: "#25D366",
@@ -686,13 +975,11 @@ const WithdrawDialog = ({
                   sm: 24,
                 },
 
-                marginTop:
-                  "1px",
+                marginTop: "1px",
 
                 flexShrink: 0,
               }}
             />
-
 
             <Typography
               color="text.secondary"
@@ -705,20 +992,15 @@ const WithdrawDialog = ({
                 lineHeight: 1.45,
               }}
             >
-              After submitting the withdrawal
-              request, WhatsApp will open with
-              your member details and requested
-              amount already filled in. Send the
-              message to Bhagyamma Hub for
-              verification.
+              Your withdrawal request will
+              first be recorded in the system.
+              WhatsApp will then open with your
+              member, withdrawal and bank
+              details already filled in.
             </Typography>
-
           </Stack>
-
         </Box>
-
       </DialogContent>
-
 
       {/* =================================================
           ACTIONS
@@ -733,15 +1015,11 @@ const WithdrawDialog = ({
 
           gap: 1,
 
-          flexDirection: {
-            xs: "row",
-            sm: "row",
-          },
-
           justifyContent:
             "flex-end",
         }}
       >
+        {/* CANCEL */}
 
         <Button
           onClick={onClose}
@@ -757,8 +1035,7 @@ const WithdrawDialog = ({
               sm: 2,
             },
 
-            borderRadius:
-              "5px",
+            borderRadius: "5px",
 
             textTransform:
               "none",
@@ -772,11 +1049,11 @@ const WithdrawDialog = ({
           Cancel
         </Button>
 
+        {/* SEND WHATSAPP */}
 
         <Button
           variant="contained"
           color="success"
-
           startIcon={
             <WhatsApp
               sx={{
@@ -787,14 +1064,15 @@ const WithdrawDialog = ({
               }}
             />
           }
-
           onClick={handleSubmit}
-
           disabled={
             submitting ||
-            balance < MIN_WITHDRAWAL
+            !hasBankDetails ||
+            balance < MIN_WITHDRAWAL ||
+            !amount ||
+            Number(amount) < MIN_WITHDRAWAL ||
+            Number(amount) > balance
           }
-
           sx={{
             minHeight: {
               xs: 38,
@@ -806,8 +1084,7 @@ const WithdrawDialog = ({
               sm: 2,
             },
 
-            borderRadius:
-              "5px",
+            borderRadius: "5px",
 
             textTransform:
               "none",
@@ -825,14 +1102,11 @@ const WithdrawDialog = ({
         >
           {submitting
             ? "Submitting..."
-            : "Request & WhatsApp"}
+            : "Send WhatsApp Request"}
         </Button>
-
       </DialogActions>
-
     </Dialog>
   );
 };
-
 
 export default WithdrawDialog;

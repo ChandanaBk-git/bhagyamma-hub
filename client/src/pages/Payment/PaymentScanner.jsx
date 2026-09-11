@@ -2267,7 +2267,7 @@ const PaymentScanner = () => {
               }}
             >
 
-              <Typography
+              {/* <Typography
                 sx={{
                   mb: 0.4,
 
@@ -2381,7 +2381,7 @@ const PaymentScanner = () => {
                     : "Trace Order"}
                 </Button>
 
-              </Stack>
+              </Stack> */}
 
 
               {/* ========================================
@@ -2499,7 +2499,7 @@ const PaymentScanner = () => {
                         {/* ==========================================
                 SECURITY / FINAL NOTE
             ========================================== */}
-
+{/* 
             <Typography
               sx={{
                 display: "block",
@@ -2515,7 +2515,7 @@ const PaymentScanner = () => {
             >
               Your guest order is linked to the mobile
               number used during checkout.
-            </Typography>
+            </Typography> */}
 
 
             {/* ==========================================

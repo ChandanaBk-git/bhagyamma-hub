@@ -112,7 +112,34 @@ router.get(
     managerController.getReferralTree
 );
 
+/*
+=========================================================
+WALLET
+=========================================================
+*/
 
+// Manager's own wallet
+
+router.get(
+  "/wallet",
+  managerController.getManagerWallet
+);
+
+
+// All user wallets
+
+router.get(
+  "/wallet/users",
+  managerController.getAllUserWallets
+);
+
+
+// Complete wallet of selected user
+
+router.get(
+  "/wallet/users/:id",
+  managerController.getUserWalletDetails
+);
 /*
 =========================================================
 PROFILE

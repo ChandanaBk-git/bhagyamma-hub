@@ -15,7 +15,9 @@ import HistoryTable from "../../components/members/sellingPoints/HistoryTable";
 
 const SellingPoints = () => {
   const [data, setData] = useState(null);
+
   const [loading, setLoading] = useState(true);
+
   const [error, setError] = useState("");
 
   /* =====================================================
@@ -93,6 +95,16 @@ const SellingPoints = () => {
       );
 
       /* =================================================
+         CARRY FORWARD
+      ================================================= */
+
+      const pendingPurchaseAmount = Number(
+        apiSellingPoints?.pendingPurchaseAmount ??
+          apiSummary?.pendingPurchaseAmount ??
+          0
+      );
+
+      /* =================================================
          SELLING POINT TRANSACTIONS
       ================================================= */
 
@@ -114,13 +126,20 @@ const SellingPoints = () => {
           isSupervisor,
           supervisorTarget,
           remainingTarget,
+          pendingPurchaseAmount,
         },
 
         sellingPoints: {
           ...apiSellingPoints,
+
           sellingPoints,
+
           lifetimePurchase,
+
           isSupervisor,
+
+          pendingPurchaseAmount,
+
           transactions,
         },
       };
@@ -156,16 +175,18 @@ const SellingPoints = () => {
       <Box
         sx={{
           width: "100%",
+
           minHeight: "45vh",
 
           display: "flex",
+
           justifyContent: "center",
+
           alignItems: "center",
 
           m: 0,
-          p: 0,
 
-          boxSizing: "border-box",
+          p: 0,
 
           backgroundColor: "#F5F7FA",
         }}
@@ -188,10 +209,8 @@ const SellingPoints = () => {
       <Box
         sx={{
           width: "100%",
-          maxWidth: "100%",
-          minHeight: "65vh",
 
-          m: 0,
+          minHeight: "65vh",
 
           p: {
             xs: "10px 8px 20px",
@@ -204,23 +223,14 @@ const SellingPoints = () => {
           backgroundColor: "#F5F7FA",
 
           overflowX: "hidden",
-
-          borderRadius: 0,
         }}
       >
-        {/* TITLE */}
-
         <Typography
           component="h1"
           sx={{
             m: 0,
-            p: 0,
 
-            mb: {
-              xs: 1,
-              sm: 1.25,
-              md: 1.5,
-            },
+            mb: 1.25,
 
             fontSize: {
               xs: "18px",
@@ -241,10 +251,6 @@ const SellingPoints = () => {
         <Alert
           severity="error"
           sx={{
-            width: "100%",
-
-            boxSizing: "border-box",
-
             borderRadius: 0,
 
             fontSize: {
@@ -270,10 +276,8 @@ const SellingPoints = () => {
       <Box
         sx={{
           width: "100%",
-          maxWidth: "100%",
-          minHeight: "65vh",
 
-          m: 0,
+          minHeight: "65vh",
 
           p: {
             xs: "10px 8px 20px",
@@ -284,10 +288,6 @@ const SellingPoints = () => {
           boxSizing: "border-box",
 
           backgroundColor: "#F5F7FA",
-
-          overflowX: "hidden",
-
-          borderRadius: 0,
         }}
       >
         <Typography
@@ -295,19 +295,13 @@ const SellingPoints = () => {
           sx={{
             m: 0,
 
-            mb: {
-              xs: 1,
-              sm: 1.25,
-              md: 1.5,
-            },
+            mb: 1.25,
 
             fontSize: {
               xs: "18px",
               sm: "22px",
               md: "26px",
             },
-
-            lineHeight: 1.25,
 
             fontWeight: 700,
 
@@ -326,8 +320,6 @@ const SellingPoints = () => {
               xs: "10px",
               sm: "12px",
             },
-
-            py: 0.5,
           }}
         >
           Selling Point data is not available.
@@ -337,6 +329,48 @@ const SellingPoints = () => {
   }
 
   /* =====================================================
+     TRANSACTIONS
+  ===================================================== */
+
+  const transactions =
+    data?.sellingPoints?.transactions || [];
+
+  /*
+   * IMPORTANT:
+   *
+   * SummaryCard was previously receiving only
+   * data.summary.
+   *
+   * Now we find the latest PRODUCT PURCHASE
+   * and explicitly pass it to SummaryCard.
+   */
+
+  const latestOrderTransaction =
+    [...transactions]
+      .filter(
+        (transaction) =>
+          transaction?.transactionType ===
+          "ORDER_PURCHASE"
+      )
+      .sort((a, b) => {
+        const dateA = new Date(
+          a?.createdAt ||
+            a?.date ||
+            a?.updatedAt ||
+            0
+        ).getTime();
+
+        const dateB = new Date(
+          b?.createdAt ||
+            b?.date ||
+            b?.updatedAt ||
+            0
+        ).getTime();
+
+        return dateB - dateA;
+      })[0] || null;
+
+  /* =====================================================
      PAGE
   ===================================================== */
 
@@ -344,12 +378,15 @@ const SellingPoints = () => {
     <Box
       sx={{
         width: "100%",
+
         maxWidth: "100%",
+
         minWidth: 0,
 
         minHeight: "100vh",
 
         m: 0,
+
         p: 0,
 
         backgroundColor: "#F5F7FA",
@@ -357,10 +394,6 @@ const SellingPoints = () => {
         boxSizing: "border-box",
 
         overflowX: "hidden",
-
-        borderRadius: 0,
-
-        /* Remove outer MUI curves */
 
         "& .MuiCard-root": {
           borderRadius:
@@ -414,12 +447,10 @@ const SellingPoints = () => {
             TITLE
         ================================================= */}
 
-        <Box
+        <Typography
+          component="h1"
           sx={{
-            width: "100%",
-
             m: 0,
-            p: 0,
 
             mb: {
               xs: 1,
@@ -427,70 +458,35 @@ const SellingPoints = () => {
               md: 1.5,
             },
 
-            boxSizing: "border-box",
+            fontSize: {
+              xs: "18px",
+              sm: "22px",
+              md: "26px",
+            },
+
+            lineHeight: 1.25,
+
+            fontWeight: 700,
+
+            color: "#292929",
           }}
         >
-          <Typography
-            component="h1"
-            sx={{
-              m: 0,
-              p: 0,
-
-              fontSize: {
-                xs: "18px",
-                sm: "22px",
-                md: "26px",
-              },
-
-              lineHeight: 1.25,
-
-              fontWeight: 700,
-
-              color: "#292929",
-            }}
-          >
-            Selling Points
-          </Typography>
-        </Box>
+          Selling Points
+        </Typography>
 
         {/* =================================================
             SUMMARY
+
+            IMPORTANT:
+            latestTransaction is now passed.
         ================================================= */}
 
-        <Box
-          sx={{
-            width: "100%",
-            maxWidth: "100%",
-            minWidth: 0,
-
-            m: 0,
-            p: 0,
-
-            boxSizing: "border-box",
-
-            overflowX: "hidden",
-
-            "& > *": {
-              width: "100%",
-              maxWidth: "100%",
-              boxSizing: "border-box",
-            },
-
-            "& .MuiCard-root": {
-              borderRadius:
-                "0 !important",
-            },
-
-            "& .MuiPaper-root": {
-              borderRadius:
-                "0 !important",
-            },
-          }}
-        >
-          <SummaryCard
-            summary={data.summary}
-          />
-        </Box>
+        <SummaryCard
+          summary={data.summary}
+          latestTransaction={
+            latestOrderTransaction
+          }
+        />
 
         {/* =================================================
             SUPERVISOR PROGRESS
@@ -499,37 +495,10 @@ const SellingPoints = () => {
         <Box
           sx={{
             width: "100%",
-            maxWidth: "100%",
-            minWidth: 0,
-
-            m: 0,
 
             mt: {
               xs: 1,
               sm: 1.25,
-              md: 1.5,
-            },
-
-            p: 0,
-
-            boxSizing: "border-box",
-
-            overflowX: "hidden",
-
-            "& > *": {
-              width: "100%",
-              maxWidth: "100%",
-              boxSizing: "border-box",
-            },
-
-            "& .MuiCard-root": {
-              borderRadius:
-                "0 !important",
-            },
-
-            "& .MuiPaper-root": {
-              borderRadius:
-                "0 !important",
             },
           }}
         >
@@ -539,54 +508,25 @@ const SellingPoints = () => {
         </Box>
 
         {/* =================================================
-            SELLING POINT HISTORY
+            HISTORY
         ================================================= */}
 
         <Box
           sx={{
             width: "100%",
-            maxWidth: "100%",
-            minWidth: 0,
-
-            m: 0,
 
             mt: {
               xs: 1,
               sm: 1.25,
-              md: 1.5,
             },
 
-            p: 0,
+            minWidth: 0,
 
-            boxSizing: "border-box",
-
-            overflowX: "auto",
-
-            WebkitOverflowScrolling:
-              "touch",
-
-            "& > *": {
-              width: "100%",
-              maxWidth: "100%",
-              boxSizing: "border-box",
-            },
-
-            "& .MuiCard-root": {
-              borderRadius:
-                "0 !important",
-            },
-
-            "& .MuiPaper-root": {
-              borderRadius:
-                "0 !important",
-            },
+            overflowX: "hidden",
           }}
         >
           <HistoryTable
-            history={
-              data.sellingPoints
-                ?.transactions || []
-            }
+            history={transactions}
           />
         </Box>
       </Box>

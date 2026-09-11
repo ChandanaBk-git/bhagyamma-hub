@@ -55,6 +55,12 @@ const menuItems = [
   },
 
   {
+    title: "Wallet",
+    icon: <AccountBalanceWalletIcon />,
+    path: "/manager/wallet",
+  },
+
+  {
     title: "Commission",
     icon: <AccountBalanceWalletIcon />,
     path: "/manager/commissions",
@@ -143,103 +149,100 @@ const Sidebar = () => {
       }}
     >
 
-{/* =================================================
-    BRAND
-================================================= */}
+      {/* =================================================
+          BRAND
+      ================================================= */}
 
-<Box
-  sx={{
-    minHeight: {
-      xs: 105,
-      md: 122,
-    },
+      <Box
+        sx={{
+          minHeight: {
+            xs: 105,
+            md: 122,
+          },
 
-    width: "100%",
+          width: "100%",
 
-    px: {
-      xs: 0.8,
-      sm: 1,
-      md: 2,
-    },
+          px: {
+            xs: 0.8,
+            sm: 1,
+            md: 2,
+          },
 
-    py: {
-      xs: 1.8,
-      md: 3,
-    },
+          py: {
+            xs: 1.8,
+            md: 3,
+          },
 
-    display: "flex",
+          display: "flex",
 
-    flexDirection: "column",
+          flexDirection: "column",
 
-    justifyContent: "center",
+          justifyContent: "center",
 
-    alignItems: "center",
+          alignItems: "center",
 
-    textAlign: "center",
+          textAlign: "center",
 
-    boxSizing: "border-box",
+          boxSizing: "border-box",
 
-    flexShrink: 0,
+          flexShrink: 0,
 
-    overflow: "hidden",
+          overflow: "hidden",
 
-    /*
-     * Leave room for the close button
-     */
-    pr: {
-      xs: 4.5,
-      sm: 1,
-      md: 2,
-    },
-  }}
->
-  <Typography
-    sx={{
-      width: "100%",
+          pr: {
+            xs: 4.5,
+            sm: 1,
+            md: 2,
+          },
+        }}
+      >
+        <Typography
+          sx={{
+            width: "100%",
 
-      fontSize: {
-        xs: 12,
-        sm: 14,
-        md: 23,
-      },
+            fontSize: {
+              xs: 12,
+              sm: 14,
+              md: 23,
+            },
 
-      lineHeight: 1.15,
+            lineHeight: 1.15,
 
-      fontWeight: 800,
+            fontWeight: 800,
 
-      color: "#FFFFFF",
+            color: "#FFFFFF",
 
-      whiteSpace: "nowrap",
+            whiteSpace: "nowrap",
 
-      overflow: "hidden",
+            overflow: "hidden",
 
-      textOverflow: "ellipsis",
-    }}
-  >
-    Bhagyamma Hub
-  </Typography>
+            textOverflow: "ellipsis",
+          }}
+        >
+          Bhagyamma Hub
+        </Typography>
 
-  <Typography
-    sx={{
-      mt: 0.45,
+        <Typography
+          sx={{
+            mt: 0.45,
 
-      fontSize: {
-        xs: 8,
-        sm: 10,
-        md: 13,
-      },
+            fontSize: {
+              xs: 8,
+              sm: 10,
+              md: 13,
+            },
 
-      lineHeight: 1.2,
+            lineHeight: 1.2,
 
-      color:
-        "rgba(255,255,255,0.68)",
+            color: "rgba(255,255,255,0.68)",
 
-      whiteSpace: "nowrap",
-    }}
-  >
-    Manager Panel
-  </Typography>
-</Box>
+            whiteSpace: "nowrap",
+          }}
+        >
+          Manager Panel
+        </Typography>
+      </Box>
+
 
       {/* =================================================
           DIVIDER

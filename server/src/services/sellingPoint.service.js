@@ -179,28 +179,24 @@ const isOrderPaid = (order) => {
    ========================================================================== */
 
 /*
- * NEVER include delivery charge here.
+ * SP is calculated from the product/order total after discount,
+ * with delivery charge excluded.
  *
- * ₹489 + ₹50 delivery = ₹539 paid
+ * Formula:
+ * total amount - discount - delivery charge
  *
- * SP eligible = ₹489
+ * Example:
+ *
+ * subtotal       = ₹5000
+ * discount       = ₹1000
+ * delivery       = ₹50
+ *
+ * SP eligible = ₹3950
  */
 
 const getQualifyingPurchaseAmount = (order) => {
   if (!order) {
     return 0;
-  }
-
-  const subtotal = toNumber(
-    order.subtotal,
-    NaN
-  );
-
-  if (
-    Number.isFinite(subtotal) &&
-    subtotal > 0
-  ) {
-    return subtotal;
   }
 
   const finalAmount = toNumber(
@@ -218,7 +214,6 @@ const getQualifyingPurchaseAmount = (order) => {
     finalAmount - deliveryCharge
   );
 };
-
 /* ==========================================================================
    PROCESS ORDER SELLING POINTS
    ========================================================================== */
@@ -775,19 +770,29 @@ const activateMembership = async (
      * Do NOT add another 40 SP.
      */
 
-    user.membershipSPAwarded =
-      true;
+user.membershipSPAwarded =
+    true;
 
-    user.membershipStatus =
-      "Active";
+user.membershipStatus =
+    "Active";
 
-    user.membershipActivationMethod =
-      "ProductPurchase";
+user.membershipActivationMethod =
+    "ProductPurchase";
 
-    user.membershipActivatedAt =
-      new Date();
+user.membershipActivatedAt =
+    new Date();
 
-    await user.save();
+/*
+ * Reaching 40 SP qualifies the member.
+ * Mark the membership payment as completed.
+ */
+user.paymentStatus =
+    "Paid";
+
+user.paymentDate =
+    new Date();
+
+await user.save();
 
     const existingActivation =
       await sellingPointTransactionRepository
@@ -1207,9 +1212,15 @@ const enrichTransactionsWithOrders =
              * SP uses ONLY product subtotal.
              */
 
-            transactionObject.spEligibleAmount =
-              subtotal;
-
+transactionObject.spEligibleAmount =
+    Math.max(
+        0,
+        toNumber(
+            order.finalAmount,
+            0
+        ) -
+        deliveryCharge
+    );
             /* --------------------------------------------------------------
                DELIVERY EXCLUSION FLAG
                -------------------------------------------------------------- */
@@ -1254,11 +1265,11 @@ const enrichTransactionsWithOrders =
                   0
               );
 
-            const calculation =
-              calculateSellingPoints(
-                subtotal,
-                previousCarry
-              );
+const calculation =
+    calculateSellingPoints(
+        transactionObject.spEligibleAmount,
+        previousCarry
+    );
 
             transactionObject
               .calculationTotal =

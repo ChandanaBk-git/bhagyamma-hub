@@ -19,14 +19,14 @@ import {
    HELPERS
 ===================================================== */
 
-const money = (value) => {
-  const amount = Number(value || 0);
-
-  return `₹${amount.toLocaleString("en-IN")}`;
-};
-
 const numberValue = (value) => {
   return Number(value || 0);
+};
+
+const money = (value) => {
+  return `₹${numberValue(value).toLocaleString(
+    "en-IN"
+  )}`;
 };
 
 const formatDate = (value) => {
@@ -47,7 +47,13 @@ const formatDate = (value) => {
   });
 };
 
-const getTransactionTitle = (transactionType) => {
+/* =====================================================
+   TRANSACTION TITLE
+===================================================== */
+
+const getTransactionTitle = (
+  transactionType
+) => {
   switch (transactionType) {
     case "MEMBERSHIP_PAYMENT":
       return "Membership Payment";
@@ -56,25 +62,33 @@ const getTransactionTitle = (transactionType) => {
       return "Membership Activated";
 
     case "SUPERVISOR":
-      return "Supervisor Promotion";
+      return "Supervisor Achievement";
 
     case "SUPERVISOR_REWARD":
       return "Supervisor Reward";
 
     case "ORDER_PURCHASE":
-    default:
       return "Product Purchase";
+
+    default:
+      return "Selling Point Transaction";
   }
 };
 
-const getTransactionIcon = (transactionType) => {
+/* =====================================================
+   TRANSACTION ICON
+===================================================== */
+
+const getTransactionIcon = (
+  transactionType
+) => {
   switch (transactionType) {
     case "MEMBERSHIP_PAYMENT":
     case "MEMBERSHIP_ACTIVATED":
       return (
         <CardMembership
           sx={{
-            fontSize: 18,
+            fontSize: 17,
             color: "#2E7D32",
           }}
         />
@@ -85,7 +99,7 @@ const getTransactionIcon = (transactionType) => {
       return (
         <WorkspacePremium
           sx={{
-            fontSize: 18,
+            fontSize: 17,
             color: "#2E7D32",
           }}
         />
@@ -95,7 +109,7 @@ const getTransactionIcon = (transactionType) => {
       return (
         <ShoppingBag
           sx={{
-            fontSize: 18,
+            fontSize: 17,
             color: "#2E7D32",
           }}
         />
@@ -104,10 +118,14 @@ const getTransactionIcon = (transactionType) => {
 };
 
 /* =====================================================
-   DETAIL COMPONENT
+   DETAIL
 ===================================================== */
 
-const Detail = ({ label, value }) => {
+const Detail = ({
+  label,
+  value,
+  valueColor = "#292929",
+}) => {
   return (
     <Box
       sx={{
@@ -117,15 +135,13 @@ const Detail = ({ label, value }) => {
       <Typography
         sx={{
           fontSize: {
-            xs: "0.62rem",
-            sm: "0.68rem",
+            xs: "8px",
+            sm: "9px",
           },
-
-          color: "text.secondary",
 
           lineHeight: 1.2,
 
-          mb: 0.2,
+          color: "#757575",
         }}
       >
         {label}
@@ -133,16 +149,18 @@ const Detail = ({ label, value }) => {
 
       <Typography
         sx={{
+          mt: 0.25,
+
           fontSize: {
-            xs: "0.72rem",
-            sm: "0.78rem",
+            xs: "11px",
+            sm: "12px",
           },
 
-          fontWeight: 600,
-
-          color: "#292929",
-
           lineHeight: 1.25,
+
+          fontWeight: 700,
+
+          color: valueColor,
 
           wordBreak: "break-word",
         }}
@@ -154,7 +172,7 @@ const Detail = ({ label, value }) => {
 };
 
 /* =====================================================
-   MEMBERSHIP ACTIVATION CARD
+   MEMBERSHIP ACTIVATION
 ===================================================== */
 
 const MembershipActivatedCard = ({
@@ -174,18 +192,14 @@ const MembershipActivatedCard = ({
 
         backgroundColor: "#F1F8F2",
 
-        boxSizing: "border-box",
-
         p: {
           xs: 1,
-          sm: 1.25,
+          sm: 1.15,
         },
+
+        boxSizing: "border-box",
       }}
     >
-      {/* ================================================
-          TOP ROW
-      ================================================= */}
-
       <Stack
         direction="row"
         justifyContent="space-between"
@@ -202,11 +216,11 @@ const MembershipActivatedCard = ({
         >
           <Box
             sx={{
-              width: 30,
+              width: 29,
 
-              height: 30,
+              height: 29,
 
-              minWidth: 30,
+              minWidth: 29,
 
               display: "flex",
 
@@ -214,120 +228,77 @@ const MembershipActivatedCard = ({
 
               justifyContent: "center",
 
-              border: "1px solid #A5D6A7",
+              border:
+                "1px solid #A5D6A7",
 
-              backgroundColor: "#E8F5E9",
+              backgroundColor:
+                "#E8F5E9",
             }}
           >
             <CardMembership
               sx={{
-                fontSize: 18,
-
+                fontSize: 17,
                 color: "#2E7D32",
               }}
             />
           </Box>
 
-          <Box
-            sx={{
-              minWidth: 0,
-            }}
-          >
+          <Box>
             <Typography
-              fontWeight={700}
               sx={{
                 fontSize: {
-                  xs: "0.73rem",
-                  sm: "0.8rem",
+                  xs: "11px",
+                  sm: "12px",
                 },
 
-                lineHeight: 1.2,
+                fontWeight: 700,
               }}
             >
               Membership Activated
             </Typography>
 
             <Typography
-              color="text.secondary"
               sx={{
                 mt: 0.2,
 
                 fontSize: {
-                  xs: "0.6rem",
-                  sm: "0.67rem",
+                  xs: "8px",
+                  sm: "9px",
                 },
 
-                lineHeight: 1.2,
+                color: "#757575",
               }}
             >
               {formatDate(date)}
             </Typography>
           </Box>
         </Stack>
-
-        {/* <Typography
-          fontWeight={700}
-          sx={{
-            fontSize: {
-              xs: "0.85rem",
-              sm: "0.95rem",
-            },
-
-            color: "#2E7D32",
-
-            whiteSpace: "nowrap",
-          }}
-        >
-          +0 SP
-        </Typography> */}
       </Stack>
-
-      {/* ================================================
-          ACTIVATION MESSAGE
-      ================================================= */}
 
       <Box
         sx={{
-          mt: 1,
+          mt: 0.9,
 
-          borderTop: "1px solid #C8E6C9",
+          pt: 0.8,
 
-          pt: 1,
+          borderTop:
+            "1px solid #C8E6C9",
         }}
       >
         <Typography
           sx={{
             fontSize: {
-              xs: "0.72rem",
-              sm: "0.78rem",
+              xs: "9px",
+              sm: "10px",
             },
 
             fontWeight: 600,
 
             color: "#2E7D32",
-
-            lineHeight: 1.4,
           }}
         >
           ✓ Membership activated successfully
         </Typography>
-
-        {/* <Typography
-          sx={{
-            mt: 0.25,
-
-            fontSize: {
-              xs: "0.65rem",
-              sm: "0.7rem",
-            },
-
-            color: "text.secondary",
-
-            lineHeight: 1.4,
-          }}
-        >
-          After reaching 40 Selling Points.
-        </Typography> */}
       </Box>
     </Box>
   );
@@ -337,10 +308,12 @@ const MembershipActivatedCard = ({
    HISTORY TABLE
 ===================================================== */
 
-const HistoryTable = ({ history = [] }) => {
-  /* =====================================================
-     EMPTY STATE
-  ===================================================== */
+const HistoryTable = ({
+  history = [],
+}) => {
+  /* ===================================================
+     EMPTY
+  =================================================== */
 
   if (
     !Array.isArray(history) ||
@@ -352,35 +325,32 @@ const HistoryTable = ({ history = [] }) => {
         sx={{
           width: "100%",
 
-          borderRadius: "0 !important",
+          borderRadius:
+            "0 !important",
 
-          border: "1px solid #2E7D32",
+          border:
+            "1px solid #2E7D32",
 
           boxShadow: "none",
         }}
       >
         <CardContent
           sx={{
-            p: {
-              xs: 1.25,
-              sm: 1.5,
-            },
+            p: 1.25,
 
             "&:last-child": {
-              pb: {
-                xs: 1.25,
-                sm: 1.5,
-              },
+              pb: 1.25,
             },
           }}
         >
           <Typography
-            fontWeight={700}
             sx={{
               fontSize: {
-                xs: "0.9rem",
-                sm: "1rem",
+                xs: "12px",
+                sm: "14px",
               },
+
+              fontWeight: 700,
             }}
           >
             Selling Point History
@@ -388,48 +358,38 @@ const HistoryTable = ({ history = [] }) => {
 
           <Box
             sx={{
-              py: {
-                xs: 3,
-                sm: 4,
-              },
+              py: 3,
 
               textAlign: "center",
             }}
           >
             <Stars
               sx={{
-                fontSize: {
-                  xs: 35,
-                  sm: 42,
-                },
+                fontSize: 35,
 
                 color: "#A5D6A7",
 
-                mb: 0.75,
+                mb: 0.5,
               }}
             />
 
             <Typography
-              fontWeight={600}
               sx={{
-                fontSize: {
-                  xs: "0.8rem",
-                  sm: "0.85rem",
-                },
+                fontSize: "11px",
+
+                fontWeight: 600,
               }}
             >
               No Selling Points Yet
             </Typography>
 
             <Typography
-              color="text.secondary"
               sx={{
-                mt: 0.35,
+                mt: 0.3,
 
-                fontSize: {
-                  xs: "0.68rem",
-                  sm: "0.75rem",
-                },
+                fontSize: "9px",
+
+                color: "#757575",
               }}
             >
               Purchase products to earn Selling Points.
@@ -440,9 +400,9 @@ const HistoryTable = ({ history = [] }) => {
     );
   }
 
-  /* =====================================================
-     HISTORY CARD
-  ===================================================== */
+  /* ===================================================
+     HISTORY
+  =================================================== */
 
   return (
     <Card
@@ -450,9 +410,11 @@ const HistoryTable = ({ history = [] }) => {
       sx={{
         width: "100%",
 
-        borderRadius: "0 !important",
+        borderRadius:
+          "0 !important",
 
-        border: "1px solid #2E7D32",
+        border:
+          "1px solid #2E7D32",
 
         boxShadow: "none",
 
@@ -464,40 +426,34 @@ const HistoryTable = ({ history = [] }) => {
           p: {
             xs: 1,
             sm: 1.25,
-            md: 1.5,
           },
 
           "&:last-child": {
             pb: {
               xs: 1,
               sm: 1.25,
-              md: 1.5,
             },
           },
         }}
       >
-        {/* =================================================
-            HEADER
-        ================================================= */}
+        {/* HEADER */}
 
         <Stack
           direction="row"
           justifyContent="space-between"
           alignItems="center"
           sx={{
-            mb: {
-              xs: 1,
-              sm: 1.25,
-            },
+            mb: 1,
           }}
         >
           <Typography
-            fontWeight={700}
             sx={{
               fontSize: {
-                xs: "0.9rem",
-                sm: "1rem",
+                xs: "12px",
+                sm: "14px",
               },
+
+              fontWeight: 700,
             }}
           >
             Selling Point History
@@ -507,518 +463,693 @@ const HistoryTable = ({ history = [] }) => {
             label={`${history.length} Records`}
             size="small"
             sx={{
-              height: 23,
+              height: 21,
 
               borderRadius: 0,
 
-              fontSize: {
-                xs: "0.62rem",
-                sm: "0.68rem",
-              },
+              fontSize: "8px",
 
-              backgroundColor: "#E8F5E9",
+              backgroundColor:
+                "#E8F5E9",
 
               color: "#2E7D32",
 
-              fontWeight: 600,
+              fontWeight: 700,
+
+              "& .MuiChip-label": {
+                px: 0.65,
+              },
             }}
           />
         </Stack>
 
-        {/* =================================================
-            TRANSACTIONS
-        ================================================= */}
+        {/* TRANSACTIONS */}
 
-        <Stack spacing={1}>
-          {history.map((item, index) => {
-            const transactionType =
-              item?.transactionType ||
-              "ORDER_PURCHASE";
+        <Stack spacing={0.9}>
+          {history.map(
+            (item, index) => {
+              const transactionType =
+                item?.transactionType ||
+                "ORDER_PURCHASE";
 
-            /*
-             * Membership activation is displayed
-             * separately and does NOT show the
-             * purchase calculation again.
-             */
+              /* =========================================
+                 MEMBERSHIP ACTIVATED
+              ========================================= */
 
-            if (
-              transactionType ===
-              "MEMBERSHIP_ACTIVATED"
-            ) {
+              if (
+                transactionType ===
+                "MEMBERSHIP_ACTIVATED"
+              ) {
+                return (
+                  <MembershipActivatedCard
+                    key={
+                      item?._id ||
+                      `membership-${index}`
+                    }
+                    item={item}
+                  />
+                );
+              }
+
+              /* =========================================
+                 BASIC DATA
+              ========================================= */
+
+              const pointsEarned =
+                numberValue(
+                  item?.pointsEarned ??
+                    item?.points ??
+                    item?.sellingPoints
+                );
+
+              const orderNumber =
+                item?.order?.orderNumber ||
+                item?.orderNumber ||
+                "--";
+
+              const date =
+                item?.createdAt ||
+                item?.date ||
+                item?.updatedAt;
+
+              /* =========================================
+                 ORDER DATA
+
+                 IMPORTANT:
+                 Backend values are preferred.
+                 Frontend does NOT create a new SP
+                 calculation.
+              ========================================= */
+
+              const order =
+                item?.order || {};
+
+              const productAmount =
+                numberValue(
+                  order?.subtotal ??
+                    item?.productAmount ??
+                    item?.subtotal ??
+                    item?.purchaseAmount
+                );
+
+              const discount =
+                numberValue(
+                  order?.discount ??
+                    item?.discount
+                );
+
+              const deliveryCharge =
+                numberValue(
+                  order?.deliveryCharge ??
+                    item?.deliveryCharge
+                );
+
+              /*
+               * THIS IS THE IMPORTANT VALUE.
+               *
+               * Backend stored SP eligible amount
+               * is the source of truth.
+               */
+
+              const eligibleAmount =
+                numberValue(
+                  item?.eligibleAmount ??
+                    item?.calculationEligibleAmount ??
+                    item?.spEligibleAmount ??
+                    order?.spEligibleAmount
+                );
+
+              const previousCarry =
+                numberValue(
+                  item?.previousPendingAmount ??
+                    item?.previousCarryForward ??
+                    item?.spPreviousCarryForward
+                );
+
+              const calculationTotal =
+                numberValue(
+                  item?.totalAmount ??
+                    item?.calculationTotal ??
+                    item?.spCalculationTotal ??
+                    (
+                      eligibleAmount +
+                      previousCarry
+                    )
+                );
+
+              const completedBlocks =
+                numberValue(
+                  item?.completedBlocks ??
+                    item?.spCompletedBlocks
+                );
+
+              const remainingCarry =
+                numberValue(
+                  item?.pendingAmount ??
+                    item?.calculationRemainingCarry ??
+                    item?.remainingCarryForward ??
+                    item?.spCarryForward
+                );
+
+              const pointsBefore =
+                numberValue(
+                  item?.sellingPointsBefore
+                );
+
+              const pointsAfter =
+                item?.sellingPointsAfter !==
+                undefined
+                  ? numberValue(
+                      item?.sellingPointsAfter
+                    )
+                  : pointsBefore +
+                    pointsEarned;
+
+              /* =========================================
+                 PRODUCT PURCHASE CARD
+              ========================================= */
+
               return (
-                <MembershipActivatedCard
+                <Box
                   key={
                     item?._id ||
-                    `membership-${index}`
+                    `transaction-${index}`
                   }
-                  item={item}
-                />
-              );
-            }
+                  sx={{
+                    width: "100%",
 
-            /* =============================================
-               PRODUCT / OTHER TRANSACTION DATA
-            ============================================= */
+                    border:
+                      "1px solid #2E7D32",
 
-            const pointsEarned =
-              numberValue(
-                item?.pointsEarned ??
-                  item?.points
-              );
+                    backgroundColor:
+                      "#FFFFFF",
 
-            const purchaseAmount =
-              numberValue(
-                item?.purchaseAmount
-              );
+                    p: {
+                      xs: 1,
+                      sm: 1.15,
+                    },
 
-            const previousPending =
-              numberValue(
-                item?.previousPendingAmount
-              );
-
-            const totalAmount =
-              numberValue(
-                item?.totalAmount ??
-                  item?.calculationTotal
-              );
-
-            const completedBlocks =
-              numberValue(
-                item?.completedBlocks
-              );
-
-            const eligibleAmount =
-              numberValue(
-                item?.eligibleAmount ??
-                  item?.calculationEligibleAmount ??
-                  item?.spEligibleAmount
-              );
-
-            const pendingAmount =
-              numberValue(
-                item?.pendingAmount ??
-                  item?.calculationRemainingCarry ??
-                  item?.spCarryForward
-              );
-
-            const previousSP =
-              numberValue(
-                item?.sellingPointsBefore
-              );
-
-            const afterSP =
-              numberValue(
-                item?.sellingPointsAfter
-              );
-
-            const lifetimePurchase =
-              numberValue(
-                item?.lifetimePurchase
-              );
-
-            const deliveryCharge =
-              numberValue(
-                item?.deliveryCharge
-              );
-
-            const orderNumber =
-              item?.order?.orderNumber ||
-              item?.orderNumber ||
-              item?.orderId ||
-              "--";
-
-            const title =
-              getTransactionTitle(
-                transactionType
-              );
-
-            const date =
-              item?.createdAt ||
-              item?.date ||
-              item?.updatedAt;
-
-            const transactionId =
-              item?._id ||
-              `transaction-${index}`;
-
-            /* =============================================
-               PRODUCT PURCHASE CARD
-            ============================================= */
-
-            return (
-              <Box
-                key={transactionId}
-                sx={{
-                  width: "100%",
-
-                  border:
-                    "1px solid #E0E0E0",
-
-                  borderRadius:
-                    "0 !important",
-
-                  backgroundColor:
-                    "#FFFFFF",
-
-                  boxSizing:
-                    "border-box",
-
-                  p: {
-                    xs: 1,
-                    sm: 1.25,
-                  },
-                }}
-              >
-                {/* ======================================
-                    TOP ROW
-                ====================================== */}
-
-                <Stack
-                  direction="row"
-                  justifyContent="space-between"
-                  alignItems="center"
-                  spacing={1}
+                    boxSizing:
+                      "border-box",
+                  }}
                 >
+                  {/* ===================================
+                      HEADER
+                  =================================== */}
+
                   <Stack
                     direction="row"
+                    justifyContent="space-between"
                     alignItems="center"
-                    spacing={0.75}
-                    sx={{
-                      minWidth: 0,
-                    }}
+                    spacing={1}
                   >
-                    <Box
-                      sx={{
-                        width: 30,
-
-                        height: 30,
-
-                        minWidth: 30,
-
-                        display:
-                          "flex",
-
-                        alignItems:
-                          "center",
-
-                        justifyContent:
-                          "center",
-
-                        border:
-                          "1px solid #A5D6A7",
-
-                        backgroundColor:
-                          "#E8F5E9",
-                      }}
-                    >
-                      {getTransactionIcon(
-                        transactionType
-                      )}
-                    </Box>
-
-                    <Box
+                    <Stack
+                      direction="row"
+                      alignItems="center"
+                      spacing={0.75}
                       sx={{
                         minWidth: 0,
                       }}
                     >
-                      <Typography
-                        fontWeight={700}
+                      <Box
                         sx={{
-                          fontSize: {
-                            xs: "0.73rem",
-                            sm: "0.8rem",
-                          },
+                          width: 29,
 
-                          lineHeight: 1.2,
+                          height: 29,
 
-                          overflow:
-                            "hidden",
+                          minWidth: 29,
 
-                          textOverflow:
-                            "ellipsis",
+                          display: "flex",
 
-                          whiteSpace:
-                            "nowrap",
+                          alignItems:
+                            "center",
+
+                          justifyContent:
+                            "center",
+
+                          border:
+                            "1px solid #A5D6A7",
+
+                          backgroundColor:
+                            "#E8F5E9",
                         }}
                       >
-                        {title}
-                      </Typography>
+                        {getTransactionIcon(
+                          transactionType
+                        )}
+                      </Box>
 
-                      <Typography
-                        color="text.secondary"
+                      <Box
                         sx={{
-                          mt: 0.2,
-
-                          fontSize: {
-                            xs: "0.6rem",
-                            sm: "0.67rem",
-                          },
-
-                          lineHeight: 1.2,
+                          minWidth: 0,
                         }}
                       >
-                        {formatDate(date)}
-                      </Typography>
-                    </Box>
+                        <Typography
+                          sx={{
+                            fontSize: {
+                              xs: "11px",
+                              sm: "12px",
+                            },
+
+                            fontWeight: 700,
+
+                            lineHeight: 1.2,
+                          }}
+                        >
+                          {getTransactionTitle(
+                            transactionType
+                          )}
+                        </Typography>
+
+                        <Typography
+                          sx={{
+                            mt: 0.2,
+
+                            fontSize: {
+                              xs: "8px",
+                              sm: "9px",
+                            },
+
+                            color: "#757575",
+                          }}
+                        >
+                          {orderNumber} •{" "}
+                          {formatDate(date)}
+                        </Typography>
+                      </Box>
+                    </Stack>
+
+                    <Typography
+                      sx={{
+                        fontSize: {
+                          xs: "12px",
+                          sm: "14px",
+                        },
+
+                        fontWeight: 800,
+
+                        color: "#2E7D32",
+
+                        whiteSpace:
+                          "nowrap",
+                      }}
+                    >
+                      +{pointsEarned} SP
+                    </Typography>
                   </Stack>
 
-                  <Typography
-                    fontWeight={700}
+                  <Divider
                     sx={{
+                      my: 0.9,
+                    }}
+                  />
+
+                  {/* ===================================
+                      PURCHASE BREAKDOWN
+                  =================================== */}
+
+                  <Typography
+                    sx={{
+                      mb: 0.7,
+
                       fontSize: {
-                        xs: "0.85rem",
-                        sm: "0.95rem",
+                        xs: "9px",
+                        sm: "10px",
                       },
 
-                      color: "#2E7D32",
+                      fontWeight: 700,
 
-                      whiteSpace:
-                        "nowrap",
+                      color: "#292929",
                     }}
                   >
-                    +{pointsEarned} SP
+                    Purchase Breakdown
                   </Typography>
-                </Stack>
 
-                <Divider
-                  sx={{
-                    my: 1,
-                  }}
-                />
-
-                {/* ======================================
-                    BASIC ORDER INFORMATION
-                ====================================== */}
-
-                <Box
-                  sx={{
-                    display:
-                      "grid",
-
-                    gridTemplateColumns: {
-                      xs:
-                        "repeat(2, minmax(0, 1fr))",
-
-                      sm:
-                        "repeat(4, minmax(0, 1fr))",
-                    },
-
-                    gap: {
-                      xs: 0.9,
-                      sm: 1,
-                    },
-                  }}
-                >
-                  <Detail
-                    label="Order"
-                    value={orderNumber}
-                  />
-
-                  <Detail
-                    label="Purchase Amount"
-                    value={money(
-                      purchaseAmount
-                    )}
-                  />
-
-                  <Detail
-                    label="Delivery Charge"
-                    value={money(
-                      deliveryCharge
-                    )}
-                  />
-
-                  <Detail
-                    label="SP Eligible Amount"
-                    value={money(
-                      eligibleAmount
-                    )}
-                  />
-                </Box>
-
-                <Divider
-                  sx={{
-                    my: 1,
-                  }}
-                />
-
-                {/* ======================================
-                    SELLING POINT CALCULATION
-                ====================================== */}
-
-                <Typography
-                  fontWeight={700}
-                  sx={{
-                    fontSize: {
-                      xs: "0.7rem",
-                      sm: "0.75rem",
-                    },
-
-                    color: "#292929",
-
-                    mb: 0.75,
-                  }}
-                >
-                  Selling Point Calculation
-                </Typography>
-
-                <Box
-                  sx={{
-                    display:
-                      "grid",
-
-                    gridTemplateColumns: {
-                      xs:
-                        "repeat(2, minmax(0, 1fr))",
-
-                      sm:
-                        "repeat(5, minmax(0, 1fr))",
-                    },
-
-                    gap: {
-                      xs: 0.9,
-                      sm: 1,
-                    },
-                  }}
-                >
-                  <Detail
-                    label="Previous Carry"
-                    value={money(
-                      previousPending
-                    )}
-                  />
-
-                  <Detail
-                    label="Calculation Total"
-                    value={money(
-                      totalAmount
-                    )}
-                  />
-
-                  <Detail
-                    label="₹100 Blocks"
-                    value={
-                      completedBlocks
-                    }
-                  />
-
-                  <Detail
-                    label="Points Earned"
-                    value={`${pointsEarned} SP`}
-                  />
-
-                  <Detail
-                    label="Remaining Carry"
-                    value={money(
-                      pendingAmount
-                    )}
-                  />
-                </Box>
-
-                <Divider
-                  sx={{
-                    my: 1,
-                  }}
-                />
-
-                {/* ======================================
-                    SP BALANCE
-                ====================================== */}
-
-                <Box
-                  sx={{
-                    display:
-                      "grid",
-
-                    gridTemplateColumns: {
-                      xs:
-                        "repeat(3, minmax(0, 1fr))",
-
-                      sm:
-                        "repeat(3, minmax(0, 1fr))",
-                    },
-
-                    gap: 1,
-                  }}
-                >
-                  <Detail
-                    label="SP Before"
-                    value={`${previousSP} SP`}
-                  />
-
-                  <Detail
-                    label="SP Earned"
-                    value={`+${pointsEarned} SP`}
-                  />
-
-                  <Detail
-                    label="SP After"
-                    value={`${afterSP} SP`}
-                  />
-                </Box>
-
-                <Divider
-                  sx={{
-                    my: 1,
-                  }}
-                />
-
-                {/* ======================================
-                    LIFETIME PURCHASE
-                ====================================== */}
-
-                <Box
-                  sx={{
-                    display:
-                      "grid",
-
-                    gridTemplateColumns: {
-                      xs:
-                        "repeat(2, minmax(0, 1fr))",
-
-                      sm:
-                        "repeat(2, minmax(0, 1fr))",
-                    },
-
-                    gap: 1,
-                  }}
-                >
-                  <Detail
-                    label="Lifetime Purchase"
-                    value={money(
-                      lifetimePurchase
-                    )}
-                  />
-
-                  <Detail
-                    label="Transaction Type"
-                    value={
-                      transactionType
-                    }
-                  />
-                </Box>
-
-                {/* ======================================
-                    REMARKS
-                ====================================== */}
-
-                {item?.remarks && (
                   <Box
                     sx={{
-                      mt: 1,
+                      display: "grid",
+
+                      gridTemplateColumns: {
+                        xs:
+                          "repeat(2, minmax(0, 1fr))",
+
+                        sm:
+                          "repeat(4, minmax(0, 1fr))",
+                      },
+
+                      gap: {
+                        xs: 0.9,
+                        sm: 1,
+                      },
                     }}
                   >
                     <Detail
-                      label="Remarks"
+                      label="Product Amount"
+                      value={money(
+                        productAmount
+                      )}
+                    />
+
+                    <Detail
+                      label="Discount"
+                      value={`-${money(
+                        discount
+                      )}`}
+                      valueColor="#D32F2F"
+                    />
+
+                    <Detail
+                      label="Delivery Charge"
+                      value={money(
+                        deliveryCharge
+                      )}
+                    />
+
+                    <Detail
+                      label="SP Eligible Amount"
+                      value={money(
+                        eligibleAmount
+                      )}
+                      valueColor="#2E7D32"
+                    />
+                  </Box>
+
+                  <Divider
+                    sx={{
+                      my: 0.9,
+                    }}
+                  />
+
+                  {/* ===================================
+                      SP CALCULATION
+                  =================================== */}
+
+                  <Typography
+                    sx={{
+                      mb: 0.7,
+
+                      fontSize: {
+                        xs: "9px",
+                        sm: "10px",
+                      },
+
+                      fontWeight: 700,
+
+                      color: "#292929",
+                    }}
+                  >
+                    Selling Point Calculation
+                  </Typography>
+
+                  <Box
+                    sx={{
+                      display: "grid",
+
+                      gridTemplateColumns: {
+                        xs:
+                          "repeat(2, minmax(0, 1fr))",
+
+                        sm:
+                          "repeat(5, minmax(0, 1fr))",
+                      },
+
+                      gap: {
+                        xs: 0.9,
+                        sm: 1,
+                      },
+                    }}
+                  >
+                    <Detail
+                      label="Previous Carry"
+                      value={money(
+                        previousCarry
+                      )}
+                      valueColor="#EF6C00"
+                    />
+
+                    <Detail
+                      label="SP Eligible"
+                      value={money(
+                        eligibleAmount
+                      )}
+                      valueColor="#2E7D32"
+                    />
+
+                    <Detail
+                      label="Calculation Total"
+                      value={money(
+                        calculationTotal
+                      )}
+                    />
+
+                    <Detail
+                      label="₹100 Blocks"
                       value={
-                        item.remarks
+                        completedBlocks
+                      }
+                    />
+
+                    <Detail
+                      label="SP Earned"
+                      value={`${pointsEarned} SP`}
+                      valueColor="#2E7D32"
+                    />
+                  </Box>
+
+                  {/* ===================================
+                      FORMULA
+                  =================================== */}
+
+                  <Box
+                    sx={{
+                      mt: 0.9,
+
+                      px: 0.6,
+
+                      py: 0.55,
+
+                      backgroundColor:
+                        "#F7FAF7",
+
+                      border:
+                        "1px solid #E0E0E0",
+
+                      display: "flex",
+
+                      justifyContent:
+                        "center",
+
+                      alignItems:
+                        "center",
+
+                      flexWrap: "wrap",
+
+                      gap: 0.45,
+                    }}
+                  >
+                    <Typography
+                      sx={{
+                        fontSize: "9px",
+
+                        fontWeight: 700,
+
+                        color: "#EF6C00",
+                      }}
+                    >
+                      {money(
+                        previousCarry
+                      )}
+                    </Typography>
+
+                    <Typography
+                      sx={{
+                        fontSize: "9px",
+                        color: "#757575",
+                      }}
+                    >
+                      +
+                    </Typography>
+
+                    <Typography
+                      sx={{
+                        fontSize: "9px",
+
+                        fontWeight: 700,
+
+                        color: "#2E7D32",
+                      }}
+                    >
+                      {money(
+                        eligibleAmount
+                      )}
+                    </Typography>
+
+                    <Typography
+                      sx={{
+                        fontSize: "9px",
+                        color: "#757575",
+                      }}
+                    >
+                      =
+                    </Typography>
+
+                    <Typography
+                      sx={{
+                        fontSize: "10px",
+
+                        fontWeight: 800,
+
+                        color: "#292929",
+                      }}
+                    >
+                      {money(
+                        calculationTotal
+                      )}
+                    </Typography>
+
+                    <Typography
+                      sx={{
+                        fontSize: "9px",
+                        color: "#757575",
+                      }}
+                    >
+                      →
+                    </Typography>
+
+                    <Typography
+                      sx={{
+                        fontSize: "9px",
+
+                        fontWeight: 700,
+                      }}
+                    >
+                      {completedBlocks} × ₹100
+                    </Typography>
+
+                    <Typography
+                      sx={{
+                        fontSize: "9px",
+                        color: "#757575",
+                      }}
+                    >
+                      →
+                    </Typography>
+
+                    <Typography
+                      sx={{
+                        fontSize: "10px",
+
+                        fontWeight: 800,
+
+                        color: "#2E7D32",
+                      }}
+                    >
+                      +{pointsEarned} SP
+                    </Typography>
+                  </Box>
+
+                  <Divider
+                    sx={{
+                      my: 0.9,
+                    }}
+                  />
+
+                  {/* ===================================
+                      SP BEFORE / AFTER
+                  =================================== */}
+
+                  <Box
+                    sx={{
+                      display: "grid",
+
+                      gridTemplateColumns:
+                        "repeat(3, minmax(0, 1fr))",
+
+                      gap: 1,
+                    }}
+                  >
+                    <Detail
+                      label="SP Before"
+                      value={`${pointsBefore} SP`}
+                    />
+
+                    <Detail
+                      label="SP Earned"
+                      value={`+${pointsEarned} SP`}
+                      valueColor="#2E7D32"
+                    />
+
+                    <Detail
+                      label="SP After"
+                      value={`${pointsAfter} SP`}
+                      valueColor="#2E7D32"
+                    />
+                  </Box>
+
+                  <Divider
+                    sx={{
+                      my: 0.9,
+                    }}
+                  />
+
+                  {/* ===================================
+                      REMAINING CARRY
+                  =================================== */}
+
+                  <Box
+                    sx={{
+                      display: "grid",
+
+                      gridTemplateColumns:
+                        "repeat(2, minmax(0, 1fr))",
+
+                      gap: 1,
+                    }}
+                  >
+                    <Detail
+                      label="Remaining Carry Forward"
+                      value={money(
+                        remainingCarry
+                      )}
+                      valueColor="#EF6C00"
+                    />
+
+                    <Detail
+                      label="Transaction Type"
+                      value={
+                        transactionType
                       }
                     />
                   </Box>
-                )}
-              </Box>
-            );
-          })}
+
+                  {/* ===================================
+                      EXPLANATION
+                  =================================== */}
+
+                  <Typography
+                    sx={{
+                      mt: 0.9,
+
+                      fontSize: {
+                        xs: "8px",
+                        sm: "9px",
+                      },
+
+                      lineHeight: 1.35,
+
+                      color: "#757575",
+                    }}
+                  >
+                    SP is calculated from the product
+                    amount after discount and delivery
+                    charge. Every complete ₹100 earns
+                    2 SP. The unused amount continues
+                    as carry forward.
+                  </Typography>
+                </Box>
+              );
+            }
+          )}
         </Stack>
       </CardContent>
     </Card>

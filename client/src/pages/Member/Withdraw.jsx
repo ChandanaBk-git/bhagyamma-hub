@@ -70,62 +70,75 @@ const Withdraw = () => {
      SUBMIT WITHDRAW
   ===================================================== */
 
-  const handleSubmit = async () => {
-    const numericAmount = Number(amount);
+const handleSubmit = () => {
+  const numericAmount = Number(amount);
 
-    if (
-      !numericAmount ||
-      numericAmount <= 0
-    ) {
-      return alert(
-        "Enter valid amount"
-      );
-    }
+  if (!numericAmount || numericAmount <= 0) {
+    return alert("Enter valid amount");
+  }
 
-    if (numericAmount < 500) {
-      return alert(
-        "Minimum withdrawal amount is ₹500"
-      );
-    }
+  if (numericAmount < 500) {
+    return alert(
+      "Minimum withdrawal amount is ₹500"
+    );
+  }
 
-    if (
-      numericAmount >
-      Number(wallet?.balance || 0)
-    ) {
-      return alert(
-        "Amount exceeds available balance"
-      );
-    }
+  if (
+    numericAmount >
+    Number(wallet?.balance || 0)
+  ) {
+    return alert(
+      "Amount exceeds available balance"
+    );
+  }
 
+  const user = (() => {
     try {
-      setSubmitting(true);
-
-      await requestWithdraw({
-        amount: numericAmount,
-      });
-
-      alert(
-        "Withdraw request submitted successfully."
+      return JSON.parse(
+        localStorage.getItem("user") || "{}"
       );
-
-      setAmount("");
-
-      await loadData();
-    } catch (err) {
-      console.error(
-        "WITHDRAW REQUEST ERROR:",
-        err
-      );
-
-      alert(
-        err?.response?.data?.message ||
-          "Unable to submit request."
-      );
-    } finally {
-      setSubmitting(false);
+    } catch {
+      return {};
     }
-  };
+  })();
 
+  const memberName =
+    user?.name ||
+    user?.fullName ||
+    "Member";
+
+  const memberId =
+    user?.userId ||
+    user?.memberId ||
+    "N/A";
+
+  const message = [
+    "Hello Bhagyamma Hub,",
+    "",
+    "I would like to request a withdrawal.",
+    "",
+    `Member Name: ${memberName}`,
+    `Member ID: ${memberId}`,
+    `Withdrawal Amount: ₹${numericAmount.toLocaleString(
+      "en-IN"
+    )}`,
+    "",
+    "Please verify and process my withdrawal request.",
+    "",
+    "Thank you.",
+  ].join("\n");
+
+  const whatsappUrl =
+    `https://wa.me/916363645068?text=${encodeURIComponent(
+      message
+    )}`;
+
+  window.open(
+    whatsappUrl,
+    "_blank",
+    "noopener,noreferrer"
+  );
+};
   /* =====================================================
      LOADING
   ===================================================== */

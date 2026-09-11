@@ -250,7 +250,43 @@ export const getManagerCommissions = async () => {
 
 };
 
+// =====================================================
+// MANAGER WALLET
+// =====================================================
 
+export const getManagerWallet = async () => {
+  const response = await api.get(
+    "/manager/wallet"
+  );
+
+  return response.data?.data || null;
+};
+
+// =====================================================
+// ALL USER WALLETS
+// =====================================================
+
+export const getAllUserWallets = async () => {
+  const response = await api.get(
+    "/manager/wallet/users"
+  );
+
+  return response.data?.data || [];
+};
+
+// =====================================================
+// SINGLE USER COMPLETE WALLET
+// =====================================================
+
+export const getUserWalletDetails = async (
+  userId
+) => {
+  const response = await api.get(
+    `/manager/wallet/users/${userId}`
+  );
+
+  return response.data?.data || null;
+};
 /*
 =========================================================
 DEFAULT EXPORT
@@ -287,6 +323,10 @@ const managerService = {
   getCommissions,
 
   getManagerCommissions,
+
+  getManagerWallet,
+  getAllUserWallets,
+  getUserWalletDetails,
 
 };
 

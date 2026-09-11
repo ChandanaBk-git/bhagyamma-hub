@@ -29,6 +29,7 @@ import {
 import { useNavigate } from "react-router-dom";
 
 import { useCart } from "../../context/CartContext";
+import useAuth from "../../hooks/useAuth";
 
 import {
   createOrder,
@@ -249,6 +250,7 @@ const compactMultilineSx = {
 
 const Checkout = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
 
 
   /* =======================================================
@@ -320,18 +322,34 @@ const Checkout = () => {
 
 
   /* =======================================================
+     MEMBER DISCOUNT
+  ======================================================= */
+
+  const isActiveMember =
+    String(user?.membershipStatus || "").toLowerCase() === "active";
+
+  const discount = useMemo(() => {
+    if (!isActiveMember || subtotal <= 0) return 0;
+    return Number((subtotal * 0.20).toFixed(2));
+  }, [isActiveMember, subtotal]);
+
+  /* =======================================================
+     PRODUCT PAYABLE
+     Discounted product amount before delivery.
+  ======================================================= */
+
+  const productPayable = useMemo(() => {
+    return Math.max(0, subtotal - discount);
+  }, [subtotal, discount]);
+
+  /* =======================================================
      FINAL AMOUNT
+     Product payable + delivery.
   ======================================================= */
 
   const finalAmount = useMemo(() => {
-    return (
-      subtotal +
-      deliveryCharge
-    );
-  }, [
-    subtotal,
-    deliveryCharge,
-  ]);
+    return productPayable + deliveryCharge;
+  }, [productPayable, deliveryCharge]);
 
 
   /* =======================================================
@@ -659,6 +677,10 @@ const Checkout = () => {
 
         subtotal,
 
+        discount,
+
+        productPayable,
+
         deliveryCharge,
 
         finalAmount,
@@ -787,6 +809,8 @@ const Checkout = () => {
 
         subtotal,
 
+        discount,
+
         deliveryCharge,
 
         finalAmount,
@@ -815,6 +839,16 @@ const Checkout = () => {
       console.log(
         "PRODUCT SUBTOTAL:",
         subtotal
+      );
+
+      console.log(
+        "MEMBER DISCOUNT:",
+        discount
+      );
+
+      console.log(
+        "PRODUCT PAYABLE:",
+        productPayable
       );
 
       console.log(
@@ -960,64 +994,54 @@ const Checkout = () => {
 
 
       /* ===================================================
+         SERVER DISCOUNT
+         Backend is the source of truth.
+      =================================================== */
+
+      const serverDiscount =
+        order?.discount !== undefined && order?.discount !== null
+          ? getNumber(order.discount)
+          : discount;
+
+      /* ===================================================
          SERVER DELIVERY
-         
          FALLBACK = ₹50
       =================================================== */
 
       const serverDelivery =
-        getNumber(
-          order?.deliveryCharge
-        ) > 0
-          ? getNumber(
-              order?.deliveryCharge
-            )
+        getNumber(order?.deliveryCharge) > 0
+          ? getNumber(order?.deliveryCharge)
           : deliveryCharge;
 
+      /* ===================================================
+         SERVER PRODUCT PAYABLE
+      =================================================== */
+
+      const serverProductPayable = Math.max(
+        0,
+        serverSubtotal - serverDiscount
+      );
 
       /* ===================================================
          SERVER FINAL AMOUNT
       =================================================== */
 
-      let serverFinalAmount =
-        getNumber(
-          order?.finalAmount
-        );
+      let serverFinalAmount = getNumber(order?.finalAmount);
 
-
-      if (
-        serverFinalAmount <= 0
-      ) {
-        serverFinalAmount =
-          serverSubtotal +
-          serverDelivery;
+      if (serverFinalAmount <= 0) {
+        serverFinalAmount = serverProductPayable + serverDelivery;
       }
-
 
       /* ===================================================
          SAFETY CHECK
+         subtotal - discount + delivery
       =================================================== */
 
       const expectedAmount =
-        serverSubtotal +
-        serverDelivery;
+        serverProductPayable + serverDelivery;
 
-
-      if (
-        serverFinalAmount <
-        expectedAmount
-      ) {
-        serverFinalAmount =
-          expectedAmount;
-      }
-
-
-      if (
-        serverFinalAmount <= 0
-      ) {
-        throw new Error(
-          "Invalid payment amount returned by the server."
-        );
+      if (Math.abs(serverFinalAmount - expectedAmount) > 0.01) {
+        serverFinalAmount = expectedAmount;
       }
 
 
@@ -1035,6 +1059,12 @@ const Checkout = () => {
 
         subtotal:
           serverSubtotal,
+
+        discount:
+          serverDiscount,
+
+        productPayable:
+          serverProductPayable,
 
         deliveryCharge:
           serverDelivery,
@@ -1077,6 +1107,16 @@ const Checkout = () => {
 
       console.log(
         paymentData
+      );
+
+      console.log(
+        "DISCOUNT:",
+        serverDiscount
+      );
+
+      console.log(
+        "PRODUCT PAYABLE:",
+        serverProductPayable
       );
 
       console.log(
@@ -2092,12 +2132,68 @@ const Checkout = () => {
             </Box>
 
 
+            {/* DISCOUNT */}
+
+            <Box
+              sx={{
+                display: "flex",
+                justifyContent: "space-between",
+                mb: 0.5,
+              }}
+            >
+              <Typography
+                sx={{
+                  fontSize: { xs: "0.6rem", sm: "0.67rem" },
+                  color: "text.secondary",
+                }}
+              >
+                Discount
+              </Typography>
+
+              <Typography
+                sx={{
+                  fontSize: { xs: "0.62rem", sm: "0.68rem" },
+                  fontWeight: 700,
+                  color: discount > 0 ? "#2E7D32" : "text.primary",
+                }}
+              >
+                -₹{discount.toLocaleString("en-IN")}
+              </Typography>
+            </Box>
+
+            {/* PRODUCT PAYABLE */}
+
+            <Box
+              sx={{
+                display: "flex",
+                justifyContent: "space-between",
+                mb: 0.5,
+              }}
+            >
+              <Typography
+                sx={{
+                  fontSize: { xs: "0.6rem", sm: "0.67rem" },
+                  color: "text.secondary",
+                }}
+              >
+                Product Payable
+              </Typography>
+
+              <Typography
+                sx={{
+                  fontSize: { xs: "0.62rem", sm: "0.68rem" },
+                  fontWeight: 700,
+                }}
+              >
+                ₹{productPayable.toLocaleString("en-IN")}
+              </Typography>
+            </Box>
+
             {/* DELIVERY */}
 
             <Box
               sx={{
-                display:
-                  "flex",
+                display: "flex",
 
                 justifyContent:
                   "space-between",

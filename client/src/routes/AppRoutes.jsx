@@ -98,6 +98,8 @@ import ManagerProducts from "../pages/manager/Products";
 import Commissions from "../pages/manager/Commissions";
 import ManagerMemberDetails from "../pages/manager/MemberDetails";
 import ManagerSellingPoints from "../pages/manager/SellingPoints";
+import ManagerWallet from "../pages/manager/ManagerWallet";
+
 
 // =====================================================
 // ERROR
@@ -698,8 +700,12 @@ const AppRoutes = () => {
             path="dashboard"
             element={<ManagerDashboard />}
           />
-
-
+<Route
+  path="wallet"
+  element={
+    <ManagerWallet />
+  }
+/>
           {/* MEMBERS */}
 
           <Route

@@ -19,11 +19,15 @@ import {
   ArrowForwardOutlined,
 } from "@mui/icons-material";
 
+import useAuth from "../../hooks/useAuth";
+
 const DELIVERY_CHARGE = 50;
 
 const CartSummary = ({ cart }) => {
   const navigate = useNavigate();
   const location = useLocation();
+
+  const { user } = useAuth();
 
   // =====================================================
   // MEMBER CART CHECK
@@ -31,6 +35,15 @@ const CartSummary = ({ cart }) => {
 
   const isMemberCart =
     location.pathname.startsWith("/member/");
+
+  // =====================================================
+  // ACTIVE MEMBER CHECK
+  // =====================================================
+
+  const isActiveMember =
+    String(
+      user?.membershipStatus || ""
+    ).toLowerCase() === "active";
 
   // =====================================================
   // SUBTOTAL
@@ -43,7 +56,35 @@ const CartSummary = ({ cart }) => {
   );
 
   // =====================================================
+  // DISCOUNT
+  //
+  // Active member = 20% discount
+  // Guest = 0%
+  // =====================================================
+
+  const discount =
+    isActiveMember && subtotal > 0
+      ? Number(
+          (subtotal * 0.20).toFixed(2)
+        )
+      : 0;
+
+  // =====================================================
+  // PRODUCT PAYABLE
+  //
+  // Product amount after discount.
+  // Delivery is NOT included here.
+  // =====================================================
+
+  const productPayable = Math.max(
+    0,
+    subtotal - discount
+  );
+
+  // =====================================================
   // DELIVERY
+  //
+  // Delivery is separate from discount.
   // =====================================================
 
   const deliveryCharge =
@@ -53,10 +94,12 @@ const CartSummary = ({ cart }) => {
 
   // =====================================================
   // GRAND TOTAL
+  //
+  // Product payable + delivery
   // =====================================================
 
   const grandTotal =
-    subtotal + deliveryCharge;
+    productPayable + deliveryCharge;
 
   // =====================================================
   // TOTAL ITEMS
@@ -222,7 +265,6 @@ const CartSummary = ({ cart }) => {
           </Typography>
         </Box>
 
-
         {/* =================================================
             SUBTOTAL
         ================================================= */}
@@ -263,6 +305,88 @@ const CartSummary = ({ cart }) => {
           </Typography>
         </Box>
 
+        {/* =================================================
+            DISCOUNT
+        ================================================= */}
+
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+          }}
+        >
+          <Typography
+            sx={{
+              color: "#666",
+
+              fontSize: {
+                xs: "0.62rem",
+                sm: "0.7rem",
+              },
+            }}
+          >
+            Discount
+          </Typography>
+
+          <Typography
+            sx={{
+              color:
+                discount > 0
+                  ? "#2E7D32"
+                  : "#333",
+
+              fontWeight: 600,
+
+              fontSize: {
+                xs: "0.65rem",
+                sm: "0.72rem",
+              },
+            }}
+          >
+            -₹{discount}
+          </Typography>
+        </Box>
+
+        {/* =================================================
+            PRODUCT PAYABLE
+        ================================================= */}
+
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+          }}
+        >
+          <Typography
+            sx={{
+              color: "#666",
+
+              fontSize: {
+                xs: "0.62rem",
+                sm: "0.7rem",
+              },
+            }}
+          >
+            Product Payable
+          </Typography>
+
+          <Typography
+            sx={{
+              color: "#333",
+
+              fontWeight: 600,
+
+              fontSize: {
+                xs: "0.65rem",
+                sm: "0.72rem",
+              },
+            }}
+          >
+            ₹{productPayable}
+          </Typography>
+        </Box>
 
         {/* =================================================
             DELIVERY
@@ -319,7 +443,6 @@ const CartSummary = ({ cart }) => {
           </Typography>
         </Box>
 
-
         {/* =================================================
             DIVIDER
         ================================================= */}
@@ -329,7 +452,6 @@ const CartSummary = ({ cart }) => {
             borderColor: "#E8ECE9",
           }}
         />
-
 
         {/* =================================================
             GRAND TOTAL
@@ -374,7 +496,6 @@ const CartSummary = ({ cart }) => {
             ₹{grandTotal}
           </Typography>
         </Box>
-
 
         {/* =================================================
             CHECKOUT BUTTON

@@ -307,6 +307,7 @@ const summary = {
 
     totalCommission:
         Number(wallet?.totalCommission || 0),
+        
         totalWithdrawn:
             wallet?.totalWithdrawn || 0,
 
