@@ -10,19 +10,14 @@ const notFound = require("./middleware/notFound.middleware");
 const errorMiddleware = require("./middleware/error.middleware");
 const productRoutes = require("./routes/product.routes");
 const app = express();
-
-
-
-
 /* ------------------------- Security Middleware ------------------------- */
-
 const corsOptions = {
     origin: process.env.CLIENT_URL ? process.env.CLIENT_URL.split(',') : true,
     credentials: true,
 };
 app.use(cors(corsOptions));
 // Ensure preflight requests are handled
-app.options('*', cors(corsOptions));
+//app.options('*', cors(corsOptions));
 
 app.use(
   helmet({
