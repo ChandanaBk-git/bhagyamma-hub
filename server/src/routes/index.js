@@ -16,6 +16,7 @@ const commissionRoutes = require("./commission.routes");
 const withdrawRoutes = require("./withdraw.routes");
 const adminRoutes = require("./admin.routes");
 const phonepeRoutes = require("./phonepe.routes");
+const managerRoutes = require("./manager.routes");
 /* ========================= Authentication ========================= */
 
 router.use("/auth", authRoutes);
@@ -48,6 +49,10 @@ router.use("/withdraws", withdrawRoutes);
 /* ========================= Admin ========================= */
 
 router.use("/admin", adminRoutes);
+
+/* ========================= Manager ========================= */
+
+router.use("/manager", managerRoutes);
 
 /* ========================= API Information ========================= */
 
