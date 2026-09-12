@@ -5,47 +5,27 @@ const compression = require("compression");
 const cookieParser = require("cookie-parser");
 const morgan = require("morgan");
 const path = require("path");
-
 const routes = require("./routes");
-
-const kycRoutes = require("./routes/kyc.routes");
-const managerRoutes = require("./routes/manager.routes");
-
 const notFound = require("./middleware/notFound.middleware");
 const errorMiddleware = require("./middleware/error.middleware");
-
+const productRoutes = require("./routes/product.routes");
 const app = express();
-
-
-/*
-=========================================================
-SECURITY
-=========================================================
-*/
-
-app.use(
-    cors({
-        origin: [
-            "http://localhost:5173",
-            "https://bhagyamma-hub-sigma.vercel.app",
-        ],
-        credentials: true,
-    })
-);
-
+/* ------------------------- Security Middleware ------------------------- */
+const corsOptions = {
+    origin: process.env.CLIENT_URL ? process.env.CLIENT_URL.split(',') : true,
+    credentials: true,
+};
+app.use(cors(corsOptions));
+// Ensure preflight requests are handled
+//app.options('*', cors(corsOptions));
 
 app.use(
-    helmet({
-        crossOriginResourcePolicy: false,
-    })
+  helmet({
+    crossOriginResourcePolicy: false,
+  })
 );
 
-
-/*
-=========================================================
-BODY PARSERS
-=========================================================
-*/
+/* -------------------------- Body Parsers -------------------------- */
 
 app.use(
     express.json({
@@ -53,6 +33,7 @@ app.use(
     })
 );
 
+app.use("/api/products", productRoutes);
 
 app.use(
     express.urlencoded({
@@ -61,145 +42,47 @@ app.use(
     })
 );
 
-
 app.use(cookieParser());
 
-
-/*
-=========================================================
-COMPRESSION + LOGGER
-=========================================================
-*/
+/* ------------------------- Performance ------------------------- */
 
 app.use(compression());
 
+/* ---------------------------- Logging ---------------------------- */
+
 app.use(morgan("dev"));
 
+/* --------------------------- Health Check --------------------------- */
 
-/*
-=========================================================
-STATIC FILES
-=========================================================
-*/
-
-app.use(
-    "/uploads",
-    express.static(
-        path.join(process.cwd(), "uploads")
-    )
-);
-
-
-/*
-=========================================================
-HEALTH
-=========================================================
-*/
-
-app.get(
-    "/",
-    (req, res) => {
-        res.status(200).json({
-            success: true,
-            message: "Bhagyamma Hub API Running",
-            version: "v1",
-        });
-    }
-);
-
-
-app.get(
-    "/health",
-    (req, res) => {
-        res.status(200).json({
-            success: true,
-            status: "UP",
-            timestamp: new Date().toISOString(),
-        });
-    }
-);
-
-
-/*
-=========================================================
-KYC ROUTES
-=========================================================
-*/
+app.get("/", (req, res) => {
+    res.status(200).json({
+        success: true,
+        message: "Bhagyamma Hub API Running",
+        version: "v1",
+    });
+});
 
 app.use(
-    "/api/v1/kyc",
-    kycRoutes
+  "/uploads",
+  express.static(path.join(__dirname, "uploads"))
 );
 
+app.get("/health", (req, res) => {
+    res.status(200).json({
+        success: true,
+        status: "UP",
+        timestamp: new Date().toISOString(),
+    });
+});
 
-/*
-=========================================================
-MANAGER ROUTES
+/* ---------------------------- API Routes ---------------------------- */
 
-IMPORTANT
+app.use("/api/v1", routes);
 
-Frontend:
-
-/manager/commissions
-
-API:
-
-/api/v1/manager/commissions
-
-=========================================================
-*/
-
-app.use(
-    "/api/v1/manager",
-    managerRoutes
-);
-
-
-/*
-=========================================================
-MAIN API ROUTES
-=========================================================
-*/
-
-app.use(
-    "/api/v1",
-    routes
-);
-
-
-/*
-=========================================================
-MANAGER MOUNT TEST
-=========================================================
-*/
-
-app.get(
-    "/api/v1/manager-test",
-    (req, res) => {
-        res.status(200).json({
-            success: true,
-            message: "Manager router mount exists",
-        });
-    }
-);
-
-
-/*
-=========================================================
-404
-=========================================================
-*/
+/* ------------------------- Error Handling ------------------------- */
 
 app.use(notFound);
 
-
-/*
-=========================================================
-GLOBAL ERROR
-=========================================================
-*/
-
 app.use(errorMiddleware);
-
 
 module.exports = app;
