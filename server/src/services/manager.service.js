@@ -3023,9 +3023,7 @@ const getCommissionPage = async (
 //
 // =====================================================
 
-const getManagerWallet = async (
-  managerId
-) => {
+const getManagerWallet = async (managerId) => {
 
   const manager =
     await User.findById(managerId)
@@ -3040,6 +3038,10 @@ const getManagerWallet = async (
       "Manager not found."
     );
   }
+
+  // =====================================================
+  // GET MANAGER WALLET
+  // =====================================================
 
   const wallet =
     await Wallet.findOne({
@@ -3057,9 +3059,9 @@ const getManagerWallet = async (
       pendingWithdrawal: 0,
     };
 
-  // -----------------------------------------------
+  // =====================================================
   // WALLET TRANSACTIONS
-  // -----------------------------------------------
+  // =====================================================
 
   const walletTransactions =
     wallet?._id
@@ -3072,9 +3074,9 @@ const getManagerWallet = async (
           .lean()
       : [];
 
-  // -----------------------------------------------
+  // =====================================================
   // WITHDRAWALS
-  // -----------------------------------------------
+  // =====================================================
 
   const withdrawals =
     await Withdraw.find({
@@ -3085,18 +3087,62 @@ const getManagerWallet = async (
       })
       .lean();
 
-  // -----------------------------------------------
-  // COMMISSION HISTORY
-  // -----------------------------------------------
+  // =====================================================
+  // MANAGER COMMISSIONS
+  // =====================================================
 
   const commissions =
     await commissionRepository.findByUser(
       manager._id
     );
 
-  // -----------------------------------------------
+  // =====================================================
+  // TOTAL COMMISSION
+  // =====================================================
+
+  const totalCommission =
+    commissions.reduce(
+      (total, item) =>
+        total +
+        Number(
+          item.commissionAmount ??
+          item.amount ??
+          0
+        ),
+      0
+    );
+
+  // =====================================================
+  // PAID COMMISSION
+  // =====================================================
+
+  const paidCommission =
+    commissions
+      .filter(
+        (item) =>
+          [
+            "PAID",
+            "COMPLETED",
+          ].includes(
+            String(
+              item.status || ""
+            ).toUpperCase()
+          )
+      )
+      .reduce(
+        (total, item) =>
+          total +
+          Number(
+            item.commissionAmount ??
+            item.amount ??
+            0
+          ),
+        0
+      );
+
+  // =====================================================
   // PENDING WITHDRAWAL
-  // -----------------------------------------------
+  // =====================================================
 
   const pendingWithdrawal =
     withdrawals
@@ -3110,38 +3156,170 @@ const getManagerWallet = async (
       .reduce(
         (total, item) =>
           total +
-          Number(item.amount || 0),
+          Number(
+            item.amount || 0
+          ),
         0
       );
 
-  // -----------------------------------------------
-  // TOTAL COMMISSION
-  // -----------------------------------------------
+  // =====================================================
+  // CURRENT WALLET VALUES
+  // =====================================================
 
-  const totalCommission =
-    commissions.reduce(
-      (total, item) =>
-        total +
-        Number(
-          item.commissionAmount ||
-          item.amount ||
-          0
-        ),
+  const currentBalance =
+    Number(
+      actualWallet.balance || 0
+    );
+
+  const currentWalletCommission =
+    Number(
+      actualWallet.totalCommission || 0
+    );
+
+  const totalBonus =
+    Number(
+      actualWallet.totalBonus || 0
+    );
+
+  const totalWithdrawn =
+    Number(
+      actualWallet.totalWithdrawn || 0
+    );
+
+  // =====================================================
+  // COMMISSION DIFFERENCE
+  // =====================================================
+  //
+  // If the commission records contain more commission
+  // than the wallet currently contains in totalCommission,
+  // the difference represents commission that is missing
+  // from the wallet.
+  //
+  // Example:
+  //
+  // Wallet commission = ₹100
+  // Commission records = ₹4,080
+  //
+  // Missing commission = ₹3,980
+  //
+  // We add ONLY the difference.
+  //
+  // =====================================================
+
+  const missingCommission =
+    Math.max(
+      paidCommission -
+      currentWalletCommission,
       0
     );
 
-  // -----------------------------------------------
+  // =====================================================
+  // COMPLETE BALANCE
+  // =====================================================
+  //
+  // Do NOT add the complete ₹4,080 on top of ₹100.
+  //
+  // The ₹100 is already part of wallet.balance.
+  //
+  // Therefore:
+  //
+  // ₹100 + ₹3,980 = ₹4,080
+  //
+  // =====================================================
+
+  const completeBalance =
+    currentBalance +
+    missingCommission;
+
+  // =====================================================
+  // DEBUG
+  // =====================================================
+
+  console.log(
+    "=============================================="
+  );
+
+  console.log(
+    "MANAGER COMPLETE WALLET"
+  );
+
+  console.log(
+    "Manager:",
+    manager.name
+  );
+
+  console.log(
+    "Manager ID:",
+    String(manager._id)
+  );
+
+  console.log(
+    "Current Wallet Balance:",
+    currentBalance
+  );
+
+  console.log(
+    "Current Wallet Commission:",
+    currentWalletCommission
+  );
+
+  console.log(
+    "Total Commission Records:",
+    totalCommission
+  );
+
+  console.log(
+    "Paid Commission:",
+    paidCommission
+  );
+
+  console.log(
+    "Missing Commission:",
+    missingCommission
+  );
+
+  console.log(
+    "Complete Wallet Balance:",
+    completeBalance
+  );
+
+  console.log(
+    "Total Withdrawn:",
+    totalWithdrawn
+  );
+
+  console.log(
+    "Pending Withdrawal:",
+    pendingWithdrawal
+  );
+
+  console.log(
+    "=============================================="
+  );
+
+  // =====================================================
   // RETURN
-  // -----------------------------------------------
+  // =====================================================
 
   return {
 
     user: {
-      _id: manager._id,
-      name: manager.name,
-      userId: manager.userId,
-      email: manager.email,
-      mobile: manager.mobile,
+
+      _id:
+        manager._id,
+
+      name:
+        manager.name,
+
+      userId:
+        manager.userId,
+
+      email:
+        manager.email,
+
+      mobile:
+        manager.mobile,
+
     },
 
     wallet: {
@@ -3149,34 +3327,20 @@ const getManagerWallet = async (
       _id:
         actualWallet._id,
 
+      // IMPORTANT:
+      // Complete commission-inclusive balance
       balance:
-        Number(
-          actualWallet.balance || 0
-        ),
+        completeBalance,
 
+      // Actual total commission earned
       totalCommission:
+        paidCommission,
 
-        Number(
-          actualWallet.totalCommission ||
-          totalCommission ||
-          0
-        ),
+      totalBonus,
 
-      totalBonus:
+      totalWithdrawn,
 
-        Number(
-          actualWallet.totalBonus || 0
-        ),
-
-      totalWithdrawn:
-
-        Number(
-          actualWallet.totalWithdrawn || 0
-        ),
-
-      pendingWithdrawal:
-
-        pendingWithdrawal,
+      pendingWithdrawal,
 
     },
 
@@ -3189,7 +3353,6 @@ const getManagerWallet = async (
   };
 
 };
-
 
 // =====================================================
 // ALL USER WALLETS
