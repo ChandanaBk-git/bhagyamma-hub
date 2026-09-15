@@ -56,4 +56,14 @@ router.get(
     authController.getProfile
 );
 
+router.post(
+  "/forgot-password-mobile",
+  authController.sendMobileResetOtp
+);
+
+router.post(
+  "/verify-reset-otp",
+  authController.verifyResetOtp
+);
+
 module.exports = router;

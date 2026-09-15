@@ -48,7 +48,10 @@ const generateReferralCode = async () => {
             .toString("hex")
             .toUpperCase();
 
-        exists = await userRepository.findByReferralCode(code);
+        exists =
+            await userRepository.findByReferralCode(
+                code
+            );
 
     } while (exists);
 
@@ -414,7 +417,7 @@ const register = async (payload) => {
             orderService &&
             typeof
                 orderService.claimGuestOrdersForMember ===
-                "function"
+            "function"
         ) {
 
             recoveredGuestOrders =
@@ -604,10 +607,6 @@ const login = async ({
             .toLowerCase();
 
 
-    // -------------------------------------------------
-    // FIND USER
-    // -------------------------------------------------
-
     const user =
         await userRepository.findByEmail(
             cleanEmail
@@ -621,10 +620,6 @@ const login = async ({
     }
 
 
-    // -------------------------------------------------
-    // ACCOUNT STATUS
-    // -------------------------------------------------
-
     if (!user.isActive) {
         throw new ApiError(
             403,
@@ -632,10 +627,6 @@ const login = async ({
         );
     }
 
-
-    // -------------------------------------------------
-    // PASSWORD
-    // -------------------------------------------------
 
     const isMatch =
         await user.comparePassword(
@@ -649,10 +640,6 @@ const login = async ({
         );
     }
 
-
-    // -------------------------------------------------
-    // LAST LOGIN
-    // -------------------------------------------------
 
     await userRepository.updateById(
         user._id,
@@ -673,7 +660,7 @@ const login = async ({
             orderService &&
             typeof
                 orderService.claimGuestOrdersForMember ===
-                "function"
+            "function"
         ) {
 
             await orderService.claimGuestOrdersForMember(
@@ -698,10 +685,6 @@ const login = async ({
     }
 
 
-    // -------------------------------------------------
-    // RELOAD USER
-    // -------------------------------------------------
-
     const updatedUser =
         await User.findById(
             user._id
@@ -715,19 +698,11 @@ const login = async ({
     }
 
 
-    // -------------------------------------------------
-    // TOKEN
-    // -------------------------------------------------
-
     const token =
         generateToken(
             updatedUser
         );
 
-
-    // -------------------------------------------------
-    // REMOVE SENSITIVE DATA
-    // -------------------------------------------------
 
     updatedUser.password =
         undefined;
@@ -741,10 +716,6 @@ const login = async ({
     updatedUser.otpPurpose =
         undefined;
 
-
-    // -------------------------------------------------
-    // RESPONSE
-    // -------------------------------------------------
 
     return {
 
@@ -763,7 +734,7 @@ const login = async ({
 
 
 // =====================================================
-// VERIFY OTP
+// VERIFY LOGIN OTP
 // =====================================================
 
 const verifyOtp = async ({
@@ -775,6 +746,7 @@ const verifyOtp = async ({
         String(email || "")
             .trim()
             .toLowerCase();
+
 
     const user =
         await userRepository.findByEmailWithOtp(
@@ -788,6 +760,7 @@ const verifyOtp = async ({
         );
     }
 
+
     if (
         user.otp !== otp
     ) {
@@ -796,6 +769,7 @@ const verifyOtp = async ({
             "Invalid OTP"
         );
     }
+
 
     if (
         user.otpPurpose !==
@@ -806,6 +780,7 @@ const verifyOtp = async ({
             "Invalid OTP purpose"
         );
     }
+
 
     if (
         !user.otpExpires ||
@@ -818,18 +793,10 @@ const verifyOtp = async ({
     }
 
 
-    // -------------------------------------------------
-    // CLEAR OTP
-    // -------------------------------------------------
-
     await userRepository.clearOtp(
         cleanEmail
     );
 
-
-    // -------------------------------------------------
-    // LAST LOGIN
-    // -------------------------------------------------
 
     await userRepository.updateById(
         user._id,
@@ -840,19 +807,11 @@ const verifyOtp = async ({
     );
 
 
-    // -------------------------------------------------
-    // TOKEN
-    // -------------------------------------------------
-
     const token =
         generateToken(
             user
         );
 
-
-    // -------------------------------------------------
-    // REMOVE SENSITIVE DATA
-    // -------------------------------------------------
 
     user.password =
         undefined;
@@ -907,7 +866,7 @@ const getProfile = async (
 
 
 // =====================================================
-// FORGOT PASSWORD
+// EMAIL FORGOT PASSWORD
 // =====================================================
 
 const forgotPassword = async ({
@@ -919,10 +878,6 @@ const forgotPassword = async ({
             .trim()
             .toLowerCase();
 
-
-    // -------------------------------------------------
-    // FIND USER
-    // -------------------------------------------------
 
     const user =
         await userRepository.findByEmailWithOtp(
@@ -937,10 +892,6 @@ const forgotPassword = async ({
     }
 
 
-    // -------------------------------------------------
-    // ACCOUNT
-    // -------------------------------------------------
-
     if (!user.isActive) {
         throw new ApiError(
             403,
@@ -948,10 +899,6 @@ const forgotPassword = async ({
         );
     }
 
-
-    // -------------------------------------------------
-    // OTP
-    // -------------------------------------------------
 
     const otp =
         generateOTP();
@@ -967,10 +914,6 @@ const forgotPassword = async ({
         "FORGOT_PASSWORD"
     );
 
-
-    // -------------------------------------------------
-    // EMAIL
-    // -------------------------------------------------
 
     await sendEmail(
         cleanEmail,
@@ -993,25 +936,372 @@ const forgotPassword = async ({
     };
 };
 
-
 // =====================================================
-// RESET PASSWORD
+// SEND MOBILE OTP
+// DEVELOPMENT MODE
 // =====================================================
 
-const resetPassword = async ({
-    email,
-    otp,
-    password,
+const sendMobileResetOtp = async ({
+    mobile,
 }) => {
 
-    const cleanEmail =
-        String(email || "")
-            .trim()
-            .toLowerCase();
+    const cleanMobile =
+        String(mobile || "")
+            .replace(/\D/g, "");
+
+
+    if (
+        !/^[6-9]\d{9}$/.test(
+            cleanMobile
+        )
+    ) {
+        throw new ApiError(
+            400,
+            "Please enter a valid 10-digit Indian mobile number"
+        );
+    }
+
+
+    const user =
+        await userRepository.findByMobileWithOtp(
+            cleanMobile
+        );
+
+    if (!user) {
+        throw new ApiError(
+            404,
+            "No account found with this mobile number"
+        );
+    }
+
+
+    if (!user.isActive) {
+        throw new ApiError(
+            403,
+            "Account is inactive"
+        );
+    }
+
+
+    const otp =
+        generateOTP();
+
+
+    const otpExpires =
+        new Date(
+            Date.now() +
+            5 * 60 * 1000
+        );
 
 
     // -------------------------------------------------
-    // PASSWORD VALIDATION
+    // CLEAR ANY OLD RESET TOKEN
+    // -------------------------------------------------
+
+    await userRepository.updateById(
+        user._id,
+        {
+            passwordResetToken:
+                undefined,
+
+            passwordResetExpires:
+                undefined,
+        }
+    );
+
+
+    // -------------------------------------------------
+    // SAVE OTP
+    // -------------------------------------------------
+
+    await userRepository.updateOtp(
+        cleanMobile,
+        otp,
+        otpExpires,
+        "FORGOT_PASSWORD"
+    );
+
+
+    // -------------------------------------------------
+    // DEVELOPMENT TERMINAL LOG
+    // -------------------------------------------------
+
+    console.log(
+        "=============================================="
+    );
+
+    console.log(
+        "PASSWORD RESET OTP"
+    );
+
+    console.log(
+        "User:",
+        user.name
+    );
+
+    console.log(
+        "Mobile:",
+        cleanMobile
+    );
+
+    console.log(
+        "OTP:",
+        otp
+    );
+
+    console.log(
+        "Expires:",
+        otpExpires
+    );
+
+    console.log(
+        "=============================================="
+    );
+
+
+    // -------------------------------------------------
+    // RESPONSE
+    // -------------------------------------------------
+
+    return {
+
+        success:
+            true,
+
+        message:
+            "OTP generated successfully.",
+
+        mobile:
+            cleanMobile,
+
+        // ---------------------------------------------
+        // DEVELOPMENT ONLY
+        // This allows ForgotPassword.jsx to show
+        // the OTP inside the MUI Dialog.
+        // ---------------------------------------------
+        ...(process.env.NODE_ENV !== "production"
+            ? {
+                developmentOtp:
+                    otp,
+            }
+            : {}),
+    };
+};
+
+
+// =====================================================
+// VERIFY MOBILE RESET OTP
+// DEVELOPMENT MODE
+// =====================================================
+
+const verifyResetOtp = async ({
+    mobile,
+    otp,
+}) => {
+
+    const cleanMobile =
+        String(mobile || "")
+            .replace(/\D/g, "");
+
+    const cleanOtp =
+        String(otp || "")
+            .trim();
+
+
+    if (
+        !/^[6-9]\d{9}$/.test(
+            cleanMobile
+        )
+    ) {
+        throw new ApiError(
+            400,
+            "Please enter a valid mobile number"
+        );
+    }
+
+
+    if (
+        !/^\d{4,6}$/.test(
+            cleanOtp
+        )
+    ) {
+        throw new ApiError(
+            400,
+            "Please enter a valid OTP"
+        );
+    }
+
+
+    const user =
+        await userRepository.findByMobileWithOtp(
+            cleanMobile
+        );
+
+    if (!user) {
+        throw new ApiError(
+            404,
+            "User not found"
+        );
+    }
+
+
+    if (
+        String(user.otp || "") !==
+        cleanOtp
+    ) {
+        throw new ApiError(
+            400,
+            "Invalid OTP"
+        );
+    }
+
+
+    if (
+        user.otpPurpose !==
+        "FORGOT_PASSWORD"
+    ) {
+        throw new ApiError(
+            400,
+            "Invalid OTP purpose"
+        );
+    }
+
+
+    if (
+        !user.otpExpires ||
+        user.otpExpires < new Date()
+    ) {
+        throw new ApiError(
+            400,
+            "OTP expired"
+        );
+    }
+
+
+    // -------------------------------------------------
+    // GENERATE TEMPORARY RESET TOKEN
+    // -------------------------------------------------
+
+    const resetToken =
+        crypto
+            .randomBytes(32)
+            .toString("hex");
+
+
+    const resetTokenExpires =
+        new Date(
+            Date.now() +
+            10 * 60 * 1000
+        );
+
+
+    // -------------------------------------------------
+    // SAVE RESET TOKEN
+    // -------------------------------------------------
+
+    await userRepository.updateById(
+        user._id,
+        {
+            passwordResetToken:
+                resetToken,
+
+            passwordResetExpires:
+                resetTokenExpires,
+
+            otp:
+                undefined,
+
+            otpExpires:
+                undefined,
+
+            otpPurpose:
+                undefined,
+        }
+    );
+
+
+    // -------------------------------------------------
+    // IMPORTANT
+    // -------------------------------------------------
+    // NO JWT IS GENERATED HERE.
+    //
+    // This token is ONLY for password reset.
+    // It cannot be used as a login token.
+    // -------------------------------------------------
+
+    return {
+
+        success:
+            true,
+
+        message:
+            "OTP verified successfully",
+
+        mobile:
+            cleanMobile,
+
+        resetToken,
+
+        expiresIn:
+            10 * 60,
+
+        verified:
+            true,
+    };
+};
+
+
+// =====================================================
+// RESET PASSWORD
+// MOBILE + RESET TOKEN
+// =====================================================
+
+const resetPassword = async ({
+    mobile,
+    resetToken,
+    password,
+    confirmPassword,
+}) => {
+
+    const cleanMobile =
+        String(mobile || "")
+            .replace(/\D/g, "");
+
+    const cleanResetToken =
+        String(resetToken || "")
+            .trim();
+
+
+    // -------------------------------------------------
+    // MOBILE VALIDATION
+    // -------------------------------------------------
+
+    if (
+        !/^[6-9]\d{9}$/.test(
+            cleanMobile
+        )
+    ) {
+        throw new ApiError(
+            400,
+            "Please enter a valid 10-digit Indian mobile number"
+        );
+    }
+
+
+    // -------------------------------------------------
+    // RESET TOKEN
+    // -------------------------------------------------
+
+    if (!cleanResetToken) {
+        throw new ApiError(
+            400,
+            "Password reset authorization is required"
+        );
+    }
+
+
+    // -------------------------------------------------
+    // PASSWORD
     // -------------------------------------------------
 
     if (!password) {
@@ -1062,13 +1352,34 @@ const resetPassword = async ({
 
 
     // -------------------------------------------------
+    // CONFIRM PASSWORD
+    // -------------------------------------------------
+
+    if (
+        password !==
+        confirmPassword
+    ) {
+        throw new ApiError(
+            400,
+            "Passwords do not match"
+        );
+    }
+
+
+    // -------------------------------------------------
     // FIND USER
     // -------------------------------------------------
 
     const user =
-        await userRepository.findByEmailWithOtp(
-            cleanEmail
-        );
+        await User.findOne({
+            mobile:
+                cleanMobile,
+
+        })
+            .select(
+                "+passwordResetToken +passwordResetExpires"
+            );
+
 
     if (!user) {
         throw new ApiError(
@@ -1079,67 +1390,73 @@ const resetPassword = async ({
 
 
     // -------------------------------------------------
-    // OTP
+    // VERIFY RESET TOKEN
     // -------------------------------------------------
 
     if (
-        user.otp !== otp
+        !user.passwordResetToken ||
+        user.passwordResetToken !==
+        cleanResetToken
     ) {
         throw new ApiError(
             400,
-            "Invalid OTP"
-        );
-    }
-
-    if (
-        user.otpPurpose !==
-        "FORGOT_PASSWORD"
-    ) {
-        throw new ApiError(
-            400,
-            "Invalid OTP purpose"
-        );
-    }
-
-    if (
-        !user.otpExpires ||
-        user.otpExpires < new Date()
-    ) {
-        throw new ApiError(
-            400,
-            "OTP expired"
+            "Invalid password reset authorization"
         );
     }
 
 
     // -------------------------------------------------
-    // HASH PASSWORD
+    // CHECK RESET TOKEN EXPIRY
     // -------------------------------------------------
 
-    const hashedPassword =
-        await bcrypt.hash(
-            password,
-            10
+    if (
+        !user.passwordResetExpires ||
+        user.passwordResetExpires < new Date()
+    ) {
+        throw new ApiError(
+            400,
+            "Password reset authorization has expired. Please request a new OTP."
         );
+    }
 
 
     // -------------------------------------------------
-    // UPDATE PASSWORD
+    // HASH NEW PASSWORD
     // -------------------------------------------------
 
-    await userRepository.updatePassword(
-        cleanEmail,
-        hashedPassword
-    );
+// -------------------------------------------------
+// UPDATE PASSWORD
+// -------------------------------------------------
+// Do NOT hash here.
+// user.model.js automatically hashes the password
+// before saving.
 
+user.password =
+    password;
 
+user.passwordChangedAt =
+    new Date();
     // -------------------------------------------------
-    // CLEAR OTP
+    // CLEAR RESET AUTHORIZATION
     // -------------------------------------------------
 
-    await userRepository.clearOtp(
-        cleanEmail
-    );
+    user.passwordResetToken =
+        undefined;
+
+    user.passwordResetExpires =
+        undefined;
+
+    user.otp =
+        undefined;
+
+    user.otpExpires =
+        undefined;
+
+    user.otpPurpose =
+        undefined;
+
+
+    await user.save();
 
 
     return {
@@ -1148,13 +1465,13 @@ const resetPassword = async ({
             true,
 
         message:
-            "Password updated successfully",
+            "Password updated successfully. Please login with your new password.",
     };
 };
 
 
 // =====================================================
-// RESEND OTP
+// RESEND LOGIN OTP
 // =====================================================
 
 const resendOtp = async ({
@@ -1167,10 +1484,6 @@ const resendOtp = async ({
             .toLowerCase();
 
 
-    // -------------------------------------------------
-    // FIND USER
-    // -------------------------------------------------
-
     const user =
         await userRepository.findByEmailWithOtp(
             cleanEmail
@@ -1184,10 +1497,6 @@ const resendOtp = async ({
     }
 
 
-    // -------------------------------------------------
-    // ACCOUNT
-    // -------------------------------------------------
-
     if (!user.isActive) {
         throw new ApiError(
             403,
@@ -1195,10 +1504,6 @@ const resendOtp = async ({
         );
     }
 
-
-    // -------------------------------------------------
-    // OTP
-    // -------------------------------------------------
 
     const otp =
         generateOTP();
@@ -1214,10 +1519,6 @@ const resendOtp = async ({
         "LOGIN"
     );
 
-
-    // -------------------------------------------------
-    // EMAIL
-    // -------------------------------------------------
 
     await sendEmail(
         cleanEmail,
@@ -1255,6 +1556,10 @@ module.exports = {
     verifyOtp,
 
     forgotPassword,
+
+    sendMobileResetOtp,
+
+    verifyResetOtp,
 
     resetPassword,
 

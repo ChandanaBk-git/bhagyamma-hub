@@ -363,6 +363,8 @@ const getStats = async () => {
 
 /**
  * Find user by email including OTP fields
+ *
+ * Used by the existing email-based authentication/reset flow.
  */
 const findByEmailWithOtp = (email) => {
   return User.findOne({
@@ -374,18 +376,48 @@ const findByEmailWithOtp = (email) => {
 
 
 /**
+ * Find user by mobile including OTP fields
+ *
+ * Used by the new mobile OTP forgot-password flow.
+ */
+const findByMobileWithOtp = (mobile) => {
+  return User.findOne({
+    mobile: String(mobile).trim(),
+  }).select(
+    "+otp +otpExpires +otpPurpose"
+  );
+};
+
+
+/**
  * Update OTP
+ *
+ * Supports both:
+ * - email
+ * - mobile
+ *
+ * Existing email OTP flow continues to work.
+ * New mobile OTP forgot-password flow can also use this method.
  */
 const updateOtp = (
-  email,
+  identifier,
   otp,
   otpExpires,
   otpPurpose
 ) => {
+
+  const value = String(identifier).trim();
+
+  const filter = value.includes("@")
+    ? {
+        email: value.toLowerCase(),
+      }
+    : {
+        mobile: value,
+      };
+
   return User.findOneAndUpdate(
-    {
-      email: email?.toLowerCase().trim(),
-    },
+    filter,
     {
       otp,
       otpExpires,
@@ -400,12 +432,23 @@ const updateOtp = (
 
 /**
  * Clear OTP
+ *
+ * Supports both email and mobile.
  */
-const clearOtp = (email) => {
+const clearOtp = (identifier) => {
+
+  const value = String(identifier).trim();
+
+  const filter = value.includes("@")
+    ? {
+        email: value.toLowerCase(),
+      }
+    : {
+        mobile: value,
+      };
+
   return User.findOneAndUpdate(
-    {
-      email: email?.toLowerCase().trim(),
-    },
+    filter,
     {
       $unset: {
         otp: "",
@@ -422,15 +465,30 @@ const clearOtp = (email) => {
 
 /**
  * Update password and clear OTP
+ *
+ * Supports both email and mobile.
+ *
+ * IMPORTANT:
+ * The auth service should provide the password
+ * in the same form expected by the current project.
  */
 const updatePassword = (
-  email,
+  identifier,
   password
 ) => {
+
+  const value = String(identifier).trim();
+
+  const filter = value.includes("@")
+    ? {
+        email: value.toLowerCase(),
+      }
+    : {
+        mobile: value,
+      };
+
   return User.findOneAndUpdate(
-    {
-      email: email?.toLowerCase().trim(),
-    },
+    filter,
     {
       password,
 
@@ -522,6 +580,7 @@ module.exports = {
 
   /* OTP */
   findByEmailWithOtp,
+  findByMobileWithOtp,
   updateOtp,
   clearOtp,
   updatePassword,

@@ -163,6 +163,48 @@ const verifyOtpValidation = [
         .isNumeric()
         .withMessage("OTP must contain only numbers"),
 ];
+/* -------------------------------------------------------------------------- */
+/*                    Mobile Reset Password Validation                        */
+/* -------------------------------------------------------------------------- */
+
+const mobileResetPasswordValidation = [
+    body("mobile")
+        .trim()
+        .matches(/^[6-9]\d{9}$/)
+        .withMessage("Enter a valid 10-digit mobile number"),
+
+    body("password")
+        .trim()
+        .isLength({ min: 8 })
+        .withMessage("Password must be at least 8 characters")
+        .matches(/[A-Z]/)
+        .withMessage(
+            "Password must contain at least one uppercase letter"
+        )
+        .matches(/[a-z]/)
+        .withMessage(
+            "Password must contain at least one lowercase letter"
+        )
+        .matches(/[0-9]/)
+        .withMessage(
+            "Password must contain at least one number"
+        )
+        .matches(/[!@#$%^&*(),.?":{}|<>]/)
+        .withMessage(
+            "Password must contain at least one special character"
+        ),
+
+    body("confirmPassword")
+        .custom((value, { req }) => {
+            if (value !== req.body.password) {
+                throw new Error(
+                    "Passwords do not match"
+                );
+            }
+
+            return true;
+        }),
+];
 
 module.exports = {
     registerValidation,
@@ -170,7 +212,8 @@ module.exports = {
     forgotPasswordValidation,
     resetPasswordValidation,
     changePasswordValidation,
-        verifyOtpValidation, 
+    verifyOtpValidation,
     changeEmailValidation,
     changeMobileValidation,
+    mobileResetPasswordValidation,
 };

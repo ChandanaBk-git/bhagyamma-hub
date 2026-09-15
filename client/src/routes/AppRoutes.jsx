@@ -52,6 +52,7 @@ import MembershipPaymentScanner
 import Login from "../pages/Auth/Login";
 import Register from "../pages/Auth/Register";
 import VerifyOtp from "../pages/Auth/VerifyOtp";
+import ForgotPassword from "../pages/Auth/ForgotPassword";
 
 // =====================================================
 // MEMBER
@@ -360,6 +361,10 @@ const AppRoutes = () => {
         element={<VerifyOtp />}
       />
 
+<Route
+  path="/forgot-password"
+  element={<ForgotPassword />}
+/>
 
       {/* =================================================
           MEMBER AREA

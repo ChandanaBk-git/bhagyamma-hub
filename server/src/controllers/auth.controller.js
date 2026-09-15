@@ -142,6 +142,78 @@ const forgotPassword = async (req, res, next) => {
 };
 
 // =====================================================
+// MOBILE FORGOT PASSWORD - SEND OTP
+// DEVELOPMENT MODE
+// =====================================================
+
+const sendMobileResetOtp = async (
+    req,
+    res,
+    next
+) => {
+
+    try {
+
+        const result =
+            await authService.sendMobileResetOtp(
+                req.body
+            );
+
+        return res.status(200).json({
+
+            success: true,
+
+            message:
+                result.message,
+
+            data: result,
+
+        });
+
+    } catch (error) {
+
+        next(error);
+
+    }
+};
+
+// =====================================================
+// MOBILE FORGOT PASSWORD - VERIFY OTP
+// DEVELOPMENT MODE
+// =====================================================
+
+const verifyResetOtp = async (
+    req,
+    res,
+    next
+) => {
+
+    try {
+
+        const result =
+            await authService.verifyResetOtp(
+                req.body
+            );
+
+        return res.status(200).json({
+
+            success: true,
+
+            message:
+                result.message,
+
+            data: result,
+
+        });
+
+    } catch (error) {
+
+        next(error);
+
+    }
+};
+
+// =====================================================
 // RESET PASSWORD
 // =====================================================
 
@@ -175,4 +247,8 @@ module.exports = {
     resetPassword,
     forgotPassword,
     verifyOtp,
+
+    // Mobile forgot-password OTP
+    sendMobileResetOtp,
+    verifyResetOtp,
 };
