@@ -49,6 +49,18 @@ router.post(
     authController.resetPassword
 );
 
+// Mobile Forgot Password - Send OTP
+router.post(
+    "/forgot-password-mobile",
+    authController.sendMobileResetOtp
+);
+
+// Mobile Forgot Password - Verify OTP
+router.post(
+    "/verify-reset-otp",
+    authController.verifyResetOtp
+);
+
 // User Profile
 router.get(
     "/profile",
