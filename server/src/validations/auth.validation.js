@@ -47,13 +47,13 @@ body("email")
 /* -------------------------------------------------------------------------- */
 /*                                 Login Validation                           */
 /* -------------------------------------------------------------------------- */
-
 const loginValidation = [
-    body("email")
+    body("identifier")
         .trim()
-        .normalizeEmail()
-        .isEmail()
-        .withMessage("Valid email is required"),
+        .notEmpty()
+        .withMessage("Email or Login ID is required")
+        .isLength({ min: 3, max: 100 })
+        .withMessage("Email or Login ID is invalid"),
 
     body("password")
         .notEmpty()

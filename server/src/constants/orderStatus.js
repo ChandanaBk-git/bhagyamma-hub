@@ -1,9 +1,13 @@
-module.exports = [
-    "PENDING",
-    "CONFIRMED",
-    "PACKED",
-    "SHIPPED",
-    "OUT_FOR_DELIVERY",
-    "DELIVERED",
-    "CANCELLED"
+const ORDER_STATUSES = [
+  "PLACED",
+  "CONFIRMED",
+  "PACKING",
+  "PACKED",
+  "READY_FOR_DISPATCH",
+  "SHIPPED",
+  "OUT_FOR_DELIVERY",
+  "DELIVERED",
+  "CANCELLED",
 ];
+
+module.exports = ORDER_STATUSES;

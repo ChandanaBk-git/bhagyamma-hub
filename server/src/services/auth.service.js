@@ -22,6 +22,7 @@ const orderService = require("./order.service");
 
 const MANAGER_REFERRAL_CODE = "BHMANAGER001";
 
+const PackagingStaff = require("../models/packagingStaff.model");
 
 // =====================================================
 // GENERATE USER ID
@@ -596,140 +597,349 @@ const register = async (payload) => {
 // LOGIN
 // =====================================================
 
+// =====================================================
+// COMMON LOGIN
+// USER + PACKAGING STAFF
+// =====================================================
+// =====================================================
+// LOGIN
+// COMMON LOGIN
+// USER + PACKAGING STAFF
+// =====================================================
+
 const login = async ({
+    identifier,
     email,
     password,
 }) => {
 
-    const cleanEmail =
-        String(email || "")
-            .trim()
-            .toLowerCase();
+    // =================================================
+    // VALIDATION
+    // =================================================
 
+    const loginIdentifier =
+        String(
+            identifier ||
+            email ||
+            ""
+        ).trim();
+
+    if (!loginIdentifier) {
+        throw new ApiError(
+            400,
+            "Email or Login ID is required"
+        );
+    }
+
+    if (!password) {
+        throw new ApiError(
+            400,
+            "Password is required"
+        );
+    }
+
+
+    // =================================================
+    // 1. CHECK NORMAL USER BY EMAIL
+    // =================================================
+
+    const cleanEmail =
+        loginIdentifier.toLowerCase();
 
     const user =
         await userRepository.findByEmail(
             cleanEmail
         );
 
-    if (!user) {
-        throw new ApiError(
-            404,
-            "User not found"
-        );
-    }
 
+    // =================================================
+    // NORMAL USER FOUND
+    // =================================================
 
-    if (!user.isActive) {
-        throw new ApiError(
-            403,
-            "Your account is inactive"
-        );
-    }
+    if (user) {
 
-
-    const isMatch =
-        await user.comparePassword(
-            password
-        );
-
-    if (!isMatch) {
-        throw new ApiError(
-            401,
-            "Invalid credentials"
-        );
-    }
-
-
-    await userRepository.updateById(
-        user._id,
-        {
-            lastLogin:
-                new Date(),
+        if (!user.isActive) {
+            throw new ApiError(
+                403,
+                "Your account is inactive"
+            );
         }
-    );
 
 
-    // =================================================
-    // GUEST ORDER RECOVERY
-    // =================================================
+        const isMatch =
+            await user.comparePassword(
+                password
+            );
 
-    try {
 
-        if (
-            orderService &&
-            typeof
-                orderService.claimGuestOrdersForMember ===
-            "function"
+        if (!isMatch) {
+            throw new ApiError(
+                401,
+                "Invalid credentials"
+            );
+        }
+
+
+        // ---------------------------------------------
+        // UPDATE LAST LOGIN
+        // ---------------------------------------------
+
+        await userRepository.updateById(
+            user._id,
+            {
+                lastLogin:
+                    new Date(),
+            }
+        );
+
+
+        // ---------------------------------------------
+        // GUEST ORDER RECOVERY
+        // ---------------------------------------------
+
+        try {
+
+            if (
+                orderService &&
+                typeof
+                    orderService
+                        .claimGuestOrdersForMember ===
+                    "function"
+            ) {
+
+                await orderService
+                    .claimGuestOrdersForMember(
+                        user._id,
+                        String(
+                            user.mobile || ""
+                        ).replace(
+                            /\D/g,
+                            ""
+                        )
+                    );
+
+            } else {
+
+                console.warn(
+                    "Guest order recovery function is not available during login."
+                );
+            }
+
+        } catch (
+            guestClaimError
         ) {
 
-            await orderService.claimGuestOrdersForMember(
-                user._id,
-                String(user.mobile || "")
-                    .replace(/\D/g, "")
-            );
-
-        } else {
-
-            console.warn(
-                "Guest order recovery function is not available during login."
+            console.error(
+                "GUEST ORDER RECOVERY ERROR DURING LOGIN:",
+                guestClaimError
             );
         }
 
-    } catch (guestClaimError) {
 
-        console.error(
-            "GUEST ORDER RECOVERY ERROR DURING LOGIN:",
-            guestClaimError
-        );
+        // ---------------------------------------------
+        // GET UPDATED USER
+        // ---------------------------------------------
+
+        const updatedUser =
+            await User.findById(
+                user._id
+            );
+
+
+        if (!updatedUser) {
+
+            throw new ApiError(
+                500,
+                "User account could not be loaded after login"
+            );
+        }
+
+
+        // ---------------------------------------------
+        // GENERATE NORMAL USER TOKEN
+        // ---------------------------------------------
+
+        const token =
+            generateToken(
+                updatedUser
+            );
+
+
+        // ---------------------------------------------
+        // REMOVE SENSITIVE DATA
+        // ---------------------------------------------
+
+        updatedUser.password =
+            undefined;
+
+        updatedUser.otp =
+            undefined;
+
+        updatedUser.otpExpires =
+            undefined;
+
+        updatedUser.otpPurpose =
+            undefined;
+
+
+        return {
+
+            success: true,
+
+            message:
+                "Login successful",
+
+            token,
+
+            user:
+                updatedUser,
+        };
     }
 
 
-    const updatedUser =
-        await User.findById(
-            user._id
-        );
+    // =================================================
+    // 2. USER NOT FOUND
+    //    CHECK PACKAGING STAFF
+    // =================================================
 
-    if (!updatedUser) {
-        throw new ApiError(
-            500,
-            "User account could not be loaded after login"
-        );
+    const cleanLoginId =
+        loginIdentifier.toUpperCase();
+
+
+    const packagingStaff =
+        await PackagingStaff
+            .findOne({
+                loginId:
+                    cleanLoginId,
+            })
+            .select("+password");
+
+
+    // =================================================
+    // PACKAGING STAFF FOUND
+    // =================================================
+
+    if (packagingStaff) {
+
+        if (!packagingStaff.isActive) {
+
+            throw new ApiError(
+                403,
+                "Packaging account is inactive"
+            );
+        }
+
+
+        // ---------------------------------------------
+        // CHECK PASSWORD
+        // ---------------------------------------------
+
+        const isMatch =
+            await packagingStaff
+                .comparePassword(
+                    password
+                );
+
+
+        if (!isMatch) {
+
+            throw new ApiError(
+                401,
+                "Invalid credentials"
+            );
+        }
+
+
+        // ---------------------------------------------
+        // UPDATE LAST LOGIN
+        // ---------------------------------------------
+
+        packagingStaff.lastLoginAt =
+            new Date();
+
+        await packagingStaff.save();
+
+
+        // ---------------------------------------------
+        // GENERATE PACKAGING TOKEN
+        // ---------------------------------------------
+
+        const token =
+            generateToken({
+
+                _id:
+                    packagingStaff._id,
+
+                id:
+                    packagingStaff._id,
+
+                role:
+                    "PACKAGING",
+
+                userId:
+                    packagingStaff.loginId,
+
+                packagingStaffId:
+                    packagingStaff._id,
+
+                loginId:
+                    packagingStaff.loginId,
+            });
+
+
+        // ---------------------------------------------
+        // PACKAGING USER RESPONSE
+        // ---------------------------------------------
+
+        return {
+
+            success: true,
+
+            message:
+                "Login successful",
+
+            token,
+
+user: {
+    id: packagingStaff._id,
+    _id: packagingStaff._id,
+
+    packagingStaffId: packagingStaff._id,
+
+    loginId: packagingStaff.loginId,
+
+    name: packagingStaff.name,
+
+    role: "PACKAGING",
+
+    branchId: packagingStaff.branchId,
+
+    branchName: packagingStaff.branchName,
+
+    branchMemberNumber:
+        packagingStaff.branchMemberNumber,
+
+    isActive:
+        packagingStaff.isActive,
+
+    createdAt:
+        packagingStaff.createdAt,
+
+    lastLoginAt:
+        packagingStaff.lastLoginAt,
+},
+        };
     }
 
 
-    const token =
-        generateToken(
-            updatedUser
-        );
+    // =================================================
+    // 3. NOTHING FOUND
+    // =================================================
 
-
-    updatedUser.password =
-        undefined;
-
-    updatedUser.otp =
-        undefined;
-
-    updatedUser.otpExpires =
-        undefined;
-
-    updatedUser.otpPurpose =
-        undefined;
-
-
-    return {
-
-        success:
-            true,
-
-        message:
-            "Login successful",
-
-        token,
-
-        user:
-            updatedUser,
-    };
+    throw new ApiError(
+        401,
+        "Invalid credentials"
+    );
 };
 
 

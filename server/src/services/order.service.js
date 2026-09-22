@@ -3032,182 +3032,107 @@ const updatePaymentStatus = async (
    UPDATE ORDER STATUS
    ========================================================================== */
 
-const updateOrderStatus = async (
-    orderId,
-    status
-) => {
+const updateOrderStatus = async (orderId, status) => {
+  const allowedStatuses = [
+    "PLACED",
+    "CONFIRMED",
+    "PACKING",
+    "PACKED",
+    "READY_FOR_DISPATCH",
+    "SHIPPED",
+    "OUT_FOR_DELIVERY",
+    "DELIVERED",
+    "CANCELLED",
+  ];
 
-    try {
+  if (!allowedStatuses.includes(status)) {
+    throw new ApiError(
+      400,
+      `Invalid order status. Allowed statuses: ${allowedStatuses.join(", ")}`
+    );
+  }
 
-        if (
-            !mongoose.Types.ObjectId.isValid(
-                orderId
-            )
-        ) {
-            throw new Error(
-                "Invalid order ID"
-            );
-        }
+  const order = await Order.findById(orderId);
 
+  if (!order) {
+    throw new ApiError(404, "Order not found");
+  }
 
-        const normalizedStatus =
-            String(
-                status || ""
-            )
-                .trim()
-                .toUpperCase();
+  // =====================================================
+  // UPDATE STATUS
+  // =====================================================
 
+  order.status = status;
 
-        const allowedStatuses = [
-            "PLACED",
-            "CONFIRMED",
-            "PROCESSING",
-            "PACKED",
-            "SHIPPED",
-            "OUT_FOR_DELIVERY",
-            "DELIVERED",
-            "CANCELLED",
-        ];
+  const now = new Date();
 
+  // =====================================================
+  // STATUS TIMESTAMPS
+  // =====================================================
 
-        if (
-            !allowedStatuses.includes(
-                normalizedStatus
-            )
-        ) {
-            throw new Error(
-                `Invalid order status: ${status}`
-            );
-        }
+  switch (status) {
+    case "CONFIRMED":
+      if (!order.confirmedAt) {
+        order.confirmedAt = now;
+      }
+      break;
 
+    case "PACKING":
+      if (!order.packingAt) {
+        order.packingAt = now;
+      }
+      break;
 
-        const order =
-            await Order.findById(
-                orderId
-            );
+    case "PACKED":
+      if (!order.packedAt) {
+        order.packedAt = now;
+      }
+      break;
 
+    case "READY_FOR_DISPATCH":
+      if (!order.readyForDispatchAt) {
+        order.readyForDispatchAt = now;
+      }
+      break;
 
-        if (!order) {
-            throw new Error(
-                "Order not found"
-            );
-        }
+    case "SHIPPED":
+      if (!order.shippedAt) {
+        order.shippedAt = now;
+      }
+      break;
 
+    case "OUT_FOR_DELIVERY":
+      if (!order.outForDeliveryAt) {
+        order.outForDeliveryAt = now;
+      }
+      break;
 
-        const currentStatus =
-            String(
-                order.status || ""
-            )
-                .trim()
-                .toUpperCase();
+    case "DELIVERED":
+      if (!order.deliveredAt) {
+        order.deliveredAt = now;
+      }
+      break;
 
+    case "CANCELLED":
+      if (!order.cancelledAt) {
+        order.cancelledAt = now;
+      }
+      break;
 
-        if (
-            currentStatus ===
-            "DELIVERED" &&
-            normalizedStatus !==
-            "DELIVERED"
-        ) {
+    case "PLACED":
+      if (!order.placedAt) {
+        order.placedAt = now;
+      }
+      break;
 
-            throw new Error(
-                "Delivered order cannot be moved to another status"
-            );
-        }
+    default:
+      break;
+  }
 
+  await order.save();
 
-        if (
-            currentStatus ===
-            "CANCELLED" &&
-            normalizedStatus !==
-            "CANCELLED"
-        ) {
-
-            throw new Error(
-                "Cancelled order cannot be reopened"
-            );
-        }
-
-
-        order.status =
-            normalizedStatus;
-
-
-        if (
-            normalizedStatus ===
-            "CONFIRMED"
-        ) {
-
-            order.confirmedAt =
-                new Date();
-        }
-
-
-        if (
-            normalizedStatus ===
-            "PACKED"
-        ) {
-
-            order.packedAt =
-                new Date();
-        }
-
-
-        if (
-            normalizedStatus ===
-            "SHIPPED"
-        ) {
-
-            order.shippedAt =
-                new Date();
-        }
-
-
-        if (
-            normalizedStatus ===
-            "OUT_FOR_DELIVERY"
-        ) {
-
-            order.outForDeliveryAt =
-                new Date();
-        }
-
-
-        if (
-            normalizedStatus ===
-            "DELIVERED"
-        ) {
-
-            order.deliveredAt =
-                new Date();
-        }
-
-
-        if (
-            normalizedStatus ===
-            "CANCELLED"
-        ) {
-
-            order.cancelledAt =
-                new Date();
-        }
-
-
-        await order.save();
-
-
-        return order;
-
-    } catch (error) {
-
-        console.error(
-            "UPDATE ORDER STATUS ERROR:",
-            error
-        );
-
-        throw error;
-    }
+  return order;
 };
-
 
 /* ==========================================================================
    UPDATE STATUS ALIAS

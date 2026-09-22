@@ -1,4 +1,8 @@
-import { Routes, Route, Navigate } from "react-router-dom";
+import {
+  Routes,
+  Route,
+  Navigate,
+} from "react-router-dom";
 
 // =====================================================
 // LAYOUTS
@@ -9,6 +13,17 @@ import AdminLayout from "../layouts/AdminLayout";
 import ManagerLayout from "../layouts/ManagerLayout";
 import MemberLayout from "../layouts/MemberLayout";
 
+// =====================================================
+// PACKAGING TEAM
+// =====================================================
+
+import PackagingStaff from "../pages/Admin/PackagingStaff";
+import PackagingProtectedRoute from "../components/packaging/PackagingProtectedRoute";
+import PackagingLayout from "../layouts/PackagingLayout";
+import PackagingDashboard from "../pages/Packaging/Dashboard";
+import PackagingOrders from "../pages/Packaging/Orders";
+import PackagingOrderDetails from "../pages/Packaging/OrderDetails";
+import PackagingProfile from "../pages/Packaging/Profile";
 // =====================================================
 // PUBLIC PAGES
 // =====================================================
@@ -101,7 +116,6 @@ import ManagerMemberDetails from "../pages/manager/MemberDetails";
 import ManagerSellingPoints from "../pages/manager/SellingPoints";
 import ManagerWallet from "../pages/manager/ManagerWallet";
 
-
 // =====================================================
 // ERROR
 // =====================================================
@@ -114,43 +128,11 @@ import NotFound from "../pages/NotFound/NotFound";
 
 import ProtectedRoute from "../components/auth/ProtectedRoute";
 
-
 // =====================================================
 // ROLE BASED HOME LAYOUT
 // =====================================================
-//
-// IMPORTANT:
-//
-// Member logged in:
-//
-//     /
-//     ↓
-//     RoleBasedHomeLayout
-//     ↓
-//     MemberLayout
-//     ↓
-//     Outlet
-//     ↓
-//     Home
-//
-// Guest / normal user:
-//
-//     /
-//     ↓
-//     RoleBasedHomeLayout
-//     ↓
-//     MainLayout
-//     ↓
-//     Outlet
-//     ↓
-//     Home
-//
-// This is the correct structure because both
-// MemberLayout and MainLayout use <Outlet />.
-//
 
 const RoleBasedHomeLayout = () => {
-
   let user = {};
 
   try {
@@ -199,23 +181,16 @@ const RoleBasedHomeLayout = () => {
   return <MainLayout />;
 };
 
-
 // =====================================================
 // APP ROUTES
 // =====================================================
 
 const AppRoutes = () => {
-
   return (
     <Routes>
 
       {/* =================================================
           MAIN HOME PAGE
-
-          This is the important fix.
-
-          The layout contains Outlet.
-          Home is supplied through the nested route.
       ================================================= */}
 
       <Route
@@ -227,7 +202,6 @@ const AppRoutes = () => {
           element={<Home />}
         />
       </Route>
-
 
       {/* =================================================
           PUBLIC WEBSITE
@@ -286,11 +260,8 @@ const AppRoutes = () => {
 
       </Route>
 
-
       {/* =================================================
           NORMAL PRODUCT ORDER PAYMENT
-
-          DO NOT USE THIS FOR REGISTRATION.
       ================================================= */}
 
       <Route
@@ -303,7 +274,6 @@ const AppRoutes = () => {
         element={<PaymentScanner />}
       />
 
-
       {/* =================================================
           PHONEPE CALLBACK
       ================================================= */}
@@ -313,25 +283,8 @@ const AppRoutes = () => {
         element={<PhonePeCallback />}
       />
 
-
       {/* =================================================
           ₹2,000 MEMBERSHIP REGISTRATION PAYMENT
-
-          COMPLETELY SEPARATE FROM ORDER PAYMENT.
-
-          /membership-payment
-              ↓
-          ₹2,000
-              ↓
-          QR CODE
-              ↓
-          PAY
-              ↓
-          SCREENSHOT
-              ↓
-          WHATSAPP
-              ↓
-          ADMIN VERIFICATION
       ================================================= */}
 
       <Route
@@ -340,7 +293,6 @@ const AppRoutes = () => {
           <MembershipPaymentScanner />
         }
       />
-
 
       {/* =================================================
           AUTH
@@ -361,10 +313,28 @@ const AppRoutes = () => {
         element={<VerifyOtp />}
       />
 
-<Route
-  path="/forgot-password"
-  element={<ForgotPassword />}
-/>
+      <Route
+        path="/forgot-password"
+        element={<ForgotPassword />}
+      />
+
+      {/* =================================================
+          OLD PACKAGING LOGIN REDIRECT
+          
+          Packaging staff now use the common /login page.
+          Keep this redirect so old bookmarks/links continue
+          to work.
+      ================================================= */}
+
+      <Route
+        path="/packaging/login"
+        element={
+          <Navigate
+            to="/login"
+            replace
+          />
+        }
+      />
 
       {/* =================================================
           MEMBER AREA
@@ -383,9 +353,7 @@ const AppRoutes = () => {
           element={<MemberLayout />}
         >
 
-          {/* =================================================
-              MEMBER DASHBOARD
-          ================================================= */}
+          {/* DASHBOARD */}
 
           <Route
             index
@@ -397,140 +365,98 @@ const AppRoutes = () => {
             element={<MemberDashboard />}
           />
 
-
-          {/* =================================================
-              PROFILE
-          ================================================= */}
+          {/* PROFILE */}
 
           <Route
             path="profile"
             element={<MemberProfile />}
           />
 
-
-          {/* =================================================
-              NETWORK
-          ================================================= */}
+          {/* NETWORK */}
 
           <Route
             path="network"
             element={<MemberNetwork />}
           />
 
-
-          {/* =================================================
-              PRODUCTS
-          ================================================= */}
+          {/* PRODUCTS */}
 
           <Route
             path="products"
             element={<MemberProducts />}
           />
 
-
-          {/* =================================================
-              ORDERS
-          ================================================= */}
+          {/* ORDERS */}
 
           <Route
             path="orders"
             element={<MemberOrders />}
           />
 
-
-          {/* =================================================
-              COMMISSION
-          ================================================= */}
+          {/* COMMISSION */}
 
           <Route
             path="commission"
             element={<MemberCommission />}
           />
 
-
-          {/* =================================================
-              SELLING POINTS
-          ================================================= */}
+          {/* SELLING POINTS */}
 
           <Route
             path="selling-points"
             element={<MemberSellingPoints />}
           />
 
-
-          {/* =================================================
-              WALLET
-          ================================================= */}
+          {/* WALLET */}
 
           <Route
             path="wallet"
             element={<MemberWallet />}
           />
 
-
-          {/* =================================================
-              WITHDRAW
-          ================================================= */}
+          {/* WITHDRAW */}
 
           <Route
             path="withdraw"
             element={<MemberWithdraw />}
           />
 
-
-          {/* =================================================
-              WELCOME KIT
-          ================================================= */}
+          {/* WELCOME KIT */}
 
           <Route
             path="welcome-kit"
             element={<MemberWelcomeKit />}
           />
 
-
-          {/* =================================================
-              REPORTS
-          ================================================= */}
+          {/* REPORTS */}
 
           <Route
             path="reports"
             element={<MemberReports />}
           />
 
-
-          {/* =================================================
-              SETTINGS
-          ================================================= */}
+          {/* SETTINGS */}
 
           <Route
             path="settings"
             element={<MemberSettings />}
           />
 
-
-          {/* =================================================
-              MEMBER CART
-          ================================================= */}
+          {/* MEMBER CART */}
 
           <Route
             path="cart"
             element={<Cart />}
           />
 
-
-          {/* =================================================
-              MEMBER CHECKOUT
-          ================================================= */}
+          {/* MEMBER CHECKOUT */}
 
           <Route
             path="checkout"
             element={<Checkout />}
           />
 
-
-          {/* =================================================
-              UNKNOWN MEMBER ROUTE
-          ================================================= */}
+          {/* UNKNOWN MEMBER ROUTE */}
 
           <Route
             path="*"
@@ -545,7 +471,6 @@ const AppRoutes = () => {
         </Route>
 
       </Route>
-
 
       {/* =================================================
           ADMIN AREA
@@ -579,14 +504,12 @@ const AppRoutes = () => {
             element={<Dashboard />}
           />
 
-
           {/* PROFILE */}
 
           <Route
             path="profile"
             element={<AdminProfile />}
           />
-
 
           {/* ORDERS */}
 
@@ -595,14 +518,12 @@ const AppRoutes = () => {
             element={<AdminOrders />}
           />
 
-
           {/* PRODUCTS */}
 
           <Route
             path="products"
             element={<ProductList />}
           />
-
 
           {/* ADD PRODUCT */}
 
@@ -611,14 +532,12 @@ const AppRoutes = () => {
             element={<AddProduct />}
           />
 
-
           {/* EDIT PRODUCT */}
 
           <Route
             path="products/edit/:id"
             element={<EditProduct />}
           />
-
 
           {/* MEMBERS */}
 
@@ -627,14 +546,12 @@ const AppRoutes = () => {
             element={<Members />}
           />
 
-
           {/* EDIT MEMBER */}
 
           <Route
             path="members/:id"
             element={<EditMember />}
           />
-
 
           {/* REFERRAL TREE */}
 
@@ -643,7 +560,6 @@ const AppRoutes = () => {
             element={<ReferralTreePage />}
           />
 
-
           {/* REPORTS */}
 
           <Route
@@ -651,6 +567,12 @@ const AppRoutes = () => {
             element={<Reports />}
           />
 
+          {/* PACKAGING TEAM */}
+
+          <Route
+            path="packaging-staff"
+            element={<PackagingStaff />}
+          />
 
           {/* UNKNOWN ADMIN ROUTE */}
 
@@ -668,6 +590,76 @@ const AppRoutes = () => {
 
       </Route>
 
+      {/* =================================================
+          PACKAGING TEAM AREA
+      ================================================= */}
+
+      <Route
+        element={
+          <PackagingProtectedRoute />
+        }
+      >
+
+        <Route
+          path="/packaging"
+          element={<PackagingLayout />}
+        >
+
+          {/* PACKAGING ROOT */}
+
+          <Route
+            index
+            element={
+              <Navigate
+                to="/packaging/dashboard"
+                replace
+              />
+            }
+          />
+
+          {/* DASHBOARD */}
+
+          <Route
+            path="dashboard"
+            element={<PackagingDashboard />}
+          />
+
+          {/* ASSIGNED ORDERS */}
+
+          <Route
+            path="orders"
+            element={<PackagingOrders />}
+          />
+
+          {/* ORDER DETAILS */}
+
+          <Route
+            path="orders/:id"
+            element={<PackagingOrderDetails />}
+          />
+{/* =================================================
+    PROFILE
+================================================= */}
+
+<Route
+  path="profile"
+  element={<PackagingProfile />}
+/>
+          {/* UNKNOWN PACKAGING ROUTE */}
+
+          <Route
+            path="*"
+            element={
+              <Navigate
+                to="/packaging/dashboard"
+                replace
+              />
+            }
+          />
+
+        </Route>
+
+      </Route>
 
       {/* =================================================
           MANAGER AREA
@@ -698,26 +690,26 @@ const AppRoutes = () => {
             }
           />
 
-
           {/* DASHBOARD */}
 
           <Route
             path="dashboard"
             element={<ManagerDashboard />}
           />
-<Route
-  path="wallet"
-  element={
-    <ManagerWallet />
-  }
-/>
+
+          {/* WALLET */}
+
+          <Route
+            path="wallet"
+            element={<ManagerWallet />}
+          />
+
           {/* MEMBERS */}
 
           <Route
             path="members"
             element={<ManagerMembers />}
           />
-
 
           {/* MEMBER DETAILS */}
 
@@ -726,14 +718,12 @@ const AppRoutes = () => {
             element={<ManagerMemberDetails />}
           />
 
-
           {/* ORDERS */}
 
           <Route
             path="orders"
             element={<ManagerOrders />}
           />
-
 
           {/* PRODUCTS */}
 
@@ -742,14 +732,12 @@ const AppRoutes = () => {
             element={<ManagerProducts />}
           />
 
-
           {/* SELLING POINTS */}
 
           <Route
             path="selling-points"
             element={<ManagerSellingPoints />}
           />
-
 
           {/* COMMISSIONS */}
 
@@ -758,14 +746,12 @@ const AppRoutes = () => {
             element={<Commissions />}
           />
 
-
           {/* PROFILE */}
 
           <Route
             path="profile"
             element={<ManagerProfile />}
           />
-
 
           {/* REFERRAL TREE */}
 
@@ -775,7 +761,6 @@ const AppRoutes = () => {
               <ManagerReferralTreePage />
             }
           />
-
 
           {/* UNKNOWN MANAGER ROUTE */}
 
@@ -792,7 +777,6 @@ const AppRoutes = () => {
         </Route>
 
       </Route>
-
 
       {/* =================================================
           GLOBAL 404

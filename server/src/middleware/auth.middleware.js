@@ -61,11 +61,15 @@ const protect = (req, res, next) => {
             );
         }
 
-        req.user = {
-            id: decoded.id,
-            userId: decoded.userId,
-            role: decoded.role,
-        };
+req.user = {
+    id: decoded.id,
+    userId: decoded.userId,
+    packagingStaffId:
+        decoded.packagingStaffId,
+    loginId:
+        decoded.loginId,
+    role: decoded.role,
+};
 
         next();
 

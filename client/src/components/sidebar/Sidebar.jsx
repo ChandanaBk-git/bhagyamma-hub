@@ -21,7 +21,7 @@ import AccountTreeRoundedIcon from "@mui/icons-material/AccountTreeRounded";
 import ReceiptLongRoundedIcon from "@mui/icons-material/ReceiptLongRounded";
 import LogoutRoundedIcon from "@mui/icons-material/LogoutRounded";
 import AdminPanelSettingsRoundedIcon from "@mui/icons-material/AdminPanelSettingsRounded";
-
+import LocalShippingRoundedIcon from "@mui/icons-material/LocalShippingRounded";
 
 const Sidebar = ({
   drawerWidth,
@@ -37,39 +37,43 @@ const Sidebar = ({
      ADMIN MENU
   ===================================================== */
 
-  const menuItems = [
+ const menuItems = [
     {
-      text: "Dashboard",
-      icon: <DashboardRoundedIcon />,
-      path: "/admin/dashboard",
+        text: "Dashboard",
+        icon: <DashboardRoundedIcon />,
+        path: "/admin/dashboard",
     },
 
     {
-      text: "Products",
-      icon: <Inventory2RoundedIcon />,
-      path: "/admin/products",
+        text: "Products",
+        icon: <Inventory2RoundedIcon />,
+        path: "/admin/products",
     },
 
     {
-      text: "Members",
-      icon: <GroupRoundedIcon />,
-      path: "/admin/members",
+        text: "Members",
+        icon: <GroupRoundedIcon />,
+        path: "/admin/members",
     },
 
     {
-      text: "Orders",
-      icon: <ReceiptLongRoundedIcon />,
-      path: "/admin/orders",
+        text: "Orders",
+        icon: <ReceiptLongRoundedIcon />,
+        path: "/admin/orders",
     },
 
     {
-      text: "Referral Tree",
-      icon: <AccountTreeRoundedIcon />,
-      path: "/admin/referral-tree",
+        text: "Referral Tree",
+        icon: <AccountTreeRoundedIcon />,
+        path: "/admin/referral-tree",
     },
-  ];
 
-
+    {
+        text: "Packaging Team",
+        icon: <LocalShippingRoundedIcon />,
+        path: "/admin/packaging-staff",
+    },
+];
   /* =====================================================
      LOGOUT
   ===================================================== */

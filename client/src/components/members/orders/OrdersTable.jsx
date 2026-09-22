@@ -18,12 +18,9 @@ import { useState } from "react";
 
 import OrderDialog from "./OrderDialog";
 
-
 const OrdersTable = ({ orders = [] }) => {
-
   const [selectedOrder, setSelectedOrder] =
     useState(null);
-
 
   // =====================================================
   // EMPTY STATE
@@ -35,14 +32,9 @@ const OrdersTable = ({ orders = [] }) => {
         elevation={0}
         sx={{
           width: "100%",
-
           borderRadius: 0,
-
-          border:
-            "1px solid #E0E0E0",
-
+          border: "1px solid #E0E0E0",
           boxShadow: "none",
-
           boxSizing: "border-box",
         }}
       >
@@ -74,7 +66,6 @@ const OrdersTable = ({ orders = [] }) => {
                   xs: 40,
                   sm: 50,
                 },
-
                 color: "#BDBDBD",
               }}
             />
@@ -82,12 +73,10 @@ const OrdersTable = ({ orders = [] }) => {
             <Typography
               sx={{
                 mt: 1,
-
                 fontSize: {
                   xs: "13px",
                   sm: "15px",
                 },
-
                 fontWeight: 800,
               }}
             >
@@ -97,12 +86,10 @@ const OrdersTable = ({ orders = [] }) => {
             <Typography
               sx={{
                 mt: 0.3,
-
                 fontSize: {
                   xs: "9px",
                   sm: "11px",
                 },
-
                 color: "text.secondary",
               }}
             >
@@ -114,15 +101,14 @@ const OrdersTable = ({ orders = [] }) => {
     );
   }
 
-
   // =====================================================
   // STATUS COLOR
   // =====================================================
 
   const getStatusColor = (status) => {
-
-    switch (status) {
-
+    switch (
+      String(status || "").toUpperCase()
+    ) {
       case "DELIVERED":
         return "success";
 
@@ -130,16 +116,68 @@ const OrdersTable = ({ orders = [] }) => {
         return "error";
 
       case "SHIPPED":
+      case "OUT_FOR_DELIVERY":
         return "info";
 
+      case "READY_FOR_DISPATCH":
+      case "PACKED":
+        return "success";
+
+      case "PACKING":
       case "CONFIRMED":
         return "primary";
 
+      case "PLACED":
       default:
         return "warning";
     }
   };
 
+  // =====================================================
+  // STATUS LABEL
+  // =====================================================
+
+  const getStatusLabel = (status) => {
+    switch (
+      String(status || "").toUpperCase()
+    ) {
+      case "READY_FOR_DISPATCH":
+        return "READY FOR DISPATCH";
+
+      case "OUT_FOR_DELIVERY":
+        return "OUT FOR DELIVERY";
+
+      case "PACKING":
+        return "PACKING";
+
+      case "PACKED":
+        return "PACKED";
+
+      case "CONFIRMED":
+        return "CONFIRMED";
+
+      case "SHIPPED":
+        return "SHIPPED";
+
+      case "DELIVERED":
+        return "DELIVERED";
+
+      case "CANCELLED":
+        return "CANCELLED";
+
+      case "PLACED":
+      default:
+        return "PLACED";
+    }
+  };
+
+  // =====================================================
+  // SAFE AMOUNT
+  // =====================================================
+
+  const formatAmount = (value) => {
+    return Number(value || 0).toFixed(2);
+  };
 
   // =====================================================
   // ORDERS
@@ -151,20 +189,13 @@ const OrdersTable = ({ orders = [] }) => {
         elevation={0}
         sx={{
           width: "100%",
-
           borderRadius: 0,
-
-          border:
-            "1px solid #E0E0E0",
-
+          border: "1px solid #E0E0E0",
           boxShadow: "none",
-
           boxSizing: "border-box",
-
           overflow: "hidden",
         }}
       >
-
         <CardContent
           sx={{
             p: {
@@ -182,7 +213,6 @@ const OrdersTable = ({ orders = [] }) => {
             },
           }}
         >
-
           {/* =============================================
               HEADER
           ============================================== */}
@@ -208,13 +238,11 @@ const OrdersTable = ({ orders = [] }) => {
             Order History
           </Typography>
 
-
           {/* =============================================
               ORDER LIST
           ============================================== */}
 
           {orders.map((order) => (
-
             <Box
               key={order._id}
               sx={{
@@ -245,7 +273,6 @@ const OrdersTable = ({ orders = [] }) => {
                 },
               }}
             >
-
               <Stack
                 direction={{
                   xs: "row",
@@ -255,7 +282,6 @@ const OrdersTable = ({ orders = [] }) => {
                 alignItems="center"
                 spacing={1}
               >
-
                 {/* =======================================
                     ORDER INFORMATION
                 ======================================== */}
@@ -266,6 +292,7 @@ const OrdersTable = ({ orders = [] }) => {
                     flex: 1,
                   }}
                 >
+                  {/* ORDER NUMBER */}
 
                   <Typography
                     sx={{
@@ -291,6 +318,7 @@ const OrdersTable = ({ orders = [] }) => {
                     {order.orderNumber}
                   </Typography>
 
+                  {/* AMOUNT */}
 
                   <Typography
                     sx={{
@@ -308,9 +336,12 @@ const OrdersTable = ({ orders = [] }) => {
                     }}
                   >
                     Amount : ₹
-                    {order.finalAmount}
+                    {formatAmount(
+                      order.finalAmount
+                    )}
                   </Typography>
 
+                  {/* PAYMENT */}
 
                   <Typography
                     sx={{
@@ -328,9 +359,11 @@ const OrdersTable = ({ orders = [] }) => {
                     }}
                   >
                     Payment :{" "}
-                    {order.paymentStatus}
+                    {order.paymentStatus ||
+                      "PENDING"}
                   </Typography>
 
+                  {/* DATE */}
 
                   <Typography
                     sx={{
@@ -348,15 +381,13 @@ const OrdersTable = ({ orders = [] }) => {
                     }}
                   >
                     Date :{" "}
-                    {
-                      new Date(
-                        order.placedAt
-                      ).toLocaleDateString()
-                    }
+                    {order.placedAt
+                      ? new Date(
+                          order.placedAt
+                        ).toLocaleDateString()
+                      : "-"}
                   </Typography>
-
                 </Box>
-
 
                 {/* =======================================
                     STATUS + ACTION
@@ -370,14 +401,15 @@ const OrdersTable = ({ orders = [] }) => {
                   alignItems="flex-end"
                   flexShrink={0}
                 >
+                  {/* STATUS */}
 
                   <Chip
-                    label={order.status}
-                    color={
-                      getStatusColor(
-                        order.status
-                      )
-                    }
+                    label={getStatusLabel(
+                      order.status
+                    )}
+                    color={getStatusColor(
+                      order.status
+                    )}
                     sx={{
                       height: {
                         xs: 20,
@@ -395,11 +427,11 @@ const OrdersTable = ({ orders = [] }) => {
                     }}
                   />
 
+                  {/* VIEW DETAILS */}
 
                   <Button
                     variant="contained"
                     color="success"
-
                     startIcon={
                       <Visibility
                         sx={{
@@ -410,13 +442,11 @@ const OrdersTable = ({ orders = [] }) => {
                         }}
                       />
                     }
-
                     onClick={() =>
                       setSelectedOrder(
                         order
                       )
                     }
-
                     sx={{
                       minHeight: {
                         xs: 27,
@@ -463,11 +493,8 @@ const OrdersTable = ({ orders = [] }) => {
                   >
                     View Details
                   </Button>
-
                 </Stack>
-
               </Stack>
-
 
               {/* =========================================
                   DIVIDER
@@ -481,14 +508,10 @@ const OrdersTable = ({ orders = [] }) => {
                   },
                 }}
               />
-
             </Box>
-
           ))}
-
         </CardContent>
       </Card>
-
 
       {/* =================================================
           ORDER DIALOG
@@ -496,9 +519,7 @@ const OrdersTable = ({ orders = [] }) => {
 
       <OrderDialog
         open={Boolean(selectedOrder)}
-
         order={selectedOrder}
-
         onClose={() =>
           setSelectedOrder(null)
         }
@@ -506,6 +527,5 @@ const OrdersTable = ({ orders = [] }) => {
     </>
   );
 };
-
 
 export default OrdersTable;

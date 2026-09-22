@@ -253,36 +253,63 @@ const Orders = () => {
      STATUS COLOR
   ====================================================== */
 
-  const getStatusColor =
-    (status) => {
+  const getStatusColor = (status) => {
+  switch (String(status || "").toUpperCase()) {
+    case "DELIVERED":
+      return "success";
 
-      switch (
-        String(
-          status || ""
-        ).toUpperCase()
-      ) {
+    case "CANCELLED":
+      return "error";
 
-        case "DELIVERED":
-          return "success";
+    case "SHIPPED":
+    case "OUT_FOR_DELIVERY":
+      return "info";
 
-        case "CANCELLED":
-          return "error";
+    case "READY_FOR_DISPATCH":
+    case "PACKED":
+      return "success";
 
-        case "SHIPPED":
-        case "OUT_FOR_DELIVERY":
-          return "info";
+    case "PACKING":
+    case "CONFIRMED":
+      return "primary";
 
-        case "CONFIRMED":
-        case "PACKED":
-          return "primary";
+    case "PLACED":
+    default:
+      return "warning";
+  }
+};
 
-        default:
-          return "warning";
+const getStatusLabel = (status) => {
+  switch (String(status || "").toUpperCase()) {
+    case "READY_FOR_DISPATCH":
+      return "READY FOR DISPATCH";
 
-      }
+    case "OUT_FOR_DELIVERY":
+      return "OUT FOR DELIVERY";
 
-    };
+    case "PACKING":
+      return "PACKING";
 
+    case "PACKED":
+      return "PACKED";
+
+    case "CONFIRMED":
+      return "CONFIRMED";
+
+    case "SHIPPED":
+      return "SHIPPED";
+
+    case "DELIVERED":
+      return "DELIVERED";
+
+    case "CANCELLED":
+      return "CANCELLED";
+
+    case "PLACED":
+    default:
+      return "PLACED";
+  }
+};
 
   /* ======================================================
      PAYMENT STATUS
@@ -927,22 +954,14 @@ const Orders = () => {
                         </Box>
 
 
-                        <Chip
-                          size="small"
-                          label={
-                            order.status ||
-                            "PLACED"
-                          }
-                          color={
-                            getStatusColor(
-                              order.status
-                            )
-                          }
-                          sx={{
-                            fontWeight:
-                              700,
-                          }}
-                        />
+<Chip
+  size="small"
+  label={getStatusLabel(order.status)}
+  color={getStatusColor(order.status)}
+  sx={{
+    fontWeight: 700,
+  }}
+/>
 
                       </Stack>
 

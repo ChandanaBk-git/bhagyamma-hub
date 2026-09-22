@@ -33,10 +33,15 @@ import {
 
 import { login } from "../../services/auth.service";
 
+/* -------------------------------------------------------------------------- */
+/*                              ANIMATIONS                                    */
+/* -------------------------------------------------------------------------- */
+
 const pageVariants = {
   hidden: {
     opacity: 0,
   },
+
   visible: {
     opacity: 1,
     transition: {
@@ -50,6 +55,7 @@ const cardVariants = {
     opacity: 0,
     y: 35,
   },
+
   visible: {
     opacity: 1,
     y: 0,
@@ -65,6 +71,7 @@ const iconVariants = {
     opacity: 0,
     scale: 0.8,
   },
+
   visible: {
     opacity: 1,
     scale: 1,
@@ -81,6 +88,7 @@ const contentVariants = {
     opacity: 0,
     y: 12,
   },
+
   visible: (delay = 0) => ({
     opacity: 1,
     y: 0,
@@ -92,11 +100,15 @@ const contentVariants = {
   }),
 };
 
+/* -------------------------------------------------------------------------- */
+/*                              LOGIN COMPONENT                               */
+/* -------------------------------------------------------------------------- */
+
 const LoginForm = () => {
   const navigate = useNavigate();
 
   const [form, setForm] = useState({
-    email: "",
+    identifier: "",
     password: "",
   });
 
@@ -112,6 +124,10 @@ const LoginForm = () => {
   const [error, setError] =
     useState("");
 
+  /* ------------------------------------------------------------------------ */
+  /*                              INPUT CHANGE                                */
+  /* ------------------------------------------------------------------------ */
+
   const handleChange = (e) => {
     setForm((prev) => ({
       ...prev,
@@ -121,14 +137,21 @@ const LoginForm = () => {
     setError("");
   };
 
+  /* ------------------------------------------------------------------------ */
+  /*                                LOGIN                                     */
+  /* ------------------------------------------------------------------------ */
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
     setError("");
 
-    if (!form.email.trim()) {
+    const identifier =
+      form.identifier.trim();
+
+    if (!identifier) {
       setError(
-        "Please enter your email address."
+        "Please enter your email or Login ID."
       );
       return;
     }
@@ -143,20 +166,19 @@ const LoginForm = () => {
     try {
       setLoading(true);
 
-      const response = await login({
-        email: form.email
-          .trim()
-          .toLowerCase(),
+      /* -------------------------------------------------------------- */
+      /* Send common login request                                      */
+      /* -------------------------------------------------------------- */
 
+      const response = await login({
+        identifier,
         password: form.password,
       });
 
-      const token =
-        response?.data?.token;
+const loginResult = response?.data?.data;
 
-      const user =
-        response?.data?.user;
-
+const token = loginResult?.token;
+const user = loginResult?.user;
       if (!token || !user) {
         setError(
           "Login response is incomplete. Please try again."
@@ -165,9 +187,75 @@ const LoginForm = () => {
         return;
       }
 
-      /* ==================================================
+      /* -------------------------------------------------------------- */
+      /* Determine whether this is Packaging Staff                     */
+      /* -------------------------------------------------------------- */
+
+      const isPackaging =
+        user.role === "PACKAGING";
+
+      /* ==============================================================
          STORE AUTHENTICATION
-      ================================================== */
+         ============================================================== */
+
+      if (isPackaging) {
+        /*
+         * Packaging uses its own token keys because the existing
+         * PackagingProtectedRoute reads packagingToken and packagingUser.
+         */
+
+        if (rememberMe) {
+          localStorage.setItem(
+            "packagingToken",
+            token
+          );
+
+          localStorage.setItem(
+            "packagingUser",
+            JSON.stringify(user)
+          );
+
+          sessionStorage.removeItem(
+            "packagingToken"
+          );
+
+          sessionStorage.removeItem(
+            "packagingUser"
+          );
+        } else {
+          sessionStorage.setItem(
+            "packagingToken",
+            token
+          );
+
+          sessionStorage.setItem(
+            "packagingUser",
+            JSON.stringify(user)
+          );
+
+          localStorage.removeItem(
+            "packagingToken"
+          );
+
+          localStorage.removeItem(
+            "packagingUser"
+          );
+        }
+
+        /* ------------------------------------------------------------ */
+        /* Packaging Dashboard                                          */
+        /* ------------------------------------------------------------ */
+
+        navigate(
+          "/packaging/dashboard"
+        );
+
+        return;
+      }
+
+      /* ==============================================================
+         NORMAL USER AUTHENTICATION
+         ============================================================== */
 
       if (rememberMe) {
         localStorage.setItem(
@@ -207,17 +295,17 @@ const LoginForm = () => {
         );
       }
 
-      /* ==================================================
+      /* ==============================================================
          GUEST CART MERGE EVENT
-      ================================================== */
+         ============================================================== */
 
       window.dispatchEvent(
         new Event("auth-login")
       );
 
-      /* ==================================================
+      /* ==============================================================
          ROLE BASED NAVIGATION
-      ================================================== */
+         ============================================================== */
 
       switch (user.role) {
         case "SUPER_ADMIN":
@@ -247,7 +335,6 @@ const LoginForm = () => {
         default:
           navigate("/");
       }
-
     } catch (error) {
       console.error(
         "LOGIN ERROR:",
@@ -260,11 +347,14 @@ const LoginForm = () => {
           error?.message ||
           "Unable to login. Please check your credentials."
       );
-
     } finally {
       setLoading(false);
     }
   };
+
+  /* ------------------------------------------------------------------------ */
+  /*                                  UI                                      */
+  /* ------------------------------------------------------------------------ */
 
   return (
     <Box
@@ -300,10 +390,9 @@ const LoginForm = () => {
         boxSizing: "border-box",
       }}
     >
-
-      {/* ==================================================
+      {/* ================================================================
           HOME NAVIGATION
-      ================================================== */}
+          ================================================================ */}
 
       <Box
         sx={{
@@ -360,10 +449,9 @@ const LoginForm = () => {
         </Button>
       </Box>
 
-
-      {/* ==================================================
+      {/* ================================================================
           LOGIN CARD
-      ================================================== */}
+          ================================================================ */}
 
       <Card
         component={motion.div}
@@ -391,10 +479,9 @@ const LoginForm = () => {
           },
         }}
       >
-
-        {/* ==================================================
+        {/* ==============================================================
             HEADER
-        ================================================== */}
+            ============================================================== */}
 
         <Box
           sx={{
@@ -499,10 +586,9 @@ const LoginForm = () => {
           </Typography>
         </Box>
 
-
-        {/* ==================================================
+        {/* ==============================================================
             FORM CONTENT
-        ================================================== */}
+            ============================================================== */}
 
         <CardContent
           sx={{
@@ -512,6 +598,7 @@ const LoginForm = () => {
             },
           }}
         >
+          {/* ERROR */}
 
           {error && (
             <Alert
@@ -521,13 +608,13 @@ const LoginForm = () => {
 
                 borderRadius: 0,
 
-                border: "1px solid #2E7D32",
+                border:
+                  "1px solid #2E7D32",
               }}
             >
               {error}
             </Alert>
           )}
-
 
           <Box
             component={motion.form}
@@ -538,21 +625,21 @@ const LoginForm = () => {
             onSubmit={handleSubmit}
             noValidate
           >
-
             <Stack spacing={1.25}>
 
-              {/* EMAIL */}
+              {/* ======================================================
+                  EMAIL / LOGIN ID
+                  ====================================================== */}
 
               <TextField
                 fullWidth
-                label="Email Address"
-                name="email"
-                type="email"
-                value={form.email}
-                onChange={
-                  handleChange
-                }
-                autoComplete="email"
+                label="Email or Login ID"
+                name="identifier"
+                type="text"
+                value={form.identifier}
+                onChange={handleChange}
+                placeholder="Enter your email or Login ID"
+                autoComplete="username"
                 required
                 InputProps={{
                   startAdornment: (
@@ -563,8 +650,9 @@ const LoginForm = () => {
                 }}
               />
 
-
-              {/* PASSWORD */}
+              {/* ======================================================
+                  PASSWORD
+                  ====================================================== */}
 
               <TextField
                 fullWidth
@@ -617,8 +705,9 @@ const LoginForm = () => {
                 }}
               />
 
-
-              {/* REMEMBER / FORGOT PASSWORD */}
+              {/* ======================================================
+                  REMEMBER / FORGOT PASSWORD
+                  ====================================================== */}
 
               <Box
                 component={motion.div}
@@ -641,7 +730,6 @@ const LoginForm = () => {
                     "wrap",
                 }}
               >
-
                 <FormControlLabel
                   control={
                     <Checkbox
@@ -684,11 +772,11 @@ const LoginForm = () => {
                 >
                   Forgot password?
                 </Link>
-
               </Box>
 
-
-              {/* LOGIN BUTTON */}
+              {/* ======================================================
+                  LOGIN BUTTON
+                  ====================================================== */}
 
               <Button
                 component={motion.button}
@@ -743,11 +831,8 @@ const LoginForm = () => {
                   "Login"
                 )}
               </Button>
-
             </Stack>
-
           </Box>
-
 
           <Divider
             component={motion.hr}
@@ -768,8 +853,9 @@ const LoginForm = () => {
             }}
           />
 
-
-          {/* REGISTER */}
+          {/* ============================================================
+              REGISTER
+              ============================================================ */}
 
           <Typography
             component={motion.p}
@@ -833,11 +919,8 @@ const LoginForm = () => {
           >
             Create New Account
           </Button>
-
         </CardContent>
-
       </Card>
-
     </Box>
   );
 };

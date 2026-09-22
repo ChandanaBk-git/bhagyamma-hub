@@ -179,15 +179,48 @@ const orderSchema = new mongoose.Schema(
 
     status: {
       type: String,
+
+      /*
+       * Complete customer order flow:
+       *
+       * PLACED
+       *    ↓
+       * CONFIRMED
+       *    ↓
+       * PACKING
+       *    ↓
+       * PACKED
+       *    ↓
+       * READY_FOR_DISPATCH
+       *    ↓
+       * SHIPPED
+       *    ↓
+       * OUT_FOR_DELIVERY
+       *    ↓
+       * DELIVERED
+       *
+       * CANCELLED can happen according to the
+       * cancellation rules in the order service.
+       */
+
       enum: [
         "PLACED",
         "CONFIRMED",
+
+        // Packaging stages
+        "PACKING",
         "PACKED",
+        "READY_FOR_DISPATCH",
+
+        // Delivery stages
         "SHIPPED",
         "OUT_FOR_DELIVERY",
         "DELIVERED",
+
+        // Cancellation
         "CANCELLED",
       ],
+
       default: "PLACED",
       index: true,
     },
@@ -296,12 +329,29 @@ const orderSchema = new mongoose.Schema(
       default: null,
     },
 
+    // Packaging timestamps
+    packingAt: {
+      type: Date,
+      default: null,
+    },
+
     packedAt: {
       type: Date,
       default: null,
     },
 
+    readyForDispatchAt: {
+      type: Date,
+      default: null,
+    },
+
+    // Delivery timestamps
     shippedAt: {
+      type: Date,
+      default: null,
+    },
+
+    outForDeliveryAt: {
       type: Date,
       default: null,
     },
@@ -311,6 +361,7 @@ const orderSchema = new mongoose.Schema(
       default: null,
     },
 
+    // Cancellation
     cancelledAt: {
       type: Date,
       default: null,
@@ -327,7 +378,4 @@ const orderSchema = new mongoose.Schema(
   }
 );
 
-module.exports = mongoose.model(
-  "Order",
-  orderSchema
-);
+module.exports = mongoose.model("Order", orderSchema);

@@ -35,6 +35,11 @@ import {
   updatePaymentStatus,
 } from "../../services/order.service";
 
+import {
+  getPackagingStaff,
+  assignPackagingOrder,
+} from "../../api/packaging.api";
+
 
 /* ============================================================
    ORDER STATUSES
@@ -83,6 +88,24 @@ const AdminOrders = () => {
   const [updating, setUpdating] =
     useState(false);
 
+  const [packagingStaff, setPackagingStaff] =
+    useState([]);
+
+  const [packagingLoading, setPackagingLoading] =
+    useState(false);
+
+  const [assignDialogOpen, setAssignDialogOpen] =
+    useState(false);
+
+  const [orderToAssign, setOrderToAssign] =
+    useState(null);
+
+  const [selectedPackagingStaff, setSelectedPackagingStaff] =
+    useState("");
+
+  const [assigningOrder, setAssigningOrder] =
+    useState(false);
+
 
   /* ==========================================================
      LOAD ORDERS
@@ -90,6 +113,7 @@ const AdminOrders = () => {
 
   useEffect(() => {
     loadOrders();
+    loadPackagingStaff();
   }, []);
 
 
@@ -169,6 +193,179 @@ const AdminOrders = () => {
     } finally {
 
       setLoading(false);
+
+    }
+
+  };
+
+
+  /* ==========================================================
+     LOAD PACKAGING STAFF
+  ========================================================== */
+
+  const loadPackagingStaff = async () => {
+
+    try {
+
+      setPackagingLoading(true);
+
+      const response =
+        await getPackagingStaff();
+
+      const rawData =
+        response?.data?.data ??
+        response?.data ??
+        response;
+
+      const staff =
+        Array.isArray(rawData)
+          ? rawData
+          : Array.isArray(rawData?.staff)
+          ? rawData.staff
+          : [];
+
+      setPackagingStaff(
+        staff.filter(
+          (member) => member?.isActive !== false
+        )
+      );
+
+    } catch (err) {
+
+      console.error(
+        "PACKAGING STAFF ERROR:",
+        err
+      );
+
+      setError(
+        err?.response?.data?.message ||
+        err?.message ||
+        "Unable to load Packaging Team."
+      );
+
+    } finally {
+
+      setPackagingLoading(false);
+
+    }
+
+  };
+
+
+  /* ==========================================================
+     ASSIGN PACKAGING
+  ========================================================== */
+
+  const openAssignDialog = (order) => {
+
+    setOrderToAssign(order);
+
+    setSelectedPackagingStaff(
+      order?.packagingAssignment?.staff?._id ||
+      order?.packagingAssignment?.staff?.id ||
+      order?.packagingAssignment?.staff ||
+      ""
+    );
+
+    setAssignDialogOpen(true);
+
+  };
+
+
+  const closeAssignDialog = () => {
+
+    if (assigningOrder) {
+      return;
+    }
+
+    setAssignDialogOpen(false);
+    setOrderToAssign(null);
+    setSelectedPackagingStaff("");
+
+  };
+
+
+  const handleAssignPackaging = async () => {
+
+    if (!orderToAssign?._id) {
+      setError("Order not found.");
+      return;
+    }
+
+    if (!selectedPackagingStaff) {
+      setError("Please select a Packaging Team.");
+      return;
+    }
+
+    try {
+
+      setAssigningOrder(true);
+      setError("");
+
+      const response =
+        await assignPackagingOrder(
+          orderToAssign._id,
+          selectedPackagingStaff
+        );
+
+      const assignment =
+        response?.data?.data ??
+        response?.data ??
+        response;
+
+      const assignedStaff =
+        assignment?.staff ||
+        packagingStaff.find(
+          (staff) =>
+            String(staff?._id || staff?.id) ===
+            String(selectedPackagingStaff)
+        );
+
+      const packagingAssignment = {
+        ...assignment,
+        staff: assignedStaff || assignment?.staff,
+      };
+
+      setOrders((previous) =>
+        previous.map((order) =>
+          order._id === orderToAssign._id
+            ? {
+                ...order,
+                packagingAssignment,
+              }
+            : order
+        )
+      );
+
+      setSelectedOrder((previous) =>
+        previous?._id === orderToAssign._id
+          ? {
+              ...previous,
+              packagingAssignment,
+            }
+          : previous
+      );
+
+      setAssignDialogOpen(false);
+      setOrderToAssign(null);
+      setSelectedPackagingStaff("");
+
+    } catch (err) {
+
+      console.error(
+        "ASSIGN PACKAGING ERROR:",
+        err
+      );
+
+      setError(
+        err?.response?.data?.message ||
+        err?.message ||
+        "Unable to assign Packaging Team."
+      );
+
+    } finally {
+
+      setAssigningOrder(false);
 
     }
 
@@ -997,67 +1194,104 @@ const AdminOrders = () => {
                       VIEW DETAILS
                   ========================================== */}
 
-                  <Button
-                    variant="outlined"
-
-                    startIcon={
-                      <Visibility
-                        sx={{
-                          fontSize: {
-                            xs: "17px",
-                            sm: "18px",
-                          },
-                        }}
-                      />
-                    }
-
-                    onClick={() =>
-                      setSelectedOrder(
-                        order
-                      )
-                    }
-
+                  <Box
                     sx={{
-                      minHeight: {
-                        xs: "36px",
-                        sm: "38px",
-                      },
-
-                      padding: {
-                        xs: "5px 12px",
-                        sm: "6px 14px",
-                      },
-
-                      borderRadius: {
-                        xs: "10px",
-                        sm: "10px",
-                      },
-
-                      borderColor:
-                        "#A5D6A7",
-
-                      color:
-                        "#2E7D32",
-
-                      textTransform:
-                        "none",
-
-                      fontSize: {
-                        xs: "12px",
-                        sm: "13px",
-                      },
-
-                      "&:hover": {
-                        borderColor:
-                          "#66BB6A",
-
-                        backgroundColor:
-                          "#F1F8F1",
-                      },
+                      display: "flex",
+                      gap: 1,
+                      flexWrap: "wrap",
                     }}
                   >
-                    View Details
-                  </Button>
+                    <Button
+                      variant="outlined"
+
+                      startIcon={
+                        <Visibility
+                          sx={{
+                            fontSize: {
+                              xs: "17px",
+                              sm: "18px",
+                            },
+                          }}
+                        />
+                      }
+
+                      onClick={() =>
+                        setSelectedOrder(
+                          order
+                        )
+                      }
+
+                      sx={{
+                        minHeight: {
+                          xs: "36px",
+                          sm: "38px",
+                        },
+
+                        padding: {
+                          xs: "5px 12px",
+                          sm: "6px 14px",
+                        },
+
+                        borderRadius: "10px",
+                        borderColor: "#A5D6A7",
+                        color: "#2E7D32",
+                        textTransform: "none",
+                        fontSize: {
+                          xs: "12px",
+                          sm: "13px",
+                        },
+
+                        "&:hover": {
+                          borderColor: "#66BB6A",
+                          backgroundColor: "#F1F8F1",
+                        },
+                      }}
+                    >
+                      View Details
+                    </Button>
+
+                    <Button
+                      variant="contained"
+                      onClick={() =>
+                        openAssignDialog(order)
+                      }
+                      disabled={
+                        order.status === "CANCELLED" ||
+                        order.status === "DELIVERED" ||
+                        order.status === "SHIPPED"
+                      }
+                      sx={{
+                        minHeight: {
+                          xs: "36px",
+                          sm: "38px",
+                        },
+
+                        padding: {
+                          xs: "5px 12px",
+                          sm: "6px 14px",
+                        },
+
+                        borderRadius: "10px",
+                        background:
+                          "linear-gradient(135deg, #14532d, #16a34a)",
+                        textTransform: "none",
+                        fontSize: {
+                          xs: "12px",
+                          sm: "13px",
+                        },
+                        fontWeight: 600,
+
+                        "&:hover": {
+                          background:
+                            "linear-gradient(135deg, #166534, #15803d)",
+                        },
+                      }}
+                    >
+                      {order?.packagingAssignment?.staff?.name
+                        ? "Change Packaging"
+                        : "Assign Packaging"}
+                    </Button>
+                  </Box>
 
                 </CardContent>
 
@@ -1272,6 +1506,107 @@ const AdminOrders = () => {
                     )
                   }
                 </Typography>
+
+
+                <Divider />
+
+
+                {/* PACKAGING ASSIGNMENT */}
+
+                <Typography
+                  sx={{
+                    fontSize: {
+                      xs: "15px",
+                      sm: "17px",
+                    },
+                    fontWeight: 700,
+                  }}
+                >
+                  Packaging Assignment
+                </Typography>
+
+                {selectedOrder?.packagingAssignment?.staff?.name ? (
+                  <>
+                    <Typography
+                      sx={{
+                        fontSize: {
+                          xs: "13px",
+                          sm: "14px",
+                        },
+                      }}
+                    >
+                      Packaging Team:{" "}
+                      <strong>
+                        {selectedOrder.packagingAssignment.staff.name}
+                      </strong>
+                    </Typography>
+
+                    <Typography
+                      sx={{
+                        fontSize: {
+                          xs: "13px",
+                          sm: "14px",
+                        },
+                      }}
+                    >
+                      Login ID:{" "}
+                      {selectedOrder.packagingAssignment.staff.loginId ||
+                        "-"}
+                    </Typography>
+
+                    <Chip
+                      size="small"
+                      color="success"
+                      label={
+                        selectedOrder.packagingAssignment.status ||
+                        "ASSIGNED"
+                      }
+                      sx={{
+                        width: "fit-content",
+                      }}
+                    />
+
+                    <Button
+                      variant="outlined"
+                      onClick={() =>
+                        openAssignDialog(selectedOrder)
+                      }
+                      sx={{
+                        width: "fit-content",
+                        textTransform: "none",
+                      }}
+                    >
+                      Change Packaging Team
+                    </Button>
+                  </>
+                ) : (
+                  <>
+                    <Typography
+                      color="text.secondary"
+                      sx={{
+                        fontSize: {
+                          xs: "13px",
+                          sm: "14px",
+                        },
+                      }}
+                    >
+                      No Packaging Team assigned yet.
+                    </Typography>
+
+                    <Button
+                      variant="contained"
+                      onClick={() =>
+                        openAssignDialog(selectedOrder)
+                      }
+                      sx={{
+                        width: "fit-content",
+                        textTransform: "none",
+                      }}
+                    >
+                      Assign Packaging Team
+                    </Button>
+                  </>
+                )}
 
 
                 <Divider />
@@ -1832,6 +2167,151 @@ const AdminOrders = () => {
 
         )}
 
+      </Dialog>
+
+
+      {/* ======================================================
+          ASSIGN PACKAGING DIALOG
+      ====================================================== */}
+
+      <Dialog
+        open={assignDialogOpen}
+        onClose={closeAssignDialog}
+        fullWidth
+        maxWidth="sm"
+      >
+        <DialogTitle
+          sx={{
+            fontWeight: 700,
+          }}
+        >
+          Assign Packaging Team
+        </DialogTitle>
+
+        <DialogContent dividers>
+          {orderToAssign && (
+            <Stack spacing={2}>
+
+              <Box>
+                <Typography
+                  variant="body2"
+                  color="text.secondary"
+                >
+                  Order
+                </Typography>
+
+                <Typography fontWeight={700}>
+                  {orderToAssign.orderNumber || "Order"}
+                </Typography>
+              </Box>
+
+              <Box>
+                <Typography
+                  variant="body2"
+                  color="text.secondary"
+                >
+                  Customer
+                </Typography>
+
+                <Typography fontWeight={600}>
+                  {orderToAssign.customerName || "Customer"}
+                </Typography>
+              </Box>
+
+              <FormControl
+                fullWidth
+                size="small"
+                disabled={
+                  packagingLoading ||
+                  assigningOrder
+                }
+              >
+                <InputLabel>
+                  Packaging Team
+                </InputLabel>
+
+                <Select
+                  value={selectedPackagingStaff}
+                  label="Packaging Team"
+                  onChange={(event) =>
+                    setSelectedPackagingStaff(
+                      event.target.value
+                    )
+                  }
+                >
+                  {packagingStaff.length === 0 ? (
+                    <MenuItem disabled>
+                      {packagingLoading
+                        ? "Loading Packaging Team..."
+                        : "No active Packaging accounts"}
+                    </MenuItem>
+                  ) : (
+                    packagingStaff.map((staff) => (
+                      <MenuItem
+                        key={staff._id || staff.id}
+                        value={staff._id || staff.id}
+                      >
+                        {staff.name} — {staff.loginId || ""}
+                        {staff.branchName
+                          ? ` (${staff.branchName})`
+                          : ""}
+                      </MenuItem>
+                    ))
+                  )}
+                </Select>
+              </FormControl>
+
+              {orderToAssign?.packagingAssignment?.staff?.name && (
+                <Alert severity="info">
+                  Currently assigned to{" "}
+                  <strong>
+                    {orderToAssign.packagingAssignment.staff.name}
+                  </strong>.
+                </Alert>
+              )}
+
+            </Stack>
+          )}
+        </DialogContent>
+
+        <DialogActions>
+          <Button
+            onClick={closeAssignDialog}
+            disabled={assigningOrder}
+            sx={{
+              textTransform: "none",
+            }}
+          >
+            Cancel
+          </Button>
+
+          <Button
+            variant="contained"
+            onClick={handleAssignPackaging}
+            disabled={
+              assigningOrder ||
+              packagingLoading ||
+              !selectedPackagingStaff
+            }
+            sx={{
+              textTransform: "none",
+              fontWeight: 600,
+            }}
+          >
+            {assigningOrder ? (
+              <>
+                <CircularProgress
+                  size={18}
+                  color="inherit"
+                  sx={{ mr: 1 }}
+                />
+                Assigning...
+              </>
+            ) : (
+              "Assign Order"
+            )}
+          </Button>
+        </DialogActions>
       </Dialog>
 
     </Box>

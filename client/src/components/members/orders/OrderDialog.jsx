@@ -18,20 +18,19 @@ import {
   LocalShipping,
 } from "@mui/icons-material";
 
-
 const OrderDialog = ({
   open,
   onClose,
   order,
 }) => {
-
   if (!order) return null;
 
+  // =====================================================
+  // ORDER STATUS COLOR
+  // =====================================================
 
   const getStatusColor = (status) => {
-
-    switch (status) {
-
+    switch (String(status || "").toUpperCase()) {
       case "DELIVERED":
         return "success";
 
@@ -39,21 +38,67 @@ const OrderDialog = ({
         return "error";
 
       case "SHIPPED":
+      case "OUT_FOR_DELIVERY":
         return "info";
 
+      case "READY_FOR_DISPATCH":
+      case "PACKED":
+        return "success";
+
+      case "PACKING":
       case "CONFIRMED":
         return "primary";
 
+      case "PLACED":
       default:
         return "warning";
-
     }
-
   };
 
+  // =====================================================
+  // ORDER STATUS LABEL
+  // =====================================================
+
+  const getStatusLabel = (status) => {
+    switch (String(status || "").toUpperCase()) {
+      case "READY_FOR_DISPATCH":
+        return "READY FOR DISPATCH";
+
+      case "OUT_FOR_DELIVERY":
+        return "OUT FOR DELIVERY";
+
+      case "PACKING":
+        return "PACKING";
+
+      case "PACKED":
+        return "PACKED";
+
+      case "CONFIRMED":
+        return "CONFIRMED";
+
+      case "SHIPPED":
+        return "SHIPPED";
+
+      case "DELIVERED":
+        return "DELIVERED";
+
+      case "CANCELLED":
+        return "CANCELLED";
+
+      case "PLACED":
+      default:
+        return "PLACED";
+    }
+  };
+
+  // =====================================================
+  // SAFE NUMBER
+  // =====================================================
+
+  const amount = (value) =>
+    Number(value || 0).toFixed(2);
 
   return (
-
     <Dialog
       open={open}
       onClose={onClose}
@@ -75,7 +120,6 @@ const OrderDialog = ({
         },
       }}
     >
-
       {/* =================================================
           TITLE
       ================================================= */}
@@ -107,7 +151,6 @@ const OrderDialog = ({
         Order Details
       </DialogTitle>
 
-
       {/* =================================================
           CONTENT
       ================================================= */}
@@ -135,7 +178,6 @@ const OrderDialog = ({
           overflowX: "hidden",
         }}
       >
-
         {/* =================================================
             ORDER HEADER
         ================================================= */}
@@ -151,14 +193,12 @@ const OrderDialog = ({
           flexWrap="wrap"
           gap={1}
         >
-
           <Box
             sx={{
               minWidth: 0,
               flex: 1,
             }}
           >
-
             <Typography
               sx={{
                 fontSize: {
@@ -177,7 +217,6 @@ const OrderDialog = ({
               {order.orderNumber}
             </Typography>
 
-
             <Typography
               sx={{
                 mt: 0.25,
@@ -193,12 +232,10 @@ const OrderDialog = ({
             >
               Order Information
             </Typography>
-
           </Box>
 
-
           <Chip
-            label={order.status}
+            label={getStatusLabel(order.status)}
             color={getStatusColor(order.status)}
             sx={{
               height: {
@@ -218,12 +255,16 @@ const OrderDialog = ({
               flexShrink: 0,
             }}
           />
-
         </Stack>
 
-
-        <Divider sx={{ mb: { xs: 1.25, sm: 1.5 } }} />
-
+        <Divider
+          sx={{
+            mb: {
+              xs: 1.25,
+              sm: 1.5,
+            },
+          }}
+        />
 
         {/* =================================================
             ORDER INFORMATION
@@ -236,11 +277,9 @@ const OrderDialog = ({
             sm: 1,
           }}
         >
-
           {/* ORDER NUMBER */}
 
           <Grid item xs={6} sm={6}>
-
             <Box
               sx={{
                 height: "100%",
@@ -257,7 +296,6 @@ const OrderDialog = ({
                   "border-box",
               }}
             >
-
               <Stack
                 direction="row"
                 spacing={{
@@ -266,7 +304,6 @@ const OrderDialog = ({
                 }}
                 alignItems="flex-start"
               >
-
                 <ShoppingBag
                   color="success"
                   sx={{
@@ -284,7 +321,6 @@ const OrderDialog = ({
                     minWidth: 0,
                   }}
                 >
-
                   <Typography
                     sx={{
                       color:
@@ -318,20 +354,14 @@ const OrderDialog = ({
                   >
                     {order.orderNumber}
                   </Typography>
-
                 </Box>
-
               </Stack>
-
             </Box>
-
           </Grid>
-
 
           {/* TOTAL AMOUNT */}
 
           <Grid item xs={6} sm={6}>
-
             <Box
               sx={{
                 height: "100%",
@@ -348,7 +378,6 @@ const OrderDialog = ({
                   "border-box",
               }}
             >
-
               <Stack
                 direction="row"
                 spacing={{
@@ -357,7 +386,6 @@ const OrderDialog = ({
                 }}
                 alignItems="flex-start"
               >
-
                 <CurrencyRupee
                   color="success"
                   sx={{
@@ -371,7 +399,6 @@ const OrderDialog = ({
                 />
 
                 <Box>
-
                   <Typography
                     sx={{
                       color:
@@ -403,22 +430,16 @@ const OrderDialog = ({
                         "success.main",
                     }}
                   >
-                    ₹{order.finalAmount}
+                    ₹{amount(order.finalAmount)}
                   </Typography>
-
                 </Box>
-
               </Stack>
-
             </Box>
-
           </Grid>
-
 
           {/* PAYMENT STATUS */}
 
           <Grid item xs={6} sm={6}>
-
             <Box
               sx={{
                 height: "100%",
@@ -435,7 +456,6 @@ const OrderDialog = ({
                   "border-box",
               }}
             >
-
               <Stack
                 direction="row"
                 spacing={{
@@ -444,7 +464,6 @@ const OrderDialog = ({
                 }}
                 alignItems="flex-start"
               >
-
                 <CreditCard
                   color="success"
                   sx={{
@@ -462,7 +481,6 @@ const OrderDialog = ({
                     minWidth: 0,
                   }}
                 >
-
                   <Typography
                     sx={{
                       color:
@@ -483,18 +501,16 @@ const OrderDialog = ({
 
                   <Chip
                     label={
-                      order.paymentStatus
+                      order.paymentStatus ||
+                      "PENDING"
                     }
-
                     color={
                       order.paymentStatus ===
                       "PAID"
                         ? "success"
                         : "warning"
                     }
-
                     size="small"
-
                     sx={{
                       height: {
                         xs: 19,
@@ -511,20 +527,14 @@ const OrderDialog = ({
                       fontWeight: 700,
                     }}
                   />
-
                 </Box>
-
               </Stack>
-
             </Box>
-
           </Grid>
-
 
           {/* ORDER STATUS */}
 
           <Grid item xs={6} sm={6}>
-
             <Box
               sx={{
                 height: "100%",
@@ -541,7 +551,6 @@ const OrderDialog = ({
                   "border-box",
               }}
             >
-
               <Stack
                 direction="row"
                 spacing={{
@@ -550,7 +559,6 @@ const OrderDialog = ({
                 }}
                 alignItems="flex-start"
               >
-
                 <LocalShipping
                   color="success"
                   sx={{
@@ -568,7 +576,6 @@ const OrderDialog = ({
                     minWidth: 0,
                   }}
                 >
-
                   <Typography
                     sx={{
                       color:
@@ -588,18 +595,13 @@ const OrderDialog = ({
                   </Typography>
 
                   <Chip
-                    label={
+                    label={getStatusLabel(
                       order.status
-                    }
-
-                    color={
-                      getStatusColor(
-                        order.status
-                      )
-                    }
-
+                    )}
+                    color={getStatusColor(
+                      order.status
+                    )}
                     size="small"
-
                     sx={{
                       height: {
                         xs: 19,
@@ -616,20 +618,14 @@ const OrderDialog = ({
                       fontWeight: 700,
                     }}
                   />
-
                 </Box>
-
               </Stack>
-
             </Box>
-
           </Grid>
-
 
           {/* ORDER DATE */}
 
           <Grid item xs={6} sm={6}>
-
             <Box
               sx={{
                 height: "100%",
@@ -646,7 +642,6 @@ const OrderDialog = ({
                   "border-box",
               }}
             >
-
               <Stack
                 direction="row"
                 spacing={{
@@ -655,7 +650,6 @@ const OrderDialog = ({
                 }}
                 alignItems="flex-start"
               >
-
                 <CalendarMonth
                   color="success"
                   sx={{
@@ -669,7 +663,6 @@ const OrderDialog = ({
                 />
 
                 <Box>
-
                   <Typography
                     sx={{
                       color:
@@ -698,28 +691,20 @@ const OrderDialog = ({
                       fontWeight: 700,
                     }}
                   >
-                    {
-                      order.placedAt
-                        ? new Date(
-                            order.placedAt
-                          ).toLocaleDateString()
-                        : "-"
-                    }
+                    {order.placedAt
+                      ? new Date(
+                          order.placedAt
+                        ).toLocaleDateString()
+                      : "-"}
                   </Typography>
-
                 </Box>
-
               </Stack>
-
             </Box>
-
           </Grid>
-
 
           {/* SELLING POINTS */}
 
           <Grid item xs={6} sm={6}>
-
             <Box
               sx={{
                 height: "100%",
@@ -736,7 +721,6 @@ const OrderDialog = ({
                   "border-box",
               }}
             >
-
               <Stack
                 direction="row"
                 spacing={{
@@ -745,7 +729,6 @@ const OrderDialog = ({
                 }}
                 alignItems="flex-start"
               >
-
                 <CurrencyRupee
                   color="success"
                   sx={{
@@ -759,7 +742,6 @@ const OrderDialog = ({
                 />
 
                 <Box>
-
                   <Typography
                     sx={{
                       color:
@@ -788,19 +770,15 @@ const OrderDialog = ({
                       fontWeight: 700,
                     }}
                   >
-                    {order.sellingPoints || 0} SP
+                    {order.sellingPoints ||
+                      0}{" "}
+                    SP
                   </Typography>
-
                 </Box>
-
               </Stack>
-
             </Box>
-
           </Grid>
-
         </Grid>
-
 
         {/* =================================================
             PRODUCTS
@@ -835,11 +813,14 @@ const OrderDialog = ({
               Products
             </Typography>
 
-
             {order.items.map(
               (item, index) => (
                 <Box
-                  key={index}
+                  key={
+                    item._id ||
+                    item.productId?._id ||
+                    index
+                  }
                   sx={{
                     mb: {
                       xs: 0.75,
@@ -851,7 +832,8 @@ const OrderDialog = ({
                       sm: 1.1,
                     },
 
-                    bgcolor: "#F8F9FA",
+                    bgcolor:
+                      "#F8F9FA",
 
                     border:
                       "1px solid #E0E0E0",
@@ -862,7 +844,6 @@ const OrderDialog = ({
                       "border-box",
                   }}
                 >
-
                   <Typography
                     sx={{
                       fontSize: {
@@ -881,7 +862,6 @@ const OrderDialog = ({
                     {item.productName}
                   </Typography>
 
-
                   <Typography
                     sx={{
                       mt: 0.3,
@@ -897,9 +877,9 @@ const OrderDialog = ({
                       lineHeight: 1.35,
                     }}
                   >
-                    Quantity : {item.quantity}
+                    Quantity :{" "}
+                    {item.quantity}
                   </Typography>
-
 
                   <Typography
                     sx={{
@@ -916,9 +896,11 @@ const OrderDialog = ({
                       lineHeight: 1.35,
                     }}
                   >
-                    Price : ₹{item.price}
+                    Price : ₹
+                    {amount(
+                      item.price
+                    )}
                   </Typography>
-
 
                   <Typography
                     sx={{
@@ -937,22 +919,276 @@ const OrderDialog = ({
                       lineHeight: 1.35,
                     }}
                   >
-                    Total : ₹{item.total}
+                    Total : ₹
+                    {amount(
+                      item.total
+                    )}
                   </Typography>
-
                 </Box>
               )
             )}
-
           </>
         )}
 
+        {/* =================================================
+            PRICE SUMMARY
+        ================================================= */}
+
+        <Divider
+          sx={{
+            my: {
+              xs: 1.5,
+              sm: 2,
+            },
+          }}
+        />
+
+        <Typography
+          sx={{
+            fontSize: {
+              xs: "13px",
+              sm: "15px",
+            },
+
+            fontWeight: 800,
+
+            mb: {
+              xs: 0.75,
+              sm: 1,
+            },
+          }}
+        >
+          Price Summary
+        </Typography>
+
+        <Box
+          sx={{
+            border:
+              "1px solid #E0E0E0",
+
+            p: {
+              xs: 1,
+              sm: 1.25,
+            },
+          }}
+        >
+          <Stack spacing={0.75}>
+            {/* SUBTOTAL */}
+
+            <Stack
+              direction="row"
+              justifyContent="space-between"
+              alignItems="center"
+            >
+              <Typography
+                sx={{
+                  fontSize: {
+                    xs: "9px",
+                    sm: "11px",
+                  },
+
+                  color:
+                    "text.secondary",
+                }}
+              >
+                Subtotal
+              </Typography>
+
+              <Typography
+                sx={{
+                  fontSize: {
+                    xs: "10px",
+                    sm: "12px",
+                  },
+
+                  fontWeight: 600,
+                }}
+              >
+                ₹
+                {amount(
+                  order.subtotal
+                )}
+              </Typography>
+            </Stack>
+
+            {/* DISCOUNT */}
+
+            <Stack
+              direction="row"
+              justifyContent="space-between"
+              alignItems="center"
+            >
+              <Typography
+                sx={{
+                  fontSize: {
+                    xs: "9px",
+                    sm: "11px",
+                  },
+
+                  color:
+                    "text.secondary",
+                }}
+              >
+                Discount
+              </Typography>
+
+              <Typography
+                sx={{
+                  fontSize: {
+                    xs: "10px",
+                    sm: "12px",
+                  },
+
+                  fontWeight: 600,
+
+                  color:
+                    Number(
+                      order.discount || 0
+                    ) > 0
+                      ? "success.main"
+                      : "text.primary",
+                }}
+              >
+                - ₹
+                {amount(
+                  order.discount
+                )}
+              </Typography>
+            </Stack>
+
+            {/* WALLET */}
+
+            {Number(
+              order.walletAmount || 0
+            ) > 0 && (
+              <Stack
+                direction="row"
+                justifyContent="space-between"
+                alignItems="center"
+              >
+                <Typography
+                  sx={{
+                    fontSize: {
+                      xs: "9px",
+                      sm: "11px",
+                    },
+
+                    color:
+                      "text.secondary",
+                  }}
+                >
+                  Wallet Used
+                </Typography>
+
+                <Typography
+                  sx={{
+                    fontSize: {
+                      xs: "10px",
+                      sm: "12px",
+                    },
+
+                    fontWeight: 600,
+
+                    color:
+                      "success.main",
+                  }}
+                >
+                  - ₹
+                  {amount(
+                    order.walletAmount
+                  )}
+                </Typography>
+              </Stack>
+            )}
+
+            {/* DELIVERY */}
+
+            <Stack
+              direction="row"
+              justifyContent="space-between"
+              alignItems="center"
+            >
+              <Typography
+                sx={{
+                  fontSize: {
+                    xs: "9px",
+                    sm: "11px",
+                  },
+
+                  color:
+                    "text.secondary",
+                }}
+              >
+                Delivery Charge
+              </Typography>
+
+              <Typography
+                sx={{
+                  fontSize: {
+                    xs: "10px",
+                    sm: "12px",
+                  },
+
+                  fontWeight: 600,
+                }}
+              >
+                ₹
+                {amount(
+                  order.deliveryCharge
+                )}
+              </Typography>
+            </Stack>
+
+            <Divider
+              sx={{
+                my: 0.5,
+              }}
+            />
+
+            {/* FINAL AMOUNT */}
+
+            <Stack
+              direction="row"
+              justifyContent="space-between"
+              alignItems="center"
+            >
+              <Typography
+                sx={{
+                  fontSize: {
+                    xs: "11px",
+                    sm: "13px",
+                  },
+
+                  fontWeight: 800,
+                }}
+              >
+                Final Amount
+              </Typography>
+
+              <Typography
+                sx={{
+                  fontSize: {
+                    xs: "13px",
+                    sm: "16px",
+                  },
+
+                  fontWeight: 900,
+
+                  color:
+                    "success.main",
+                }}
+              >
+                ₹
+                {amount(
+                  order.finalAmount
+                )}
+              </Typography>
+            </Stack>
+          </Stack>
+        </Box>
       </DialogContent>
-
     </Dialog>
-
   );
 };
-
 
 export default OrderDialog;
