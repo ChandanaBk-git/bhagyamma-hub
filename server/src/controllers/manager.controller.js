@@ -387,6 +387,61 @@ const getProfile = async (
 
 };
 
+/* =========================================================
+   MANAGER ORDERS
+========================================================= */
+
+const getManagerOrders = async (
+    req,
+    res,
+    next
+) => {
+
+    try {
+
+        const managerId =
+            getManagerId(req);
+
+        const {
+            page,
+            limit,
+            status,
+            paymentStatus,
+        } = req.query;
+
+        const data =
+            await managerService.getManagerOrders(
+                managerId,
+                {
+                    page,
+                    limit,
+                    status,
+                    paymentStatus,
+                }
+            );
+
+        return res.status(200).json({
+
+            success: true,
+
+            data,
+
+        });
+
+    } catch (error) {
+
+        console.error(
+            "MANAGER ORDERS ERROR:",
+            error
+        );
+
+        next(error);
+
+    }
+
+};
+
+
 
 /*
 =========================================================
@@ -641,6 +696,32 @@ const getUserWalletDetails = async (
 
 };
 
+// =====================================================
+// PACKAGING TEAMS
+// =====================================================
+
+const getManagerPackagingTeams = async (
+  req,
+  res,
+  next
+) => {
+  try {
+    const teams =
+      await managerService.getManagerPackagingTeams();
+
+    return res.status(200).json({
+      success: true,
+      data: teams,
+    });
+  } catch (error) {
+    console.error(
+      "MANAGER PACKAGING TEAMS ERROR:",
+      error
+    );
+
+    next(error);
+  }
+};
 
 /*
 =========================================================
@@ -662,6 +743,8 @@ module.exports = {
 
   getProfile,
 
+  getManagerOrders,
+
   getManagerProducts,
 
   getSellingPoints,
@@ -673,5 +756,7 @@ module.exports = {
   getAllUserWallets,
 
   getUserWalletDetails,
+
+  getManagerPackagingTeams,
 
 };

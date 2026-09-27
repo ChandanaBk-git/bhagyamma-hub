@@ -9,7 +9,9 @@ const authorize = require("../middleware/role.middleware");
 
 const validate = require("../middleware/validate.middleware");
 
-const upload = require("../middleware/upload.middleware");
+const categoryUpload = require(
+  "../middleware/categoryUpload.middleware"
+);
 
 const {
     categoryValidation,
@@ -20,23 +22,23 @@ router.get("/", controller.getAllCategories);
 router.get("/:id", controller.getCategoryById);
 
 router.post(
-    "/",
-    protect,
-    authorize("SUPER_ADMIN"),
-    upload.single("image"),
-    categoryValidation,
-    validate,
-    controller.createCategory
+  "/",
+  protect,
+  authorize("SUPER_ADMIN"),
+  categoryUpload.single("image"),
+  categoryValidation,
+  validate,
+  controller.createCategory
 );
 
 router.put(
-    "/:id",
-    protect,
-    authorize("SUPER_ADMIN"),
-    upload.single("image"),
-    categoryValidation,
-    validate,
-    controller.updateCategory
+  "/:id",
+  protect,
+  authorize("SUPER_ADMIN"),
+  categoryUpload.single("image"),
+  categoryValidation,
+  validate,
+  controller.updateCategory
 );
 
 router.delete(

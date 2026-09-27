@@ -2,22 +2,12 @@ const ProductService = require("../services/product.service");
 const asyncHandler = require("../utils/asyncHandler");
 const ApiResponse = require("../utils/ApiResponse");
 const ApiError = require("../utils/ApiError");
-const cloudinary = require("../config/cloudinary");
 
 // =======================================
-// Upload image to Cloudinary
+// Build local image URL
 // =======================================
-const uploadToCloudinary = async (file) => {
-  if (!file || !file.path) {
-    throw new ApiError(400, "Uploaded image file is missing.");
-  }
-
-  const result = await cloudinary.uploader.upload(file.path, {
-    folder: "bhagyamma-hub/products",
-    resource_type: "image",
-  });
-
-  return result.secure_url;
+const getImageUrl = (req, filename) => {
+  return `${req.protocol}://${req.get("host")}/uploads/products/${filename}`;
 };
 
 // =======================================
@@ -30,15 +20,25 @@ const createProduct = asyncHandler(async (req, res) => {
 
   const images = [];
 
-  // Upload images to Cloudinary
+  // =======================================
+  // Use locally uploaded images
+  // =======================================
   if (req.files && req.files.length > 0) {
     for (const file of req.files) {
-      const imageUrl = await uploadToCloudinary(file);
-      images.push(imageUrl);
+      if (!file.filename) {
+        throw new ApiError(
+          400,
+          "Uploaded image file is missing."
+        );
+      }
+
+      images.push(
+        getImageUrl(req, file.filename)
+      );
     }
   }
 
-  console.log("CLOUDINARY IMAGES:", images);
+  console.log("PRODUCT IMAGES:", images);
 
   const product = await ProductService.createProduct({
     productName: req.body.productName,
@@ -101,7 +101,10 @@ const getProductById = asyncHandler(async (req, res) => {
   );
 
   if (!product) {
-    throw new ApiError(404, "Product not found.");
+    throw new ApiError(
+      404,
+      "Product not found."
+    );
   }
 
   return res.status(200).json(
@@ -125,21 +128,35 @@ const updateProduct = asyncHandler(async (req, res) => {
     ...req.body,
   };
 
-  // Upload new images to Cloudinary
+  // =======================================
+  // Use locally uploaded images
+  // =======================================
   if (req.files && req.files.length > 0) {
     const uploadedImages = [];
 
     for (const file of req.files) {
-      const imageUrl = await uploadToCloudinary(file);
-      uploadedImages.push(imageUrl);
+      if (!file.filename) {
+        throw new ApiError(
+          400,
+          "Uploaded image file is missing."
+        );
+      }
+
+      uploadedImages.push(
+        getImageUrl(req, file.filename)
+      );
     }
 
     updatedData.images = uploadedImages;
   }
 
+  // =======================================
   // Convert price to number
+  // =======================================
   if (updatedData.price !== undefined) {
-    updatedData.price = Number(updatedData.price);
+    updatedData.price = Number(
+      updatedData.price
+    );
   }
 
   const product = await ProductService.updateProduct(
@@ -148,7 +165,10 @@ const updateProduct = asyncHandler(async (req, res) => {
   );
 
   if (!product) {
-    throw new ApiError(404, "Product not found.");
+    throw new ApiError(
+      404,
+      "Product not found."
+    );
   }
 
   return res.status(200).json(
@@ -169,7 +189,10 @@ const deleteProduct = asyncHandler(async (req, res) => {
   );
 
   if (!product) {
-    throw new ApiError(404, "Product not found.");
+    throw new ApiError(
+      404,
+      "Product not found."
+    );
   }
 
   return res.status(200).json(

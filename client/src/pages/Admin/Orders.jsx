@@ -170,6 +170,20 @@ const AdminOrders = () => {
         adminOrders
       );
 
+      console.log(
+  "FIRST ORDER FULL:",
+  adminOrders[0]
+);
+
+console.log(
+  "FIRST ORDER ITEMS:",
+  adminOrders[0]?.items
+);
+
+console.log(
+  "FIRST ORDER ITEM 0:",
+  adminOrders[0]?.items?.[0]
+);
       setOrders(
         adminOrders
       );

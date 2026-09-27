@@ -23,6 +23,7 @@ import Inventory2Icon from "@mui/icons-material/Inventory2";
 import AccountBalanceWalletIcon from "@mui/icons-material/AccountBalanceWallet";
 import HomeIcon from "@mui/icons-material/Home";
 import StarsIcon from "@mui/icons-material/Stars";
+import LocalShippingIcon from "@mui/icons-material/LocalShipping";
 
 
 /* =====================================================
@@ -52,6 +53,12 @@ const menuItems = [
     title: "Orders",
     icon: <ShoppingBagIcon />,
     path: "/manager/orders",
+  },
+
+  {
+    title: "Packaging Teams",
+    icon: <LocalShippingIcon />,
+    path: "/manager/packaging-teams",
   },
 
   {

@@ -56,12 +56,61 @@ const findByMerchantOrderId =
    Find Items
 ========================================== */
 
-const findByOrderId = async (
-  orderId
-) => {
-  return await OrderItem.find({
-    orderId,
-  }).populate("productId");
+const findByOrderId = async (orderId) => {
+
+    const items = await OrderItem.find({
+        orderId,
+    })
+        .populate(
+            "productId",
+            "productName name price images category brand"
+        )
+        .lean();
+
+    return items.map((item) => {
+
+        const product =
+            item.productId || {};
+
+        const quantity =
+            Number(item.quantity || 0);
+
+        const price =
+            Number(
+                item.price ??
+                product.price ??
+                0
+            );
+
+        const productName =
+            item.productName ||
+            product.productName ||
+            product.name ||
+            "Product";
+
+        const total =
+            Number(
+                item.total ??
+                price * quantity
+            );
+
+        return {
+            ...item,
+
+            productName,
+
+            quantity,
+
+            price,
+
+            total,
+
+            productId:
+                item.productId || null,
+        };
+
+    });
+
 };
 
 /* ==========================================

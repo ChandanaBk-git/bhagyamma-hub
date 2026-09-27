@@ -10,6 +10,8 @@ const sellingPointService = require("./sellingPoint.service");
 const productOrderCommissionService =
     require("./productOrderCommission.service");
 
+const PackagingAssignment =
+    require("../models/packagingAssignment.model");
 
 /* ==========================================================================
    GENERATE ORDER NUMBER
@@ -1360,10 +1362,6 @@ const getMyOrders = async (
 };
 
 
-/* ==========================================================================
-   GET ALL ORDERS
-   ========================================================================== */
-
 const getAllOrders = async (
     options = {}
 ) => {
@@ -1384,20 +1382,26 @@ const getAllOrders = async (
 
 
         if (status) {
+
             filter.status =
                 status;
+
         }
 
 
         if (paymentStatus) {
+
             filter.paymentStatus =
                 paymentStatus;
+
         }
 
 
         if (orderType) {
+
             filter.orderType =
                 orderType;
+
         }
 
 
@@ -1409,7 +1413,6 @@ const getAllOrders = async (
                     orderNumber: {
                         $regex:
                             search,
-
                         $options:
                             "i",
                     },
@@ -1419,7 +1422,6 @@ const getAllOrders = async (
                     customerName: {
                         $regex:
                             search,
-
                         $options:
                             "i",
                     },
@@ -1429,7 +1431,6 @@ const getAllOrders = async (
                     customerMobile: {
                         $regex:
                             search,
-
                         $options:
                             "i",
                     },
@@ -1439,12 +1440,13 @@ const getAllOrders = async (
                     customerEmail: {
                         $regex:
                             search,
-
                         $options:
                             "i",
                     },
                 },
+
             ];
+
         }
 
 
@@ -1454,6 +1456,10 @@ const getAllOrders = async (
             ) *
             Number(limit);
 
+
+        /* =====================================================
+           GET ORDERS
+        ===================================================== */
 
         const [
             orders,
@@ -1477,8 +1483,13 @@ const getAllOrders = async (
             Order.countDocuments(
                 filter
             ),
+
         ]);
 
+
+        /* =====================================================
+           NO ORDERS
+        ===================================================== */
 
         if (!orders.length) {
 
@@ -1497,10 +1508,17 @@ const getAllOrders = async (
                     total: 0,
 
                     pages: 0,
+
                 },
+
             };
+
         }
 
+
+        /* =====================================================
+           GET ORDER IDS
+        ===================================================== */
 
         const orderIds =
             orders.map(
@@ -1509,12 +1527,18 @@ const getAllOrders = async (
             );
 
 
+        /* =====================================================
+           GET ORDER ITEMS
+        ===================================================== */
+
         const items =
             await OrderItem.find({
+
                 orderId: {
                     $in:
                         orderIds,
                 },
+
             })
                 .populate(
                     "productId",
@@ -1523,12 +1547,15 @@ const getAllOrders = async (
                 .lean();
 
 
+        /* =====================================================
+           GROUP ITEMS BY ORDER
+        ===================================================== */
+
         const itemsByOrder = {};
 
 
         for (
-            const item
-            of items
+            const item of items
         ) {
 
             const key =
@@ -1541,18 +1568,94 @@ const getAllOrders = async (
 
                 itemsByOrder[key] =
                     [];
+
             }
 
 
-            itemsByOrder[key].push(
-                item
-            );
+            /* =================================================
+               PRODUCT NAME
+            ================================================= */
+
+            const productName =
+                item.productName ||
+                item.productId?.productName ||
+                item.productId?.name ||
+                item.product?.productName ||
+                item.product?.name ||
+                "Product";
+
+
+            /* =================================================
+               QUANTITY
+            ================================================= */
+
+            const quantity =
+                Number(
+                    item.quantity || 0
+                );
+
+
+            /* =================================================
+               PRICE
+            ================================================= */
+
+            const price =
+                Number(
+                    item.price ??
+                    item.productId?.price ??
+                    item.product?.price ??
+                    0
+                );
+
+
+            /* =================================================
+               TOTAL
+            ================================================= */
+
+            const total =
+                Number(
+                    item.total ??
+                    item.subtotal ??
+                    (
+                        price *
+                        quantity
+                    )
+                );
+
+
+            /* =================================================
+               FINAL ITEM
+            ================================================= */
+
+            itemsByOrder[key].push({
+
+                ...item,
+
+                productName,
+
+                quantity,
+
+                price,
+
+                total,
+
+                /* Keep populated product */
+                productId:
+                    item.productId || null,
+
+            });
+
         }
 
+
+        /* =====================================================
+           RETURN ORDERS WITH ITEMS
+        ===================================================== */
 
         return {
 
             orders:
+
                 orders.map(
                     (order) => ({
 
@@ -1562,6 +1665,7 @@ const getAllOrders = async (
                             itemsByOrder[
                                 order._id.toString()
                             ] || [],
+
                     })
                 ),
 
@@ -1581,7 +1685,9 @@ const getAllOrders = async (
                         total /
                         Number(limit)
                     ),
+
             },
+
         };
 
     } catch (error) {
@@ -1592,7 +1698,9 @@ const getAllOrders = async (
         );
 
         throw error;
+
     }
+
 };
 
 
@@ -3382,6 +3490,10 @@ const deleteOrder = async (
    GET MANAGER ORDERS
    ========================================================================== */
 
+/* ==========================================================================
+   GET MANAGER ORDERS
+   ========================================================================== */
+
 const getManagerOrders = async (
     managerId,
     options = {}
@@ -3451,25 +3563,11 @@ const getManagerOrders = async (
 
 
         // =====================================================
-        // IMPORTANT
-        // =====================================================
-        //
-        // MANAGER CAN VIEW ALL ORDERS.
-        //
-        // There is NO:
-        //
-        // managerId filter
-        // userId $in filter
-        // managed-member restriction
-        //
+        // FILTER
         // =====================================================
 
         const filter = {};
 
-
-        // =====================================================
-        // ORDER STATUS FILTER
-        // =====================================================
 
         if (status) {
 
@@ -3478,10 +3576,6 @@ const getManagerOrders = async (
 
         }
 
-
-        // =====================================================
-        // PAYMENT STATUS FILTER
-        // =====================================================
 
         if (paymentStatus) {
 
@@ -3517,7 +3611,7 @@ const getManagerOrders = async (
 
 
         // =====================================================
-        // GET ALL ORDERS
+        // GET ORDERS
         // =====================================================
 
         const [
@@ -3543,7 +3637,6 @@ const getManagerOrders = async (
                 )
                 .lean(),
 
-
             Order.countDocuments(
                 filter
             ),
@@ -3552,12 +3645,295 @@ const getManagerOrders = async (
 
 
         // =====================================================
+        // NO ORDERS
+        // =====================================================
+
+        if (!orders.length) {
+
+            return {
+
+                orders: [],
+
+                pagination: {
+
+                    page:
+                        pageNumber,
+
+                    limit:
+                        limitNumber,
+
+                    total: 0,
+
+                    pages: 0,
+
+                },
+
+            };
+
+        }
+
+
+        // =====================================================
+        // ORDER IDS
+        // =====================================================
+
+        const orderIds =
+            orders.map(
+                (order) =>
+                    order._id
+            );
+
+
+        // =====================================================
+        // GET ORDER ITEMS
+        // =====================================================
+
+        const orderItems =
+            await OrderItem.find({
+
+                orderId: {
+                    $in:
+                        orderIds,
+                },
+
+            })
+                .populate(
+                    "productId",
+                    "name productName images price category brand"
+                )
+                .lean();
+
+
+        // =====================================================
+        // GET PACKAGING ASSIGNMENTS
+        // =====================================================
+
+        const packagingAssignments =
+            await PackagingAssignment.find({
+
+                order: {
+                    $in:
+                        orderIds,
+                },
+
+            })
+                .populate(
+                    "staff",
+                    "name loginId branchName branchMemberNumber isActive"
+                )
+                .lean();
+
+
+        // =====================================================
+        // GROUP ORDER ITEMS
+        // =====================================================
+
+        const itemsByOrder =
+            {};
+
+
+        for (
+            const item
+            of orderItems
+        ) {
+
+            const key =
+                String(
+                    item.orderId
+                );
+
+
+            if (
+                !itemsByOrder[key]
+            ) {
+
+                itemsByOrder[key] =
+                    [];
+
+            }
+
+
+            itemsByOrder[key].push(
+                item
+            );
+
+        }
+
+
+        // =====================================================
+        // GROUP PACKAGING ASSIGNMENTS
+        // =====================================================
+
+        const packagingByOrder =
+            {};
+
+
+        for (
+            const assignment
+            of packagingAssignments
+        ) {
+
+            const key =
+                String(
+                    assignment.order
+                );
+
+
+            packagingByOrder[key] =
+                assignment;
+
+        }
+
+
+        // =====================================================
+        // ENRICH ORDERS
+        // =====================================================
+
+        const enrichedOrders =
+            orders.map(
+                (
+                    order
+                ) => {
+
+                    const orderKey =
+                        String(
+                            order._id
+                        );
+
+
+                    const assignment =
+                        packagingByOrder[
+                            orderKey
+                        ];
+
+
+                    return {
+
+                        ...order,
+
+
+                        // ---------------------------------
+                        // COMPLETE ORDER ITEMS
+                        // ---------------------------------
+
+                        items:
+                            itemsByOrder[
+                                orderKey
+                            ] || [],
+
+
+                        // ---------------------------------
+                        // PACKAGING INFORMATION
+                        // ---------------------------------
+
+                        packaging:
+
+                            assignment
+                                ? {
+
+                                    assignmentId:
+                                        assignment._id,
+
+                                    teamId:
+                                        assignment.staff?._id ||
+                                        null,
+
+                                    teamName:
+                                        assignment.staff?.name ||
+                                        null,
+
+                                    loginId:
+                                        assignment.staff?.loginId ||
+                                        null,
+
+                                    branchName:
+                                        assignment.staff?.branchName ||
+                                        null,
+
+                                    branchMemberNumber:
+                                        assignment.staff?.branchMemberNumber ||
+                                        null,
+
+                                    isActive:
+                                        assignment.staff?.isActive ??
+                                        false,
+
+                                    status:
+                                        assignment.status ||
+                                        "ASSIGNED",
+
+                                    assignedAt:
+                                        assignment.assignedAt ||
+                                        null,
+
+                                    packingStartedAt:
+                                        assignment.packingStartedAt ||
+                                        null,
+
+                                    packedAt:
+                                        assignment.packedAt ||
+                                        null,
+
+                                    readyForDispatchAt:
+                                        assignment.readyForDispatchAt ||
+                                        null,
+
+                                }
+
+                                : {
+
+                                    assignmentId:
+                                        null,
+
+                                    teamId:
+                                        null,
+
+                                    teamName:
+                                        null,
+
+                                    loginId:
+                                        null,
+
+                                    branchName:
+                                        null,
+
+                                    branchMemberNumber:
+                                        null,
+
+                                    isActive:
+                                        false,
+
+                                    status:
+                                        "UNASSIGNED",
+
+                                    assignedAt:
+                                        null,
+
+                                    packingStartedAt:
+                                        null,
+
+                                    packedAt:
+                                        null,
+
+                                    readyForDispatchAt:
+                                        null,
+
+                                },
+
+                    };
+
+                }
+            );
+
+
+        // =====================================================
         // RETURN
         // =====================================================
 
         return {
 
-            orders,
+            orders:
+                enrichedOrders,
 
             pagination: {
 
@@ -3592,7 +3968,6 @@ const getManagerOrders = async (
     }
 
 };
-
 /* ==========================================================================
    GET ORDER STATS
    ========================================================================== */

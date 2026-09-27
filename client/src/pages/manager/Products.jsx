@@ -1,26 +1,14 @@
-import {
-  useEffect,
-  useMemo,
-  useState,
-} from "react";
-
-import {
-  useNavigate,
-} from "react-router-dom";
+import { useEffect, useMemo, useState } from "react";
 
 import {
   Alert,
   Box,
-  Button,
   Card,
-  Chip,
   CircularProgress,
   InputAdornment,
-  MenuItem,
   Table,
   TableBody,
   TableCell,
-  TableContainer,
   TableHead,
   TableRow,
   TextField,
@@ -29,1517 +17,666 @@ import {
 
 import SearchIcon from "@mui/icons-material/Search";
 import Inventory2Icon from "@mui/icons-material/Inventory2";
-import CheckCircleIcon from "@mui/icons-material/CheckCircle";
-import WarningIcon from "@mui/icons-material/Warning";
-import CategoryIcon from "@mui/icons-material/Category";
-import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 
-import {
-  getManagerProducts,
-} from "../../services/manager.service";
-
-import {
-  getImageUrl,
-} from "../../utils/imageUrl";
-
+import { getManagerProducts } from "../../services/manager.service";
+import { getImageUrl } from "../../utils/imageUrl";
 
 /* =====================================================
    HELPERS
 ===================================================== */
 
-const money = (
-  value
-) => {
+const getProductName = (product) =>
+  product?.productName || product?.name || "Unnamed Product";
 
-  const numericValue =
-    Number(value);
+const getProductImage = (product) => {
+  let image = "";
 
-  const safeValue =
-    Number.isFinite(
-      numericValue
-    )
-      ? numericValue
-      : 0;
+  if (Array.isArray(product?.images)) {
+    image = product.images[0];
+  } else {
+    image = product?.image || product?.images || "";
+  }
 
-  return `₹${safeValue.toLocaleString(
-    "en-IN",
-    {
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 2,
-    }
-  )}`;
+  // Support image objects
+  if (image && typeof image === "object") {
+    image = image.url || image.path || image.src || "";
+  }
 
-};
+  if (!image) return "";
 
-
-const getProductName = (
-  product
-) => {
-
-  return (
-    product?.productName ||
-    product?.name ||
-    "Unnamed Product"
-  );
-
-};
-
-
-const getProductCategory = (
-  product
-) => {
-
-  return (
-    product?.category ||
-    product?.categoryName ||
-    "Uncategorized"
-  );
-
-};
-
-
-const getProductPrice = (
-  product
-) => {
-
-  const value =
-    Number(
-      product?.price ??
-      product?.sellingPrice ??
-      0
-    );
-
-  return Number.isFinite(
-    value
-  )
-    ? value
-    : 0;
-
-};
-
-
-/* =====================================================
-   STOCK
-===================================================== */
-
-const getProductStock = (
-  product
-) => {
-
-  const value =
-    Number(
-      product?.stock ?? 0
-    );
-
-  return Number.isFinite(
-    value
-  )
-    ? Math.max(
-        value,
-        0
-      )
-    : 0;
-
-};
-
-
-/* =====================================================
-   SOLD ITEMS
-===================================================== */
-
-const getSoldItems = (
-  product
-) => {
-
-  const value =
-    Number(
-      product?.soldItems ?? 0
-    );
-
-  return Number.isFinite(
-    value
-  )
-    ? Math.max(
-        value,
-        0
-      )
-    : 0;
-
-};
-
-
-/* =====================================================
-   STATUS
-===================================================== */
-
-const isProductActive = (
-  product
-) => {
+  const imageString = String(image);
 
   if (
-    product?.isActive === false
+    imageString.startsWith("http://") ||
+    imageString.startsWith("https://") ||
+    imageString.startsWith("data:")
   ) {
-
-    return false;
-
+    return imageString;
   }
 
-
-  return (
-    String(
-      product?.status ||
-      "Active"
-    ).toLowerCase() ===
-    "active"
-  );
-
+  return getImageUrl(imageString);
 };
 
+const getSoldItems = (product) => {
+  const sold = Number(product?.soldItems ?? 0);
 
-/* =====================================================
-   IMAGE
-===================================================== */
-
-const getProductImage = (
-  product
-) => {
-
-  const image =
-    Array.isArray(
-      product?.images
-    )
-      ? product.images[0]
-      : product?.image ||
-        product?.images;
-
-
-  if (!image) {
-
-    return "";
-
-  }
-
-
-  if (
-    String(
-      image
-    ).startsWith(
-      "http"
-    )
-  ) {
-
-    return image;
-
-  }
-
-
-  return getImageUrl(
-    image
-  );
-
+  return Number.isFinite(sold) && sold > 0 ? sold : 0;
 };
 
-
 /* =====================================================
-   SUMMARY CARD
+   PRODUCT IMAGE
 ===================================================== */
 
-const SummaryCard = ({
-  title,
-  value,
-  subtitle,
-  icon,
-  color,
-}) => {
+const ProductImage = ({ product, size = 64 }) => {
+  const image = getProductImage(product);
+  const name = getProductName(product);
 
   return (
+    <Box
+      sx={{
+        width: size,
+        height: size,
+        flexShrink: 0,
+        borderRadius: 2,
+        overflow: "hidden",
+        border: "1px solid #E5E7EB",
+        bgcolor: "#F8FAFC",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+      }}
+    >
+      {image ? (
+        <Box
+          component="img"
+          src={image}
+          alt={name}
+          sx={{
+            width: "100%",
+            height: "100%",
+            objectFit: "cover",
+            display: "block",
+          }}
+          onError={(event) => {
+            event.currentTarget.style.display = "none";
+          }}
+        />
+      ) : (
+        <Inventory2Icon sx={{ color: "#94A3B8" }} />
+      )}
+    </Box>
+  );
+};
 
+/* =====================================================
+   MOBILE PRODUCT CARD
+===================================================== */
+
+const MobileProductCard = ({ product }) => {
+  const sold = getSoldItems(product);
+
+  return (
     <Card
       elevation={0}
       sx={{
-        width: "100%",
-
-        height: "100%",
-
-        border:
-          "1px solid #2E7D32",
-
-        borderRadius: 0,
+        border: "1px solid #E5E7EB",
+        borderRadius: 2.5,
+        p: 1.4,
       }}
     >
-
       <Box
         sx={{
-          p: {
-            xs: 1,
-            sm: 1.25,
-          },
-
           display: "flex",
-
           alignItems: "center",
-
-          gap: 1.2,
-
+          gap: 1.4,
           minWidth: 0,
         }}
       >
+        <ProductImage product={product} size={64} />
+
+        <Box sx={{ minWidth: 0, flex: 1 }}>
+          <Typography
+            fontSize={14}
+            fontWeight={700}
+            sx={{
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+              whiteSpace: "nowrap",
+            }}
+          >
+            {getProductName(product)}
+          </Typography>
+        </Box>
 
         <Box
           sx={{
-            width: {
-              xs: 40,
-              sm: 46,
-            },
-
-            height: {
-              xs: 40,
-              sm: 46,
-            },
-
             flexShrink: 0,
-
-            borderRadius: 0,
-
-            bgcolor:
-              `${color}14`,
-
-            color,
-
-            display: "flex",
-
-            alignItems: "center",
-
-            justifyContent: "center",
+            minWidth: 58,
+            textAlign: "center",
+            borderLeft: "1px solid #E5E7EB",
+            pl: 1.2,
           }}
         >
+          <Typography fontSize={20} fontWeight={800} lineHeight={1.1}>
+            {sold}
+          </Typography>
 
-          {icon}
-
+          <Typography fontSize={9} color="text.secondary">
+            SOLD
+          </Typography>
         </Box>
-
-
-        <Box
-          sx={{
-            minWidth: 0,
-          }}
-        >
-
-          <Typography
-            fontSize={{
-              xs: 10,
-              sm: 11,
-            }}
-            color="text.secondary"
-            noWrap
-          >
-            {title}
-          </Typography>
-
-
-          <Typography
-            fontSize={{
-              xs: 20,
-              sm: 24,
-            }}
-            fontWeight={800}
-            noWrap
-          >
-            {value}
-          </Typography>
-
-
-          <Typography
-            fontSize={10}
-            color="text.secondary"
-            noWrap
-          >
-            {subtitle}
-          </Typography>
-
-        </Box>
-
       </Box>
-
     </Card>
-
   );
-
 };
-
 
 /* =====================================================
    PAGE
 ===================================================== */
 
 const Products = () => {
-
-  const navigate =
-    useNavigate();
-
-
-  const [
-    products,
-    setProducts,
-  ] = useState([]);
-
-
-  const [
-    loading,
-    setLoading,
-  ] = useState(true);
-
-
-  const [
-    error,
-    setError,
-  ] = useState("");
-
-
-  const [
-    search,
-    setSearch,
-  ] = useState("");
-
-
-  const [
-    category,
-    setCategory,
-  ] = useState("ALL");
-
-
-  const [
-    status,
-    setStatus,
-  ] = useState("ALL");
-
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [search, setSearch] = useState("");
 
   /* ===================================================
      LOAD PRODUCTS
   =================================================== */
 
-  useEffect(
-    () => {
+  useEffect(() => {
+    loadProducts();
+  }, []);
 
-      loadProducts();
+  const loadProducts = async () => {
+    try {
+      setLoading(true);
+      setError("");
 
-    },
-    []
-  );
+      const response = await getManagerProducts();
 
+      const data = Array.isArray(response)
+        ? response
+        : Array.isArray(response?.data)
+          ? response.data
+          : [];
 
-  const loadProducts =
-    async () => {
-
-      try {
-
-        setLoading(
-          true
-        );
-
-        setError("");
-
-
-        const response =
-          await getManagerProducts();
-
-
-        /*
-          Expected response:
-
-          {
-            success: true,
-            data: [...]
-          }
-        */
-
-        const data =
-          Array.isArray(
-            response
-          )
-            ? response
-            : Array.isArray(
-                response?.data
-              )
-              ? response.data
-              : [];
-
-
-        setProducts(
-          data
-        );
-
-      } catch (
+      setProducts(data);
+    } catch (requestError) {
+      console.error(
+        "Manager products error:",
         requestError
-      ) {
+      );
 
-        console.error(
-          "Manager products error:",
-          requestError
-        );
-
-
-        setError(
-          requestError?.response?.data?.message ||
+      setError(
+        requestError?.response?.data?.message ||
           requestError?.message ||
           "Unable to load products."
-        );
-
-      } finally {
-
-        setLoading(
-          false
-        );
-
-      }
-
-    };
-
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
 
   /* ===================================================
-     CATEGORIES
+     SEARCH
   =================================================== */
 
-  const categories =
-    useMemo(
-      () => {
+  const filteredProducts = useMemo(() => {
+    const value = search.trim().toLowerCase();
 
-        const values =
-          products
-            .map(
-              (
-                product
-              ) =>
-                getProductCategory(
-                  product
-                )
-            )
-            .filter(
-              Boolean
-            );
+    if (!value) {
+      return products;
+    }
 
-
-        return [
-          ...new Set(
-            values
-          ),
-        ];
-
-      },
-      [
-        products,
-      ]
+    return products.filter((product) =>
+      getProductName(product)
+        .toLowerCase()
+        .includes(value)
     );
-
+  }, [products, search]);
 
   /* ===================================================
-     FILTERED PRODUCTS
+     TOTAL SOLD
   =================================================== */
 
-  const filteredProducts =
-    useMemo(
-      () => {
-
-        const searchValue =
-          search
-            .trim()
-            .toLowerCase();
-
-
-        return products.filter(
-          (
-            product
-          ) => {
-
-            const name =
-              getProductName(
-                product
-              ).toLowerCase();
-
-
-            const productCategory =
-              getProductCategory(
-                product
-              ).toLowerCase();
-
-
-            const active =
-              isProductActive(
-                product
-              );
-
-
-            const matchesSearch =
-              !searchValue ||
-              name.includes(
-                searchValue
-              ) ||
-              productCategory.includes(
-                searchValue
-              );
-
-
-            const matchesCategory =
-              category ===
-                "ALL" ||
-              getProductCategory(
-                product
-              ) ===
-                category;
-
-
-            const matchesStatus =
-              status ===
-                "ALL" ||
-              (
-                status ===
-                  "ACTIVE" &&
-                active
-              ) ||
-              (
-                status ===
-                  "INACTIVE" &&
-                !active
-              );
-
-
-            return (
-              matchesSearch &&
-              matchesCategory &&
-              matchesStatus
-            );
-
-          }
-        );
-
-      },
-      [
-        products,
-        search,
-        category,
-        status,
-      ]
-    );
-
-
-  /* ===================================================
-     SUMMARY VALUES
-  =================================================== */
-
-  const totalProducts =
-    products.length;
-
-
-  const activeProducts =
-    products.filter(
-      (
-        product
-      ) =>
-        isProductActive(
-          product
-        )
-    ).length;
-
-
-  const inactiveProducts =
-    totalProducts -
-    activeProducts;
-
-
-  const totalSold =
-    products.reduce(
-      (
-        total,
-        product
-      ) =>
-        total +
-        getSoldItems(
-          product
-        ),
-      0
-    );
-
-
-  const totalStock =
-    products.reduce(
-      (
-        total,
-        product
-      ) =>
-        total +
-        getProductStock(
-          product
-        ),
-      0
-    );
-
-
-  const categoriesCount =
-    categories.length;
-
+  const totalSold = useMemo(
+    () =>
+      filteredProducts.reduce(
+        (total, product) =>
+          total + getSoldItems(product),
+        0
+      ),
+    [filteredProducts]
+  );
 
   /* ===================================================
      LOADING
   =================================================== */
 
   if (loading) {
-
     return (
-
       <Box
         sx={{
-          minHeight: "60vh",
-
+          width: "100%",
+          minHeight: 300,
           display: "flex",
-
-          alignItems:
-            "center",
-
-          justifyContent:
-            "center",
+          alignItems: "center",
+          justifyContent: "center",
         }}
       >
-
-        <CircularProgress
-          color="success"
-        />
-
+        <CircularProgress size={32} />
       </Box>
-
     );
-
   }
 
+  /* ===================================================
+     PAGE
+  =================================================== */
 
   return (
-
     <Box
       sx={{
         width: "100%",
-
-        maxWidth: 1500,
-
-        mx: "auto",
-
-        minWidth: 0,
-
-        overflowX: "hidden",
-
+        maxWidth: "100%",
         boxSizing: "border-box",
+        px: {
+          xs: 1,
+          sm: 2,
+          md: 2.5,
+        },
+        py: {
+          xs: 1.5,
+          sm: 2,
+        },
       }}
     >
-
-      {/* =================================================
-          HEADER
-      ================================================= */}
+      {/* HEADER */}
 
       <Box
         sx={{
           display: "flex",
-
-          flexDirection: {
-            xs: "column",
-            sm: "row",
-          },
-
           alignItems: {
             xs: "stretch",
             sm: "center",
           },
-
-          justifyContent:
-            "space-between",
-
-          gap: 1,
-
-          mb: 1.25,
+          justifyContent: "space-between",
+          flexDirection: {
+            xs: "column",
+            sm: "row",
+          },
+          gap: 1.5,
+          mb: 2,
         }}
       >
-
-        <Box
-          sx={{
-            minWidth: 0,
-          }}
-        >
-
+        <Box>
           <Typography
             sx={{
               fontSize: {
-                xs: 22,
-                sm: 27,
-                md: 30,
+                xs: 20,
+                sm: 24,
               },
-
               fontWeight: 800,
+              color: "#111827",
             }}
           >
             Products
           </Typography>
 
-
           <Typography
             sx={{
-              mt: 0.4,
-
               fontSize: {
-                xs: 12,
-                sm: 13,
+                xs: 11,
+                sm: 12,
               },
-
-              color:
-                "text.secondary",
+              color: "#6B7280",
+              mt: 0.3,
             }}
           >
-            Product inventory overview
+            Product-wise delivered sales
           </Typography>
-
         </Box>
 
-
-        <Button
-          variant="outlined"
-          color="success"
-          startIcon={
-            <ArrowBackIcon />
+        <TextField
+          size="small"
+          value={search}
+          onChange={(event) =>
+            setSearch(event.target.value)
           }
-          onClick={() =>
-            navigate(
-              "/manager/dashboard"
-            )
-          }
+          placeholder="Search product..."
           sx={{
             width: {
               xs: "100%",
-              sm: "auto",
+              sm: 280,
             },
-
-            minHeight: 42,
-
-            borderRadius: 2,
-
-            textTransform:
-              "none",
-
-            fontWeight: 600,
+            "& .MuiOutlinedInput-root": {
+              borderRadius: 2,
+              bgcolor: "#FFFFFF",
+            },
           }}
-        >
-          Dashboard
-        </Button>
-
+          InputProps={{
+            startAdornment: (
+              <InputAdornment position="start">
+                <SearchIcon fontSize="small" />
+              </InputAdornment>
+            ),
+          }}
+        />
       </Box>
 
-
-      {/* =================================================
-          ERROR
-      ================================================= */}
-
-      {error && (
-
-        <Alert
-          severity="error"
-          sx={{
-            mb: 1,
-
-            borderRadius: 0,
-          }}
-        >
-          {error}
-        </Alert>
-
-      )}
-
-
-      {/* =================================================
-          SUMMARY
-      ================================================= */}
-
-      <Box
-        sx={{
-          display: "grid",
-
-          gridTemplateColumns: {
-            xs: "1fr",
-            sm:
-              "repeat(2, minmax(0, 1fr))",
-            md:
-              "repeat(4, minmax(0, 1fr))",
-          },
-
-          gap: {
-            xs: 0.75,
-            sm: 1,
-          },
-
-          mb: 1.25,
-        }}
-      >
-
-        <SummaryCard
-          title="Total Products"
-          value={
-            totalProducts
-          }
-          subtitle="Products"
-          color="#2563EB"
-          icon={
-            <Inventory2Icon />
-          }
-        />
-
-
-        <SummaryCard
-          title="Active Products"
-          value={
-            activeProducts
-          }
-          subtitle="Currently active"
-          color="#16A34A"
-          icon={
-            <CheckCircleIcon />
-          }
-        />
-
-
-        <SummaryCard
-          title="Sold Items"
-          value={
-            totalSold
-          }
-          subtitle="Total units sold"
-          color="#EA580C"
-          icon={
-            <WarningIcon />
-          }
-        />
-
-
-        <SummaryCard
-          title="Available Stock"
-          value={
-            totalStock
-          }
-          subtitle={
-            `${categoriesCount} categories`
-          }
-          color="#7C3AED"
-          icon={
-            <CategoryIcon />
-          }
-        />
-
-      </Box>
-
-
-      {/* =================================================
-          FILTERS
-      ================================================= */}
+      {/* SUMMARY */}
 
       <Card
         elevation={0}
         sx={{
-          border:
-            "1px solid #2E7D32",
-
-          borderRadius: 0,
-
-          mb: 1.25,
+          mb: 2,
+          border: "1px solid #E5E7EB",
+          borderRadius: 2.5,
+          px: 2,
+          py: 1.3,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          gap: 2,
         }}
       >
-
-        <Box
-          sx={{
-            p: {
-              xs: 1,
-              sm: 1.25,
-            },
-
-            display: "grid",
-
-            gridTemplateColumns: {
-              xs: "1fr",
-              sm:
-                "1fr 1fr",
-              md:
-                "2fr 1fr 1fr",
-            },
-
-            gap: 0.75,
-          }}
-        >
-
-          {/* SEARCH */}
-
-          <TextField
-            fullWidth
-            size="small"
-            placeholder="Search product or category..."
-            value={
-              search
-            }
-            onChange={(
-              event
-            ) =>
-              setSearch(
-                event.target.value
-              )
-            }
-            InputProps={{
-              startAdornment: (
-                <InputAdornment
-                  position="start"
-                >
-                  <SearchIcon
-                    fontSize="small"
-                  />
-                </InputAdornment>
-              ),
-            }}
-          />
-
-
-          {/* CATEGORY */}
-
-          <TextField
-            select
-            fullWidth
-            size="small"
-            label="Category"
-            value={
-              category
-            }
-            onChange={(
-              event
-            ) =>
-              setCategory(
-                event.target.value
-              )
-            }
+        <Box>
+          <Typography
+            fontSize={10}
+            color="text.secondary"
           >
+            PRODUCTS
+          </Typography>
 
-            <MenuItem
-              value="ALL"
-            >
-              All Categories
-            </MenuItem>
-
-
-            {categories.map(
-              (
-                item
-              ) => (
-
-                <MenuItem
-                  key={item}
-                  value={item}
-                >
-                  {item}
-                </MenuItem>
-
-              )
-            )}
-
-          </TextField>
-
-
-          {/* STATUS */}
-
-          <TextField
-            select
-            fullWidth
-            size="small"
-            label="Status"
-            value={
-              status
-            }
-            onChange={(
-              event
-            ) =>
-              setStatus(
-                event.target.value
-              )
-            }
+          <Typography
+            fontSize={18}
+            fontWeight={800}
           >
-
-            <MenuItem
-              value="ALL"
-            >
-              All Status
-            </MenuItem>
-
-
-            <MenuItem
-              value="ACTIVE"
-            >
-              Active
-            </MenuItem>
-
-
-            <MenuItem
-              value="INACTIVE"
-            >
-              Inactive
-            </MenuItem>
-
-          </TextField>
-
+            {filteredProducts.length}
+          </Typography>
         </Box>
 
+        <Box sx={{ textAlign: "right" }}>
+          <Typography
+            fontSize={10}
+            color="text.secondary"
+          >
+            TOTAL SOLD
+          </Typography>
+
+          <Typography
+            fontSize={18}
+            fontWeight={800}
+          >
+            {totalSold}
+          </Typography>
+        </Box>
       </Card>
 
+      {/* ERROR */}
 
-      {/* =================================================
-          TABLE HEADER
-      ================================================= */}
-
-      <Box
-        sx={{
-          display: "flex",
-
-          alignItems: "center",
-
-          justifyContent:
-            "space-between",
-
-          mb: 0.75,
-
-          gap: 0.75,
-        }}
-      >
-
-        <Typography
-          fontSize={{
-            xs: 17,
-            sm: 19,
-          }}
-          fontWeight={800}
-        >
-          Product Inventory
-        </Typography>
-
-
-        <Typography
-          fontSize={12}
-          color="text.secondary"
+      {error && (
+        <Alert
+          severity="error"
           sx={{
-            flexShrink: 0,
+            mb: 2,
+            borderRadius: 2,
           }}
+          action={
+            <Typography
+              component="button"
+              onClick={loadProducts}
+              sx={{
+                border: 0,
+                bgcolor: "transparent",
+                cursor: "pointer",
+                fontWeight: 700,
+                color: "inherit",
+              }}
+            >
+              Retry
+            </Typography>
+          }
         >
-          {filteredProducts.length} result
-          {filteredProducts.length !== 1
-            ? "s"
-            : ""}
-        </Typography>
+          {error}
+        </Alert>
+      )}
 
-      </Box>
+      {/* EMPTY */}
 
-
-      {/* =================================================
-          EMPTY
-      ================================================= */}
-
-      {filteredProducts.length === 0 ? (
-
-        <Card
-          elevation={0}
-          sx={{
-            border:
-              "1px solid #2E7D32",
-
-            borderRadius: 0,
-          }}
-        >
-
-          <Box
+      {!error &&
+        filteredProducts.length === 0 && (
+          <Card
+            elevation={0}
             sx={{
-              py: 3,
-
-              px: 1.5,
-
+              border: "1px solid #E5E7EB",
+              borderRadius: 2.5,
+              py: 6,
               textAlign: "center",
             }}
           >
-
             <Inventory2Icon
               sx={{
-                fontSize: 48,
-
-                color:
-                  "text.disabled",
-
-                mb: 1,
+                fontSize: 42,
+                color: "#CBD5E1",
               }}
             />
 
-
             <Typography
-              fontWeight={800}
+              mt={1}
+              fontWeight={700}
             >
               No products found
             </Typography>
-
 
             <Typography
               fontSize={12}
               color="text.secondary"
             >
-              Try changing your search or filters.
+              Try a different product name.
             </Typography>
+          </Card>
+        )}
 
-          </Box>
+      {/* =================================================
+          MOBILE
+      ================================================= */}
 
-        </Card>
+      {filteredProducts.length > 0 && (
+        <Box
+          sx={{
+            display: {
+              xs: "flex",
+              md: "none",
+            },
+            flexDirection: "column",
+            gap: 1,
+          }}
+        >
+          {filteredProducts.map(
+            (product) => (
+              <MobileProductCard
+                key={
+                  product?._id ||
+                  product?.id ||
+                  getProductName(product)
+                }
+                product={product}
+              />
+            )
+          )}
+        </Box>
+      )}
 
-      ) : (
+      {/* =================================================
+          DESKTOP TABLE
+          ONLY IMAGE + PRODUCT NAME + SOLD
+      ================================================= */}
 
-        /* =================================================
-           TABLE
-        ================================================= */
-
+      {filteredProducts.length > 0 && (
         <Card
           elevation={0}
           sx={{
-            border:
-              "1px solid #2E7D32",
-
-            borderRadius: 0,
-
-            overflow: "hidden",
-
+            display: {
+              xs: "none",
+              md: "block",
+            },
             width: "100%",
+            border: "1px solid #E5E7EB",
+            borderRadius: 2.5,
+            overflow: "hidden",
           }}
         >
-
-          <TableContainer
+          <Table
             sx={{
               width: "100%",
-
-              overflowX: "auto",
-
-              "&::-webkit-scrollbar": {
-                height: 7,
-              },
-
-              "&::-webkit-scrollbar-thumb": {
-                backgroundColor:
-                  "#CBD5E1",
-
-                borderRadius: 0,
-              },
+              tableLayout: "fixed",
             }}
           >
+            <TableHead>
+              <TableRow
+                sx={{
+                  bgcolor: "#F8FAFC",
+                }}
+              >
+                <TableCell
+                  sx={{
+                    width: 100,
+                    fontWeight: 800,
+                    fontSize: 11,
+                    color: "#475569",
+                    borderBottom:
+                      "1px solid #E5E7EB",
+                  }}
+                >
+                  IMAGE
+                </TableCell>
 
-            <Table
-              size="small"
-              sx={{
-                width: "100%",
-                minWidth: 0,
-                tableLayout: "fixed",
-                "& .MuiTableCell-root": {
-                  px: 0.7,
-                  py: 0.35,
-                  fontSize: 11,
-                  lineHeight: 1.2,
-                },
-              }}
-            >
+                <TableCell
+                  sx={{
+                    fontWeight: 800,
+                    fontSize: 11,
+                    color: "#475569",
+                    borderBottom:
+                      "1px solid #E5E7EB",
+                  }}
+                >
+                  PRODUCT NAME
+                </TableCell>
 
-<TableHead>
-  <TableRow
-    sx={{
-      bgcolor: "#F8FAFC",
-    }}
-  >
-    <TableCell
-      sx={{
-        width: 70,
-        fontWeight: 800,
-        fontSize: 12,
-      }}
-    >
-      Image
-    </TableCell>
+                <TableCell
+                  align="center"
+                  sx={{
+                    width: 150,
+                    fontWeight: 800,
+                    fontSize: 11,
+                    color: "#475569",
+                    borderBottom:
+                      "1px solid #E5E7EB",
+                  }}
+                >
+                  SOLD
+                </TableCell>
+              </TableRow>
+            </TableHead>
 
-    <TableCell
-      sx={{
-        width: 300,
-        fontWeight: 800,
-        fontSize: 12,
-      }}
-    >
-      Product
-    </TableCell>
+            <TableBody>
+              {filteredProducts.map(
+                (product) => {
+                  const sold =
+                    getSoldItems(product);
 
-    <TableCell
-      align="right"
-      sx={{
-        width: 120,
-        fontWeight: 800,
-        fontSize: 12,
-      }}
-    >
-      Price
-    </TableCell>
+                  return (
+                    <TableRow
+                      key={
+                        product?._id ||
+                        product?.id ||
+                        getProductName(
+                          product
+                        )
+                      }
+                      hover
+                      sx={{
+                        "&:last-child td": {
+                          borderBottom: 0,
+                        },
+                      }}
+                    >
+                      {/* IMAGE */}
 
-    <TableCell
-      align="center"
-      sx={{
-        width: 120,
-        fontWeight: 800,
-        fontSize: 12,
-      }}
-    >
-      Sold Items
-    </TableCell>
-  </TableRow>
-</TableHead>
-
-
-              <TableBody>
-
-                {filteredProducts.map(
-                  (
-                    product,
-                    index
-                  ) => {
-
-                    const image =
-                      getProductImage(
-                        product
-                      );
-
-
-                    const sold =
-                      getSoldItems(
-                        product
-                      );
-
-
-                    return (
-
-                      <TableRow
-                        key={
-                          product?._id ||
-                          index
-                        }
-                        hover
+                      <TableCell
                         sx={{
-                          "&:last-child td":
-                            {
-                              borderBottom: 0,
-                            },
+                          py: 1.2,
                         }}
                       >
+                        <ProductImage
+                          product={product}
+                          size={58}
+                        />
+                      </TableCell>
 
-                        {/* IMAGE */}
+                      {/* NAME */}
 
-                        <TableCell>
+                      <TableCell
+                        sx={{
+                          py: 1.2,
+                          fontWeight: 700,
+                          fontSize: 13,
+                          overflow: "hidden",
+                          textOverflow:
+                            "ellipsis",
+                          whiteSpace:
+                            "nowrap",
+                        }}
+                        title={getProductName(
+                          product
+                        )}
+                      >
+                        {getProductName(
+                          product
+                        )}
+                      </TableCell>
 
-                          <Box
-                            sx={{
-                              width: 54,
+                      {/* SOLD */}
 
-                              height: 54,
-
-                              borderRadius: 0,
-
-                              overflow:
-                                "hidden",
-
-                              bgcolor:
-                                "#F1F5F9",
-
-                              border:
-                                "1px solid #E2E8F0",
-
-                              display:
-                                "flex",
-
-                              alignItems:
-                                "center",
-
-                              justifyContent:
-                                "center",
-                            }}
-                          >
-
-                            {image ? (
-
-                              <Box
-                                component="img"
-                                src={image}
-                                alt={
-                                  getProductName(
-                                    product
-                                  )
-                                }
-                                sx={{
-                                  width:
-                                    "100%",
-
-                                  height:
-                                    "100%",
-
-                                  objectFit:
-                                    "cover",
-
-                                  display:
-                                    "block",
-                                }}
-                              />
-
-                            ) : (
-
-                              <Inventory2Icon
-                                sx={{
-                                  color:
-                                    "text.disabled",
-                                }}
-                              />
-
-                            )}
-
-                          </Box>
-
-                        </TableCell>
-
-
-                        {/* PRODUCT */}
-
-                        <TableCell>
-
-                          <Typography
-                            fontSize={13}
-                            fontWeight={800}
-                            sx={{
-                              overflow:
-                                "hidden",
-
-                              textOverflow:
-                                "ellipsis",
-
-                              whiteSpace:
-                                "nowrap",
-                            }}
-                          >
-                            {
-                              getProductName(
-                                product
-                              )
-                            }
-                          </Typography>
-
-
-                          {product?.sku && (
-
-                            <Typography
-                              fontSize={10}
-                              color="text.secondary"
-                              noWrap
-                            >
-                              SKU:{" "}
-                              {
-                                product.sku
-                              }
-                            </Typography>
-
-                          )}
-
-                        </TableCell>
-
-
-                        {/* PRICE */}
-
-                        <TableCell
-                          align="right"
+                      <TableCell
+                        align="center"
+                        sx={{
+                          py: 1.2,
+                        }}
+                      >
+                        <Typography
+                          component="span"
+                          sx={{
+                            fontSize: 17,
+                            fontWeight: 800,
+                          }}
                         >
+                          {sold}
+                        </Typography>
 
-                          <Typography
-                            fontSize={13}
-                            fontWeight={800}
-                          >
-                            {
-                              money(
-                                getProductPrice(
-                                  product
-                                )
-                              )
-                            }
-                          </Typography>
-
-                        </TableCell>
-
-
-                        {/* SOLD */}
-
-                        <TableCell
-                          align="center"
+                        <Typography
+                          component="span"
+                          sx={{
+                            ml: 0.6,
+                            fontSize: 10,
+                            color: "#64748B",
+                            fontWeight: 600,
+                          }}
                         >
-
-                          <Typography
-                            fontSize={14}
-                            fontWeight={800}
-                          >
-                            {sold}
-                          </Typography>
-
-
-                          <Typography
-                            fontSize={9}
-                            color="text.secondary"
-                          >
-                            units
-                          </Typography>
-
-                        </TableCell>
-
-
-                      </TableRow>
-
-                    );
-
-                  }
-                )}
-
-              </TableBody>
-
-            </Table>
-
-          </TableContainer>
-
+                          sold
+                        </Typography>
+                      </TableCell>
+                    </TableRow>
+                  );
+                }
+              )}
+            </TableBody>
+          </Table>
         </Card>
-
       )}
-
-
-      {/* =================================================
-          READ ONLY NOTICE
-      ================================================= */}
-
-      <Alert
-        severity="info"
-        sx={{
-          mt: 1,
-
-          borderRadius: 0,
-
-          border: "1px solid #2E7D32",
-
-          fontSize: {
-            xs: 11,
-            sm: 13,
-          },
-        }}
-      >
-        Manager access is read-only. Product details,
-        inventory and sales information can be viewed,
-        but managers cannot add, edit or delete products.
-      </Alert>
-
     </Box>
-
   );
-
 };
-
 
 export default Products;

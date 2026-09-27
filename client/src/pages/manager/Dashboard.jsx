@@ -383,6 +383,8 @@ const Dashboard = () => {
           dashboardSummary
         );
 
+        console.log("🔥 MANAGER TOTAL ORDERS =", dashboardSummary.totalOrders);
+
         console.log(
           "========================"
         );

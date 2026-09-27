@@ -35,6 +35,10 @@ const WalletTransaction =
 
 const Withdraw =
   require("../models/withdraw.model");
+
+const OrderItem = require("../models/orderItem.model");
+const PackagingStaff = require("../models/packagingStaff.model");
+const PackagingAssignment = require("../models/packagingAssignment.model");
 // =====================================================
 // HELPERS
 // =====================================================
@@ -528,43 +532,62 @@ console.log("==============================================");
   // GET ORDERS
   // ===================================================
 
-  let orders = [];
+ // ===================================================
+// GET MANAGER + MEMBER + GUEST ORDERS
+// ===================================================
+//
+// Includes:
+//
+// 1. Manager's own orders
+// 2. Managed members' orders
+// 3. Guest orders
+//
+// Guest orders have:
+//     userId: null
+//     orderType: "GUEST"
+//
+// ===================================================
 
+let orders = [];
 
-  if (
-    objectIds.length > 0
-  ) {
+const orderQuery = {
+  $or: [
+    {
+      userId: {
+        $in: objectIds,
+      },
+    },
+    {
+      userId: null,
+      orderType: "GUEST",
+    },
+  ],
+};
 
-    orders =
-      await Order.find({
-
-        userId: {
-          $in:
-            objectIds,
-        },
-
-      })
-        .select(
-          [
-            "_id",
-            "userId",
-            "orderNumber",
-            "merchantOrderId",
-            "finalAmount",
-            "sellingPoints",
-            "paymentStatus",
-            "status",
-            "createdAt",
-            "paidAt",
-          ].join(" ")
-        )
-        .sort({
-          createdAt: -1,
-        })
-        .lean();
-
-  }
-
+orders =
+  await Order.find(orderQuery)
+    .select(
+      [
+        "_id",
+        "userId",
+        "orderNumber",
+        "merchantOrderId",
+        "orderType",
+        "customerName",
+        "customerMobile",
+        "customerEmail",
+        "finalAmount",
+        "sellingPoints",
+        "paymentStatus",
+        "status",
+        "createdAt",
+        "paidAt",
+      ].join(" ")
+    )
+    .sort({
+      createdAt: -1,
+    })
+    .lean();
 
   // ===================================================
   // TOTAL ORDERS
@@ -896,6 +919,534 @@ console.log("==============================================");
 
 };
 
+
+/* ==========================================================================
+   GET MANAGER ORDERS
+   ========================================================================== */
+
+const getManagerOrders = async (
+  managerId,
+  options = {}
+) => {
+  try {
+    // =====================================================
+    // VALIDATE MANAGER
+    // =====================================================
+
+    if (!managerId) {
+      throw new Error("Manager ID is required");
+    }
+
+    if (
+      !mongoose.Types.ObjectId.isValid(
+        managerId
+      )
+    ) {
+      throw new Error("Invalid manager ID");
+    }
+
+    // =====================================================
+    // VERIFY MANAGER
+    // =====================================================
+
+    const manager =
+      await User.findById(managerId)
+        .select("_id userId role")
+        .lean();
+
+    if (!manager) {
+      throw new Error("Manager not found");
+    }
+
+    // =====================================================
+    // OPTIONS
+    // =====================================================
+
+    const {
+      page = 1,
+      limit = 20,
+      status,
+      paymentStatus,
+    } = options;
+
+    // =====================================================
+    // MANAGER ORDER SCOPE
+    // =====================================================
+    //
+    // Includes:
+    // 1. Manager's own orders
+    // 2. Managed member orders
+    // 3. Guest orders
+    //
+    // Guest orders:
+    // userId = null
+    // orderType = GUEST
+    //
+    // =====================================================
+
+    const users =
+      await User.find()
+        .select(
+          [
+            "_id",
+            "role",
+            "managerId",
+            "sponsorId",
+          ].join(" ")
+        )
+        .lean();
+
+    const managedMembers =
+      getManagerMembers(
+        users,
+        managerId
+      );
+
+    // =====================================================
+    // BUILD NETWORK IDS
+    // =====================================================
+
+    const networkIds = [
+      managerId,
+      ...managedMembers.map(
+        (member) => member._id
+      ),
+    ];
+
+    // =====================================================
+    // REMOVE DUPLICATES
+    // =====================================================
+
+    const uniqueIds = [
+      ...new Set(
+        networkIds.map(
+          (id) => String(id)
+        )
+      ),
+    ];
+
+    // =====================================================
+    // CONVERT TO OBJECT IDS
+    // =====================================================
+
+    const objectIds =
+      uniqueIds
+        .filter((id) =>
+          mongoose.Types.ObjectId.isValid(
+            id
+          )
+        )
+        .map(
+          (id) =>
+            new mongoose.Types.ObjectId(
+              id
+            )
+        );
+
+    // =====================================================
+    // FILTER
+    // =====================================================
+    //
+    // IMPORTANT:
+    // This includes guest orders without exposing
+    // unrelated users' orders.
+    //
+    // =====================================================
+
+    const filter = {
+      $or: [
+        {
+          userId: {
+            $in: objectIds,
+          },
+        },
+        {
+          userId: null,
+          orderType: "GUEST",
+        },
+      ],
+    };
+
+    // =====================================================
+    // STATUS FILTER
+    // =====================================================
+
+    if (status) {
+      filter.status = status;
+    }
+
+    // =====================================================
+    // PAYMENT STATUS FILTER
+    // =====================================================
+
+    if (paymentStatus) {
+      filter.paymentStatus =
+        paymentStatus;
+    }
+
+    // =====================================================
+    // PAGINATION
+    // =====================================================
+
+    const pageNumber =
+      Math.max(
+        1,
+        Number(page) || 1
+      );
+
+    const limitNumber =
+      Math.max(
+        1,
+        Number(limit) || 20
+      );
+
+    const skip =
+      (
+        pageNumber - 1
+      ) *
+      limitNumber;
+
+    // =====================================================
+    // DEBUG
+    // =====================================================
+
+    console.log(
+      "======================================"
+    );
+
+    console.log(
+      "MANAGER ORDERS DEBUG"
+    );
+
+    console.log(
+      "Manager ID:",
+      String(managerId)
+    );
+
+    console.log(
+      "Managed Members:",
+      managedMembers.map(
+        (m) => ({
+          id: String(m._id),
+          userId: m.userId,
+          name: m.name,
+        })
+      )
+    );
+
+    console.log(
+      "Allowed User IDs:",
+      uniqueIds
+    );
+
+    console.log(
+      "Mongo Object IDs:",
+      objectIds.map(
+        (id) => String(id)
+      )
+    );
+
+    console.log(
+      "Guest Orders Included: YES"
+    );
+
+    console.log(
+      "FILTER:",
+      JSON.stringify(filter)
+    );
+
+    console.log(
+      "======================================"
+    );
+
+    // =====================================================
+    // GET ORDERS
+    // =====================================================
+
+    const [
+      orders,
+      total,
+    ] = await Promise.all([
+      Order.find(filter)
+        .populate(
+          "userId",
+          "name userId email mobile role referralCode"
+        )
+        .sort({
+          createdAt: -1,
+        })
+        .skip(skip)
+        .limit(limitNumber)
+        .lean(),
+
+      Order.countDocuments(
+        filter
+      ),
+    ]);
+
+    // =====================================================
+    // NO ORDERS
+    // =====================================================
+
+    if (!orders.length) {
+      return {
+        orders: [],
+
+        pagination: {
+          page: pageNumber,
+          limit: limitNumber,
+          total: 0,
+          pages: 0,
+        },
+      };
+    }
+
+    // =====================================================
+    // ORDER IDS
+    // =====================================================
+
+    const orderIds =
+      orders.map(
+        (order) =>
+          order._id
+      );
+
+    // =====================================================
+    // GET ORDER ITEMS
+    // =====================================================
+
+    const orderItems =
+      await OrderItem.find({
+        orderId: {
+          $in: orderIds,
+        },
+      })
+        .populate(
+          "productId",
+          "name productName images price category brand"
+        )
+        .lean();
+
+    // =====================================================
+    // GET PACKAGING ASSIGNMENTS
+    // =====================================================
+
+    const packagingAssignments =
+      await PackagingAssignment.find({
+        order: {
+          $in: orderIds,
+        },
+      })
+        .populate(
+          "staff",
+          "name loginId branchName branchMemberNumber isActive"
+        )
+        .lean();
+
+    // =====================================================
+    // GROUP ORDER ITEMS
+    // =====================================================
+
+    const itemsByOrder = {};
+
+    for (
+      const item of orderItems
+    ) {
+      const key =
+        String(
+          item.orderId
+        );
+
+      if (
+        !itemsByOrder[key]
+      ) {
+        itemsByOrder[key] = [];
+      }
+
+      itemsByOrder[key].push(
+        item
+      );
+    }
+
+    // =====================================================
+    // GROUP PACKAGING ASSIGNMENTS
+    // =====================================================
+
+    const packagingByOrder = {};
+
+    for (
+      const assignment
+      of packagingAssignments
+    ) {
+      const key =
+        String(
+          assignment.order
+        );
+
+      packagingByOrder[key] =
+        assignment;
+    }
+
+    // =====================================================
+    // ENRICH ORDERS
+    // =====================================================
+
+    const enrichedOrders =
+      orders.map(
+        (order) => {
+          const orderKey =
+            String(
+              order._id
+            );
+
+          const assignment =
+            packagingByOrder[
+              orderKey
+            ];
+
+          return {
+            ...order,
+
+            // ===========================================
+            // COMPLETE ORDER ITEMS
+            // ===========================================
+
+            items:
+              itemsByOrder[
+                orderKey
+              ] || [],
+
+            // ===========================================
+            // PACKAGING INFORMATION
+            // ===========================================
+
+            packaging:
+              assignment
+                ? {
+                    assignmentId:
+                      assignment._id,
+
+                    teamId:
+                      assignment.staff?._id ||
+                      null,
+
+                    teamName:
+                      assignment.staff?.name ||
+                      null,
+
+                    loginId:
+                      assignment.staff?.loginId ||
+                      null,
+
+                    branchName:
+                      assignment.staff?.branchName ||
+                      null,
+
+                    branchMemberNumber:
+                      assignment.staff
+                        ?.branchMemberNumber ||
+                      null,
+
+                    isActive:
+                      assignment.staff
+                        ?.isActive ??
+                      false,
+
+                    status:
+                      assignment.status ||
+                      "UNASSIGNED",
+
+                    assignedAt:
+                      assignment.assignedAt ||
+                      null,
+
+                    packingStartedAt:
+                      assignment.packingStartedAt ||
+                      null,
+
+                    packedAt:
+                      assignment.packedAt ||
+                      null,
+
+                    readyForDispatchAt:
+                      assignment.readyForDispatchAt ||
+                      null,
+                  }
+                : {
+                    assignmentId:
+                      null,
+
+                    teamId:
+                      null,
+
+                    teamName:
+                      null,
+
+                    loginId:
+                      null,
+
+                    branchName:
+                      null,
+
+                    branchMemberNumber:
+                      null,
+
+                    isActive:
+                      false,
+
+                    status:
+                      "UNASSIGNED",
+
+                    assignedAt:
+                      null,
+
+                    packingStartedAt:
+                      null,
+
+                    packedAt:
+                      null,
+
+                    readyForDispatchAt:
+                      null,
+                  },
+          };
+        }
+      );
+
+    // =====================================================
+    // FINAL RESPONSE
+    // =====================================================
+
+    return {
+      orders:
+        enrichedOrders,
+
+      pagination: {
+        page:
+          pageNumber,
+
+        limit:
+          limitNumber,
+
+        total,
+
+        pages:
+          Math.ceil(
+            total /
+            limitNumber
+          ),
+      },
+    };
+
+  } catch (error) {
+    console.error(
+      "GET MANAGER ORDERS ERROR:",
+      error
+    );
+
+    throw error;
+  }
+};
 // =====================================================
 // GET MEMBERS
 // =====================================================
@@ -1035,32 +1586,54 @@ const getMembers = async (
     }
   );
 
+// ===================================================
+// MANAGER + MANAGED MEMBER ORDERS
+// ===================================================
+//
+// Manager Orders page shows:
+// 1. Manager's own orders
+// 2. All managed member orders
+//
+// Dashboard must use the SAME scope.
+// ===================================================
 
-  // ---------------------------------------------------
-  // ORDERS
-  // ---------------------------------------------------
+const networkOrderIds = [
+  managerId,
+  ...memberIds,
+];
 
-  const orders =
-    await Order.find({
-      userId: {
-        $in: memberIds,
-      },
-    })
-      .select(
-        [
-          "userId",
-          "finalAmount",
-          "sellingPoints",
-          "paymentStatus",
-          "status",
-          "createdAt",
-        ].join(" ")
-      )
-      .sort({
-        createdAt: -1,
+// Remove duplicate IDs
+const uniqueOrderUserIds = [
+  ...new Set(
+    networkOrderIds.map(
+      (id) => String(id)
+    )
+  ),
+];
+
+const orders =
+  uniqueOrderUserIds.length > 0
+    ? await Order.find({
+        userId: {
+          $in: uniqueOrderUserIds,
+        },
       })
-      .lean();
-
+        .select(
+          [
+            "_id",
+            "userId",
+            "orderNumber",
+            "finalAmount",
+            "status",
+            "paymentStatus",
+            "createdAt",
+          ].join(" ")
+        )
+        .sort({
+          createdAt: -1,
+        })
+        .lean()
+    : [];
 
   const orderMap =
     new Map();
@@ -1616,16 +2189,16 @@ const getMemberDetails = async (
       );
 
 
-  const downline =
-    await User.find({
-      sponsorId:
-        member._id,
+const downline =
+  await User.find({
+    sponsorId:
+      member._id,
 
-      managerId:
-        managerId,
+    managerId:
+      managerId,
 
-      role:
-        "MEMBER",
+    role:
+      "MEMBER",
 
     })
       .select(
@@ -2562,18 +3135,229 @@ const getProfile = async (
 // product list.
 //
 // =====================================================
-
 const getManagerProducts = async () => {
 
-  const products =
-    await Product.find()
-      .sort({
-        createdAt: -1,
-      })
-      .lean();
+    /*
+    =====================================================
+    GET ALL PRODUCTS
+    =====================================================
+    */
+
+    const products =
+        await Product.find()
+            .sort({
+                createdAt: -1,
+            })
+            .lean();
 
 
-  return products;
+    if (
+        !products.length
+    ) {
+
+        return [];
+
+    }
+
+
+    /*
+    =====================================================
+    GET DELIVERED ORDERS ONLY
+    =====================================================
+
+    IMPORTANT:
+
+    An order becomes SOLD only when:
+
+        order.status === "DELIVERED"
+
+    Paid
+    Confirmed
+    Packed
+    Shipped
+    Out for Delivery
+
+    are NOT counted.
+    =====================================================
+    */
+
+    const deliveredOrders =
+        await Order.find({
+            status: "DELIVERED",
+        })
+            .select("_id")
+            .lean();
+
+
+    /*
+    =====================================================
+    IF NO DELIVERED ORDERS
+    =====================================================
+    */
+
+    if (
+        !deliveredOrders.length
+    ) {
+
+        return products.map(
+            (product) => ({
+
+                ...product,
+
+                soldItems: 0,
+
+            })
+        );
+
+    }
+
+
+    /*
+    =====================================================
+    GET DELIVERED ORDER IDs
+    =====================================================
+    */
+
+    const deliveredOrderIds =
+        deliveredOrders.map(
+            (order) =>
+                order._id
+        );
+
+
+    /*
+    =====================================================
+    GET ORDER ITEMS
+    =====================================================
+
+    Your project stores order items separately.
+
+    OrderItem fields:
+
+        orderId
+        productId
+        productName
+        quantity
+        price
+        total
+
+    So we MUST query OrderItem here.
+    =====================================================
+    */
+
+    const deliveredOrderItems =
+        await OrderItem.find({
+
+            orderId: {
+                $in:
+                    deliveredOrderIds,
+            },
+
+        })
+            .select(
+                "orderId productId productName quantity"
+            )
+            .lean();
+
+
+    /*
+    =====================================================
+    BUILD SOLD MAP
+    =====================================================
+    */
+
+    const soldMap =
+        new Map();
+
+
+    deliveredOrderItems.forEach(
+        (item) => {
+
+            if (
+                !item.productId
+            ) {
+
+                return;
+
+            }
+
+
+            const productId =
+                String(
+                    item.productId
+                );
+
+
+            const quantity =
+                Number(
+                    item.quantity || 0
+                );
+
+
+            if (
+                quantity <= 0
+            ) {
+
+                return;
+
+            }
+
+
+            soldMap.set(
+
+                productId,
+
+                (
+                    soldMap.get(
+                        productId
+                    ) || 0
+                ) + quantity
+
+            );
+
+        }
+    );
+
+
+    /*
+    =====================================================
+    RETURN PRODUCTS
+    =====================================================
+    */
+
+    return products.map(
+        (product) => {
+
+            const productId =
+                String(
+                    product._id
+                );
+
+
+            const soldItems =
+                Number(
+                    soldMap.get(
+                        productId
+                    ) || 0
+                );
+
+
+            return {
+
+                ...product,
+
+                /*
+                =========================================
+                TOTAL DELIVERED UNITS
+                =========================================
+                */
+
+                soldItems,
+
+            };
+
+        }
+    );
 
 };
 
@@ -3664,6 +4448,120 @@ const getUserWalletDetails = async (
 };
 
 // =====================================================
+// GET CURRENT PACKAGING TEAMS
+// =====================================================
+
+const getManagerPackagingTeams = async () => {
+  // Get current packaging staff
+  const staff = await PackagingStaff.find()
+    .select(
+      "name loginId branchId branchName branchMemberNumber isActive createdAt lastLoginAt"
+    )
+    .sort({
+      createdAt: -1,
+    })
+    .lean();
+
+  if (!staff.length) {
+    return [];
+  }
+
+  // Get all packaging assignments
+  const assignments = await PackagingAssignment.find({
+    staff: {
+      $ne: null,
+    },
+  })
+    .select(
+      "order staff status assignedAt packingStartedAt packedAt readyForDispatchAt"
+    )
+    .lean();
+
+  // Group assignments by packaging staff
+  const assignmentMap = new Map();
+
+  assignments.forEach((assignment) => {
+    const staffId = String(assignment.staff);
+
+    if (!assignmentMap.has(staffId)) {
+      assignmentMap.set(staffId, []);
+    }
+
+    assignmentMap.get(staffId).push(assignment);
+  });
+
+  // Build team response
+  return staff.map((member) => {
+    const teamId = String(member._id);
+
+    const teamAssignments =
+      assignmentMap.get(teamId) || [];
+
+    const assigned = teamAssignments.filter(
+      (item) =>
+        item.status === "ASSIGNED"
+    ).length;
+
+    const packing = teamAssignments.filter(
+      (item) =>
+        item.status === "PACKING"
+    ).length;
+
+    const packed = teamAssignments.filter(
+      (item) =>
+        item.status === "PACKED"
+    ).length;
+
+    const readyForDispatch =
+      teamAssignments.filter(
+        (item) =>
+          item.status ===
+          "READY_FOR_DISPATCH"
+      ).length;
+
+    return {
+      teamId: member._id,
+
+      name: member.name,
+
+      loginId: member.loginId,
+
+      branchId: member.branchId || null,
+
+      branchName:
+        member.branchName || "",
+
+      branchMemberNumber:
+        member.branchMemberNumber || "",
+
+      isActive:
+        member.isActive !== false,
+
+      totalOrders:
+        teamAssignments.length,
+
+      assigned,
+
+      // Pending = orders still waiting
+      // for packing to start
+      pending: assigned,
+
+      packing,
+
+      packed,
+
+      readyForDispatch,
+
+      createdAt:
+        member.createdAt,
+
+      lastLoginAt:
+        member.lastLoginAt,
+    };
+  });
+};
+
+// =====================================================
 // EXPORTS
 // =====================================================
 //
@@ -3681,6 +4579,8 @@ const getUserWalletDetails = async (
 module.exports = {
 
   getDashboard,
+
+  getManagerOrders,
 
   getMembers,
 
@@ -3703,5 +4603,7 @@ module.exports = {
   getAllUserWallets,
 
   getUserWalletDetails,
+
+  getManagerPackagingTeams,
 
 };

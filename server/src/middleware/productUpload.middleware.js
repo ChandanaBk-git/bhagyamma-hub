@@ -191,7 +191,7 @@ const productUpload =
        * Maximum 5 images
        */
 
-      files: 5,
+      files: 4,
 
     },
 

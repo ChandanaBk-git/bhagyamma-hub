@@ -64,7 +64,14 @@ router.get(
     managerController.getMemberById
 );
 
+/* =========================================================
+   ORDERS
+========================================================= */
 
+router.get(
+    "/orders",
+    managerController.getManagerOrders
+);
 /*
 =========================================================
 SELLING POINTS
@@ -150,6 +157,16 @@ router.get(
     "/profile",
     managerController.getProfile
 );
+
+// =====================================================
+// PACKAGING TEAMS
+// =====================================================
+
+router.get(
+  "/packaging-teams",
+  managerController.getManagerPackagingTeams
+);
+
 
 
 module.exports = router;

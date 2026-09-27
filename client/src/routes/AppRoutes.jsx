@@ -24,6 +24,7 @@ import PackagingDashboard from "../pages/Packaging/Dashboard";
 import PackagingOrders from "../pages/Packaging/Orders";
 import PackagingOrderDetails from "../pages/Packaging/OrderDetails";
 import PackagingProfile from "../pages/Packaging/Profile";
+
 // =====================================================
 // PUBLIC PAGES
 // =====================================================
@@ -115,6 +116,13 @@ import Commissions from "../pages/manager/Commissions";
 import ManagerMemberDetails from "../pages/manager/MemberDetails";
 import ManagerSellingPoints from "../pages/manager/SellingPoints";
 import ManagerWallet from "../pages/manager/ManagerWallet";
+
+// PACKAGING TEAMS
+import ManagerPackagingTeams
+  from "../pages/manager/ManagerPackagingTeams";
+
+import ManagerPackagingTeamOrders
+  from "../pages/manager/ManagerPackagingTeamOrders";
 
 // =====================================================
 // ERROR
@@ -320,7 +328,7 @@ const AppRoutes = () => {
 
       {/* =================================================
           OLD PACKAGING LOGIN REDIRECT
-          
+
           Packaging staff now use the common /login page.
           Keep this redirect so old bookmarks/links continue
           to work.
@@ -567,7 +575,7 @@ const AppRoutes = () => {
             element={<Reports />}
           />
 
-          {/* PACKAGING TEAM */}
+          {/* PACKAGING STAFF */}
 
           <Route
             path="packaging-staff"
@@ -637,14 +645,14 @@ const AppRoutes = () => {
             path="orders/:id"
             element={<PackagingOrderDetails />}
           />
-{/* =================================================
-    PROFILE
-================================================= */}
 
-<Route
-  path="profile"
-  element={<PackagingProfile />}
-/>
+          {/* PROFILE */}
+
+          <Route
+            path="profile"
+            element={<PackagingProfile />}
+          />
+
           {/* UNKNOWN PACKAGING ROUTE */}
 
           <Route
@@ -759,6 +767,24 @@ const AppRoutes = () => {
             path="referral-tree"
             element={
               <ManagerReferralTreePage />
+            }
+          />
+
+          {/* =================================================
+              PACKAGING TEAMS
+          ================================================= */}
+
+          <Route
+            path="packaging-teams"
+            element={<ManagerPackagingTeams />}
+          />
+
+          {/* PACKAGING TEAM ORDERS */}
+
+          <Route
+            path="packaging-teams/:teamId/orders"
+            element={
+              <ManagerPackagingTeamOrders />
             }
           />
 

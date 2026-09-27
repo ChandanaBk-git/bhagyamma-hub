@@ -1,12 +1,7 @@
 import {
   useEffect,
-  useMemo,
   useState,
 } from "react";
-
-import {
-  useNavigate,
-} from "react-router-dom";
 
 import {
   Alert,
@@ -17,26 +12,18 @@ import {
   CardContent,
   Chip,
   CircularProgress,
-  FormControl,
-  InputAdornment,
-  InputLabel,
-  MenuItem,
-  Select,
-  TextField,
   Typography,
 } from "@mui/material";
 
 import SearchIcon from "@mui/icons-material/Search";
 import ShoppingBagIcon from "@mui/icons-material/ShoppingBag";
-import CheckCircleIcon from "@mui/icons-material/CheckCircle";
-import PendingIcon from "@mui/icons-material/Pending";
-import TrendingUpIcon from "@mui/icons-material/TrendingUp";
-import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 
 import {
   getManagerOrders,
 } from "../../services/manager.service";
-
+import ArrowBackIcon from "@mui/icons-material/ArrowBack";
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+import ExpandLessIcon from "@mui/icons-material/ExpandLess";
 
 /* =====================================================
    SAFE VALUE HELPERS
@@ -146,21 +133,31 @@ const getMemberName = (
   order
 ) => {
 
-  if (
-    typeof order?.member ===
-    "string"
-  ) {
-    return order.member;
-  }
-
-  if (
-    typeof order?.user ===
-    "string"
-  ) {
-    return order.user;
-  }
+  const isGuest =
+    String(
+      order?.orderType ||
+      ""
+    ).toUpperCase() ===
+    "GUEST";
 
   return (
+    // Guest orders store the customer directly on the Order.
+    safeText(
+      order?.customerName,
+      ""
+    ) ||
+
+    safeText(
+      order?.deliveryDetails?.name,
+      ""
+    ) ||
+
+    // Member orders use the populated userId.
+    safeText(
+      order?.userId?.name,
+      ""
+    ) ||
+
     safeText(
       order?.member?.name,
       ""
@@ -181,7 +178,9 @@ const getMemberName = (
       ""
     ) ||
 
-    "Unknown Member"
+    (isGuest
+      ? "Guest Customer"
+      : "Not Available")
   );
 
 };
@@ -195,7 +194,28 @@ const getMemberId = (
   order
 ) => {
 
+  const isGuest =
+    String(
+      order?.orderType ||
+      ""
+    ).toUpperCase() ===
+    "GUEST";
+
+  if (isGuest) {
+    return "GUEST";
+  }
+
   return (
+    safeText(
+      order?.userId?.userId,
+      ""
+    ) ||
+
+    safeText(
+      order?.userId?.memberId,
+      ""
+    ) ||
+
     safeText(
       order?.member?.userId,
       ""
@@ -217,12 +237,96 @@ const getMemberId = (
     ) ||
 
     safeText(
-      order?.userId,
+      order?.memberId,
       ""
     ) ||
 
     safeText(
-      order?.memberId,
+      order?.userId,
+      ""
+    ) ||
+
+    "-"
+  );
+
+};
+
+/* =====================================================
+   MEMBER CONTACT DETAILS
+===================================================== */
+
+const getMemberEmail = (
+  order
+) => {
+
+  return (
+    safeText(
+      order?.customerEmail,
+      ""
+    ) ||
+
+    safeText(
+      order?.userId?.email,
+      ""
+    ) ||
+
+    safeText(
+      order?.member?.email,
+      ""
+    ) ||
+
+    safeText(
+      order?.user?.email,
+      ""
+    ) ||
+
+    safeText(
+      order?.customer?.email,
+      ""
+    ) ||
+
+    "-"
+  );
+
+};
+
+const getMemberMobile = (
+  order
+) => {
+
+  return (
+    safeText(
+      order?.customerMobile,
+      ""
+    ) ||
+
+    safeText(
+      order?.deliveryDetails?.mobile,
+      ""
+    ) ||
+
+    safeText(
+      order?.userId?.mobile,
+      ""
+    ) ||
+
+    safeText(
+      order?.member?.mobile,
+      ""
+    ) ||
+
+    safeText(
+      order?.user?.mobile,
+      ""
+    ) ||
+
+    safeText(
+      order?.customer?.mobile,
+      ""
+    ) ||
+
+    safeText(
+      order?.customer?.phone,
       ""
     ) ||
 
@@ -232,6 +336,108 @@ const getMemberId = (
 };
 
 
+/* =====================================================
+   PACKAGING HELPERS
+===================================================== */
+
+const getPackaging = (order) => {
+  return (
+    order?.packaging ||
+    order?.packagingAssignment ||
+    {}
+  );
+};
+
+const getPackagingTeam = (order) => {
+  const packaging = getPackaging(order);
+
+  return (
+    safeText(packaging?.teamName, "") ||
+    safeText(packaging?.name, "") ||
+    safeText(packaging?.loginId, "") ||
+    "Unassigned"
+  );
+};
+
+const getPackagingStatus = (order) => {
+  const packaging = getPackaging(order);
+
+  return getStatusValue(
+    packaging?.status,
+    "UNASSIGNED"
+  );
+};
+
+const getOrderItemCount = (order) => {
+  const items = Array.isArray(order?.items)
+    ? order.items
+    : [];
+
+  return items.reduce(
+    (total, item) =>
+      total +
+      Number(
+        item?.quantity ||
+        item?.qty ||
+        1
+      ),
+    0
+  );
+};
+
+const getOrderItems = (order) => {
+  const items = Array.isArray(order?.items)
+    ? order.items
+    : [];
+
+  return items;
+};
+
+const getItemName = (item) => {
+  return (
+    safeText(
+      item?.productName,
+      ""
+    ) ||
+    safeText(
+      item?.productId?.productName,
+      ""
+    ) ||
+    safeText(
+      item?.productId?.name,
+      ""
+    ) ||
+    safeText(
+      item?.name,
+      ""
+    ) ||
+    "Product"
+  );
+};
+
+const getItemQuantity = (item) => {
+  const quantity =
+    Number(
+      item?.quantity ??
+      item?.qty ??
+      1
+    );
+
+  return Number.isFinite(quantity)
+    ? quantity
+    : 1;
+};
+
+const getPackagingBranch = (order) => {
+  const packaging = getPackaging(order);
+
+  return (
+    safeText(
+      packaging?.branchName,
+      ""
+    ) || "-"
+  );
+};
 /* =====================================================
    ORDER NUMBER
 ===================================================== */
@@ -507,21 +713,20 @@ const StatusChip = ({
     "warning";
 
 
-  if (
-    status === "PAID" ||
-    status === "DELIVERED" ||
-    status === "COMPLETED" ||
-    status === "APPROVED" ||
-    status === "CONFIRMED" ||
-    status === "SUCCESS" ||
-    status === "SUCCESSFUL"
-  ) {
-
-    color =
-      "success";
-
-  }
-
+if (
+  status === "PAID" ||
+  status === "DELIVERED" ||
+  status === "COMPLETED" ||
+  status === "APPROVED" ||
+  status === "CONFIRMED" ||
+  status === "SUCCESS" ||
+  status === "SUCCESSFUL" ||
+  status === "PACKED" ||
+  status === "READY_FOR_DISPATCH" ||
+  status === "DISPATCHED"
+) {
+  color = "success";
+}
 
   if (
     status === "CANCELLED" ||
@@ -587,20 +792,26 @@ const OrderCard = ({
   order,
 }) => {
 
+  const [itemsOpen, setItemsOpen] =
+    useState(false);
+
+  const orderItems =
+    getOrderItems(order);
+
   const orderNumber =
-    getOrderNumber(
-      order
-    );
+    getOrderNumber(order);
 
   const memberName =
-    getMemberName(
-      order
-    );
+    getMemberName(order);
 
   const memberId =
-    getMemberId(
-      order
-    );
+    getMemberId(order);
+
+  const memberMobile =
+    getMemberMobile(order);
+
+  const memberEmail =
+    getMemberEmail(order);
 
   const paymentStatus =
     getStatusValue(
@@ -614,6 +825,67 @@ const OrderCard = ({
       "PENDING"
     );
 
+  const packagingTeam =
+    getPackagingTeam(order);
+
+  const packagingStatus =
+    getPackagingStatus(order);
+
+  const itemCount =
+    getOrderItemCount(order);
+
+  const branch =
+    getPackagingBranch(order);
+
+  const rowSx = {
+    display: "grid",
+    gridTemplateColumns: {
+      xs: "38% 62%",
+      sm: "34% 66%",
+    },
+    minWidth: 0,
+    borderBottom: "1px solid #E2E8F0",
+  };
+
+  const labelSx = {
+    px: {
+      xs: 1,
+      sm: 1.25,
+    },
+    py: {
+      xs: 0.65,
+      sm: 0.8,
+    },
+    fontSize: {
+      xs: 9.5,
+      sm: 10.5,
+    },
+    color: "#475569",
+    backgroundColor: "#F1F5F9",
+    borderRight: "1px solid #E2E8F0",
+    lineHeight: 1.25,
+  };
+
+  const valueSx = {
+    px: {
+      xs: 1,
+      sm: 1.25,
+    },
+    py: {
+      xs: 0.65,
+      sm: 0.8,
+    },
+    fontSize: {
+      xs: 10.5,
+      sm: 11.5,
+    },
+    color: "#172033",
+    fontWeight: 600,
+    minWidth: 0,
+    overflowWrap: "anywhere",
+    lineHeight: 1.3,
+    backgroundColor: "#FFFFFF",
+  };
 
   return (
 
@@ -621,376 +893,429 @@ const OrderCard = ({
       elevation={0}
       sx={{
         width: "100%",
-
-        border:
-          "1px solid #2E7D32",
-
-        borderRadius: 0,
+        minWidth: 0,
+        border: "1px solid #CBD5E1",
+        borderRadius: 1.2,
+        overflow: "hidden",
+        backgroundColor: "#FFFFFF",
       }}
     >
 
-      <CardContent
-        sx={{
-          p: 1.2,
+      {/* ORDER HEADER */}
 
-          "&:last-child": {
-            pb: 1.7,
+      <Box
+        sx={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          gap: 1,
+          px: {
+            xs: 1,
+            sm: 1.25,
           },
+          py: {
+            xs: 0.85,
+            sm: 1,
+          },
+          borderBottom: "1px solid #CBD5E1",
+          minWidth: 0,
         }}
       >
 
-        {/* HEADER */}
-
         <Box
           sx={{
-            display: "flex",
-
-            alignItems: "flex-start",
-
-            justifyContent:
-              "space-between",
-
-            gap: 1,
-
-            mb: 1,
+            minWidth: 0,
+            flex: 1,
           }}
         >
 
-          <Box
+          <Typography
+            fontSize={{
+              xs: 11.5,
+              sm: 13,
+            }}
+            fontWeight={800}
             sx={{
-              display: "flex",
-
-              alignItems: "center",
-
-              gap: 0.8,
-
-              minWidth: 0,
-
-              flex: 1,
+              overflowWrap: "anywhere",
+              lineHeight: 1.2,
             }}
           >
+            {orderNumber}
+          </Typography>
 
-            <Avatar
+          <Typography
+            fontSize={{
+              xs: 9,
+              sm: 10,
+            }}
+            color="text.secondary"
+          >
+            {formatDate(order?.createdAt)}
+          </Typography>
+
+        </Box>
+
+        <StatusChip
+          value={orderStatus}
+        />
+
+      </Box>
+
+
+      {/* DETAILS TABLE */}
+
+      <Box
+        sx={{
+          width: "100%",
+          minWidth: 0,
+        }}
+      >
+
+        <Box sx={rowSx}>
+          <Typography sx={labelSx}>
+            {String(
+              order?.orderType ||
+              ""
+            ).toUpperCase() === "GUEST"
+              ? "Customer"
+              : "Member"}
+          </Typography>
+
+          <Box sx={valueSx}>
+            <Typography
+              component="div"
               sx={{
-                width: 32,
-
-                height: 32,
-
-                flexShrink: 0,
-
-                bgcolor:
-                  "#E8F5E9",
-
-                color:
-                  "#2E7D32",
+                fontSize: "inherit",
+                fontWeight: 700,
+                overflowWrap: "anywhere",
               }}
             >
-              <ShoppingBagIcon
-                fontSize="small"
-              />
-            </Avatar>
+              {memberName}
+            </Typography>
 
-
-            <Box
-              sx={{
-                minWidth: 0,
-              }}
-            >
-
+            {memberId !== "-" && (
               <Typography
-                fontWeight={800}
-                fontSize={14}
+                component="div"
                 sx={{
-                  overflowWrap:
-                    "anywhere",
+                  mt: 0.15,
+                  fontSize: 9.5,
+                  color: "text.secondary",
+                  overflowWrap: "anywhere",
                 }}
               >
-                {orderNumber}
+                ID: {memberId}
               </Typography>
-
-
-              <Typography
-                fontSize={11}
-                color="text.secondary"
-              >
-                {formatDate(
-                  order?.createdAt
-                )}
-              </Typography>
-
-            </Box>
-
+            )}
           </Box>
-
-
-          <StatusChip
-            value={
-              orderStatus
-            }
-          />
-
         </Box>
 
 
-        {/* MEMBER */}
-
-        <Box
-          sx={{
-            p: 1.2,
-
-            bgcolor:
-              "#F8FAFC",
-
-            borderRadius: 0,
-
-            mb: 1.2,
-          }}
-        >
-
-          <Typography
-            fontSize={10}
-            color="text.secondary"
-          >
-            Member
+        <Box sx={rowSx}>
+          <Typography sx={labelSx}>
+            Order Type
           </Typography>
 
-
-          <Typography
-            fontSize={13}
-            fontWeight={700}
-            sx={{
-              overflowWrap:
-                "anywhere",
-            }}
-          >
-            {memberName}
+          <Typography sx={valueSx}>
+            {String(
+              order?.orderType ||
+              "MEMBER"
+            ).toUpperCase()}
           </Typography>
-
-
-          <Typography
-            fontSize={10.5}
-            color="text.secondary"
-            sx={{
-              overflowWrap:
-                "anywhere",
-            }}
-          >
-            {memberId}
-          </Typography>
-
         </Box>
 
 
-        {/* VALUES */}
+        <Box sx={rowSx}>
+          <Typography sx={labelSx}>
+            Mobile
+          </Typography>
 
-        <Box
-          sx={{
-            display: "grid",
+          <Typography sx={valueSx}>
+            {memberMobile}
+          </Typography>
+        </Box>
 
-            gridTemplateColumns:
-              "repeat(2, minmax(0, 1fr))",
 
-            gap: 1,
-          }}
-        >
+        <Box sx={rowSx}>
+          <Typography sx={labelSx}>
+            Email
+          </Typography>
 
-          {/* AMOUNT */}
+          <Typography sx={valueSx}>
+            {memberEmail}
+          </Typography>
+        </Box>
+
+
+        <Box sx={rowSx}>
+          <Typography sx={labelSx}>
+            Items
+          </Typography>
 
           <Box
             sx={{
-              p: 1.1,
-
-              borderRadius: 0,
-
-              bgcolor: "#F8FAFC",
-
-              minWidth: 0,
+              ...valueSx,
+              py: 0.5,
             }}
           >
-
-            <Typography
-              fontSize={10}
-              color="text.secondary"
-            >
-              Amount
-            </Typography>
-
-
-            <Typography
-              fontSize={15}
-              fontWeight={800}
+            <Button
+              type="button"
+              onClick={() =>
+                setItemsOpen(
+                  (previous) =>
+                    !previous
+                )
+              }
+              endIcon={
+                itemsOpen ? (
+                  <ExpandLessIcon
+                    sx={{
+                      fontSize:
+                        17,
+                    }}
+                  />
+                ) : (
+                  <ExpandMoreIcon
+                    sx={{
+                      fontSize:
+                        17,
+                    }}
+                  />
+                )
+              }
               sx={{
-                overflowWrap:
-                  "anywhere",
+                p: 0,
+                minWidth: 0,
+                minHeight: 0,
+                justifyContent: "flex-start",
+                textTransform: "none",
+                color: "#172033",
+                fontWeight: 700,
+                fontSize: 11,
+                lineHeight: 1.2,
+                backgroundColor: "transparent !important",
+                boxShadow: "none !important",
+                border: "none !important",
+                borderRadius: 0,
+                "&:hover": {
+                  backgroundColor: "transparent !important",
+                  boxShadow: "none",
+                },
+                "&:focus": {
+                  backgroundColor: "transparent !important",
+                  boxShadow: "none",
+                },
+                "&:active": {
+                  backgroundColor: "transparent !important",
+                  boxShadow: "none",
+                },
               }}
             >
-              {money(
-                order?.finalAmount
-              )}
-            </Typography>
+              {number(itemCount)}{" "}
+              {itemCount === 1
+                ? "item"
+                : "items"}
+            </Button>
 
+            {itemsOpen && (
+              <Box
+                sx={{
+                  mt: 0.7,
+                  p: 0.8,
+                  border:
+                    "1px solid #E2E8F0",
+                  borderRadius: 1,
+                  backgroundColor:
+                    "#F8FAFC",
+                }}
+              >
+                {orderItems.length ===
+                0 ? (
+                  <Typography
+                    fontSize={9.5}
+                    color="text.secondary"
+                  >
+                    No items found
+                  </Typography>
+                ) : (
+                  orderItems.map(
+                    (
+                      item,
+                      itemIndex
+                    ) => (
+                      <Box
+                        key={
+                          item?._id ||
+                          `${itemIndex}-${getItemName(
+                            item
+                          )}`
+                        }
+                        sx={{
+                          display:
+                            "flex",
+                          alignItems:
+                            "flex-start",
+                          justifyContent:
+                            "space-between",
+                          gap: 0.8,
+                          py: 0.55,
+                          borderBottom:
+                            itemIndex <
+                            orderItems.length -
+                              1
+                              ? "1px solid #E2E8F0"
+                              : "none",
+                        }}
+                      >
+                        <Typography
+                          fontSize={9.5}
+                          fontWeight={700}
+                          sx={{
+                            minWidth: 0,
+                            overflowWrap:
+                              "anywhere",
+                            lineHeight:
+                              1.3,
+                          }}
+                        >
+                          {getItemName(
+                            item
+                          )}
+                        </Typography>
+
+                        <Typography
+                          fontSize={9.5}
+                          color="text.secondary"
+                          fontWeight={700}
+                          sx={{
+                            flexShrink: 0,
+                            whiteSpace:
+                              "nowrap",
+                          }}
+                        >
+                          Qty:{" "}
+                          {getItemQuantity(
+                            item
+                          )}
+                        </Typography>
+                      </Box>
+                    )
+                  )
+                )}
+              </Box>
+            )}
           </Box>
-
-
-          {/* SELLING POINTS */}
-
-          <Box
-            sx={{
-              p: 1.1,
-
-              borderRadius: 0,
-
-              bgcolor: "#F8FAFC",
-
-              minWidth: 0,
-            }}
-          >
-
-            <Typography
-              fontSize={10}
-              color="text.secondary"
-            >
-              Selling Points
-            </Typography>
-
-
-            <Typography
-              fontSize={15}
-              fontWeight={800}
-            >
-              {number(
-                order?.sellingPoints
-              )}
-            </Typography>
-
-          </Box>
-
-
-          {/* PAYMENT */}
-
-          <Box
-            sx={{
-              gridColumn:
-                "1 / -1",
-
-              display: "flex",
-
-              alignItems: "center",
-
-              justifyContent:
-                "space-between",
-
-              gap: 1,
-
-              p: 1.1,
-
-              borderRadius: 0,
-
-              bgcolor: "#F8FAFC",
-
-              minWidth: 0,
-            }}
-          >
-
-            <Typography
-              fontSize={11}
-              color="text.secondary"
-            >
-              Payment
-            </Typography>
-
-
-            <StatusChip
-              value={
-                paymentStatus
-              }
-              type="payment"
-            />
-
-          </Box>
-
-
-          {/* TOTAL / COMMISSION */}
-
-          <Box
-            sx={{
-              p: 1.1,
-
-              borderRadius: 0,
-
-              bgcolor: "#F8FAFC",
-
-              minWidth: 0,
-            }}
-          >
-
-            <Typography
-              fontSize={10}
-              color="text.secondary"
-            >
-              Commission
-            </Typography>
-
-
-            <Typography
-              fontSize={14}
-              fontWeight={800}
-              color="success.main"
-            >
-              {money(
-                order?.commission ??
-                order?.commissionAmount ??
-                0
-              )}
-            </Typography>
-
-          </Box>
-
-
-          {/* ORDER STATUS */}
-
-          <Box
-            sx={{
-              p: 1.1,
-
-              borderRadius: 0,
-
-              bgcolor: "#F8FAFC",
-
-              display: "flex",
-
-              flexDirection: "column",
-
-              alignItems: "flex-start",
-
-              justifyContent:
-                "center",
-
-              gap: 0.5,
-
-              minWidth: 0,
-            }}
-          >
-
-            <Typography
-              fontSize={10}
-              color="text.secondary"
-            >
-              Status
-            </Typography>
-
-
-            <StatusChip
-              value={
-                orderStatus
-              }
-            />
-
-          </Box>
-
         </Box>
 
-      </CardContent>
+
+        <Box sx={rowSx}>
+          <Typography sx={labelSx}>
+            Total
+          </Typography>
+
+          <Typography
+            sx={{
+              ...valueSx,
+              fontWeight: 800,
+            }}
+          >
+            {money(
+              order?.finalAmount ??
+              order?.totalAmount ??
+              order?.amount
+            )}
+          </Typography>
+        </Box>
+
+
+        <Box sx={rowSx}>
+          <Typography sx={labelSx}>
+            Payment
+          </Typography>
+
+          <Box sx={valueSx}>
+            <StatusChip
+              value={paymentStatus}
+              type="payment"
+            />
+          </Box>
+        </Box>
+
+
+        <Box sx={rowSx}>
+          <Typography sx={labelSx}>
+            Packaging Team
+          </Typography>
+
+          <Box sx={valueSx}>
+            <Typography
+              component="div"
+              sx={{
+                fontSize: "inherit",
+                fontWeight: 700,
+                overflowWrap: "anywhere",
+              }}
+            >
+              {packagingTeam}
+            </Typography>
+
+            {branch !== "-" && (
+              <Typography
+                component="div"
+                sx={{
+                  mt: 0.15,
+                  fontSize: 9.5,
+                  color: "text.secondary",
+                  overflowWrap: "anywhere",
+                }}
+              >
+                Branch: {branch}
+              </Typography>
+            )}
+          </Box>
+        </Box>
+
+
+        <Box sx={rowSx}>
+          <Typography sx={labelSx}>
+            Package Status
+          </Typography>
+
+          <Box sx={valueSx}>
+            <StatusChip
+              value={packagingStatus}
+            />
+          </Box>
+        </Box>
+
+
+        <Box
+          sx={{
+            ...rowSx,
+            borderBottom: "none",
+          }}
+        >
+          <Typography
+            sx={{
+              ...labelSx,
+              borderBottom: "none",
+            }}
+          >
+            Order Status
+          </Typography>
+
+          <Box
+            sx={{
+              ...valueSx,
+              borderBottom: "none",
+            }}
+          >
+            <StatusChip
+              value={orderStatus}
+            />
+          </Box>
+        </Box>
+
+      </Box>
 
     </Card>
 
@@ -1003,9 +1328,13 @@ const OrderCard = ({
    DESKTOP ORDER ROW
 ===================================================== */
 
+
 const DesktopOrderRow = ({
   order,
 }) => {
+
+  const [itemsOpen, setItemsOpen] =
+    useState(false);
 
   const orderNumber =
     getOrderNumber(
@@ -1034,6 +1363,21 @@ const DesktopOrderRow = ({
       "PENDING"
     );
 
+  const packagingTeam =
+    getPackagingTeam(order);
+
+  const packagingStatus =
+    getPackagingStatus(order);
+
+  const itemCount =
+    getOrderItemCount(order);
+
+  const orderItems =
+    getOrderItems(order);
+
+  const branch =
+    getPackagingBranch(order);
+
 
   return (
 
@@ -1042,11 +1386,11 @@ const DesktopOrderRow = ({
         display: "grid",
 
         gridTemplateColumns:
-          "1.2fr 1.5fr 1fr 1fr 1fr 1fr 1fr",
+          "1.3fr 1.5fr 1.1fr 0.9fr 0.9fr 1.3fr 1.3fr 1.1fr 0.9fr",
 
         gap: 1,
 
-        alignItems: "center",
+        alignItems: "start",
 
         px: 1.5,
 
@@ -1059,7 +1403,7 @@ const DesktopOrderRow = ({
 
         mb: 1,
 
-        minWidth: 900,
+        minWidth: 1200,
 
         boxSizing:
           "border-box",
@@ -1098,7 +1442,7 @@ const DesktopOrderRow = ({
       </Box>
 
 
-      {/* MEMBER */}
+      {/* CUSTOMER / MEMBER */}
 
       <Box
         sx={{
@@ -1132,26 +1476,171 @@ const DesktopOrderRow = ({
       </Box>
 
 
-      {/* AMOUNT */}
+      {/* ITEMS */}
+
+      <Box
+        sx={{
+          minWidth: 0,
+        }}
+      >
+
+        <Button
+          type="button"
+          onClick={() =>
+            setItemsOpen(
+              (previous) =>
+                !previous
+            )
+          }
+          endIcon={
+            itemsOpen ? (
+              <ExpandLessIcon
+                sx={{
+                  fontSize: 18,
+                }}
+              />
+            ) : (
+              <ExpandMoreIcon
+                sx={{
+                  fontSize: 18,
+                }}
+              />
+            )
+          }
+          sx={{
+            p: 0,
+            minWidth: 0,
+            minHeight: 0,
+            justifyContent:
+              "flex-start",
+            textTransform:
+              "none",
+            color: "#172033",
+            fontWeight: 700,
+            fontSize: 11,
+            lineHeight: 1.2,
+            "&:hover": {
+              bgcolor:
+                "transparent",
+            },
+          }}
+        >
+          {number(itemCount)}{" "}
+          {itemCount === 1
+            ? "item"
+            : "items"}
+        </Button>
+
+
+        {itemsOpen && (
+          <Box
+            sx={{
+              mt: 0.8,
+              p: 0.8,
+              width: "100%",
+              boxSizing:
+                "border-box",
+              border:
+                "1px solid #E2E8F0",
+              borderRadius: 1,
+              backgroundColor:
+                "#F8FAFC",
+            }}
+          >
+
+            {orderItems.length ===
+            0 ? (
+              <Typography
+                fontSize={9.5}
+                color="text.secondary"
+              >
+                No items found
+              </Typography>
+            ) : (
+              orderItems.map(
+                (
+                  item,
+                  itemIndex
+                ) => (
+                  <Box
+                    key={
+                      item?._id ||
+                      `${itemIndex}-${getItemName(
+                        item
+                      )}`
+                    }
+                    sx={{
+                      display: "flex",
+                      alignItems:
+                        "flex-start",
+                      justifyContent:
+                        "space-between",
+                      gap: 0.8,
+                      py: 0.6,
+                      borderBottom:
+                        itemIndex <
+                        orderItems.length -
+                          1
+                          ? "1px solid #E2E8F0"
+                          : "none",
+                    }}
+                  >
+
+                    <Typography
+                      fontSize={9.5}
+                      fontWeight={700}
+                      sx={{
+                        minWidth: 0,
+                        overflowWrap:
+                          "anywhere",
+                        lineHeight:
+                          1.3,
+                      }}
+                    >
+                      {getItemName(
+                        item
+                      )}
+                    </Typography>
+
+
+                    <Typography
+                      fontSize={9.5}
+                      color="text.secondary"
+                      fontWeight={700}
+                      sx={{
+                        flexShrink: 0,
+                        whiteSpace:
+                          "nowrap",
+                      }}
+                    >
+                      Qty:{" "}
+                      {getItemQuantity(
+                        item
+                      )}
+                    </Typography>
+
+                  </Box>
+                )
+              )
+            )}
+
+          </Box>
+        )}
+
+      </Box>
+
+
+      {/* TOTAL */}
 
       <Typography
         fontSize={12}
         fontWeight={800}
+        sx={{
+          pt: 0.4,
+        }}
       >
         {money(
           order?.finalAmount
-        )}
-      </Typography>
-
-
-      {/* SELLING POINTS */}
-
-      <Typography
-        fontSize={12}
-        fontWeight={700}
-      >
-        {number(
-          order?.sellingPoints
         )}
       </Typography>
 
@@ -1163,6 +1652,49 @@ const DesktopOrderRow = ({
           paymentStatus
         }
         type="payment"
+      />
+
+
+      {/* PACKAGING TEAM */}
+
+      <Box
+        sx={{
+          minWidth: 0,
+        }}
+      >
+
+        <Typography
+          fontSize={11}
+          fontWeight={700}
+          sx={{
+            overflowWrap:
+              "anywhere",
+          }}
+        >
+          {packagingTeam}
+        </Typography>
+
+
+        <Typography
+          fontSize={9}
+          color="text.secondary"
+          sx={{
+            overflowWrap:
+              "anywhere",
+          }}
+        >
+          {branch}
+        </Typography>
+
+      </Box>
+
+
+      {/* PACKAGE STATUS */}
+
+      <StatusChip
+        value={
+          packagingStatus
+        }
       />
 
 
@@ -1180,6 +1712,9 @@ const DesktopOrderRow = ({
       <Typography
         fontSize={11}
         color="text.secondary"
+        sx={{
+          pt: 0.4,
+        }}
       >
         {formatDate(
           order?.createdAt
@@ -1193,17 +1728,13 @@ const DesktopOrderRow = ({
 };
 
 
+
 /* =====================================================
    PAGE
 ===================================================== */
 
 const Orders = () => {
-
-  const navigate =
-    useNavigate();
-
-
-  const [
+const [
     orders,
     setOrders,
   ] = useState([]);
@@ -1219,27 +1750,7 @@ const Orders = () => {
     error,
     setError,
   ] = useState("");
-
-
-  const [
-    search,
-    setSearch,
-  ] = useState("");
-
-
-  const [
-    paymentFilter,
-    setPaymentFilter,
-  ] = useState("ALL");
-
-
-  const [
-    orderFilter,
-    setOrderFilter,
-  ] = useState("ALL");
-
-
-  /* ===================================================
+/* ===================================================
      LOAD ORDERS
   =================================================== */
 
@@ -1387,189 +1898,9 @@ const Orders = () => {
     },
     []
   );
+  // Manager Orders intentionally shows the complete order list.
+  const filteredOrders = orders;
 
-
-  /* ===================================================
-     FILTER
-  =================================================== */
-
-  const filteredOrders =
-    useMemo(
-      () => {
-
-        const searchValue =
-          search
-            .trim()
-            .toLowerCase();
-
-
-        return orders.filter(
-          (
-            order
-          ) => {
-
-            const orderNumber =
-              getOrderNumber(
-                order
-              ).toLowerCase();
-
-
-            const memberName =
-              getMemberName(
-                order
-              ).toLowerCase();
-
-
-            const memberId =
-              getMemberId(
-                order
-              ).toLowerCase();
-
-
-            const matchesSearch =
-              !searchValue ||
-              orderNumber.includes(
-                searchValue
-              ) ||
-              memberName.includes(
-                searchValue
-              ) ||
-              memberId.includes(
-                searchValue
-              );
-
-
-            const paymentStatus =
-              getStatusValue(
-                order?.paymentStatus,
-                ""
-              ).toUpperCase();
-
-
-            const status =
-              getStatusValue(
-                order?.status,
-                ""
-              ).toUpperCase();
-
-
-            const matchesPayment =
-              paymentFilter ===
-                "ALL" ||
-
-              (
-                paymentFilter ===
-                  "PAID" &&
-                paymentStatus ===
-                  "PAID"
-              ) ||
-
-              (
-                paymentFilter ===
-                  "PENDING" &&
-                paymentStatus !==
-                  "PAID"
-              );
-
-
-            const matchesOrder =
-              orderFilter ===
-                "ALL" ||
-              status ===
-                orderFilter;
-
-
-            return (
-              matchesSearch &&
-              matchesPayment &&
-              matchesOrder
-            );
-
-          }
-        );
-
-      },
-      [
-        orders,
-        search,
-        paymentFilter,
-        orderFilter,
-      ]
-    );
-
-
-  /* ===================================================
-     SUMMARY
-  =================================================== */
-
-  const totalOrders =
-    orders.length;
-
-
-  const paidOrders =
-    orders.filter(
-      (
-        order
-      ) =>
-        getStatusValue(
-          order?.paymentStatus,
-          ""
-        ).toUpperCase() ===
-        "PAID"
-    ).length;
-
-
-  const pendingOrders =
-    totalOrders -
-    paidOrders;
-
-
-  const totalSales =
-    orders.reduce(
-      (
-        total,
-        order
-      ) =>
-        total +
-        Number(
-          order?.finalAmount ||
-          order?.totalAmount ||
-          order?.amount ||
-          0
-        ),
-      0
-    );
-
-
-  const totalSellingPoints =
-    orders.reduce(
-      (
-        total,
-        order
-      ) =>
-        total +
-        Number(
-          order?.sellingPoints ||
-          0
-        ),
-      0
-    );
-
-
-  const totalCommission =
-    orders.reduce(
-      (
-        total,
-        order
-      ) =>
-        total +
-        Number(
-          order?.commission ??
-          order?.commissionAmount ??
-          0
-        ),
-      0
-    );
 
 
   /* ===================================================
@@ -1611,115 +1942,62 @@ const Orders = () => {
     <Box
       sx={{
         width: "100%",
-
         maxWidth: 1600,
-
         mx: "auto",
-
         minWidth: 0,
-
         overflowX: "hidden",
-
-        boxSizing:
-          "border-box",
+        boxSizing: "border-box",
+        px: {
+          xs: 0.5,
+          sm: 1,
+          md: 0,
+        },
       }}
     >
 
       {/* =================================================
-          HEADER
+          ORDERS HEADER
       ================================================= */}
 
       <Box
         sx={{
           display: "flex",
-
-          flexDirection: {
-            xs: "column",
-            sm: "row",
-          },
-
-          alignItems: {
-            xs: "stretch",
-            sm: "center",
-          },
-
-          justifyContent:
-            "space-between",
-
+          alignItems: "center",
+          justifyContent: "space-between",
           gap: 1,
-
-          mb: 1,
+          mb: 1.2,
+          width: "100%",
+          minWidth: 0,
         }}
       >
+        <Typography
+          fontSize={{
+            xs: 20,
+            sm: 24,
+          }}
+          fontWeight={800}
+        >
+          Orders
+        </Typography>
 
-        <Box
+        <Typography
+          fontSize={{
+            xs: 11,
+            sm: 12,
+          }}
+          color="text.secondary"
+          fontWeight={600}
           sx={{
-            minWidth: 0,
+            whiteSpace: "nowrap",
           }}
         >
-
-          <Typography
-            sx={{
-              fontSize: {
-                xs: 20,
-                sm: 24,
-                md: 27,
-              },
-
-              fontWeight: 800,
-
-              lineHeight: 1.2,
-            }}
-          >
-            Orders
-          </Typography>
-
-
-          <Typography
-            sx={{
-              mt: 0.4,
-
-              fontSize: {
-                xs: 12,
-                sm: 13,
-              },
-
-              color:
-                "text.secondary",
-            }}
-          >
-            View orders placed by your managed members.
-          </Typography>
-
-        </Box>
-
-
-        <Button
-          variant="outlined"
-          color="success"
-          startIcon={
-            <ArrowBackIcon />
-          }
-          onClick={() =>
-            navigate(
-              "/manager/dashboard"
-            )
-          }
-          sx={{
-            minHeight: 36,
-
-            borderRadius: 0,
-
-            width: {
-              xs: "100%",
-              sm: "auto",
-            },
-          }}
-        >
-          Dashboard
-        </Button>
-
+          {filteredOrders.length}{" "}
+          {filteredOrders.length === 1
+            ? "order"
+            : "orders"}
+        </Typography>
       </Box>
+
 
 
       {/* =================================================
@@ -1756,553 +2034,8 @@ const Orders = () => {
       )}
 
 
-      {/* =================================================
-          SUMMARY
-      ================================================= */}
 
-      <Box
-        sx={{
-          display: "grid",
 
-          gridTemplateColumns: {
-            xs:
-              "repeat(1, minmax(0, 1fr))",
-
-            sm:
-              "repeat(2, minmax(0, 1fr))",
-
-            lg:
-              "repeat(4, minmax(0, 1fr))",
-          },
-
-          gap: {
-            xs: 1.3,
-            sm: 2,
-          },
-
-          mb: 1,
-        }}
-      >
-
-        <SummaryCard
-          title="Total Orders"
-          value={
-            number(
-              totalOrders
-            )
-          }
-          subtitle="Managed member orders"
-          icon={
-            <ShoppingBagIcon />
-          }
-        />
-
-
-        <SummaryCard
-          title="Paid Orders"
-          value={
-            number(
-              paidOrders
-            )
-          }
-          subtitle="Successfully paid"
-          icon={
-            <CheckCircleIcon />
-          }
-        />
-
-
-        <SummaryCard
-          title="Pending Payment"
-          value={
-            number(
-              pendingOrders
-            )
-          }
-          subtitle="Payment not completed"
-          color="#F59E0B"
-          icon={
-            <PendingIcon />
-          }
-        />
-
-
-        <SummaryCard
-          title="Total Sales"
-          value={
-            money(
-              totalSales
-            )
-          }
-          subtitle={`${number(
-            totalSellingPoints
-          )} selling points`}
-          icon={
-            <TrendingUpIcon />
-          }
-        />
-
-      </Box>
-
-
-      {/* =================================================
-          COMMISSION SUMMARY
-      ================================================= */}
-
-      <Card
-        elevation={0}
-        sx={{
-          mb: 1,
-
-          border:
-            "1px solid #2E7D32",
-
-          borderRadius: 0,
-        }}
-      >
-
-        <CardContent
-          sx={{
-            p: {
-              xs: 1.5,
-              sm: 2,
-            },
-
-            "&:last-child": {
-              pb: {
-                xs: 1.5,
-                sm: 2,
-              },
-            },
-          }}
-        >
-
-          <Typography
-            fontSize={{
-              xs: 15,
-              sm: 17,
-            }}
-            fontWeight={800}
-          >
-            Commission Overview
-          </Typography>
-
-
-          <Typography
-            fontSize={{
-              xs: 11,
-              sm: 12,
-            }}
-            color="text.secondary"
-            sx={{
-              mt: 0.3,
-              mb: 1,
-            }}
-          >
-            Commission generated from managed member orders.
-          </Typography>
-
-
-          <Box
-            sx={{
-              display: "grid",
-
-              gridTemplateColumns: {
-                xs:
-                  "1fr 1fr",
-
-                sm:
-                  "repeat(3, minmax(0, 1fr))",
-              },
-
-              gap: 1,
-            }}
-          >
-
-            <Box
-              sx={{
-                p: 1,
-
-                bgcolor:
-                  "#F0FDF4",
-
-                borderRadius: 0,
-
-                minWidth: 0,
-              }}
-            >
-
-              <Typography
-                fontSize={10}
-                color="text.secondary"
-              >
-                Total Commission
-              </Typography>
-
-
-              <Typography
-                fontSize={{
-                  xs: 15,
-                  sm: 18,
-                }}
-                fontWeight={800}
-                color="success.main"
-              >
-                {money(
-                  totalCommission
-                )}
-              </Typography>
-
-            </Box>
-
-
-            <Box
-              sx={{
-                p: 1,
-
-                bgcolor:
-                  "#F8FAFC",
-
-                borderRadius: 0,
-
-                minWidth: 0,
-              }}
-            >
-
-              <Typography
-                fontSize={10}
-                color="text.secondary"
-              >
-                Orders
-              </Typography>
-
-
-              <Typography
-                fontSize={{
-                  xs: 15,
-                  sm: 18,
-                }}
-                fontWeight={800}
-              >
-                {number(
-                  totalOrders
-                )}
-              </Typography>
-
-            </Box>
-
-
-            <Box
-              sx={{
-                p: 1,
-
-                bgcolor:
-                  "#EFF6FF",
-
-                borderRadius: 0,
-
-                minWidth: 0,
-
-                gridColumn: {
-                  xs:
-                    "1 / -1",
-
-                  sm:
-                    "auto",
-                },
-              }}
-            >
-
-              <Typography
-                fontSize={10}
-                color="text.secondary"
-              >
-                Total Sales
-              </Typography>
-
-
-              <Typography
-                fontSize={{
-                  xs: 15,
-                  sm: 18,
-                }}
-                fontWeight={800}
-                color="primary.main"
-              >
-                {money(
-                  totalSales
-                )}
-              </Typography>
-
-            </Box>
-
-          </Box>
-
-        </CardContent>
-
-      </Card>
-
-
-      {/* =================================================
-          FILTERS
-      ================================================= */}
-
-      <Card
-        elevation={0}
-        sx={{
-          border:
-            "1px solid #2E7D32",
-
-          borderRadius: 0,
-
-          mb: 1,
-        }}
-      >
-
-        <CardContent
-          sx={{
-            p: {
-              xs: 1.5,
-              sm: 2,
-            },
-
-            "&:last-child": {
-              pb: {
-                xs: 1.5,
-                sm: 2,
-              },
-            },
-          }}
-        >
-
-          <Box
-            sx={{
-              display: "grid",
-
-              gridTemplateColumns: {
-                xs:
-                  "1fr",
-
-                sm:
-                  "repeat(2, minmax(0, 1fr))",
-
-                md:
-                  "2fr 1fr 1fr",
-              },
-
-              gap: 1,
-            }}
-          >
-
-            {/* SEARCH */}
-
-            <TextField
-              fullWidth
-              size="small"
-              placeholder="Search order, member name or ID..."
-              value={
-                search
-              }
-              onChange={(
-                event
-              ) =>
-                setSearch(
-                  event.target.value
-                )
-              }
-              InputProps={{
-                startAdornment: (
-
-                  <InputAdornment
-                    position="start"
-                  >
-
-                    <SearchIcon
-                      fontSize="small"
-                    />
-
-                  </InputAdornment>
-
-                ),
-              }}
-            />
-
-
-            {/* PAYMENT */}
-
-            <FormControl
-              fullWidth
-              size="small"
-            >
-
-              <InputLabel>
-                Payment
-              </InputLabel>
-
-              <Select
-                value={
-                  paymentFilter
-                }
-                label="Payment"
-                onChange={(
-                  event
-                ) =>
-                  setPaymentFilter(
-                    event.target.value
-                  )
-                }
-              >
-
-                <MenuItem
-                  value="ALL"
-                >
-                  All Payments
-                </MenuItem>
-
-                <MenuItem
-                  value="PAID"
-                >
-                  Paid
-                </MenuItem>
-
-                <MenuItem
-                  value="PENDING"
-                >
-                  Pending
-                </MenuItem>
-
-              </Select>
-
-            </FormControl>
-
-
-            {/* ORDER STATUS */}
-
-            <FormControl
-              fullWidth
-              size="small"
-            >
-
-              <InputLabel>
-                Order Status
-              </InputLabel>
-
-              <Select
-                value={
-                  orderFilter
-                }
-                label="Order Status"
-                onChange={(
-                  event
-                ) =>
-                  setOrderFilter(
-                    event.target.value
-                  )
-                }
-              >
-
-                <MenuItem
-                  value="ALL"
-                >
-                  All Status
-                </MenuItem>
-
-                <MenuItem
-                  value="PENDING"
-                >
-                  Pending
-                </MenuItem>
-
-                <MenuItem
-                  value="CONFIRMED"
-                >
-                  Confirmed
-                </MenuItem>
-
-                <MenuItem
-                  value="PROCESSING"
-                >
-                  Processing
-                </MenuItem>
-
-                <MenuItem
-                  value="SHIPPED"
-                >
-                  Shipped
-                </MenuItem>
-
-                <MenuItem
-                  value="DELIVERED"
-                >
-                  Delivered
-                </MenuItem>
-
-                <MenuItem
-                  value="COMPLETED"
-                >
-                  Completed
-                </MenuItem>
-
-                <MenuItem
-                  value="CANCELLED"
-                >
-                  Cancelled
-                </MenuItem>
-
-              </Select>
-
-            </FormControl>
-
-          </Box>
-
-        </CardContent>
-
-      </Card>
-
-
-      {/* =================================================
-          ORDER TITLE
-      ================================================= */}
-
-      <Box
-        sx={{
-          display: "flex",
-
-          alignItems: "center",
-
-          justifyContent:
-            "space-between",
-
-          gap: 1,
-
-          mb: 1.2,
-        }}
-      >
-
-        <Typography
-          fontSize={{
-            xs: 17,
-            sm: 19,
-          }}
-          fontWeight={800}
-        >
-          Order List
-        </Typography>
-
-
-        <Typography
-          fontSize={12}
-          color="text.secondary"
-        >
-          {filteredOrders.length}{" "}
-          result
-          {filteredOrders.length !==
-          1
-            ? "s"
-            : ""}
-        </Typography>
-
-      </Box>
 
 
       {/* =================================================
@@ -2402,7 +2135,7 @@ const Orders = () => {
                 display: "grid",
 
                 gridTemplateColumns:
-                  "1.2fr 1.5fr 1fr 1fr 1fr 1fr 1fr",
+                  "1.3fr 1.5fr 1.1fr 0.9fr 0.9fr 1.3fr 1.3fr 1.1fr 0.9fr",
 
                 gap: 1,
 
@@ -2420,49 +2153,43 @@ const Orders = () => {
 
                 mb: 1,
 
-                minWidth: 900,
+                minWidth: 1200,
               }}
             >
 
-              <Typography
-                fontSize={11}
-              >
+              <Typography fontSize={11} fontWeight={700}>
                 Order
               </Typography>
 
-              <Typography
-                fontSize={11}
-              >
-                Member
+              <Typography fontSize={11} fontWeight={700}>
+                Customer
               </Typography>
 
-              <Typography
-                fontSize={11}
-              >
-                Amount
+              <Typography fontSize={11} fontWeight={700}>
+                Items
               </Typography>
 
-              <Typography
-                fontSize={11}
-              >
-                Selling Points
+              <Typography fontSize={11} fontWeight={700}>
+                Total
               </Typography>
 
-              <Typography
-                fontSize={11}
-              >
+              <Typography fontSize={11} fontWeight={700}>
                 Payment
               </Typography>
 
-              <Typography
-                fontSize={11}
-              >
-                Status
+              <Typography fontSize={11} fontWeight={700}>
+                Packaging Team
               </Typography>
 
-              <Typography
-                fontSize={11}
-              >
+              <Typography fontSize={11} fontWeight={700}>
+                Package Status
+              </Typography>
+
+              <Typography fontSize={11} fontWeight={700}>
+                Order Status
+              </Typography>
+
+              <Typography fontSize={11} fontWeight={700}>
                 Date
               </Typography>
 
@@ -2510,11 +2237,18 @@ const Orders = () => {
 
                 sm:
                   "repeat(2, minmax(0, 1fr))",
+
+                md:
+                  "repeat(2, minmax(0, 1fr))",
               },
 
-              gap: 1,
+              gap: {
+                xs: 0.7,
+                sm: 1.1,
+              },
 
               width: "100%",
+              minWidth: 0,
             }}
           >
 
@@ -2544,29 +2278,6 @@ const Orders = () => {
         </>
 
       )}
-
-
-      {/* =================================================
-          READ ONLY
-      ================================================= */}
-
-      <Alert
-        severity="info"
-        sx={{
-          mt: 1,
-
-          borderRadius: 0,
-
-          fontSize: {
-            xs: 11,
-            sm: 13,
-          },
-        }}
-      >
-        Manager access is read-only. Orders can be viewed
-        but cannot be edited, cancelled or modified from
-        this panel.
-      </Alert>
 
     </Box>
 

@@ -2,7 +2,9 @@ const express = require("express");
 
 const router =
   express.Router();
-
+const {
+  productImageUpload,
+} = require("../middleware/imageUpload.middleware");
 
 /* =====================================================
    CONTROLLERS
@@ -76,78 +78,11 @@ router.get(
 
 router.post(
   "/",
-
-  /*
-   * Debug
-   */
-
-  (req, res, next) => {
-
-    console.log(
-      "======================================"
-    );
-
-    console.log(
-      "✅ POST /products reached"
-    );
-
-    next();
-
-  },
-
-  /*
-   * Authentication
-   */
-
   protect,
-
-  /*
-   * Only Super Admin can create products
-   */
-
-  authorize(
-    "SUPER_ADMIN"
-  ),
-
-  /*
-   * PRODUCT IMAGE UPLOAD
-   */
-
-  upload.array(
-    "images",
-    5
-  ),
-
-  /*
-   * Multer Debug
-   */
-
-  (req, res, next) => {
-
-    console.log(
-      "======================================"
-    );
-
-    console.log(
-      "✅ Product Multer executed"
-    );
-
-    console.log(
-      "FILES:"
-    );
-
-    console.log(
-      req.files
-    );
-
-    next();
-
-  },
-
-  /*
-   * Create Product
-   */
-
+  authorize("SUPER_ADMIN"),
+  productImageUpload.array("images", 5),
+  productValidation,
+  validate,
   controller.createProduct
 );
 
@@ -158,45 +93,13 @@ router.post(
 
 router.put(
   "/:id",
-
-  /*
-   * Authentication
-   */
-
   protect,
-
-  /*
-   * Only Super Admin
-   */
-
-  authorize(
-    "SUPER_ADMIN"
-  ),
-
-  /*
-   * Product Images
-   */
-
-  upload.array(
-    "images",
-    5
-  ),
-
-  /*
-   * Validation
-   */
-
+  authorize("SUPER_ADMIN"),
+  productImageUpload.array("images", 5),
   productValidation,
-
   validate,
-
-  /*
-   * Update Product
-   */
-
   controller.updateProduct
 );
-
 
 /* =====================================================
    DELETE PRODUCT

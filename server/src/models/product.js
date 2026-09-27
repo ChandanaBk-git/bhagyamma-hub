@@ -133,11 +133,11 @@ const productSchema = new mongoose.Schema(
 
       validate: {
         validator: function (value) {
-          return value.length <= 3;
+          return value.length <= 4;
         },
 
         message:
-          "Maximum 3 images are allowed.",
+          "Maximum 4 images are allowed.",
       },
 
       default: [],

@@ -287,6 +287,20 @@ export const getUserWalletDetails = async (
 
   return response.data?.data || null;
 };
+
+// =====================================================
+// GET MANAGER PACKAGING TEAMS
+// =====================================================
+
+export const getManagerPackagingTeams = async () => {
+  const response = await api.get(
+    "/manager/packaging-teams"
+  );
+
+  return response.data;
+};
+
+
 /*
 =========================================================
 DEFAULT EXPORT
@@ -327,6 +341,7 @@ const managerService = {
   getManagerWallet,
   getAllUserWallets,
   getUserWalletDetails,
+  getManagerPackagingTeams,
 
 };
 
