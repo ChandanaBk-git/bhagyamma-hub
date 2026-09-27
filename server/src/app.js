@@ -5,35 +5,111 @@ const compression = require("compression");
 const cookieParser = require("cookie-parser");
 const morgan = require("morgan");
 const path = require("path");
+
 const routes = require("./routes");
 const notFound = require("./middleware/notFound.middleware");
 const errorMiddleware = require("./middleware/error.middleware");
 const productRoutes = require("./routes/product.routes");
+
 const app = express();
-/* ------------------------- Security Middleware ------------------------- */
+
+/* =========================================================
+   CORS / SECURITY
+========================================================= */
+
+const allowedOrigins = [
+    "http://localhost:5173",
+    "https://bhagyamma-hub-sigma.vercel.app",
+];
+
+/*
+  Add CLIENT_URL values from Render environment variables
+  if they exist.
+*/
+if (process.env.CLIENT_URL) {
+    const envOrigins = process.env.CLIENT_URL
+        .split(",")
+        .map((origin) => origin.trim())
+        .filter(Boolean);
+
+    allowedOrigins.push(...envOrigins);
+}
+
+/*
+  Remove duplicate origins
+*/
+const uniqueOrigins = [
+    ...new Set(allowedOrigins),
+];
+
 const corsOptions = {
-    origin: process.env.CLIENT_URL ? process.env.CLIENT_URL.split(',') : true,
+    origin: (origin, callback) => {
+
+        /*
+          Allow requests without an Origin header.
+          Example: direct browser/API requests,
+          server-to-server requests, Postman, etc.
+        */
+        if (!origin) {
+            return callback(null, true);
+        }
+
+        /*
+          Allow explicitly configured origins
+        */
+        if (uniqueOrigins.includes(origin)) {
+            return callback(null, true);
+        }
+
+        /*
+          Allow Vercel deployment and preview URLs
+          Example:
+          https://bhagyamma-hub-xxxx.vercel.app
+        */
+        if (
+            /^https:\/\/[a-zA-Z0-9-]+\.vercel\.app$/.test(
+                origin
+            )
+        ) {
+            return callback(null, true);
+        }
+
+        console.warn(
+            "CORS blocked origin:",
+            origin
+        );
+
+        return callback(
+            new Error(
+                `CORS blocked origin: ${origin}`
+            )
+        );
+    },
+
     credentials: true,
 };
+
 app.use(cors(corsOptions));
-// Ensure preflight requests are handled
-//app.options('*', cors(corsOptions));
+
+/* =========================================================
+   HELMET
+========================================================= */
 
 app.use(
-  helmet({
-    crossOriginResourcePolicy: false,
-  })
+    helmet({
+        crossOriginResourcePolicy: false,
+    })
 );
 
-/* -------------------------- Body Parsers -------------------------- */
+/* =========================================================
+   BODY PARSERS
+========================================================= */
 
 app.use(
     express.json({
         limit: "10mb",
     })
 );
-
-app.use("/api/products", productRoutes);
 
 app.use(
     express.urlencoded({
@@ -44,15 +120,30 @@ app.use(
 
 app.use(cookieParser());
 
-/* ------------------------- Performance ------------------------- */
+/* =========================================================
+   PRODUCT ROUTES
+========================================================= */
+
+app.use(
+    "/api/products",
+    productRoutes
+);
+
+/* =========================================================
+   PERFORMANCE
+========================================================= */
 
 app.use(compression());
 
-/* ---------------------------- Logging ---------------------------- */
+/* =========================================================
+   LOGGING
+========================================================= */
 
 app.use(morgan("dev"));
 
-/* --------------------------- Health Check --------------------------- */
+/* =========================================================
+   HEALTH CHECK
+========================================================= */
 
 app.get("/", (req, res) => {
     res.status(200).json({
@@ -62,12 +153,23 @@ app.get("/", (req, res) => {
     });
 });
 
+/* =========================================================
+   STATIC UPLOADS
+========================================================= */
+
 app.use(
-  "/uploads",
-  express.static(
-    path.join(process.cwd(), "uploads")
-  )
+    "/uploads",
+    express.static(
+        path.join(
+            process.cwd(),
+            "uploads"
+        )
+    )
 );
+
+/* =========================================================
+   HEALTH
+========================================================= */
 
 app.get("/health", (req, res) => {
     res.status(200).json({
@@ -77,13 +179,24 @@ app.get("/health", (req, res) => {
     });
 });
 
-/* ---------------------------- API Routes ---------------------------- */
+/* =========================================================
+   API ROUTES
+========================================================= */
 
-app.use("/api/v1", routes);
+app.use(
+    "/api/v1",
+    routes
+);
 
-/* ------------------------- Error Handling ------------------------- */
+/* =========================================================
+   404
+========================================================= */
 
 app.use(notFound);
+
+/* =========================================================
+   ERROR HANDLING
+========================================================= */
 
 app.use(errorMiddleware);
 

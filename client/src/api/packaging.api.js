@@ -1,19 +1,42 @@
 import axios from "axios";
 
-const API_URL =
-    "http://localhost:5000/api/v1";
+/*
+=====================================================
+API URL
+=====================================================
+Local:
+http://localhost:5000/api/v1
 
-// =====================================================
-// ADMIN TOKEN
-// =====================================================
+Vercel:
+Uses VITE_API_URL if configured in Vercel.
+
+Fallback:
+https://bhagyamma-hub.onrender.com/api/v1
+=====================================================
+*/
+
+const API_URL = import.meta.env.DEV
+    ? "http://localhost:5000/api/v1"
+    : (
+        import.meta.env.VITE_API_URL ||
+        "https://bhagyamma-hub.onrender.com/api/v1"
+    );
+
+/*
+=====================================================
+ADMIN TOKEN
+=====================================================
+*/
 
 const getAdminToken = () => {
     return localStorage.getItem("token");
 };
 
-// =====================================================
-// PACKAGING TOKEN
-// =====================================================
+/*
+=====================================================
+PACKAGING TOKEN
+=====================================================
+*/
 
 const getPackagingToken = () => {
     return (
@@ -22,223 +45,281 @@ const getPackagingToken = () => {
     );
 };
 
-// =====================================================
-// GET VALID PACKAGING TOKEN
-// =====================================================
-// Always prefer the latest token stored after common login.
-// The passed token is used only as a fallback.
-// =====================================================
+/*
+=====================================================
+GET VALID PACKAGING TOKEN
+=====================================================
+*/
 
-const getValidPackagingToken = (token = null) => {
-    const storedToken = getPackagingToken();
+const getValidPackagingToken = (
+    token = null
+) => {
+
+    const storedToken =
+        getPackagingToken();
 
     return storedToken || token;
 };
 
-// =====================================================
-// ADMIN — CREATE PACKAGING STAFF
-// =====================================================
+/*
+=====================================================
+ADMIN — CREATE PACKAGING STAFF
+=====================================================
+*/
 
-export const createPackagingStaff = async (data) => {
-    const token = getAdminToken();
+export const createPackagingStaff = async (
+    data
+) => {
+
+    const token =
+        getAdminToken();
 
     return axios.post(
         `${API_URL}/packaging/staff`,
         data,
         {
             headers: {
-                Authorization: `Bearer ${token}`,
-                "Content-Type": "application/json",
+                Authorization:
+                    `Bearer ${token}`,
+
+                "Content-Type":
+                    "application/json",
             },
         }
     );
 };
 
-// =====================================================
-// ADMIN — GET PACKAGING STAFF
-// =====================================================
+/*
+=====================================================
+ADMIN — GET PACKAGING STAFF
+=====================================================
+*/
 
 export const getPackagingStaff = async () => {
-    const token = getAdminToken();
+
+    const token =
+        getAdminToken();
 
     return axios.get(
         `${API_URL}/packaging/staff`,
         {
             headers: {
-                Authorization: `Bearer ${token}`,
+                Authorization:
+                    `Bearer ${token}`,
             },
         }
     );
 };
 
-// =====================================================
-// PACKAGING — LOGIN
-// =====================================================
-// Kept for backward compatibility.
-// Common /login is now the main Packaging login.
-// =====================================================
+/*
+=====================================================
+PACKAGING — LOGIN
+=====================================================
+*/
 
-export const packagingLogin = async (data) => {
+export const packagingLogin = async (
+    data
+) => {
+
     return axios.post(
         `${API_URL}/packaging/login`,
         data,
         {
             headers: {
-                "Content-Type": "application/json",
+                "Content-Type":
+                    "application/json",
             },
         }
     );
 };
 
-// =====================================================
-// PACKAGING — DASHBOARD
-// =====================================================
+/*
+=====================================================
+PACKAGING — DASHBOARD
+=====================================================
+*/
 
-export const getPackagingDashboard = async (
-    token = null
-) => {
-    const packagingToken =
-        getValidPackagingToken(token);
+export const getPackagingDashboard =
+    async (token = null) => {
 
-    if (!packagingToken) {
-        throw new Error(
-            "Packaging authentication token not found."
+        const packagingToken =
+            getValidPackagingToken(token);
+
+        if (!packagingToken) {
+            throw new Error(
+                "Packaging authentication token not found."
+            );
+        }
+
+        return axios.get(
+            `${API_URL}/packaging/dashboard`,
+            {
+                headers: {
+                    Authorization:
+                        `Bearer ${packagingToken}`,
+                },
+            }
         );
-    }
+    };
 
-    return axios.get(
-        `${API_URL}/packaging/dashboard`,
-        {
-            headers: {
-                Authorization: `Bearer ${packagingToken}`,
-            },
+/*
+=====================================================
+PACKAGING — ASSIGNED ORDERS
+=====================================================
+*/
+
+export const getPackagingOrders =
+    async (token = null) => {
+
+        const packagingToken =
+            getValidPackagingToken(token);
+
+        if (!packagingToken) {
+            throw new Error(
+                "Packaging authentication token not found."
+            );
         }
-    );
-};
 
-// =====================================================
-// PACKAGING — ASSIGNED ORDERS
-// =====================================================
-
-export const getPackagingOrders = async (
-    token = null
-) => {
-    const packagingToken =
-        getValidPackagingToken(token);
-
-    if (!packagingToken) {
-        throw new Error(
-            "Packaging authentication token not found."
+        return axios.get(
+            `${API_URL}/packaging/orders`,
+            {
+                headers: {
+                    Authorization:
+                        `Bearer ${packagingToken}`,
+                },
+            }
         );
-    }
+    };
 
-    return axios.get(
-        `${API_URL}/packaging/orders`,
-        {
-            headers: {
-                Authorization: `Bearer ${packagingToken}`,
-            },
+/*
+=====================================================
+PACKAGING — ORDER DETAILS
+=====================================================
+*/
+
+export const getPackagingOrder =
+    async (
+        orderId,
+        token = null
+    ) => {
+
+        const packagingToken =
+            getValidPackagingToken(token);
+
+        if (!packagingToken) {
+            throw new Error(
+                "Packaging authentication token not found."
+            );
         }
-    );
-};
 
-// =====================================================
-// PACKAGING — ORDER DETAILS
-// =====================================================
-
-export const getPackagingOrder = async (
-    orderId,
-    token = null
-) => {
-    const packagingToken =
-        getValidPackagingToken(token);
-
-    if (!packagingToken) {
-        throw new Error(
-            "Packaging authentication token not found."
+        return axios.get(
+            `${API_URL}/packaging/orders/${orderId}`,
+            {
+                headers: {
+                    Authorization:
+                        `Bearer ${packagingToken}`,
+                },
+            }
         );
-    }
+    };
 
-    return axios.get(
-        `${API_URL}/packaging/orders/${orderId}`,
-        {
-            headers: {
-                Authorization: `Bearer ${packagingToken}`,
-            },
+/*
+=====================================================
+PACKAGING — UPDATE STATUS
+=====================================================
+*/
+
+export const updatePackagingStatus =
+    async (
+        orderId,
+        status,
+        token = null
+    ) => {
+
+        const packagingToken =
+            getValidPackagingToken(token);
+
+        if (!packagingToken) {
+            throw new Error(
+                "Packaging authentication token not found."
+            );
         }
-    );
-};
 
-// =====================================================
-// PACKAGING — UPDATE STATUS
-// =====================================================
+        return axios.patch(
+            `${API_URL}/packaging/orders/${orderId}/status`,
+            {
+                status,
+            },
+            {
+                headers: {
+                    Authorization:
+                        `Bearer ${packagingToken}`,
 
-export const updatePackagingStatus = async (
-    orderId,
-    status,
-    token = null
-) => {
-    const packagingToken =
-        getValidPackagingToken(token);
-
-    if (!packagingToken) {
-        throw new Error(
-            "Packaging authentication token not found."
+                    "Content-Type":
+                        "application/json",
+                },
+            }
         );
-    }
+    };
 
-    return axios.patch(
-        `${API_URL}/packaging/orders/${orderId}/status`,
-        {
-            status,
-        },
-        {
-            headers: {
-                Authorization: `Bearer ${packagingToken}`,
-                "Content-Type": "application/json",
+/*
+=====================================================
+ADMIN — ASSIGN ORDER
+=====================================================
+*/
+
+export const assignPackagingOrder =
+    async (
+        orderId,
+        staffId
+    ) => {
+
+        const token =
+            getAdminToken();
+
+        return axios.patch(
+            `${API_URL}/packaging/orders/${orderId}/assign`,
+            {
+                staffId,
             },
-        }
-    );
-};
+            {
+                headers: {
+                    Authorization:
+                        `Bearer ${token}`,
 
-// =====================================================
-// ADMIN — ASSIGN ORDER TO PACKAGING STAFF
-// =====================================================
+                    "Content-Type":
+                        "application/json",
+                },
+            }
+        );
+    };
 
-export const assignPackagingOrder = async (
-    orderId,
-    staffId
-) => {
-    const token = getAdminToken();
+/*
+=====================================================
+ADMIN — UPDATE PACKAGING STAFF
+=====================================================
+*/
 
-    return axios.patch(
-        `${API_URL}/packaging/orders/${orderId}/assign`,
-        {
-            staffId,
-        },
-        {
-            headers: {
-                Authorization: `Bearer ${token}`,
-                "Content-Type": "application/json",
-            },
-        }
-    );
-};
+export const updatePackagingStaff =
+    async (
+        staffId,
+        data
+    ) => {
 
-export const updatePackagingStaff = async (
-  staffId,
-  data
-) => {
-  const token = getAdminToken();
+        const token =
+            getAdminToken();
 
-  return axios.patch(
-    `${API_URL}/packaging/staff/${staffId}`,
-    data,
-    {
-      headers: {
-        Authorization: `Bearer ${token}`,
-        "Content-Type": "application/json",
-      },
-    }
-  );
-};
+        return axios.patch(
+            `${API_URL}/packaging/staff/${staffId}`,
+            data,
+            {
+                headers: {
+                    Authorization:
+                        `Bearer ${token}`,
+
+                    "Content-Type":
+                        "application/json",
+                },
+            }
+        );
+    };
