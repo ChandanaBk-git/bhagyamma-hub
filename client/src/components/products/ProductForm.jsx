@@ -1,4 +1,5 @@
-import { useEffect, useState } from "react";
+
+import { useEffect, useMemo, useState } from "react";
 
 import {
   Grid,
@@ -10,9 +11,27 @@ import {
   Card,
   CardMedia,
   IconButton,
+  FormControl,
+  InputLabel,
+  Select,
+  Checkbox,
+  ListItemText,
+  FormHelperText,
 } from "@mui/material";
 
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
+
+import { getCategories } from "../../services/category.service";
+
+const getId = (value) => {
+  if (!value) return "";
+
+  if (typeof value === "object") {
+    return String(value._id || "");
+  }
+
+  return String(value);
+};
 
 const ProductForm = ({
   initialValues,
@@ -20,26 +39,56 @@ const ProductForm = ({
   loading,
   mode = "create",
 }) => {
-  const [form, setForm] = useState(
-    initialValues || {
-      productName: "",
-      category: "",
-      brand: "Bhagyamma Hub",
-      description: "",
-      benefits: "",
-      ingredients: "",
-      usage: "",
-      storage: "",
-      weight: "",
-      quantity: "",
-      shelfLife: "",
-      manufacturer: "Bhagyamma Hub",
-      countryOfOrigin: "India",
-      sku: "",
-      price: "",
-      status: "Active",
-      images: [],
-    }
+  const [form, setForm] = useState({
+    productName: "",
+    brand: "Bhagyamma Hub",
+    description: "",
+    benefits: "",
+    ingredients: "",
+    usage: "",
+    storage: "",
+    weight: "",
+    quantity: "",
+    shelfLife: "",
+    manufacturer: "Bhagyamma Hub",
+    countryOfOrigin: "India",
+    sku: "",
+    price: "",
+    status: "Active",
+    ...(initialValues || {}),
+  });
+
+  // =====================================================
+  // CATEGORY STATE
+  // =====================================================
+
+  const [categoryOptions, setCategoryOptions] = useState([]);
+
+  const [selectedParentCategory, setSelectedParentCategory] =
+    useState("");
+
+  const [selectedCategories, setSelectedCategories] =
+    useState([]);
+
+  const [categoryLoading, setCategoryLoading] = useState(false);
+  const [categoryError, setCategoryError] = useState("");
+
+  const parentCategories = useMemo(
+    () =>
+      categoryOptions.filter(
+        (category) => !category.parentCategory
+      ),
+    [categoryOptions]
+  );
+
+  const childCategories = useMemo(
+    () =>
+      categoryOptions.filter(
+        (category) =>
+          getId(category.parentCategory) ===
+          String(selectedParentCategory)
+      ),
+    [categoryOptions, selectedParentCategory]
   );
 
   // =====================================================
@@ -47,18 +96,78 @@ const ProductForm = ({
   // =====================================================
 
   const [mainImage, setMainImage] = useState(null);
-
-  const [additionalImages, setAdditionalImages] =
-    useState([]);
+  const [additionalImages, setAdditionalImages] = useState([]);
 
   const [mainPreview, setMainPreview] = useState("");
-
-  const [additionalPreviews, setAdditionalPreviews] =
-    useState([]);
+  const [additionalPreviews, setAdditionalPreviews] = useState([]);
 
   // =====================================================
-  // LOAD EXISTING PRODUCT IMAGES
-  // EDIT MODE
+  // LOAD CATEGORIES
+  // =====================================================
+
+  useEffect(() => {
+    let mounted = true;
+
+    const loadCategories = async () => {
+      try {
+        setCategoryLoading(true);
+        setCategoryError("");
+
+        const response = await getCategories();
+
+        if (!mounted) return;
+
+        const categories = Array.isArray(response)
+          ? response
+          : Array.isArray(response?.data)
+          ? response.data
+          : Array.isArray(response?.data?.data)
+          ? response.data.data
+          : [];
+
+        setCategoryOptions(categories);
+
+        if (mode === "edit" && initialValues) {
+          const parentId = getId(
+            initialValues.parentCategory
+          );
+
+          setSelectedParentCategory(parentId);
+
+          const existingCategories = Array.isArray(
+            initialValues.categories
+          )
+            ? initialValues.categories
+            : [];
+
+          const childIds = existingCategories
+            .map(getId)
+            .filter(Boolean);
+
+          setSelectedCategories(childIds);
+        }
+      } catch (error) {
+        if (mounted) {
+          setCategoryError(
+            error.message || "Failed to load categories."
+          );
+        }
+      } finally {
+        if (mounted) {
+          setCategoryLoading(false);
+        }
+      }
+    };
+
+    loadCategories();
+
+    return () => {
+      mounted = false;
+    };
+  }, [initialValues, mode]);
+
+  // =====================================================
+  // LOAD EXISTING IMAGES
   // =====================================================
 
   useEffect(() => {
@@ -67,154 +176,142 @@ const ProductForm = ({
       initialValues &&
       Array.isArray(initialValues.images)
     ) {
-      const existingImages =
-        initialValues.images.filter(Boolean);
+      const images = initialValues.images.filter(Boolean);
 
-      if (existingImages.length > 0) {
-        setMainPreview(existingImages[0]);
-
-        setAdditionalPreviews(
-          existingImages.slice(1, 4)
-        );
-      }
+      setMainPreview(images[0] || "");
+      setAdditionalPreviews(images.slice(1, 4));
     }
   }, [initialValues, mode]);
 
   // =====================================================
-  // HANDLE NORMAL FIELD CHANGE
+  // NORMAL FIELD CHANGE
   // =====================================================
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
+  const handleChange = (event) => {
+    const { name, value } = event.target;
 
-    setForm((prev) => ({
-      ...prev,
+    setForm((previous) => ({
+      ...previous,
       [name]: value,
     }));
   };
 
   // =====================================================
-  // MAIN IMAGE
-  // ONLY ONE IMAGE
+  // PARENT CATEGORY CHANGE
   // =====================================================
 
-  const handleMainImageChange = (e) => {
-    const file = e.target.files?.[0];
+  const handleParentCategoryChange = (event) => {
+    setSelectedParentCategory(event.target.value);
 
-    if (!file) {
-      return;
-    }
+    // Clear child selections when parent changes
+    setSelectedCategories([]);
+  };
 
-    // Validate image
+  // =====================================================
+  // CHILD CATEGORY CHANGE
+  // =====================================================
+
+  const handleChildCategoryChange = (event) => {
+    const value = event.target.value;
+
+    setSelectedCategories(
+      typeof value === "string"
+        ? value.split(",")
+        : value
+    );
+  };
+
+  // =====================================================
+  // MAIN IMAGE
+  // =====================================================
+
+  const handleMainImageChange = (event) => {
+    const file = event.target.files?.[0];
+
+    if (!file) return;
+
     if (!file.type.startsWith("image/")) {
       alert("Please select a valid image file.");
-      e.target.value = "";
+      event.target.value = "";
       return;
     }
 
-    // Validate size - 5 MB
     if (file.size > 5 * 1024 * 1024) {
       alert("Main image must be less than 5 MB.");
-      e.target.value = "";
+      event.target.value = "";
       return;
     }
 
-    // Revoke previous object URL
-    if (
-      mainPreview &&
-      mainPreview.startsWith("blob:")
-    ) {
+    if (mainPreview.startsWith("blob:")) {
       URL.revokeObjectURL(mainPreview);
     }
 
-    const preview = URL.createObjectURL(file);
-
     setMainImage(file);
-    setMainPreview(preview);
+    setMainPreview(URL.createObjectURL(file));
 
-    // Clear input so same image can be selected again
-    e.target.value = "";
+    event.target.value = "";
   };
 
   // =====================================================
   // ADDITIONAL IMAGES
-  // MAXIMUM 3
   // =====================================================
 
-  const handleAdditionalImagesChange = (e) => {
-    const files = Array.from(
-      e.target.files || []
-    );
+  const handleAdditionalImagesChange = (event) => {
+    const files = Array.from(event.target.files || []);
 
-    if (files.length === 0) {
-      return;
-    }
+    if (!files.length) return;
 
-    // Validate image files
     const invalidFile = files.find(
       (file) => !file.type.startsWith("image/")
     );
 
     if (invalidFile) {
       alert("Only image files are allowed.");
-      e.target.value = "";
+      event.target.value = "";
       return;
     }
 
-    // Validate file sizes
     const largeFile = files.find(
       (file) => file.size > 5 * 1024 * 1024
     );
 
     if (largeFile) {
-      alert(
-        "Each additional image must be less than 5 MB."
-      );
-      e.target.value = "";
+      alert("Each image must be less than 5 MB.");
+      event.target.value = "";
       return;
     }
 
-    // Maximum 3 additional images
-    const remainingSlots =
-      3 - additionalImages.length;
+    const remainingSlots = 3 - additionalImages.length;
 
     if (remainingSlots <= 0) {
-      alert(
-        "You can upload a maximum of 3 additional images."
-      );
-      e.target.value = "";
+      alert("Maximum 3 additional images are allowed.");
+      event.target.value = "";
       return;
     }
 
-    const selectedFiles = files.slice(
-      0,
-      remainingSlots
-    );
+    const selectedFiles = files.slice(0, remainingSlots);
 
     if (files.length > remainingSlots) {
       alert(
-        `Only ${remainingSlots} additional image${
-          remainingSlots > 1 ? "s are" : " is"
-        } allowed.`
+        `Only ${remainingSlots} additional image(s) allowed.`
       );
     }
 
-    const newPreviews =
-      selectedFiles.map((file) =>
-        URL.createObjectURL(file)
-      );
+    const previews = selectedFiles.map((file) =>
+      URL.createObjectURL(file)
+    );
 
-    setAdditionalImages((prev) => [
-      ...prev,
+    setAdditionalImages((previous) => [
+      ...previous,
       ...selectedFiles,
     ]);
 
-    setAdditionalPreviews((prev) => [
-      ...prev,
-      ...newPreviews,
+    setAdditionalPreviews((previous) => [
+      ...previous,
+      ...previews,
     ]);
 
-    e.target.value = "";
+    event.target.value = "";
   };
 
   // =====================================================
@@ -222,10 +319,7 @@ const ProductForm = ({
   // =====================================================
 
   const removeMainImage = () => {
-    if (
-      mainPreview &&
-      mainPreview.startsWith("blob:")
-    ) {
+    if (mainPreview.startsWith("blob:")) {
       URL.revokeObjectURL(mainPreview);
     }
 
@@ -238,54 +332,42 @@ const ProductForm = ({
   // =====================================================
 
   const removeAdditionalImage = (index) => {
-    const preview =
-      additionalPreviews[index];
+    const preview = additionalPreviews[index];
 
-    if (
-      preview &&
-      preview.startsWith("blob:")
-    ) {
+    if (preview?.startsWith("blob:")) {
       URL.revokeObjectURL(preview);
     }
 
-    setAdditionalImages((prev) =>
-      prev.filter(
-        (_, imageIndex) =>
-          imageIndex !== index
-      )
+    setAdditionalImages((previous) =>
+      previous.filter((_, i) => i !== index)
     );
 
-    setAdditionalPreviews((prev) =>
-      prev.filter(
-        (_, imageIndex) =>
-          imageIndex !== index
-      )
+    setAdditionalPreviews((previous) =>
+      previous.filter((_, i) => i !== index)
     );
   };
 
   // =====================================================
-  // SUBMIT
+  // SUBMIT PRODUCT
   // =====================================================
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-
-    // ===================================================
-    // CREATE MODE
-    // ===================================================
+  const handleSubmit = (event) => {
+    event.preventDefault();
 
     if (mode !== "edit" && !mainImage) {
-      alert(
-        "Please select the main product image."
-      );
-
+      alert("Please select the main product image.");
       return;
     }
 
-    // ===================================================
-    // IF NEW MAIN IMAGE IS SELECTED
-    // TOTAL MAXIMUM = 4
-    // ===================================================
+    if (!selectedParentCategory) {
+      alert("Please select a parent category.");
+      return;
+    }
+
+    if (selectedCategories.length === 0) {
+      alert("Please select at least one child category.");
+      return;
+    }
 
     const newImages = [];
 
@@ -298,72 +380,68 @@ const ProductForm = ({
     });
 
     if (newImages.length > 4) {
-      alert(
-        "Maximum 4 product images are allowed."
-      );
+      alert("Maximum 4 product images are allowed.");
+      return;
+    }
 
+    const selectedParent = parentCategories.find(
+      (category) =>
+        String(category._id) ===
+        String(selectedParentCategory)
+    );
+
+    if (!selectedParent) {
+      alert("Selected parent category is invalid.");
       return;
     }
 
     const formData = new FormData();
 
-    // ===================================================
-    // NORMAL PRODUCT FIELDS
-    // ===================================================
-
     Object.keys(form).forEach((key) => {
-      if (key !== "images") {
+      if (
+        key === "images" ||
+        key === "category" ||
+        key === "categories" ||
+        key === "parentCategory"
+      ) {
+        return;
+      }
+
+      const value = form[key];
+
+      if (value !== undefined && value !== null) {
         formData.append(
           key,
-          form[key] ?? ""
+          typeof value === "object"
+            ? JSON.stringify(value)
+            : String(value)
         );
       }
     });
 
-    // ===================================================
-    // IMAGE ORDER
-    //
-    // IMAGE 1 = MAIN IMAGE
-    // IMAGE 2 = ADDITIONAL
-    // IMAGE 3 = ADDITIONAL
-    // IMAGE 4 = ADDITIONAL
-    // ===================================================
+    formData.set(
+      "parentCategory",
+      selectedParentCategory
+    );
+
+    // Legacy compatibility field
+    formData.set("category", selectedParent.name);
+
+    formData.set(
+      "categories",
+      JSON.stringify(selectedCategories)
+    );
 
     newImages.forEach((image) => {
-      formData.append(
-        "images",
-        image
-      );
+      formData.append("images", image);
     });
 
-    // ===================================================
-    // DEBUG
-    // ===================================================
-
-    console.log(
-      "========== PRODUCT FORM =========="
-    );
-
-    console.log(
-      "Main image:",
-      mainImage?.name || "Existing image"
-    );
-
-    console.log(
-      "Additional images:",
-      additionalImages.map(
-        (image) => image.name
-      )
-    );
-
-    console.log(
-      "Total new images:",
-      newImages.length
-    );
-
-    console.log(
-      "=================================="
-    );
+    console.log("========== PRODUCT FORM ==========");
+    console.log("Parent:", selectedParent.name);
+    console.log("Parent ID:", selectedParentCategory);
+    console.log("Child IDs:", selectedCategories);
+    console.log("New images:", newImages.length);
+    console.log("==================================");
 
     onSubmit(formData);
   };
@@ -403,20 +481,11 @@ const ProductForm = ({
     <Box
       component="form"
       onSubmit={handleSubmit}
-      sx={{
-        width: "100%",
-      }}
+      sx={{ width: "100%" }}
     >
-      <Grid
-        container
-        spacing={{
-          xs: 1.5,
-          sm: 2,
-        }}
-      >
-        {/* =================================================
-            BASIC INFORMATION
-        ================================================= */}
+      <Grid container spacing={{ xs: 1.5, sm: 2 }}>
+
+        {/* BASIC INFORMATION */}
 
         <Grid item xs={12} sm={6}>
           <TextField
@@ -430,16 +499,90 @@ const ProductForm = ({
           />
         </Grid>
 
+        {/* PARENT CATEGORY */}
+
         <Grid item xs={12} sm={6}>
           <TextField
+            select
             fullWidth
             required
-            label="Category"
-            name="category"
-            value={form.category || ""}
-            onChange={handleChange}
+            label="Parent Category"
+            value={selectedParentCategory}
+            onChange={handleParentCategoryChange}
+            disabled={categoryLoading}
             sx={fieldSx}
-          />
+          >
+            {parentCategories.map((category) => (
+              <MenuItem
+                key={category._id}
+                value={String(category._id)}
+              >
+                {category.name}
+              </MenuItem>
+            ))}
+          </TextField>
+        </Grid>
+
+        {/* CHILD CATEGORIES */}
+
+        <Grid item xs={12} sm={6}>
+          <FormControl
+            fullWidth
+            required
+            disabled={
+              !selectedParentCategory ||
+              childCategories.length === 0 ||
+              categoryLoading
+            }
+            error={Boolean(categoryError)}
+            sx={fieldSx}
+          >
+            <InputLabel id="product-child-categories-label">
+              Child Categories
+            </InputLabel>
+
+            <Select
+              labelId="product-child-categories-label"
+              multiple
+              value={selectedCategories}
+              label="Child Categories"
+              onChange={handleChildCategoryChange}
+              renderValue={(selected) =>
+                childCategories
+                  .filter((category) =>
+                    selected.includes(String(category._id))
+                  )
+                  .map((category) => category.name)
+                  .join(", ")
+              }
+            >
+              {childCategories.map((category) => (
+                <MenuItem
+                  key={category._id}
+                  value={String(category._id)}
+                >
+                  <Checkbox
+                    checked={selectedCategories.includes(
+                      String(category._id)
+                    )}
+                  />
+
+                  <ListItemText primary={category.name} />
+                </MenuItem>
+              ))}
+            </Select>
+
+            <FormHelperText>
+              {categoryError ||
+                (categoryLoading
+                  ? "Loading categories..."
+                  : !selectedParentCategory
+                  ? "Select a parent category first."
+                  : childCategories.length === 0
+                  ? "No child categories available."
+                  : "Select one or more child categories.")}
+            </FormHelperText>
+          </FormControl>
         </Grid>
 
         <Grid item xs={12} sm={6}>
@@ -464,9 +607,7 @@ const ProductForm = ({
           />
         </Grid>
 
-        {/* =================================================
-            DESCRIPTION
-        ================================================= */}
+        {/* DESCRIPTION */}
 
         <Grid item xs={12}>
           <TextField
@@ -481,9 +622,7 @@ const ProductForm = ({
           />
         </Grid>
 
-        {/* =================================================
-            PRODUCT DETAILS
-        ================================================= */}
+        {/* PRODUCT DETAILS */}
 
         <Grid item xs={12} sm={6}>
           <TextField
@@ -537,9 +676,7 @@ const ProductForm = ({
           />
         </Grid>
 
-        {/* =================================================
-            PRODUCT SPECIFICATIONS
-        ================================================= */}
+        {/* SPECIFICATIONS */}
 
         <Grid item xs={12} sm={4}>
           <TextField
@@ -590,17 +727,13 @@ const ProductForm = ({
             fullWidth
             label="Country Of Origin"
             name="countryOfOrigin"
-            value={
-              form.countryOfOrigin || ""
-            }
+            value={form.countryOfOrigin || ""}
             onChange={handleChange}
             sx={fieldSx}
           />
         </Grid>
 
-        {/* =================================================
-            PRICE + STATUS
-        ================================================= */}
+        {/* PRICE AND STATUS */}
 
         <Grid item xs={12} sm={6}>
           <TextField
@@ -609,11 +742,9 @@ const ProductForm = ({
             type="number"
             label="Price"
             name="price"
-            value={form.price || ""}
+            value={form.price ?? ""}
             onChange={handleChange}
-            inputProps={{
-              min: 0,
-            }}
+            inputProps={{ min: 0 }}
             sx={fieldSx}
           />
         </Grid>
@@ -624,62 +755,36 @@ const ProductForm = ({
             fullWidth
             label="Status"
             name="status"
-            value={
-              form.status || "Active"
-            }
+            value={form.status || "Active"}
             onChange={handleChange}
             sx={fieldSx}
           >
-            <MenuItem value="Active">
-              Active
-            </MenuItem>
-
-            <MenuItem value="Inactive">
-              Inactive
-            </MenuItem>
+            <MenuItem value="Active">Active</MenuItem>
+            <MenuItem value="Inactive">Inactive</MenuItem>
           </TextField>
         </Grid>
 
-        {/* =================================================
-            MAIN IMAGE
-        ================================================= */}
+        {/* MAIN IMAGE */}
 
         <Grid item xs={12}>
           <Box
             sx={{
               border: "1px solid #D8D8D8",
-              p: {
-                xs: 1.5,
-                sm: 2,
-              },
+              p: { xs: 1.5, sm: 2 },
               bgcolor: "#FAFAFA",
             }}
           >
-            <Typography
-              sx={{
-                fontWeight: 700,
-                fontSize: {
-                  xs: "0.82rem",
-                  sm: "0.9rem",
-                },
-                mb: 0.5,
-              }}
-            >
+            <Typography fontWeight={700} mb={0.5}>
               Main Product Image
             </Typography>
 
             <Typography
-              sx={{
-                fontSize: {
-                  xs: "0.68rem",
-                  sm: "0.75rem",
-                },
-                color: "#777",
-                mb: 1.5,
-              }}
+              variant="caption"
+              color="text.secondary"
+              display="block"
+              mb={1.5}
             >
-              Select 1 image. This will be the
-              main product image.
+              Select one image. Maximum size 5 MB.
             </Typography>
 
             <Button
@@ -691,46 +796,28 @@ const ProductForm = ({
                 borderColor: "#2E7D32",
                 color: "#2E7D32",
                 textTransform: "none",
-                fontWeight: 600,
-
-                "&:hover": {
-                  borderColor: "#1B5E20",
-                  bgcolor: "#F1F8F2",
-                },
               }}
             >
-              {mainImage ||
-              !mainPreview
+              {mainImage || !mainPreview
                 ? "Select Main Image"
                 : "Change Main Image"}
 
               <input
                 hidden
                 type="file"
-                accept="image/jpeg,image/jpg,image/png,image/webp,image/gif"
-                onChange={
-                  handleMainImageChange
-                }
+                accept="image/*"
+                onChange={handleMainImageChange}
               />
             </Button>
-
-            {/* MAIN PREVIEW */}
 
             {mainPreview && (
               <Box
                 sx={{
                   mt: 2,
                   position: "relative",
-                  width: {
-                    xs: 150,
-                    sm: 190,
-                  },
-                  height: {
-                    xs: 150,
-                    sm: 190,
-                  },
-                  border:
-                    "2px solid #2E7D32",
+                  width: { xs: 150, sm: 190 },
+                  height: { xs: 150, sm: 190 },
+                  border: "2px solid #2E7D32",
                   bgcolor: "#fff",
                 }}
               >
@@ -751,8 +838,7 @@ const ProductForm = ({
                     left: 0,
                     right: 0,
                     bottom: 0,
-                    bgcolor:
-                      "rgba(27,94,32,0.9)",
+                    bgcolor: "rgba(27,94,32,0.9)",
                     color: "#fff",
                     textAlign: "center",
                     py: 0.5,
@@ -766,29 +852,16 @@ const ProductForm = ({
                 {mainImage && (
                   <IconButton
                     type="button"
-                    onClick={
-                      removeMainImage
-                    }
+                    onClick={removeMainImage}
                     sx={{
-                      position:
-                        "absolute",
+                      position: "absolute",
                       top: 3,
                       right: 3,
-                      bgcolor:
-                        "rgba(255,255,255,0.9)",
-                      width: 30,
-                      height: 30,
-
-                      "&:hover": {
-                        bgcolor: "#fff",
-                      },
+                      bgcolor: "#fff",
                     }}
                   >
                     <DeleteOutlineIcon
-                      sx={{
-                        fontSize: 18,
-                        color: "#D32F2F",
-                      }}
+                      sx={{ color: "#D32F2F" }}
                     />
                   </IconButton>
                 )}
@@ -797,100 +870,61 @@ const ProductForm = ({
           </Box>
         </Grid>
 
-        {/* =================================================
-            ADDITIONAL IMAGES
-        ================================================= */}
+        {/* ADDITIONAL IMAGES */}
 
         <Grid item xs={12}>
           <Box
             sx={{
               border: "1px solid #D8D8D8",
-              p: {
-                xs: 1.5,
-                sm: 2,
-              },
+              p: { xs: 1.5, sm: 2 },
               bgcolor: "#FAFAFA",
             }}
           >
-            <Typography
-              sx={{
-                fontWeight: 700,
-                fontSize: {
-                  xs: "0.82rem",
-                  sm: "0.9rem",
-                },
-                mb: 0.5,
-              }}
-            >
+            <Typography fontWeight={700} mb={0.5}>
               Other Product Images
             </Typography>
 
             <Typography
-              sx={{
-                fontSize: {
-                  xs: "0.68rem",
-                  sm: "0.75rem",
-                },
-                color: "#777",
-                mb: 1.5,
-              }}
+              variant="caption"
+              color="text.secondary"
+              display="block"
+              mb={1.5}
             >
-              Select up to 3 additional images.
-              Total product images: maximum 4.
+              Maximum 3 additional images. Each must be under 5 MB.
             </Typography>
 
             <Button
               variant="outlined"
               component="label"
-              disabled={
-                additionalImages.length >= 3
-              }
+              disabled={additionalImages.length >= 3}
               sx={{
                 minHeight: 42,
                 borderRadius: 0,
                 borderColor: "#2E7D32",
                 color: "#2E7D32",
                 textTransform: "none",
-                fontWeight: 600,
-
-                "&:hover": {
-                  borderColor: "#1B5E20",
-                  bgcolor: "#F1F8F2",
-                },
-
-                "&:disabled": {
-                  borderColor: "#BDBDBD",
-                  color: "#999",
-                },
               }}
             >
               Select Other Images
+
               <input
                 hidden
                 type="file"
                 multiple
-                accept="image/jpeg,image/jpg,image/png,image/webp,image/gif"
-                onChange={
-                  handleAdditionalImagesChange
-                }
+                accept="image/*"
+                onChange={handleAdditionalImagesChange}
               />
             </Button>
 
             <Typography
-              sx={{
-                mt: 1,
-                fontSize: "0.68rem",
-                color: "#777",
-              }}
+              mt={1}
+              variant="caption"
+              color="text.secondary"
             >
-              {additionalImages.length}/3
-              additional images selected
+              {additionalImages.length}/3 additional images selected
             </Typography>
 
-            {/* ADDITIONAL PREVIEWS */}
-
-            {additionalPreviews.length >
-              0 && (
+            {additionalPreviews.length > 0 && (
               <Box
                 sx={{
                   display: "flex",
@@ -899,183 +933,124 @@ const ProductForm = ({
                   mt: 2,
                 }}
               >
-                {additionalPreviews.map(
-                  (image, index) => (
-                    <Box
-                      key={`${image}-${index}`}
+                {additionalPreviews.map((image, index) => (
+                  <Box
+                    key={`${image}-${index}`}
+                    sx={{ position: "relative" }}
+                  >
+                    <Card
+                      elevation={0}
                       sx={{
-                        position:
-                          "relative",
+                        width: { xs: 85, sm: 110 },
+                        height: { xs: 85, sm: 110 },
+                        borderRadius: 0,
+                        border: "1px solid #D8D8D8",
+                        overflow: "hidden",
+                        bgcolor: "#fff",
                       }}
                     >
-                      <Card
-                        elevation={0}
+                      <CardMedia
+                        component="img"
+                        image={image}
+                        alt={`Additional ${index + 1}`}
                         sx={{
-                          width: {
-                            xs: 85,
-                            sm: 110,
-                          },
-                          height: {
-                            xs: 85,
-                            sm: 110,
-                          },
-                          borderRadius: 0,
-                          border:
-                            "1px solid #D8D8D8",
-                          overflow: "hidden",
+                          width: "100%",
+                          height: "100%",
+                          objectFit: "contain",
+                        }}
+                      />
+                    </Card>
+
+                    <Box
+                      sx={{
+                        position: "absolute",
+                        left: 0,
+                        bottom: 0,
+                        bgcolor: "rgba(0,0,0,0.65)",
+                        color: "#fff",
+                        px: 0.8,
+                        py: 0.25,
+                        fontSize: "0.65rem",
+                        fontWeight: 600,
+                      }}
+                    >
+                      Image {index + 2}
+                    </Box>
+
+                    {additionalImages[index] && (
+                      <IconButton
+                        type="button"
+                        onClick={() =>
+                          removeAdditionalImage(index)
+                        }
+                        sx={{
+                          position: "absolute",
+                          top: 2,
+                          right: 2,
+                          width: 28,
+                          height: 28,
                           bgcolor: "#fff",
                         }}
                       >
-                        <CardMedia
-                          component="img"
-                          image={image}
-                          alt={`Additional ${
-                            index + 1
-                          }`}
+                        <DeleteOutlineIcon
                           sx={{
-                            width: "100%",
-                            height: "100%",
-                            objectFit:
-                              "contain",
+                            fontSize: 17,
+                            color: "#D32F2F",
                           }}
                         />
-                      </Card>
-
-                      {/* NUMBER */}
-
-                      <Box
-                        sx={{
-                          position:
-                            "absolute",
-                          left: 0,
-                          bottom: 0,
-                          bgcolor:
-                            "rgba(0,0,0,0.65)",
-                          color: "#fff",
-                          px: 0.8,
-                          py: 0.25,
-                          fontSize:
-                            "0.65rem",
-                          fontWeight: 600,
-                        }}
-                      >
-                        Image {index + 2}
-                      </Box>
-
-                      {/* DELETE */}
-
-                      {additionalImages[
-                        index
-                      ] && (
-                        <IconButton
-                          type="button"
-                          onClick={() =>
-                            removeAdditionalImage(
-                              index
-                            )
-                          }
-                          sx={{
-                            position:
-                              "absolute",
-                            top: 2,
-                            right: 2,
-                            width: 28,
-                            height: 28,
-                            bgcolor:
-                              "rgba(255,255,255,0.9)",
-
-                            "&:hover": {
-                              bgcolor:
-                                "#fff",
-                            },
-                          }}
-                        >
-                          <DeleteOutlineIcon
-                            sx={{
-                              fontSize: 17,
-                              color:
-                                "#D32F2F",
-                            }}
-                          />
-                        </IconButton>
-                      )}
-                    </Box>
-                  )
-                )}
+                      </IconButton>
+                    )}
+                  </Box>
+                ))}
               </Box>
             )}
           </Box>
         </Grid>
 
-        {/* =================================================
-            IMAGE SUMMARY
-        ================================================= */}
+        {/* IMAGE SUMMARY */}
 
         <Grid item xs={12}>
           <Box
             sx={{
               p: 1.2,
               bgcolor: "#F1F8F2",
-              border:
-                "1px solid #C8E6C9",
+              border: "1px solid #C8E6C9",
             }}
           >
             <Typography
               sx={{
-                fontSize: {
-                  xs: "0.7rem",
-                  sm: "0.78rem",
-                },
+                fontSize: "0.78rem",
                 fontWeight: 600,
                 color: "#1B5E20",
               }}
             >
               Product Images:{" "}
-              {mainPreview ? 1 : 0}
-              {" + "}
-              {additionalPreviews.length}
-              {" = "}
               {(mainPreview ? 1 : 0) +
-                additionalPreviews.length}
+                additionalPreviews.length}{" "}
               / 4
             </Typography>
           </Box>
         </Grid>
 
-        {/* =================================================
-            SAVE BUTTON
-        ================================================= */}
+        {/* SAVE BUTTON */}
 
         <Grid item xs={12}>
           <Button
             fullWidth
             type="submit"
             variant="contained"
-            disabled={loading}
+            disabled={loading || categoryLoading}
             sx={{
-              minHeight: {
-                xs: 40,
-                sm: 44,
-              },
+              minHeight: { xs: 40, sm: 44 },
               mt: 0.5,
               borderRadius: 0,
               bgcolor: "#1B5E20",
               textTransform: "none",
               fontWeight: 700,
-              fontSize: {
-                xs: "0.72rem",
-                sm: "0.8rem",
-              },
               boxShadow: "none",
-
               "&:hover": {
                 bgcolor: "#154A19",
                 boxShadow: "none",
-              },
-
-              "&:disabled": {
-                bgcolor: "#A5A5A5",
-                color: "#fff",
               },
             }}
           >

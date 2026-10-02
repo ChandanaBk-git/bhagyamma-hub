@@ -27,14 +27,20 @@ const categorySchema = new mongoose.Schema(
       default: "",
     },
 
+    // null = Parent Category
+    // ObjectId = Child Category
+    parentCategory: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Category",
+      default: null,
+    },
+
     isActive: {
       type: Boolean,
       default: true,
     },
   },
-  {
-    timestamps: true,
-  }
+  { timestamps: true }
 );
 
 module.exports = mongoose.model("Category", categorySchema);

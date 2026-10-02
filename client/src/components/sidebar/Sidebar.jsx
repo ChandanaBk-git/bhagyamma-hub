@@ -22,6 +22,8 @@ import ReceiptLongRoundedIcon from "@mui/icons-material/ReceiptLongRounded";
 import LogoutRoundedIcon from "@mui/icons-material/LogoutRounded";
 import AdminPanelSettingsRoundedIcon from "@mui/icons-material/AdminPanelSettingsRounded";
 import LocalShippingRoundedIcon from "@mui/icons-material/LocalShippingRounded";
+import CategoryRoundedIcon from "@mui/icons-material/CategoryRounded";
+
 
 const Sidebar = ({
   drawerWidth,
@@ -49,7 +51,11 @@ const Sidebar = ({
         icon: <Inventory2RoundedIcon />,
         path: "/admin/products",
     },
-
+{
+  text: "Categories",
+  icon: <CategoryRoundedIcon />,
+  path: "/admin/categories",
+},
     {
         text: "Members",
         icon: <GroupRoundedIcon />,

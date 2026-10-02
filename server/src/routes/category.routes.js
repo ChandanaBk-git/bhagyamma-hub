@@ -17,8 +17,13 @@ const {
     categoryValidation,
 } = require("../validations/category.validation");
 
+// Get category hierarchy
+router.get("/tree", controller.getCategoryTree);
+
+// Get all categories
 router.get("/", controller.getAllCategories);
 
+// Get category by ID
 router.get("/:id", controller.getCategoryById);
 
 router.post(
@@ -47,5 +52,7 @@ router.delete(
     authorize("SUPER_ADMIN"),
     controller.deleteCategory
 );
+
+router.get("/tree", controller.getCategoryTree);
 
 module.exports = router;

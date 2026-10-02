@@ -1,3 +1,4 @@
+
 import API from "../api";
 
 // =====================================================
@@ -11,7 +12,6 @@ const getToken = () => {
   );
 };
 
-
 // =====================================================
 // AUTH HEADERS
 // =====================================================
@@ -20,12 +20,9 @@ const getAuthHeaders = () => {
   const token = getToken();
 
   return token
-    ? {
-        Authorization: `Bearer ${token}`,
-      }
+    ? { Authorization: `Bearer ${token}` }
     : {};
 };
-
 
 // =====================================================
 // RETRY DELAY
@@ -37,348 +34,229 @@ const wait = (milliseconds) => {
   });
 };
 
+// =====================================================
+// PREPARE MULTI-CATEGORY FORM DATA
+// =====================================================
+
+const prepareProductFormData = (formData) => {
+  if (!(formData instanceof FormData)) {
+    return formData;
+  }
+
+  const categories = formData.get("categories");
+
+  if (Array.isArray(categories)) {
+    formData.set("categories", JSON.stringify(categories));
+  }
+
+  return formData;
+};
 
 // =====================================================
 // GET ALL PRODUCTS
 // =====================================================
 
-export const getProducts = async (
-  activeOnly = true
-) => {
-
+export const getProducts = async (activeOnly = true) => {
   const endpoint = activeOnly
     ? "/products?active=true"
     : "/products";
 
-
-  // ===================================================
-  // RETRY SETTINGS
-  // ===================================================
-
   const maxAttempts = 3;
-
-  const retryDelays = [
-    1000,
-    2000,
-    3000,
-  ];
-
+  const retryDelays = [1000, 2000, 3000];
 
   let lastError = null;
 
-
-  // ===================================================
-  // TRY API REQUEST
-  // ===================================================
-
-  for (
-    let attempt = 1;
-    attempt <= maxAttempts;
-    attempt++
-  ) {
-
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
     try {
-
       console.log(
         `PRODUCT API ATTEMPT ${attempt}/${maxAttempts}`
       );
 
+      const response = await API.get(endpoint);
 
-      const response =
-        await API.get(endpoint);
+      console.log("PRODUCT API RESPONSE:", response.data);
 
-
-      console.log(
-        "PRODUCT API RESPONSE:",
-        response.data
-      );
-
-
-      const products =
-        response.data?.data || [];
-
-
-      // ===============================================
-      // SUCCESS
-      // ===============================================
-
-      return products;
-
+      return response.data?.data || [];
     } catch (error) {
-
       lastError = error;
-
 
       console.error(
         `Get Products Error - Attempt ${attempt}:`,
         error.response?.data || error
       );
 
+      if (attempt === maxAttempts) break;
 
-      // =============================================
-      // IF LAST ATTEMPT, THROW ERROR
-      // =============================================
-
-      if (
-        attempt === maxAttempts
-      ) {
-
-        break;
-
-      }
-
-
-      // =============================================
-      // WAIT BEFORE RETRY
-      // =============================================
-
-      await wait(
-        retryDelays[
-          attempt - 1
-        ]
-      );
-
+      await wait(retryDelays[attempt - 1]);
     }
-
   }
-
-
-  // ===================================================
-  // ALL ATTEMPTS FAILED
-  // ===================================================
 
   throw (
     lastError?.response?.data || {
       success: false,
-      message:
-        "Unable to fetch products. Please try again.",
+      message: "Unable to fetch products. Please try again.",
     }
   );
-
 };
-
 
 // =====================================================
 // GET PRODUCT BY ID
 // =====================================================
 
-export const getProductById = async (
-  id
-) => {
-
+export const getProductById = async (id) => {
   try {
+    const response = await API.get(`/products/${id}`);
 
-    const response =
-      await API.get(
-        `/products/${id}`
-      );
-
-    return (
-      response.data?.data ||
-      null
-    );
-
+    return response.data?.data || null;
   } catch (error) {
-
-    console.error(
-      "Get Product Error:",
-      error
-    );
+    console.error("Get Product Error:", error);
 
     throw (
       error.response?.data || {
         success: false,
-        message:
-          "Unable to fetch product.",
+        message: "Unable to fetch product.",
       }
     );
-
   }
-
 };
-
 
 // =====================================================
 // CREATE PRODUCT
 // =====================================================
 
-export const createProduct = async (
-  formData
-) => {
-
+export const createProduct = async (formData) => {
   try {
-
-    const token =
-      getToken();
-
+    const token = getToken();
 
     if (!token) {
-
       throw {
         success: false,
-        message:
-          "Authentication token not found. Please login again.",
+        message: "Authentication token not found. Please login again.",
       };
-
     }
 
+    prepareProductFormData(formData);
 
-    const response =
-      await API.post(
-        "/products",
-        formData,
-        {
-          headers: {
-            Authorization:
-              `Bearer ${token}`,
-
-            "Content-Type":
-              "multipart/form-data",
-          },
-        }
-      );
-
+    const response = await API.post(
+      "/products",
+      formData,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
 
     return response.data;
-
   } catch (error) {
-
-    console.error(
-      "Create Product Error:",
-      error
-    );
+    console.error("Create Product Error:", error);
 
     throw (
       error.response?.data || {
         success: false,
-        message:
-          "Unable to create product.",
+        message: "Unable to create product.",
       }
     );
-
   }
-
 };
-
 
 // =====================================================
 // UPDATE PRODUCT
 // =====================================================
 
-export const updateProduct = async (
-  id,
-  formData
-) => {
+// =====================================================
+// UPDATE PRODUCT
+// =====================================================
 
+export const updateProduct = async (id, formData) => {
   try {
-
-    const token =
-      getToken();
-
+    const token = getToken();
 
     if (!token) {
-
-      throw {
-        success: false,
-        message:
-          "Authentication token not found. Please login again.",
-      };
-
+      throw new Error(
+        "Authentication token not found. Please login again."
+      );
     }
 
+    prepareProductFormData(formData);
 
-    const response =
-      await API.put(
-        `/products/${id}`,
-        formData,
-        {
-          headers: {
-            Authorization:
-              `Bearer ${token}`,
+    console.log("UPDATE PRODUCT ID:", id);
 
-            "Content-Type":
-              "multipart/form-data",
-          },
-        }
-      );
+    console.log(
+      "UPDATE PRODUCT FORM DATA:",
+      [...formData.entries()].map(([key, value]) => [
+        key,
+        value instanceof File
+          ? {
+              name: value.name,
+              type: value.type,
+              size: value.size,
+            }
+          : value,
+      ])
+    );
 
+    const response = await API.put(
+      `/products/${id}`,
+      formData,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+
+    console.log("UPDATE PRODUCT SUCCESS:", response.data);
 
     return response.data;
-
   } catch (error) {
-
-    console.error(
-      "Update Product Error:",
-      error
-    );
+    console.error("UPDATE PRODUCT ERROR:", error);
+    console.error("HTTP STATUS:", error.response?.status);
+    console.error("BACKEND RESPONSE:", error.response?.data);
+    console.error("ERROR MESSAGE:", error.message);
 
     throw (
       error.response?.data || {
         success: false,
-        message:
-          "Unable to update product.",
+        message: error.message || "Unable to update product.",
       }
     );
-
   }
-
 };
-
 
 // =====================================================
 // DELETE PRODUCT
 // =====================================================
 
-export const deleteProduct = async (
-  id
-) => {
-
+export const deleteProduct = async (id) => {
   try {
-
-    const token =
-      getToken();
-
+    const token = getToken();
 
     if (!token) {
-
       throw {
         success: false,
-        message:
-          "Authentication token not found. Please login again.",
+        message: "Authentication token not found. Please login again.",
       };
-
     }
 
-
-    const response =
-      await API.delete(
-        `/products/${id}`,
-        {
-          headers: {
-            Authorization:
-              `Bearer ${token}`,
-          },
-        }
-      );
-
+    const response = await API.delete(
+      `/products/${id}`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
 
     return response.data;
-
   } catch (error) {
-
-    console.error(
-      "Delete Product Error:",
-      error
-    );
+    console.error("Delete Product Error:", error);
 
     throw (
       error.response?.data || {
         success: false,
-        message:
-          "Unable to delete product.",
+        message: "Unable to delete product.",
       }
     );
-
   }
-
 };

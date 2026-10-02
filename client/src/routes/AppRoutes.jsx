@@ -1,3 +1,4 @@
+
 import {
   Routes,
   Route,
@@ -12,6 +13,7 @@ import MainLayout from "../layouts/MainLayout";
 import AdminLayout from "../layouts/AdminLayout";
 import ManagerLayout from "../layouts/ManagerLayout";
 import MemberLayout from "../layouts/MemberLayout";
+import PackagingLayout from "../layouts/PackagingLayout";
 
 // =====================================================
 // PACKAGING TEAM
@@ -19,7 +21,6 @@ import MemberLayout from "../layouts/MemberLayout";
 
 import PackagingStaff from "../pages/Admin/PackagingStaff";
 import PackagingProtectedRoute from "../components/packaging/PackagingProtectedRoute";
-import PackagingLayout from "../layouts/PackagingLayout";
 import PackagingDashboard from "../pages/Packaging/Dashboard";
 import PackagingOrders from "../pages/Packaging/Orders";
 import PackagingOrderDetails from "../pages/Packaging/OrderDetails";
@@ -47,17 +48,13 @@ import ProductDetails from "../components/products/ProductDetails";
 // PAYMENT
 // =====================================================
 
-// NORMAL PRODUCT ORDER PAYMENT
 import PaymentScanner from "../pages/Payment/PaymentScanner";
-
-// PHONEPE CALLBACK
 import PhonePeCallback from "../pages/Checkout/PhonePeCallback";
 
 // =====================================================
 // MEMBERSHIP PAYMENT
 // =====================================================
 
-// SEPARATE ₹2,000 REGISTRATION PAYMENT
 import MembershipPaymentScanner
   from "../pages/Auth/MembershipPaymentScanner";
 
@@ -101,6 +98,7 @@ import EditMember from "../pages/Admin/EditMember";
 import Reports from "../pages/Admin/Reports";
 import ReferralTreePage from "../pages/Admin/ReferralTreePage";
 import AdminOrders from "../pages/Admin/Orders";
+import Categories from "../pages/Admin/Categories";
 
 // =====================================================
 // MANAGER
@@ -117,12 +115,21 @@ import ManagerMemberDetails from "../pages/manager/MemberDetails";
 import ManagerSellingPoints from "../pages/manager/SellingPoints";
 import ManagerWallet from "../pages/manager/ManagerWallet";
 
-// PACKAGING TEAMS
+// =====================================================
+// MANAGER PACKAGING TEAMS
+// =====================================================
+
 import ManagerPackagingTeams
   from "../pages/manager/ManagerPackagingTeams";
 
 import ManagerPackagingTeamOrders
   from "../pages/manager/ManagerPackagingTeamOrders";
+
+// =====================================================
+// NOTIFICATIONS
+// =====================================================
+
+import Notifications from "../pages/Notifications";
 
 // =====================================================
 // ERROR
@@ -155,25 +162,13 @@ const RoleBasedHomeLayout = () => {
     user?.role || ""
   ).toUpperCase();
 
-  // ===================================================
-  // MEMBER
-  // ===================================================
-
   if (role === "MEMBER") {
     return <MemberLayout />;
   }
 
-  // ===================================================
-  // MANAGER
-  // ===================================================
-
   if (role === "MANAGER") {
     return <ManagerLayout />;
   }
-
-  // ===================================================
-  // ADMIN
-  // ===================================================
 
   if (
     role === "ADMIN" ||
@@ -181,10 +176,6 @@ const RoleBasedHomeLayout = () => {
   ) {
     return <AdminLayout />;
   }
-
-  // ===================================================
-  // GUEST / NORMAL USER
-  // ===================================================
 
   return <MainLayout />;
 };
@@ -217,53 +208,46 @@ const AppRoutes = () => {
 
       <Route element={<MainLayout />}>
 
-        {/* ABOUT */}
-
         <Route
           path="/about"
           element={<About />}
         />
-
-        {/* CONTACT */}
 
         <Route
           path="/contact"
           element={<Contact />}
         />
 
-        {/* PRODUCTS */}
-
         <Route
           path="/products"
           element={<Products />}
         />
-
-        {/* PRODUCT DETAILS */}
 
         <Route
           path="/products/:id"
           element={<ProductDetails />}
         />
 
-        {/* CART */}
-
         <Route
           path="/cart"
           element={<Cart />}
         />
-
-        {/* ORDERS */}
 
         <Route
           path="/orders"
           element={<Orders />}
         />
 
-        {/* CHECKOUT */}
-
         <Route
           path="/checkout"
           element={<Checkout />}
+        />
+
+        {/* PUBLIC NOTIFICATION PAGE */}
+
+        <Route
+          path="/notifications"
+          element={<Notifications />}
         />
 
       </Route>
@@ -292,14 +276,12 @@ const AppRoutes = () => {
       />
 
       {/* =================================================
-          ₹2,000 MEMBERSHIP REGISTRATION PAYMENT
+          MEMBERSHIP PAYMENT
       ================================================= */}
 
       <Route
         path="/membership-payment"
-        element={
-          <MembershipPaymentScanner />
-        }
+        element={<MembershipPaymentScanner />}
       />
 
       {/* =================================================
@@ -327,20 +309,13 @@ const AppRoutes = () => {
       />
 
       {/* =================================================
-          OLD PACKAGING LOGIN REDIRECT
-
-          Packaging staff now use the common /login page.
-          Keep this redirect so old bookmarks/links continue
-          to work.
+          PACKAGING LOGIN REDIRECT
       ================================================= */}
 
       <Route
         path="/packaging/login"
         element={
-          <Navigate
-            to="/login"
-            replace
-          />
+          <Navigate to="/login" replace />
         }
       />
 
@@ -361,8 +336,6 @@ const AppRoutes = () => {
           element={<MemberLayout />}
         >
 
-          {/* DASHBOARD */}
-
           <Route
             index
             element={<MemberDashboard />}
@@ -373,106 +346,82 @@ const AppRoutes = () => {
             element={<MemberDashboard />}
           />
 
-          {/* PROFILE */}
-
           <Route
             path="profile"
             element={<MemberProfile />}
           />
-
-          {/* NETWORK */}
 
           <Route
             path="network"
             element={<MemberNetwork />}
           />
 
-          {/* PRODUCTS */}
-
           <Route
             path="products"
             element={<MemberProducts />}
           />
-
-          {/* ORDERS */}
 
           <Route
             path="orders"
             element={<MemberOrders />}
           />
 
-          {/* COMMISSION */}
-
           <Route
             path="commission"
             element={<MemberCommission />}
           />
-
-          {/* SELLING POINTS */}
 
           <Route
             path="selling-points"
             element={<MemberSellingPoints />}
           />
 
-          {/* WALLET */}
-
           <Route
             path="wallet"
             element={<MemberWallet />}
           />
-
-          {/* WITHDRAW */}
 
           <Route
             path="withdraw"
             element={<MemberWithdraw />}
           />
 
-          {/* WELCOME KIT */}
-
           <Route
             path="welcome-kit"
             element={<MemberWelcomeKit />}
           />
-
-          {/* REPORTS */}
 
           <Route
             path="reports"
             element={<MemberReports />}
           />
 
-          {/* SETTINGS */}
-
           <Route
             path="settings"
             element={<MemberSettings />}
           />
-
-          {/* MEMBER CART */}
 
           <Route
             path="cart"
             element={<Cart />}
           />
 
-          {/* MEMBER CHECKOUT */}
-
           <Route
             path="checkout"
             element={<Checkout />}
           />
 
-          {/* UNKNOWN MEMBER ROUTE */}
+          {/* MEMBER NOTIFICATIONS */}
+
+          <Route
+            path="notifications"
+            element={<Notifications />}
+          />
 
           <Route
             path="*"
             element={
-              <Navigate
-                to="/member"
-                replace
-              />
+              <Navigate to="/member" replace />
             }
           />
 
@@ -500,8 +449,6 @@ const AppRoutes = () => {
           element={<AdminLayout />}
         >
 
-          {/* DASHBOARD */}
-
           <Route
             index
             element={<Dashboard />}
@@ -512,85 +459,70 @@ const AppRoutes = () => {
             element={<Dashboard />}
           />
 
-          {/* PROFILE */}
-
           <Route
             path="profile"
             element={<AdminProfile />}
           />
 
-          {/* ORDERS */}
-
           <Route
             path="orders"
             element={<AdminOrders />}
           />
-
-          {/* PRODUCTS */}
-
+<Route
+  path="categories"
+  element={<Categories />}
+/>
           <Route
             path="products"
             element={<ProductList />}
           />
-
-          {/* ADD PRODUCT */}
 
           <Route
             path="products/add"
             element={<AddProduct />}
           />
 
-          {/* EDIT PRODUCT */}
-
           <Route
             path="products/edit/:id"
             element={<EditProduct />}
           />
-
-          {/* MEMBERS */}
 
           <Route
             path="members"
             element={<Members />}
           />
 
-          {/* EDIT MEMBER */}
-
           <Route
             path="members/:id"
             element={<EditMember />}
           />
-
-          {/* REFERRAL TREE */}
 
           <Route
             path="referral-tree"
             element={<ReferralTreePage />}
           />
 
-          {/* REPORTS */}
-
           <Route
             path="reports"
             element={<Reports />}
           />
-
-          {/* PACKAGING STAFF */}
 
           <Route
             path="packaging-staff"
             element={<PackagingStaff />}
           />
 
-          {/* UNKNOWN ADMIN ROUTE */}
+          {/* ADMIN NOTIFICATIONS */}
+
+          <Route
+            path="notifications"
+            element={<Notifications />}
+          />
 
           <Route
             path="*"
             element={
-              <Navigate
-                to="/admin"
-                replace
-              />
+              <Navigate to="/admin" replace />
             }
           />
 
@@ -603,17 +535,13 @@ const AppRoutes = () => {
       ================================================= */}
 
       <Route
-        element={
-          <PackagingProtectedRoute />
-        }
+        element={<PackagingProtectedRoute />}
       >
 
         <Route
           path="/packaging"
           element={<PackagingLayout />}
         >
-
-          {/* PACKAGING ROOT */}
 
           <Route
             index
@@ -625,35 +553,32 @@ const AppRoutes = () => {
             }
           />
 
-          {/* DASHBOARD */}
-
           <Route
             path="dashboard"
             element={<PackagingDashboard />}
           />
-
-          {/* ASSIGNED ORDERS */}
 
           <Route
             path="orders"
             element={<PackagingOrders />}
           />
 
-          {/* ORDER DETAILS */}
-
           <Route
             path="orders/:id"
             element={<PackagingOrderDetails />}
           />
-
-          {/* PROFILE */}
 
           <Route
             path="profile"
             element={<PackagingProfile />}
           />
 
-          {/* UNKNOWN PACKAGING ROUTE */}
+          {/* PACKAGING NOTIFICATIONS */}
+
+          <Route
+            path="notifications"
+            element={<Notifications />}
+          />
 
           <Route
             path="*"
@@ -686,8 +611,6 @@ const AppRoutes = () => {
           element={<ManagerLayout />}
         >
 
-          {/* MANAGER ROOT */}
-
           <Route
             index
             element={
@@ -698,97 +621,72 @@ const AppRoutes = () => {
             }
           />
 
-          {/* DASHBOARD */}
-
           <Route
             path="dashboard"
             element={<ManagerDashboard />}
           />
-
-          {/* WALLET */}
 
           <Route
             path="wallet"
             element={<ManagerWallet />}
           />
 
-          {/* MEMBERS */}
-
           <Route
             path="members"
             element={<ManagerMembers />}
           />
-
-          {/* MEMBER DETAILS */}
 
           <Route
             path="members/:id/details"
             element={<ManagerMemberDetails />}
           />
 
-          {/* ORDERS */}
-
           <Route
             path="orders"
             element={<ManagerOrders />}
           />
-
-          {/* PRODUCTS */}
 
           <Route
             path="products"
             element={<ManagerProducts />}
           />
 
-          {/* SELLING POINTS */}
-
           <Route
             path="selling-points"
             element={<ManagerSellingPoints />}
           />
-
-          {/* COMMISSIONS */}
 
           <Route
             path="commissions"
             element={<Commissions />}
           />
 
-          {/* PROFILE */}
-
           <Route
             path="profile"
             element={<ManagerProfile />}
           />
 
-          {/* REFERRAL TREE */}
-
           <Route
             path="referral-tree"
-            element={
-              <ManagerReferralTreePage />
-            }
+            element={<ManagerReferralTreePage />}
           />
-
-          {/* =================================================
-              PACKAGING TEAMS
-          ================================================= */}
 
           <Route
             path="packaging-teams"
             element={<ManagerPackagingTeams />}
           />
 
-          {/* PACKAGING TEAM ORDERS */}
-
           <Route
             path="packaging-teams/:teamId/orders"
-            element={
-              <ManagerPackagingTeamOrders />
-            }
+            element={<ManagerPackagingTeamOrders />}
           />
 
-          {/* UNKNOWN MANAGER ROUTE */}
+          {/* MANAGER NOTIFICATIONS */}
+
+          <Route
+            path="notifications"
+            element={<Notifications />}
+          />
 
           <Route
             path="*"

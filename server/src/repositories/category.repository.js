@@ -1,28 +1,90 @@
 const Category = require("../models/category.model");
 
-const create = (data) => Category.create(data);
+// CREATE
+const create = (data) => {
+  return Category.create(data);
+};
 
-const findByName = (name) => Category.findOne({ name });
+// FIND BY NAME WITHIN SAME PARENT
+const findByName = (name, parentCategory = null, excludeId = null) => {
+  const filter = {
+    name: {
+      $regex: `^${name}$`,
+      $options: "i",
+    },
+    parentCategory: parentCategory || null,
+  };
 
-const findBySlug = (slug) => Category.findOne({ slug });
+  if (excludeId) {
+    filter._id = { $ne: excludeId };
+  }
 
-const findById = (id) => Category.findById(id);
+  return Category.findOne(filter);
+};
 
-const getAll = () =>
-  Category.find({ isActive: true }).sort({ createdAt: -1 });
+// FIND BY SLUG WITHIN SAME PARENT
+const findBySlug = (slug, parentCategory = null, excludeId = null) => {
+  const filter = {
+    slug: slug.toLowerCase(),
+    parentCategory: parentCategory || null,
+  };
 
-const updateById = (id, data) =>
-  Category.findByIdAndUpdate(id, data, {
+  if (excludeId) {
+    filter._id = { $ne: excludeId };
+  }
+
+  return Category.findOne(filter);
+};
+
+// FIND BY ID
+const findById = (id) => {
+  return Category.findById(id);
+};
+
+// GET ACTIVE CATEGORIES
+const getAll = () => {
+  return Category.find({
+    isActive: true,
+  })
+    .populate({
+      path: "parentCategory",
+      select: "name slug",
+    })
+    .sort({ createdAt: -1 });
+};
+
+// GET CHILD CATEGORIES
+const getChildren = (parentId) => {
+  return Category.find({
+    parentCategory: parentId,
+    isActive: true,
+  }).sort({ name: 1 });
+};
+
+// CHECK CHILD CATEGORIES
+const hasChildren = (parentId) => {
+  return Category.exists({
+    parentCategory: parentId,
+    isActive: true,
+  });
+};
+
+// UPDATE
+const updateById = (id, data) => {
+  return Category.findByIdAndUpdate(id, data, {
     new: true,
     runValidators: true,
   });
+};
 
-const softDelete = (id) =>
-  Category.findByIdAndUpdate(
+// SOFT DELETE
+const softDelete = (id) => {
+  return Category.findByIdAndUpdate(
     id,
     { isActive: false },
     { new: true }
   );
+};
 
 module.exports = {
   create,
@@ -30,6 +92,8 @@ module.exports = {
   findBySlug,
   findById,
   getAll,
+  getChildren,
+  hasChildren,
   updateById,
   softDelete,
 };

@@ -1,203 +1,137 @@
+
 const express = require("express");
 const cors = require("cors");
 const helmet = require("helmet");
-const compression = require("compression");
-const cookieParser = require("cookie-parser");
-const morgan = require("morgan");
-const path = require("path");
-
-const routes = require("./routes");
-const notFound = require("./middleware/notFound.middleware");
-const errorMiddleware = require("./middleware/error.middleware");
-const productRoutes = require("./routes/product.routes");
 
 const app = express();
 
-/* =========================================================
-   CORS / SECURITY
-========================================================= */
+// =====================================
+// MIDDLEWARE
+// =====================================
 
-const allowedOrigins = [
-    "http://localhost:5173",
-    "https://bhagyamma-hub-sigma.vercel.app",
-];
-
-/*
-  Add CLIENT_URL values from Render environment variables
-  if they exist.
-*/
-if (process.env.CLIENT_URL) {
-    const envOrigins = process.env.CLIENT_URL
-        .split(",")
-        .map((origin) => origin.trim())
-        .filter(Boolean);
-
-    allowedOrigins.push(...envOrigins);
-}
-
-/*
-  Remove duplicate origins
-*/
-const uniqueOrigins = [
-    ...new Set(allowedOrigins),
-];
-
-const corsOptions = {
-    origin: (origin, callback) => {
-
-        /*
-          Allow requests without an Origin header.
-          Example: direct browser/API requests,
-          server-to-server requests, Postman, etc.
-        */
-        if (!origin) {
-            return callback(null, true);
-        }
-
-        /*
-          Allow explicitly configured origins
-        */
-        if (uniqueOrigins.includes(origin)) {
-            return callback(null, true);
-        }
-
-        /*
-          Allow Vercel deployment and preview URLs
-          Example:
-          https://bhagyamma-hub-xxxx.vercel.app
-        */
-        if (
-            /^https:\/\/[a-zA-Z0-9-]+\.vercel\.app$/.test(
-                origin
-            )
-        ) {
-            return callback(null, true);
-        }
-
-        console.warn(
-            "CORS blocked origin:",
-            origin
-        );
-
-        return callback(
-            new Error(
-                `CORS blocked origin: ${origin}`
-            )
-        );
-    },
-
-    credentials: true,
-};
-
-app.use(cors(corsOptions));
-
-/* =========================================================
-   HELMET
-========================================================= */
+app.use(helmet());
 
 app.use(
-    helmet({
-        crossOriginResourcePolicy: false,
+    cors({
+        origin: process.env.CLIENT_URL
+            ? process.env.CLIENT_URL.split(",").map(url => url.trim())
+            : true,
+        credentials: true,
     })
 );
 
-/* =========================================================
-   BODY PARSERS
-========================================================= */
+app.use(express.json({ limit: "10mb" }));
+app.use(express.urlencoded({ extended: true }));
 
-app.use(
-    express.json({
-        limit: "10mb",
-    })
-);
+// =====================================
+// ROUTE IMPORTS
+// =====================================
 
-app.use(
-    express.urlencoded({
-        extended: true,
-        limit: "10mb",
-    })
-);
+// Authentication
+const authRoutes = require("./routes/auth.routes");
 
-app.use(cookieParser());
+// Products
+const productRoutes = require("./routes/product.routes");
 
-/* =========================================================
-   PRODUCT ROUTES
-========================================================= */
+// Categories
+const categoryRoutes = require("./routes/category.routes");
 
-app.use(
-    "/api/products",
-    productRoutes
-);
+// Cart
+const cartRoutes = require("./routes/cart.routes");
 
-/* =========================================================
-   PERFORMANCE
-========================================================= */
+// Orders
+const orderRoutes = require("./routes/order.routes");
 
-app.use(compression());
+// Admin
+const adminRoutes = require("./routes/admin.routes");
 
-/* =========================================================
-   LOGGING
-========================================================= */
+// Manager
+const managerRoutes = require("./routes/manager.routes");
 
-app.use(morgan("dev"));
+// User
+const userRoutes = require("./routes/user.routes");
 
-/* =========================================================
-   HEALTH CHECK
-========================================================= */
+// Wallet
+const walletRoutes = require("./routes/wallet.routes");
 
-app.get("/", (req, res) => {
+// Commission
+const commissionRoutes = require("./routes/commission.routes");
+
+// Packaging
+const packagingRoutes = require("./routes/packaging.routes");
+
+// Notifications
+const notificationRoutes = require("./routes/notification.routes");
+
+// =====================================
+// API ROUTES
+// =====================================
+
+app.use("/api/v1/auth", authRoutes);
+
+app.use("/api/v1/products", productRoutes);
+
+app.use("/api/v1/categories", categoryRoutes);
+
+app.use("/api/v1/cart", cartRoutes);
+
+app.use("/api/v1/orders", orderRoutes);
+
+app.use("/api/v1/admin", adminRoutes);
+
+app.use("/api/v1/manager", managerRoutes);
+
+app.use("/api/v1/user", userRoutes);
+
+app.use("/api/v1/wallet", walletRoutes);
+
+app.use("/api/v1/commission", commissionRoutes);
+
+app.use("/api/v1/packaging", packagingRoutes);
+
+// Notification API
+app.use("/api/v1/notifications", notificationRoutes);
+
+// =====================================
+// HEALTH CHECK
+// =====================================
+
+app.get("/api/health", (req, res) => {
     res.status(200).json({
         success: true,
-        message: "Bhagyamma Hub API Running",
-        version: "v1",
-    });
-});
-
-/* =========================================================
-   STATIC UPLOADS
-========================================================= */
-
-app.use(
-    "/uploads",
-    express.static(
-        path.join(
-            process.cwd(),
-            "uploads"
-        )
-    )
-);
-
-/* =========================================================
-   HEALTH
-========================================================= */
-
-app.get("/health", (req, res) => {
-    res.status(200).json({
-        success: true,
-        status: "UP",
+        message: "Bhagyamma Hub API is running",
         timestamp: new Date().toISOString(),
     });
 });
 
-/* =========================================================
-   API ROUTES
-========================================================= */
+// =====================================
+// 404 HANDLER
+// =====================================
 
-app.use(
-    "/api/v1",
-    routes
-);
+app.use((req, res) => {
+    res.status(404).json({
+        success: false,
+        message: "API route not found",
+        path: req.originalUrl,
+    });
+});
 
-/* =========================================================
-   404
-========================================================= */
+// =====================================
+// GLOBAL ERROR HANDLER
+// =====================================
 
-app.use(notFound);
+app.use((err, req, res, next) => {
+    console.error("API Error:", err);
 
-/* =========================================================
-   ERROR HANDLING
-========================================================= */
+    const statusCode = err.statusCode || err.status || 500;
 
-app.use(errorMiddleware);
+    res.status(statusCode).json({
+        success: false,
+        message:
+            statusCode === 500
+                ? "Internal server error"
+                : err.message,
+    });
+});
 
 module.exports = app;

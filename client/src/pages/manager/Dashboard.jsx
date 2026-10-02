@@ -1,7 +1,5 @@
-import React, {
-  useEffect,
-  useState,
-} from "react";
+
+import React, { useEffect, useState } from "react";
 
 import {
   Box,
@@ -19,31 +17,18 @@ import PendingActionsIcon from "@mui/icons-material/PendingActions";
 
 import api from "../../api";
 
-
-/* =========================================================
-   FORMAT CURRENCY
-========================================================= */
-
+/* FORMAT CURRENCY */
 const formatCurrency = (value) => {
   const amount = Number(value || 0);
-
   return `₹${amount.toLocaleString("en-IN")}`;
 };
 
-
-/* =========================================================
-   FORMAT NUMBER
-========================================================= */
-
+/* FORMAT NUMBER */
 const formatNumber = (value) => {
   return Number(value || 0).toLocaleString("en-IN");
 };
 
-
-/* =========================================================
-   DASHBOARD CARD
-========================================================= */
-
+/* DASHBOARD CARD */
 const DashboardCard = ({
   icon,
   title,
@@ -56,193 +41,80 @@ const DashboardCard = ({
       sx={{
         width: "100%",
         minWidth: 0,
-
-        /*
-         * COMPACT HEIGHT
-         */
-        minHeight: {
-          xs: 105,
-          sm: 125,
-          md: 135,
-        },
-
+        minHeight: { xs: 105, sm: 125, md: 135 },
         height: "100%",
-
-        /*
-         * NO RADIUS
-         */
         borderRadius: "0 !important",
-
         backgroundColor: "#FFFFFF",
-
         border: "1px solid #E1E5E8",
-
-        boxShadow:
-          "0 3px 10px rgba(15,23,42,0.05)",
-
+        boxShadow: "0 3px 10px rgba(15,23,42,0.05)",
         display: "flex",
-
         alignItems: "center",
-
-        px: {
-          xs: 1.5,
-          sm: 2,
-          md: 2.5,
-        },
-
-        py: {
-          xs: 1.25,
-          sm: 1.75,
-          md: 2,
-        },
-
+        px: { xs: 1.1, sm: 2, md: 2.5 },
+        py: { xs: 1.1, sm: 1.75, md: 2 },
         boxSizing: "border-box",
-
         overflow: "hidden",
       }}
     >
-      {/* =================================================
-          ICON
-      ================================================= */}
-
+      {/* ICON */}
       <Box
         sx={{
-          width: {
-            xs: 44,
-            sm: 52,
-            md: 58,
-          },
-
-          height: {
-            xs: 44,
-            sm: 52,
-            md: 58,
-          },
-
-          minWidth: {
-            xs: 44,
-            sm: 52,
-            md: 58,
-          },
-
+          width: { xs: 36, sm: 52, md: 58 },
+          height: { xs: 36, sm: 52, md: 58 },
+          minWidth: { xs: 36, sm: 52, md: 58 },
           borderRadius: "50%",
-
-          backgroundColor: warning
-            ? "#FFF3E0"
-            : "#E8F5E9",
-
+          backgroundColor: warning ? "#FFF3E0" : "#E8F5E9",
           display: "flex",
-
           alignItems: "center",
-
           justifyContent: "center",
-
-          mr: {
-            xs: 1.25,
-            sm: 1.75,
-            md: 2,
-          },
-
-          color: warning
-            ? "#F57C00"
-            : "#2E7D32",
-
+          mr: { xs: 1, sm: 1.75, md: 2 },
+          color: warning ? "#F57C00" : "#2E7D32",
           flexShrink: 0,
-
           "& svg": {
-            fontSize: {
-              xs: 23,
-              sm: 28,
-              md: 31,
-            },
+            fontSize: { xs: 19, sm: 28, md: 31 },
           },
         }}
       >
         {icon}
       </Box>
 
-
-      {/* =================================================
-          CONTENT
-      ================================================= */}
-
-      <Box
-        sx={{
-          minWidth: 0,
-          flex: 1,
-          overflow: "hidden",
-        }}
-      >
+      {/* CONTENT */}
+      <Box sx={{ minWidth: 0, flex: 1, overflow: "hidden" }}>
         <Typography
           sx={{
-            fontSize: {
-              xs: "0.78rem",
-              sm: "0.88rem",
-              md: "0.95rem",
-            },
-
+            fontSize: { xs: "0.69rem", sm: "0.88rem", md: "0.95rem" },
             color: "#616161",
-
             lineHeight: 1.25,
-
-            mb: {
-              xs: 0.35,
-              sm: 0.5,
-            },
-
-            whiteSpace: "normal",
-
+            mb: { xs: 0.35, sm: 0.5 },
             overflowWrap: "break-word",
           }}
         >
           {title}
         </Typography>
 
-
         <Typography
           sx={{
             fontSize: {
-              xs: "1.2rem",
+              xs: "clamp(0.95rem, 4vw, 1.2rem)",
               sm: "1.4rem",
               md: "1.6rem",
             },
-
             fontWeight: 700,
-
-            lineHeight: 1.15,
-
+            lineHeight: 1.2,
             color: "#292929",
-
-            mb: {
-              xs: 0.3,
-              sm: 0.5,
-            },
-
+            mb: { xs: 0.3, sm: 0.5 },
             whiteSpace: "nowrap",
-
             overflow: "hidden",
-
             textOverflow: "ellipsis",
           }}
         >
           {value}
         </Typography>
 
-
         <Typography
           sx={{
-            fontSize: {
-              xs: "0.67rem",
-              sm: "0.75rem",
-              md: "0.82rem",
-            },
-
+            fontSize: { xs: "0.59rem", sm: "0.75rem", md: "0.82rem" },
             color: "#757575",
-
             lineHeight: 1.3,
-
-            whiteSpace: "normal",
-
             overflowWrap: "break-word",
           }}
         >
@@ -253,35 +125,23 @@ const DashboardCard = ({
   );
 };
 
-
-/* =========================================================
-   DASHBOARD
-========================================================= */
-
+/* DASHBOARD */
 const Dashboard = () => {
-  const [loading, setLoading] =
-    useState(true);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
-  const [error, setError] =
-    useState("");
+  const [summary, setSummary] = useState({
+    totalMembers: 0,
+    activeMembers: 0,
+    totalCommission: 0,
+    totalOrders: 0,
+    totalSales: 0,
+    totalProducts: 0,
+    activeProducts: 0,
+    pendingKyc: 0,
+  });
 
-  const [summary, setSummary] =
-    useState({
-      totalMembers: 0,
-      activeMembers: 0,
-      totalCommission: 0,
-      totalOrders: 0,
-      totalSales: 0,
-      totalProducts: 0,
-      activeProducts: 0,
-      pendingKyc: 0,
-    });
-
-
-  /* =======================================================
-     FETCH MANAGER DASHBOARD
-  ======================================================= */
-
+  /* FETCH MANAGER DASHBOARD */
   useEffect(() => {
     let mounted = true;
 
@@ -290,184 +150,53 @@ const Dashboard = () => {
         setLoading(true);
         setError("");
 
-        console.log(
-          "========================"
-        );
+        const response = await api.get("/manager/dashboard");
 
-        console.log(
-          "MANAGER DASHBOARD REQUEST"
-        );
+        if (!response || !response.data) {
+          throw new Error("Empty dashboard response.");
+        }
 
-        console.log(
-          "========================"
-        );
+        const apiBody = response.data;
 
-
-        /*
-         * ONLY ONE API CALL
-         */
-
-        const response =
-          await api.get(
-            "/manager/dashboard"
-          );
-
-
-        console.log(
-          "========================"
-        );
-
-        console.log(
-          "MANAGER DASHBOARD API RESPONSE"
-        );
-
-        console.log(
-          response
-        );
-
-        console.log(
-          "========================"
-        );
-
-
-        if (
-          !response ||
-          !response.data
-        ) {
+        if (apiBody.success === false) {
           throw new Error(
-            "Empty dashboard response."
+            apiBody.message || "Failed to load manager dashboard."
           );
         }
 
+        const dashboardData = apiBody.data || apiBody;
+        const dashboardSummary = dashboardData.summary;
 
-        /*
-         * AXIOS RESPONSE
-         */
-
-        const apiBody =
-          response.data;
-
-
-        if (
-          apiBody.success === false
-        ) {
-          throw new Error(
-            apiBody.message ||
-            "Failed to load manager dashboard."
-          );
+        if (!dashboardSummary) {
+          throw new Error("Manager dashboard summary is missing.");
         }
 
-
-        /*
-         * SUPPORT BOTH RESPONSE STRUCTURES
-         */
-
-        const dashboardData =
-          apiBody.data ||
-          apiBody;
-
-
-        const dashboardSummary =
-          dashboardData.summary;
-
-
-        console.log(
-          "========================"
-        );
-
-        console.log(
-          "MANAGER DASHBOARD SUMMARY"
-        );
-
-        console.log(
-          dashboardSummary
-        );
-
-        console.log("🔥 MANAGER TOTAL ORDERS =", dashboardSummary.totalOrders);
-
-        console.log(
-          "========================"
-        );
-
-
-        if (
-          !dashboardSummary
-        ) {
-          throw new Error(
-            "Manager dashboard summary is missing."
-          );
-        }
-
-
-        if (!mounted) {
-          return;
-        }
-
-
-        /*
-         * NORMALIZE DATA
-         */
+        if (!mounted) return;
 
         setSummary({
-          totalMembers:
-            Number(
-              dashboardSummary.totalMembers || 0
-            ),
-
-          activeMembers:
-            Number(
-              dashboardSummary.activeMembers || 0
-            ),
-
-          totalCommission:
-            Number(
-              dashboardSummary.totalCommission || 0
-            ),
-
-          totalOrders:
-            Number(
-              dashboardSummary.totalOrders || 0
-            ),
-
-          totalSales:
-            Number(
-              dashboardSummary.totalSales || 0
-            ),
-
-          totalProducts:
-            Number(
-              dashboardSummary.totalProducts || 0
-            ),
-
-          activeProducts:
-            Number(
-              dashboardSummary.activeProducts ||
-              dashboardSummary.totalProducts ||
+          totalMembers: Number(dashboardSummary.totalMembers || 0),
+          activeMembers: Number(dashboardSummary.activeMembers || 0),
+          totalCommission: Number(dashboardSummary.totalCommission || 0),
+          totalOrders: Number(dashboardSummary.totalOrders || 0),
+          totalSales: Number(dashboardSummary.totalSales || 0),
+          totalProducts: Number(dashboardSummary.totalProducts || 0),
+          activeProducts: Number(
+            dashboardSummary.activeProducts ??
+              dashboardSummary.totalProducts ??
               0
-            ),
-
-          pendingKyc:
-            Number(
-              dashboardSummary.pendingKyc || 0
-            ),
+          ),
+          pendingKyc: Number(dashboardSummary.pendingKyc || 0),
         });
-
       } catch (err) {
-        console.error(
-          "MANAGER DASHBOARD ERROR:",
-          err
-        );
+        console.error("MANAGER DASHBOARD ERROR:", err);
 
-        if (!mounted) {
-          return;
-        }
+        if (!mounted) return;
 
         setError(
           err?.response?.data?.message ||
-          err?.message ||
-          "Failed to load manager dashboard."
+            err?.message ||
+            "Failed to load manager dashboard."
         );
-
       } finally {
         if (mounted) {
           setLoading(false);
@@ -475,59 +204,34 @@ const Dashboard = () => {
       }
     };
 
-
     fetchDashboard();
-
 
     return () => {
       mounted = false;
     };
   }, []);
 
-
-  /* =======================================================
-     LOADING
-  ======================================================= */
-
+  /* LOADING */
   if (loading) {
     return (
       <Box
         sx={{
           width: "100%",
-          maxWidth: "100%",
           minWidth: 0,
-
           minHeight: "60vh",
-
-          margin: 0,
-          padding: 0,
-
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-
           boxSizing: "border-box",
-
           bgcolor: "#F5F7FA",
-
           overflowX: "hidden",
-
-          borderRadius:
-            "0 !important",
+          borderRadius: "0 !important",
         }}
       >
-        <CircularProgress
-          color="success"
-          size={28}
-        />
+        <CircularProgress color="success" size={28} />
       </Box>
     );
   }
-
-
-  /* =======================================================
-     PAGE
-  ======================================================= */
 
   return (
     <Box
@@ -535,353 +239,181 @@ const Dashboard = () => {
         width: "100%",
         maxWidth: "100%",
         minWidth: 0,
-
         minHeight: "100vh",
-
-        margin: 0,
-
-        /*
-         * NO EXTRA OUTER SPACE
-         */
-        padding: {
-          xs: "8px 8px 20px",
+        m: 0,
+        p: {
+          xs: "8px 8px 18px",
           sm: "14px 14px 24px",
           md: "20px 8px 30px",
         },
-
         backgroundColor: "#F5F7FA",
-
         boxSizing: "border-box",
-
         overflowX: "hidden",
-
-        /*
-         * REMOVE ALL CONTAINER CURVES
-         */
-        borderRadius:
-          "0 !important",
+        borderRadius: "0 !important",
 
         "& .MuiPaper-root": {
-          borderRadius:
-            "0 !important",
+          borderRadius: "0 !important",
         },
 
         "& .MuiCard-root": {
-          borderRadius:
-            "0 !important",
+          borderRadius: "0 !important",
         },
 
         "& .MuiAlert-root": {
-          borderRadius:
-            "0 !important",
+          borderRadius: "0 !important",
         },
       }}
     >
-
-
-      {/* =================================================
-          HEADER
-      ================================================= */}
-
+      {/* HEADER */}
       <Box
         sx={{
           width: "100%",
-
-          margin: 0,
-
-          padding: 0,
-
-          mb: {
-            xs: 1.5,
-            sm: 2,
-            md: 2.5,
-          },
-
+          m: 0,
+          p: 0,
+          mb: { xs: 1.25, sm: 2, md: 2.5 },
           boxSizing: "border-box",
         }}
       >
         <Typography
           component="h1"
           sx={{
-            margin: 0,
-
-            padding: 0,
-
-            fontSize: {
-              xs: "21px",
-              sm: "26px",
-              md: "30px",
-            },
-
-            lineHeight: {
-              xs: "26px",
-              sm: "31px",
-              md: "36px",
-            },
-
+            m: 0,
+            p: 0,
+            fontSize: { xs: "19px", sm: "26px", md: "30px" },
+            lineHeight: { xs: "25px", sm: "31px", md: "36px" },
             fontWeight: 700,
-
             color: "#202124",
           }}
         >
           Manager Dashboard
         </Typography>
 
-
         <Typography
           sx={{
-            marginTop: {
-              xs: "4px",
-              sm: "6px",
-            },
-
-            fontSize: {
-              xs: "12px",
-              sm: "14px",
-              md: "15px",
-            },
-
+            mt: { xs: "3px", sm: "6px" },
+            fontSize: { xs: "11px", sm: "14px", md: "15px" },
             color: "#666",
-
             lineHeight: 1.45,
-
             maxWidth: 800,
           }}
         >
-          Complete read-only overview of your
-          managed members, commissions, orders,
-          sales and products.
+          Complete read-only overview of your managed members,
+          commissions, orders, sales and products.
         </Typography>
       </Box>
 
-
-      {/* =================================================
-          ERROR
-      ================================================= */}
-
+      {/* ERROR */}
       {error && (
         <Alert
           severity="error"
           sx={{
             width: "100%",
-
-            marginBottom: {
-              xs: 1.5,
-              sm: 2,
-            },
-
+            mb: { xs: 1.25, sm: 2 },
             boxSizing: "border-box",
-
-            borderRadius:
-              "0 !important",
-
-            fontSize: {
-              xs: "12px",
-              sm: "13px",
-            },
+            borderRadius: "0 !important",
+            fontSize: { xs: "12px", sm: "13px" },
           }}
         >
           {error}
         </Alert>
       )}
 
-
-      {/* =================================================
-          DASHBOARD CARDS
-      ================================================= */}
-
+      {/* DASHBOARD CARDS */}
       <Box
         sx={{
           width: "100%",
           maxWidth: "100%",
           minWidth: 0,
-
           display: "grid",
 
           gridTemplateColumns: {
-            xs: "1fr",
+            xs: "repeat(2, minmax(0, 1fr))",
             sm: "repeat(2, minmax(0, 1fr))",
-            md: "repeat(2, minmax(0, 1fr))",
+            md: "repeat(3, minmax(0, 1fr))",
           },
 
           gap: {
-            xs: 1,
+            xs: 0.75,
             sm: 1.5,
             md: 2,
           },
 
           boxSizing: "border-box",
-
           overflow: "hidden",
         }}
       >
-
-
-        {/* TOTAL MEMBERS */}
-
         <DashboardCard
-          icon={
-            <PeopleIcon />
-          }
+          icon={<PeopleIcon />}
           title="Total Members"
-          value={
-            formatNumber(
-              summary.totalMembers
-            )
-          }
-          subtitle={
-            `${formatNumber(
-              summary.activeMembers
-            )} active`
-          }
+          value={formatNumber(summary.totalMembers)}
+          subtitle={`${formatNumber(summary.activeMembers)} active`}
         />
 
-
-        {/* TOTAL COMMISSION */}
-
         <DashboardCard
-          icon={
-            <AccountBalanceWalletIcon />
-          }
+          icon={<AccountBalanceWalletIcon />}
           title="Total Commission"
-          value={
-            formatCurrency(
-              summary.totalCommission
-            )
-          }
+          value={formatCurrency(summary.totalCommission)}
           subtitle="Commission earned by manager"
         />
 
-
-        {/* TOTAL ORDERS */}
-
         <DashboardCard
-          icon={
-            <ShoppingBagIcon />
-          }
+          icon={<ShoppingBagIcon />}
           title="Total Orders"
-          value={
-            formatNumber(
-              summary.totalOrders
-            )
-          }
+          value={formatNumber(summary.totalOrders)}
           subtitle="Orders from managed members"
         />
 
-
-        {/* TOTAL SALES */}
-
         <DashboardCard
-          icon={
-            <TrendingUpIcon />
-          }
+          icon={<TrendingUpIcon />}
           title="Total Sales"
-          value={
-            formatCurrency(
-              summary.totalSales
-            )
-          }
+          value={formatCurrency(summary.totalSales)}
           subtitle="Total sales by managed members"
         />
 
-
-        {/* PRODUCTS */}
-
         <DashboardCard
-          icon={
-            <Inventory2Icon />
-          }
+          icon={<Inventory2Icon />}
           title="Products"
-          value={
-            formatNumber(
-              summary.totalProducts
-            )
-          }
-          subtitle={
-            `${formatNumber(
-              summary.activeProducts
-            )} active`
-          }
+          value={formatNumber(summary.totalProducts)}
+          subtitle={`${formatNumber(summary.activeProducts)} active`}
         />
 
-
-        {/* PENDING KYC */}
-
         <DashboardCard
-          icon={
-            <PendingActionsIcon />
-          }
+          icon={<PendingActionsIcon />}
           title="Pending KYC"
-          value={
-            formatNumber(
-              summary.pendingKyc
-            )
-          }
+          value={formatNumber(summary.pendingKyc)}
           subtitle="Members requiring verification"
           warning
         />
-
       </Box>
 
-
-      {/* =================================================
-          READ ONLY INFORMATION
-      ================================================= */}
-
+      {/* READ-ONLY INFORMATION */}
       <Box
         sx={{
           width: "100%",
-
-          marginTop: {
-            xs: 1.5,
-            sm: 2,
-            md: 2.5,
-          },
-
-          padding: {
-            xs: "10px 12px",
-            sm: "12px 16px",
-          },
-
+          mt: { xs: 1.25, sm: 2, md: 2.5 },
+          p: { xs: "9px 10px", sm: "12px 16px" },
           boxSizing: "border-box",
-
-          borderRadius:
-            "0 !important",
-
-          border:
-            "1px solid #BFDBFE",
-
+          borderRadius: "0 !important",
+          border: "1px solid #BFDBFE",
           backgroundColor: "#EFF6FF",
-
           color: "#1E3A5F",
-
           overflow: "hidden",
         }}
       >
         <Typography
           sx={{
-            fontSize: {
-              xs: "11px",
-              sm: "13px",
-              md: "14px",
-            },
-
+            fontSize: { xs: "10.5px", sm: "13px", md: "14px" },
             lineHeight: 1.5,
-
-            margin: 0,
+            m: 0,
           }}
         >
-          Manager access is read-only. Member,
-          commission, order, referral and product
-          details are available from their respective
-          sidebar pages.
+          Manager access is read-only. Member, commission, order,
+          referral and product details are available from their
+          respective sidebar pages.
         </Typography>
       </Box>
-
-
     </Box>
   );
 };
-
 
 export default Dashboard;

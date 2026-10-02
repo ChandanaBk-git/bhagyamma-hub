@@ -3,7 +3,6 @@ import {
   Toolbar,
   Typography,
   Box,
-  Avatar,
   IconButton,
   Badge,
   Tooltip,
@@ -16,14 +15,19 @@ import {
 } from "@mui/icons-material";
 
 import { useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
+
 import logo from "../../../assets/images/logo.png";
 
 import { useCart } from "../../../context/CartContext";
+import axiosInstance from "../../../api/axios";
 
 const MemberTopbar = ({ onMenuClick }) => {
   const navigate = useNavigate();
 
   const { cartCount } = useCart();
+
+  const [unreadCount, setUnreadCount] = useState(0);
 
   const user = JSON.parse(
     localStorage.getItem("user") || "{}"
@@ -42,8 +46,49 @@ const MemberTopbar = ({ onMenuClick }) => {
   // =====================================================
 
   const handleNotificationClick = () => {
-    // Notification functionality can be added later
+    navigate("/member/notifications");
   };
+
+  // =====================================================
+  // FETCH UNREAD NOTIFICATION COUNT
+  // =====================================================
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const fetchUnreadCount = async () => {
+      try {
+        const response = await axiosInstance.get(
+          "/notifications/unread-count"
+        );
+
+        if (isMounted && response.data?.success) {
+          setUnreadCount(
+            Number(response.data.unreadCount) || 0
+          );
+        }
+      } catch (error) {
+        if (isMounted) {
+          console.error(
+            "Failed to fetch notification count:",
+            error.response?.data?.message || error.message
+          );
+        }
+      }
+    };
+
+    fetchUnreadCount();
+
+    const intervalId = setInterval(
+      fetchUnreadCount,
+      30000
+    );
+
+    return () => {
+      isMounted = false;
+      clearInterval(intervalId);
+    };
+  }, []);
 
   return (
     <AppBar
@@ -53,8 +98,7 @@ const MemberTopbar = ({ onMenuClick }) => {
         bgcolor: "#ffffff",
         color: "#333333",
         borderRadius: 0,
-        zIndex: (theme) =>
-          theme.zIndex.drawer + 1,
+        zIndex: (theme) => theme.zIndex.drawer + 1,
       }}
     >
       <Toolbar
@@ -75,10 +119,7 @@ const MemberTopbar = ({ onMenuClick }) => {
           borderRadius: 0,
         }}
       >
-
-        {/* =================================================
-            MOBILE MENU
-        ================================================= */}
+        {/* MOBILE MENU */}
 
         <IconButton
           edge="start"
@@ -90,14 +131,10 @@ const MemberTopbar = ({ onMenuClick }) => {
             },
 
             mr: 0.5,
-
             color: "#2E7D32",
-
             width: 34,
             height: 34,
-
             borderRadius: 0,
-
             p: 0.25,
           }}
         >
@@ -108,9 +145,7 @@ const MemberTopbar = ({ onMenuClick }) => {
           />
         </IconButton>
 
-        {/* =================================================
-            MEMBER LOGO
-        ================================================= */}
+        {/* MEMBER LOGO */}
 
         <Box
           component="img"
@@ -125,20 +160,14 @@ const MemberTopbar = ({ onMenuClick }) => {
 
             width: 36,
             height: 36,
-
             objectFit: "contain",
-
             flexShrink: 0,
-
             cursor: "pointer",
-
             borderRadius: 0,
           }}
         />
 
-        {/* =================================================
-            WELCOME SECTION
-        ================================================= */}
+        {/* WELCOME SECTION */}
 
         <Box
           sx={{
@@ -156,16 +185,12 @@ const MemberTopbar = ({ onMenuClick }) => {
               },
 
               lineHeight: 1.3,
-
               whiteSpace: "nowrap",
-
               overflow: "hidden",
-
               textOverflow: "ellipsis",
             }}
           >
-            Welcome Back,{" "}
-            {user?.name || "Member"}
+            Welcome Back, {user?.name || "Member"}
           </Typography>
 
           <Typography
@@ -185,14 +210,11 @@ const MemberTopbar = ({ onMenuClick }) => {
               mt: 0.3,
             }}
           >
-            Member ID :{" "}
-            {user?.userId || "-"}
+            Member ID : {user?.userId || "-"}
           </Typography>
         </Box>
 
-        {/* =================================================
-            CART
-        ================================================= */}
+        {/* CART */}
 
         <Tooltip title="My Cart">
           <IconButton
@@ -236,13 +258,12 @@ const MemberTopbar = ({ onMenuClick }) => {
           </IconButton>
         </Tooltip>
 
-        {/* =================================================
-            NOTIFICATIONS
-        ================================================= */}
+        {/* NOTIFICATIONS */}
 
         <Tooltip title="Notifications">
           <IconButton
             onClick={handleNotificationClick}
+            aria-label="Notifications"
             sx={{
               color: "#666",
 
@@ -264,8 +285,10 @@ const MemberTopbar = ({ onMenuClick }) => {
             }}
           >
             <Badge
-              badgeContent={2}
+              badgeContent={unreadCount}
               color="error"
+              max={99}
+              showZero={false}
             >
               <Notifications
                 sx={{
@@ -278,7 +301,6 @@ const MemberTopbar = ({ onMenuClick }) => {
             </Badge>
           </IconButton>
         </Tooltip>
-
       </Toolbar>
     </AppBar>
   );

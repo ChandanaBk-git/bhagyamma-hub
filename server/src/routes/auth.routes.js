@@ -15,7 +15,10 @@ const {
     protect,
 } = require("../middleware/auth.middleware");
 
-// Register
+// ===============================
+// REGISTER
+// ===============================
+
 router.post(
     "/register",
     registerValidation,
@@ -23,7 +26,11 @@ router.post(
     authController.register
 );
 
-// Login (Email + Password → Send OTP)
+// ===============================
+// LOGIN
+// Email + Password → Send OTP
+// ===============================
+
 router.post(
     "/login",
     loginValidation,
@@ -31,51 +38,59 @@ router.post(
     authController.login
 );
 
-// Verify OTP
+// ===============================
+// VERIFY LOGIN OTP
+// ===============================
+
 router.post(
     "/verify-otp",
     authController.verifyOtp
 );
 
-// Forgot Password
+// ===============================
+// FORGOT PASSWORD
+// ===============================
+
 router.post(
     "/forgot-password",
     authController.forgotPassword
 );
 
-// Reset Password
+// ===============================
+// RESET PASSWORD
+// ===============================
+
 router.post(
     "/reset-password",
     authController.resetPassword
 );
 
-// Mobile Forgot Password - Send OTP
+// ===============================
+// MOBILE FORGOT PASSWORD
+// ===============================
+
 router.post(
     "/forgot-password-mobile",
     authController.sendMobileResetOtp
 );
 
-// Mobile Forgot Password - Verify OTP
+// ===============================
+// VERIFY RESET OTP
+// ===============================
+
 router.post(
     "/verify-reset-otp",
     authController.verifyResetOtp
 );
 
-// User Profile
+// ===============================
+// USER PROFILE
+// ===============================
+
 router.get(
     "/profile",
     protect,
     authController.getProfile
-);
-
-router.post(
-  "/forgot-password-mobile",
-  authController.sendMobileResetOtp
-);
-
-router.post(
-  "/verify-reset-otp",
-  authController.verifyResetOtp
 );
 
 module.exports = router;

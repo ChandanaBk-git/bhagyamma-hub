@@ -12,10 +12,28 @@ const productSchema = new mongoose.Schema(
       trim: true,
     },
 
+    parentCategory: {
+  type: mongoose.Schema.Types.ObjectId,
+  ref: "Category",
+  required: false,
+  default: null,
+},
+    // Existing category field — preserve old products
     category: {
       type: String,
       required: true,
       trim: true,
+    },
+
+    // NEW: Multiple category references
+    categories: {
+      type: [
+        {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "Category",
+        },
+      ],
+      default: [],
     },
 
     brand: {
@@ -57,18 +75,6 @@ const productSchema = new mongoose.Schema(
     // =================================================
     // PRODUCT QUANTITY / PACK SIZE
     // =================================================
-
-    /*
-      This is the product's pack/size information.
-
-      Examples:
-      "100 ml"
-      "500 g"
-      "1 bottle"
-
-      IMPORTANT:
-      This is NOT inventory stock.
-    */
 
     weight: {
       type: String,
@@ -136,8 +142,7 @@ const productSchema = new mongoose.Schema(
           return value.length <= 4;
         },
 
-        message:
-          "Maximum 4 images are allowed.",
+        message: "Maximum 4 images are allowed.",
       },
 
       default: [],
@@ -149,23 +154,13 @@ const productSchema = new mongoose.Schema(
 
     status: {
       type: String,
-
-      enum: [
-        "Active",
-        "Inactive",
-      ],
-
+      enum: ["Active", "Inactive"],
       default: "Active",
     },
   },
-
   {
     timestamps: true,
   }
 );
 
-module.exports =
-  mongoose.model(
-    "Product",
-    productSchema
-  );
+module.exports = mongoose.model("Product", productSchema);

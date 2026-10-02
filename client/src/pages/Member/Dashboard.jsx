@@ -618,9 +618,55 @@ const Dashboard = () => {
      LOAD DASHBOARD
   ======================================================= */
 
-  useEffect(() => {
-    loadDashboard();
-  }, []);
+useEffect(() => {
+  let isMounted = true;
+  let isFetching = false;
+
+  const refreshDashboard = async () => {
+    if (!isMounted || isFetching) return;
+
+    if (document.visibilityState !== "visible") return;
+
+    isFetching = true;
+
+    try {
+      await loadDashboard();
+    } finally {
+      isFetching = false;
+    }
+  };
+
+  // Initial dashboard load
+  refreshDashboard();
+
+  // Refresh every 15 seconds
+  const intervalId = setInterval(() => {
+    refreshDashboard();
+  }, 15000);
+
+  // Refresh when the user returns to the browser tab
+  const handleVisibilityChange = () => {
+    if (document.visibilityState === "visible") {
+      refreshDashboard();
+    }
+  };
+
+  document.addEventListener(
+    "visibilitychange",
+    handleVisibilityChange
+  );
+
+  return () => {
+    isMounted = false;
+
+    clearInterval(intervalId);
+
+    document.removeEventListener(
+      "visibilitychange",
+      handleVisibilityChange
+    );
+  };
+}, []);
 
   const loadDashboard = async () => {
     try {

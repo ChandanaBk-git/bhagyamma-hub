@@ -1,143 +1,111 @@
+
 const jwt = require("jsonwebtoken");
 const ApiError = require("../utils/ApiError");
 
-/*
-=========================================================
-AUTHENTICATION MIDDLEWARE
-=========================================================
-Verifies JWT and attaches the authenticated user to req.user.
-=========================================================
-*/
+// =====================================
+// AUTHENTICATION MIDDLEWARE
+// =====================================
 
 const protect = (req, res, next) => {
     const authHeader = req.headers.authorization;
 
-    if (
-        !authHeader ||
-        !authHeader.startsWith("Bearer ")
-    ) {
+    // Check Authorization header
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
         return next(
-            new ApiError(
-                401,
-                "Authentication required"
-            )
+            new ApiError(401, "Authentication required")
         );
     }
 
-    const token = authHeader
-        .split(" ")[1];
+    // Extract JWT token
+    const token = authHeader.split(" ")[1];
 
     if (!token) {
         return next(
-            new ApiError(
-                401,
-                "Authentication token missing"
-            )
+            new ApiError(401, "Authentication token missing")
         );
     }
 
+    // Verify JWT
     try {
+        if (!process.env.JWT_SECRET) {
+            console.error("JWT_SECRET is missing from environment variables");
+
+            return next(
+                new ApiError(500, "Authentication configuration error")
+            );
+        }
+
         const decoded = jwt.verify(
             token,
             process.env.JWT_SECRET
         );
 
-        /*
-        Expected JWT payload:
-
-        {
-            id,
-            userId,
-            role
-        }
-        */
-
-        if (!decoded?.id) {
+        // Validate token payload
+        if (!decoded || !decoded.id) {
             return next(
-                new ApiError(
-                    401,
-                    "Invalid authentication token"
-                )
+                new ApiError(401, "Invalid authentication token")
             );
         }
 
-req.user = {
-    id: decoded.id,
-    userId: decoded.userId,
-    packagingStaffId:
-        decoded.packagingStaffId,
-    loginId:
-        decoded.loginId,
-    role: decoded.role,
-};
+        // Attach authenticated user
+        req.user = {
+            id: decoded.id,
+            userId: decoded.userId || decoded.id,
+            packagingStaffId: decoded.packagingStaffId || null,
+            loginId: decoded.loginId || null,
+            role: decoded.role || null,
+        };
 
-        next();
+        return next();
 
     } catch (error) {
+        if (
+            error.name === "TokenExpiredError" ||
+            error.name === "JsonWebTokenError"
+        ) {
+            return next(
+                new ApiError(401, "Invalid or expired token")
+            );
+        }
 
-        return next(
-            new ApiError(
-                401,
-                "Invalid or expired token"
-            )
-        );
+        console.error("Authentication middleware error:", error);
+
+        return next(error);
     }
 };
 
-
-/*
-=========================================================
-ROLE AUTHORIZATION
-=========================================================
-Usage:
-
-authorize("MANAGER")
-
-or
-
-authorize("SUPER_ADMIN")
-=========================================================
-*/
+// =====================================
+// ROLE AUTHORIZATION
+// =====================================
 
 const authorize = (...roles) => {
-
     return (req, res, next) => {
 
         if (!req.user) {
             return next(
-                new ApiError(
-                    401,
-                    "Authentication required"
-                )
+                new ApiError(401, "Authentication required")
             );
         }
 
         if (!req.user.role) {
             return next(
-                new ApiError(
-                    403,
-                    "User role not found"
-                )
+                new ApiError(403, "User role not found")
             );
         }
 
-        if (
-            !roles.includes(
-                req.user.role
-            )
-        ) {
+        if (!roles.includes(req.user.role)) {
             return next(
-                new ApiError(
-                    403,
-                    "Access denied"
-                )
+                new ApiError(403, "Access denied")
             );
         }
 
-        next();
+        return next();
     };
 };
 
+// =====================================
+// EXPORT MIDDLEWARE
+// =====================================
 
 module.exports = {
     protect,
