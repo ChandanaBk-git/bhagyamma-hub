@@ -30,10 +30,10 @@ const authorize =
    PRODUCT IMAGE UPLOAD
 ===================================================== */
 
-const upload =
-  require(
-    "../middleware/productUpload.middleware"
-  );
+// const upload =
+//   require(
+//     "../middleware/productUpload.middleware"
+//   );
 
 
 /* =====================================================

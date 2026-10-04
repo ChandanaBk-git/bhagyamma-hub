@@ -63,6 +63,18 @@ const Footer = () => {
             >
               Hucharaddi
             </Typography>
+                        <Typography
+              fontWeight={700}
+              sx={{
+                fontSize: {
+                  xs: "0.85rem",
+                  sm: "0.95rem",
+                },
+                mb: 0.4,
+              }}
+            >
+              Bhagya S
+            </Typography>
 
             <Typography
               sx={{
@@ -161,6 +173,18 @@ const Footer = () => {
               <Typography sx={{ fontSize: "0.58rem" }}>
                 <strong>Prop:</strong> Hucharaddi
               </Typography>
+
+
+            </Box>
+
+                        <Box display="flex" alignItems="center" mb={0.35}>
+              <Person sx={{ mr: 0.5, fontSize: 14 }} />
+
+              <Typography sx={{ fontSize: "0.58rem" }}>
+                <strong>Prop:</strong> Bhagya S 
+              </Typography>
+
+
             </Box>
 
             <Box display="flex" alignItems="center" mb={0.35}>
