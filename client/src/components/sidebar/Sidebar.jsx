@@ -23,7 +23,7 @@ import LogoutRoundedIcon from "@mui/icons-material/LogoutRounded";
 import AdminPanelSettingsRoundedIcon from "@mui/icons-material/AdminPanelSettingsRounded";
 import LocalShippingRoundedIcon from "@mui/icons-material/LocalShippingRounded";
 import CategoryRoundedIcon from "@mui/icons-material/CategoryRounded";
-
+import GavelRoundedIcon from "@mui/icons-material/GavelRounded";
 
 const Sidebar = ({
   drawerWidth,
@@ -73,6 +73,12 @@ const Sidebar = ({
         icon: <AccountTreeRoundedIcon />,
         path: "/admin/referral-tree",
     },
+
+    {
+  text: "Policy Management",
+  icon: <GavelRoundedIcon />,
+  path: "/admin/policies",
+},
 
     {
         text: "Packaging Team",

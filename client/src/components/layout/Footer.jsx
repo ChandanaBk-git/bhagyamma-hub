@@ -1,3 +1,4 @@
+
 import {
   Box,
   Container,
@@ -17,7 +18,88 @@ import {
   LocationOn,
 } from "@mui/icons-material";
 
+import { Link as RouterLink } from "react-router-dom";
+
 const Footer = () => {
+  const quickLinks = [
+    { label: "Home", path: "/" },
+    { label: "Products", path: "/products" },
+    { label: "About Us", path: "/about" },
+    { label: "Contact Us", path: "/contact" },
+  ];
+
+  const policyLinks = [
+    { label: "All Policies", path: "/policies" },
+    {
+      label: "Terms & Conditions",
+      path: "/policies/terms-and-conditions",
+    },
+    {
+      label: "Privacy Policy",
+      path: "/policies/privacy-policy",
+    },
+    {
+      label: "Shipping & Delivery",
+      path: "/policies/shipping-delivery",
+    },
+    {
+      label: "Returns & Refunds",
+      path: "/policies/cancellation-returns-refunds",
+    },
+    {
+      label: "Membership & Commission",
+      path: "/policies/membership-referral-commission",
+    },
+    {
+      label: "SP & Rewards",
+      path: "/policies/sp-supervisor-rewards",
+    },
+    {
+      label: "Wallet & Withdrawal",
+      path: "/policies/wallet-withdrawal",
+    },
+    {
+      label: "Account & Conduct",
+      path: "/policies/account-conduct-supervisor",
+    },
+    {
+      label: "Customer Support",
+      path: "/policies/grievance-customer-support",
+    },
+    {
+      label: "Product Information",
+      path: "/policies/product-information-pricing",
+    },
+    {
+      label: "Direct Selling Disclosure",
+      path: "/policies/direct-selling-disclosures",
+    },
+  ];
+
+  const linkStyles = {
+    fontSize: {
+      xs: "0.62rem",
+      sm: "0.72rem",
+    },
+    lineHeight: 1.6,
+    color: "inherit",
+    textDecorationColor: "rgba(255,255,255,0.4)",
+    width: "fit-content",
+    "&:hover": {
+      color: "#D4E8C8",
+      textDecorationColor: "#D4E8C8",
+    },
+  };
+
+  const headingStyles = {
+    fontSize: {
+      xs: "0.78rem",
+      sm: "0.9rem",
+    },
+    mb: 0.8,
+    color: "#FFFFFF",
+  };
+
   return (
     <Box
       component="footer"
@@ -26,8 +108,8 @@ const Footer = () => {
         color: "#fff",
         mt: 0,
         pt: {
-          xs: 2,
-          sm: 3,
+          xs: 2.5,
+          sm: 3.5,
         },
         pb: 1.2,
       }}
@@ -45,32 +127,33 @@ const Footer = () => {
         <Grid
           container
           spacing={{
-            xs: 1.5,
+            xs: 2,
             sm: 2.5,
           }}
         >
           {/* Company */}
-          <Grid size={{ xs: 12, md: 4 }}>
+          <Grid size={{ xs: 12, md: 3 }}>
             <Typography
               fontWeight={700}
               sx={{
                 fontSize: {
-                  xs: "0.85rem",
-                  sm: "0.95rem",
+                  xs: "0.9rem",
+                  sm: "1rem",
                 },
                 mb: 0.4,
               }}
             >
               Hucharaddi
             </Typography>
-                        <Typography
+
+            <Typography
               fontWeight={700}
               sx={{
                 fontSize: {
-                  xs: "0.85rem",
-                  sm: "0.95rem",
+                  xs: "0.9rem",
+                  sm: "1rem",
                 },
-                mb: 0.4,
+                mb: 0.7,
               }}
             >
               Bhagya S
@@ -79,10 +162,10 @@ const Footer = () => {
             <Typography
               sx={{
                 fontSize: {
-                  xs: "0.58rem",
-                  sm: "0.68rem",
+                  xs: "0.65rem",
+                  sm: "0.75rem",
                 },
-                lineHeight: 1.45,
+                lineHeight: 1.6,
                 opacity: 0.9,
                 maxWidth: 350,
               }}
@@ -93,17 +176,8 @@ const Footer = () => {
           </Grid>
 
           {/* Quick Links */}
-          <Grid size={{ xs: 6, md: 4 }}>
-            <Typography
-              fontWeight={700}
-              sx={{
-                fontSize: {
-                  xs: "0.72rem",
-                  sm: "0.82rem",
-                },
-                mb: 0.6,
-              }}
-            >
+          <Grid size={{ xs: 6, md: 3 }}>
+            <Typography fontWeight={700} sx={headingStyles}>
               Quick Links
             </Typography>
 
@@ -111,88 +185,78 @@ const Footer = () => {
               sx={{
                 display: "flex",
                 flexDirection: "column",
-                gap: 0.15,
+                gap: 0.45,
               }}
             >
-              <Link
-                href="/"
-                color="inherit"
-                underline="hover"
-                sx={{ fontSize: "0.6rem" }}
-              >
-                Home
-              </Link>
+              {quickLinks.map((item) => (
+                <Link
+                  key={item.path}
+                  component={RouterLink}
+                  to={item.path}
+                  underline="hover"
+                  sx={linkStyles}
+                >
+                  {item.label}
+                </Link>
+              ))}
+            </Box>
+          </Grid>
 
-              <Link
-                href="/products"
-                color="inherit"
-                underline="hover"
-                sx={{ fontSize: "0.6rem" }}
-              >
-                Products
-              </Link>
+          {/* Policies */}
+          <Grid size={{ xs: 6, md: 3 }}>
+            <Typography fontWeight={700} sx={headingStyles}>
+              Policies
+            </Typography>
 
-              <Link
-                href="/about"
-                color="inherit"
-                underline="hover"
-                sx={{ fontSize: "0.6rem" }}
-              >
-                About Us
-              </Link>
-
-              <Link
-                href="/contact"
-                color="inherit"
-                underline="hover"
-                sx={{ fontSize: "0.6rem" }}
-              >
-                Contact Us
-              </Link>
+            <Box
+              sx={{
+                display: "flex",
+                flexDirection: "column",
+                gap: 0.45,
+              }}
+            >
+              {policyLinks.map((item) => (
+                <Link
+                  key={item.path}
+                  component={RouterLink}
+                  to={item.path}
+                  underline="hover"
+                  sx={linkStyles}
+                >
+                  {item.label}
+                </Link>
+              ))}
             </Box>
           </Grid>
 
           {/* Contact */}
-          <Grid size={{ xs: 6, md: 4 }}>
-            <Typography
-              fontWeight={700}
-              sx={{
-                fontSize: {
-                  xs: "0.72rem",
-                  sm: "0.82rem",
-                },
-                mb: 0.6,
-              }}
-            >
+          <Grid size={{ xs: 12, md: 3 }}>
+            <Typography fontWeight={700} sx={headingStyles}>
               Contact Us
             </Typography>
 
-            <Box display="flex" alignItems="center" mb={0.35}>
-              <Person sx={{ mr: 0.5, fontSize: 14 }} />
+            <Box display="flex" alignItems="center" mb={0.7}>
+              <Person sx={{ mr: 0.7, fontSize: 15 }} />
 
-              <Typography sx={{ fontSize: "0.58rem" }}>
+              <Typography sx={{ fontSize: "0.68rem" }}>
                 <strong>Prop:</strong> Hucharaddi
               </Typography>
-
-
             </Box>
 
-                        <Box display="flex" alignItems="center" mb={0.35}>
-              <Person sx={{ mr: 0.5, fontSize: 14 }} />
+            <Box display="flex" alignItems="center" mb={0.7}>
+              <Person sx={{ mr: 0.7, fontSize: 15 }} />
 
-              <Typography sx={{ fontSize: "0.58rem" }}>
-                <strong>Prop:</strong> Bhagya S 
+              <Typography sx={{ fontSize: "0.68rem" }}>
+                <strong>Prop:</strong> Bhagya S
               </Typography>
-
-
             </Box>
 
-            <Box display="flex" alignItems="center" mb={0.35}>
-              <Email sx={{ mr: 0.5, fontSize: 14 }} />
+            <Box display="flex" alignItems="flex-start" mb={0.7}>
+              <Email sx={{ mr: 0.7, fontSize: 15, mt: 0.1 }} />
 
               <Typography
                 sx={{
-                  fontSize: "0.58rem",
+                  fontSize: "0.68rem",
                   wordBreak: "break-word",
                 }}
               >
@@ -200,33 +264,34 @@ const Footer = () => {
               </Typography>
             </Box>
 
-            <Box display="flex" alignItems="center" mb={0.35}>
-              <Phone sx={{ mr: 0.5, fontSize: 14 }} />
+            <Box display="flex" alignItems="center" mb={0.7}>
+              <Phone sx={{ mr: 0.7, fontSize: 15 }} />
 
-              <Typography sx={{ fontSize: "0.58rem" }}>
+              <Typography sx={{ fontSize: "0.68rem" }}>
                 +91 90191 74672
               </Typography>
             </Box>
 
-            <Box display="flex" alignItems="center" mb={0.7}>
-              <LocationOn sx={{ mr: 0.5, fontSize: 14 }} />
+            <Box display="flex" alignItems="flex-start" mb={1}>
+              <LocationOn sx={{ mr: 0.7, fontSize: 15, mt: 0.1 }} />
 
-              <Typography sx={{ fontSize: "0.58rem" }}>
+              <Typography sx={{ fontSize: "0.68rem" }}>
                 Gadag, Karnataka - 582101
               </Typography>
             </Box>
 
-            <Box display="flex" gap={0.8}>
-              <Link href="#" color="inherit">
-                <Facebook sx={{ fontSize: 16 }} />
+            {/* Social Media */}
+            <Box display="flex" gap={1}>
+              <Link href="#" color="inherit" aria-label="Facebook">
+                <Facebook sx={{ fontSize: 19 }} />
               </Link>
 
-              <Link href="#" color="inherit">
-                <Instagram sx={{ fontSize: 16 }} />
+              <Link href="#" color="inherit" aria-label="Instagram">
+                <Instagram sx={{ fontSize: 19 }} />
               </Link>
 
-              <Link href="#" color="inherit">
-                <YouTube sx={{ fontSize: 16 }} />
+              <Link href="#" color="inherit" aria-label="YouTube">
+                <YouTube sx={{ fontSize: 19 }} />
               </Link>
             </Box>
           </Grid>
@@ -235,8 +300,8 @@ const Footer = () => {
         <Divider
           sx={{
             my: {
-              xs: 1.2,
-              sm: 1.8,
+              xs: 1.5,
+              sm: 2,
             },
             borderColor: "rgba(255,255,255,0.18)",
           }}
@@ -246,8 +311,8 @@ const Footer = () => {
           align="center"
           sx={{
             fontSize: {
-              xs: "0.52rem",
-              sm: "0.62rem",
+              xs: "0.58rem",
+              sm: "0.68rem",
             },
             opacity: 0.85,
           }}

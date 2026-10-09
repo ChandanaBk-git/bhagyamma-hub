@@ -5,6 +5,10 @@ const helmet = require("helmet");
 
 const app = express();
 
+const policyRoutes = require("./routes/policy.routes");
+
+const adminPolicyRoutes = require("./routes/adminPolicy.routes");
+
 // =====================================
 // MIDDLEWARE
 // =====================================
@@ -91,6 +95,11 @@ app.use("/api/v1/packaging", packagingRoutes);
 
 // Notification API
 app.use("/api/v1/notifications", notificationRoutes);
+
+// Policy API
+app.use("/api/v1/policies", policyRoutes);
+
+app.use("/api/v1/admin/policies", adminPolicyRoutes);
 
 // =====================================
 // HEALTH CHECK

@@ -99,7 +99,11 @@ import Reports from "../pages/Admin/Reports";
 import ReferralTreePage from "../pages/Admin/ReferralTreePage";
 import AdminOrders from "../pages/Admin/Orders";
 import Categories from "../pages/Admin/Categories";
-
+import AdminPolicies from "../pages/Admin/Policies/AdminPolicies";
+// import AdminPolicies from "../pages/Admin/Policies/AdminPolicies";
+import EditPolicy from "../pages/Admin/Policies/EditPolicy";
+import PolicyPreview from "../pages/Admin/Policies/PolicyPreview";    
+import PolicyPage from "../pages/Policies/PolicyPage";
 // =====================================================
 // MANAGER
 // =====================================================
@@ -249,6 +253,16 @@ const AppRoutes = () => {
           path="/notifications"
           element={<Notifications />}
         />
+
+        <Route
+  path="/policies"
+  element={<PolicyPage />}
+/>
+
+<Route
+  path="/policies/:slug"
+  element={<PolicyPage />}
+/>
 
       </Route>
 
@@ -472,10 +486,30 @@ const AppRoutes = () => {
   path="categories"
   element={<Categories />}
 />
+
+<Route
+  path="policies"
+  element={<AdminPolicies />}
+/>
+        
+<Route
+  path="policies/:id/preview"
+  element={<PolicyPreview />}
+/>
+        
+{/* <Route
+  path="policies"
+  element={<AdminPolicies />}
+/> */}
           <Route
             path="products"
             element={<ProductList />}
           />
+
+          <Route
+  path="policies/:id"
+  element={<EditPolicy />}
+/>
 
           <Route
             path="products/add"
