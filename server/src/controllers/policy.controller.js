@@ -1,3 +1,4 @@
+
 const Policy = require("../models/policy.model");
 
 // GET /api/v1/policies
@@ -7,7 +8,7 @@ exports.getPublishedPolicies = async (req, res) => {
       status: "published",
     })
       .select(
-        "title slug category version effectiveDate updatedAt displayOrder"
+        "title slug content category version effectiveDate updatedAt displayOrder"
       )
       .sort({ displayOrder: 1, title: 1 })
       .lean();
