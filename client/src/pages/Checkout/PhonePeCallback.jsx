@@ -26,10 +26,14 @@ import {
 
 import {
   verifyPhonePePayment,
+  verifyGuestPhonePePayment,
 } from "../../services/payment.service";
+
+import { useCart } from "../../context/CartContext";
 
 const PhonePeCallback = () => {
   const navigate = useNavigate();
+  const { clearAll } = useCart();
 
   const [searchParams] =
     useSearchParams();
@@ -44,8 +48,16 @@ const PhonePeCallback = () => {
       "source"
     );
 
+  const guestPaymentToken =
+    sessionStorage.getItem("bhagyamma_guest_payment_token");
+
+  const authToken =
+    localStorage.getItem("token") ||
+    sessionStorage.getItem("token");
+
+  // The guest token is only stored for guest checkout and is never placed in the URL.
   const isMember =
-    source === "member";
+    source === "member" || (!guestPaymentToken && Boolean(authToken));
 
   const [
     status,
@@ -87,10 +99,22 @@ const PhonePeCallback = () => {
       try {
         attempts += 1;
 
-        const result =
-          await verifyPhonePePayment(
+        let result;
+
+        if (guestPaymentToken) {
+          result = await verifyGuestPhonePePayment(
+            merchantOrderId,
+            guestPaymentToken
+          );
+        } else if (authToken) {
+          result = await verifyPhonePePayment(
             merchantOrderId
           );
+        } else {
+          throw new Error(
+            "Your payment verification session has expired. Please contact support before making another payment."
+          );
+        }
 
         if (cancelled) {
           return;
@@ -125,6 +149,21 @@ const PhonePeCallback = () => {
           setStatus(
             "SUCCESS"
           );
+
+          // Clear the cart only after the server confirms payment.
+          // Member carts may already be cleared server-side; clearAll keeps the UI in sync.
+          try {
+            await clearAll();
+          } catch (cartError) {
+            console.warn(
+              "Payment is confirmed, but cart cleanup did not complete:",
+              cartError
+            );
+          }
+
+          sessionStorage.removeItem("bhagyamma_guest_payment_token");
+          sessionStorage.removeItem("bhagyamma_pending_payment");
+          sessionStorage.removeItem("bhagyamma_pending_cart");
 
           return;
         }

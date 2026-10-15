@@ -1,3 +1,4 @@
+
 const mongoose = require("mongoose");
 
 const orderSchema = new mongoose.Schema(
@@ -65,6 +66,26 @@ const orderSchema = new mongoose.Schema(
     },
 
     // =====================================================
+    // GUEST PHONEPE PAYMENT ACCESS
+    // =====================================================
+
+    // Store only the hash of the guest access token.
+    // Never store or expose the original token here.
+    guestPaymentTokenHash: {
+      type: String,
+      default: null,
+      select: false,
+    },
+
+    // Guest payment access expires after the time
+    // established by the service layer.
+    guestPaymentTokenExpiresAt: {
+      type: Date,
+      default: null,
+      select: false,
+    },
+
+    // =====================================================
     // ORDER NUMBER
     // =====================================================
 
@@ -117,13 +138,9 @@ const orderSchema = new mongoose.Schema(
     // =====================================================
 
     /*
-     * These fields are especially important for GUEST orders.
-     *
      * Guest orders do not have a User document yet.
-     *
-     * Therefore the SP calculation must be stored directly
-     * on the order so that it can later be recovered when
-     * the customer registers using the same mobile number.
+     * Store their SP calculation on the order so it can
+     * be recovered if they later register.
      */
 
     spPreviousCarryForward: {
@@ -179,48 +196,17 @@ const orderSchema = new mongoose.Schema(
 
     status: {
       type: String,
-
-      /*
-       * Complete customer order flow:
-       *
-       * PLACED
-       *    ↓
-       * CONFIRMED
-       *    ↓
-       * PACKING
-       *    ↓
-       * PACKED
-       *    ↓
-       * READY_FOR_DISPATCH
-       *    ↓
-       * SHIPPED
-       *    ↓
-       * OUT_FOR_DELIVERY
-       *    ↓
-       * DELIVERED
-       *
-       * CANCELLED can happen according to the
-       * cancellation rules in the order service.
-       */
-
       enum: [
         "PLACED",
         "CONFIRMED",
-
-        // Packaging stages
         "PACKING",
         "PACKED",
         "READY_FOR_DISPATCH",
-
-        // Delivery stages
         "SHIPPED",
         "OUT_FOR_DELIVERY",
         "DELIVERED",
-
-        // Cancellation
         "CANCELLED",
       ],
-
       default: "PLACED",
       index: true,
     },
@@ -237,12 +223,7 @@ const orderSchema = new mongoose.Schema(
 
     paymentStatus: {
       type: String,
-      enum: [
-        "PENDING",
-        "PAID",
-        "FAILED",
-        "REFUNDED",
-      ],
+      enum: ["PENDING", "PAID", "FAILED", "REFUNDED"],
       default: "PENDING",
       index: true,
     },

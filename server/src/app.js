@@ -27,6 +27,8 @@ app.use(
 app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ extended: true }));
 
+
+
 // =====================================
 // ROUTE IMPORTS
 // =====================================
@@ -45,6 +47,9 @@ const cartRoutes = require("./routes/cart.routes");
 
 // Orders
 const orderRoutes = require("./routes/order.routes");
+
+// Phonepay Integration
+const phonepeRoutes = require("./routes/phonepe.routes");
 
 // Admin
 const adminRoutes = require("./routes/admin.routes");
@@ -67,6 +72,8 @@ const packagingRoutes = require("./routes/packaging.routes");
 // Notifications
 const notificationRoutes = require("./routes/notification.routes");
 
+
+
 // =====================================
 // API ROUTES
 // =====================================
@@ -80,6 +87,10 @@ app.use("/api/v1/categories", categoryRoutes);
 app.use("/api/v1/cart", cartRoutes);
 
 app.use("/api/v1/orders", orderRoutes);
+
+// PhonePe Payment API
+app.use("/api/v1/payment/phonepe", phonepeRoutes);
+
 
 app.use("/api/v1/admin", adminRoutes);
 

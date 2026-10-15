@@ -75,6 +75,12 @@ const Sidebar = ({
     },
 
     {
+  text: "Finance Audit Logs",
+  icon: <ReceiptLongRoundedIcon />,
+  path: "/admin/finance/audit-logs",
+},
+
+    {
   text: "Policy Management",
   icon: <GavelRoundedIcon />,
   path: "/admin/policies",

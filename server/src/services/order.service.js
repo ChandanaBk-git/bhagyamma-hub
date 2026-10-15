@@ -1,5 +1,8 @@
 const mongoose = require("mongoose");
 
+
+const crypto = require("crypto");
+
 const Order = require("../models/order.model");
 const OrderItem = require("../models/orderItem.model");
 const User = require("../models/user.model");
@@ -1160,10 +1163,41 @@ discount: 0,
         };
 
 
-        return await createOrder(
-            null,
-            normalizedOrderData
+const order = await createOrder(
+    null,
+    normalizedOrderData
+);
+
+const guestPaymentToken =
+    crypto.randomBytes(32).toString("hex");
+
+const guestPaymentTokenHash =
+    crypto
+        .createHash("sha256")
+        .update(guestPaymentToken)
+        .digest("hex");
+
+const guestPaymentTokenExpiresAt =
+    new Date(Date.now() + 24 * 60 * 60 * 1000);
+
+const savedToken =
+    await require("../repositories/order.repository")
+        .saveGuestPaymentToken(
+            order._id,
+            guestPaymentTokenHash,
+            guestPaymentTokenExpiresAt
         );
+
+if (!savedToken) {
+    throw new Error(
+        "Unable to initialize guest payment access"
+    );
+}
+
+return {
+    ...order,
+    guestPaymentToken,
+};
 
     } catch (error) {
 

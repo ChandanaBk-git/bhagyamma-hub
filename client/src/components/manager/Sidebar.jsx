@@ -24,7 +24,7 @@ import AccountBalanceWalletIcon from "@mui/icons-material/AccountBalanceWallet";
 import HomeIcon from "@mui/icons-material/Home";
 import StarsIcon from "@mui/icons-material/Stars";
 import LocalShippingIcon from "@mui/icons-material/LocalShipping";
-
+import AccountBalanceIcon from "@mui/icons-material/AccountBalance";
 
 /* =====================================================
    MENU ITEMS
@@ -96,6 +96,11 @@ const menuItems = [
     icon: <PersonIcon />,
     path: "/manager/profile",
   },
+  {
+  title: "Finance",
+  icon: <AccountBalanceIcon />,
+  path: "/manager/finance",
+},
 ];
 
 

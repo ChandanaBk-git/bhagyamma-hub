@@ -35,6 +35,11 @@ import {
   createOrder,
 } from "../../services/order.service";
 
+import {
+  createPhonePePayment,
+  createGuestPhonePePayment,
+} from "../../services/payment.service";
+
 
 /* =========================================================
    DELIVERY CONFIGURATION
@@ -924,53 +929,12 @@ const Checkout = () => {
 
 
       /* ===================================================
-         🔥 CLEAR CART AFTER SUCCESSFUL ORDER CREATION
-         
-         IMPORTANT:
-         
-         We clear the cart ONLY after the backend
-         confirms that the order was created.
-         
-         We do NOT clear the cart if createOrder()
-         fails.
+         KEEP CART UNTIL PAYMENT IS VERIFIED
+
+         The cart must not be cleared just because the
+         order document was created. The callback will
+         verify payment before the cart is cleared.
       =================================================== */
-
-      try {
-
-        await clearAll();
-
-        console.log(
-          "======================================"
-        );
-
-        console.log(
-          "CART CLEARED AFTER ORDER CREATION"
-        );
-
-        console.log(
-          "ORDER:",
-          order?.orderNumber ||
-          orderId
-        );
-
-        console.log(
-          "======================================"
-        );
-
-      } catch (cartClearError) {
-
-        /*
-         * The order already exists.
-         *
-         * Do not treat cart-clear failure as
-         * an order-creation failure.
-         */
-
-        console.error(
-          "CART CLEAR ERROR:",
-          cartClearError
-        );
-      }
 
 
       /* ===================================================
@@ -1130,33 +1094,68 @@ const Checkout = () => {
 
 
       /* ===================================================
-         SAVE PENDING PAYMENT
+         SAVE PENDING PAYMENT SUMMARY
       =================================================== */
 
       sessionStorage.setItem(
         "bhagyamma_pending_payment",
-        JSON.stringify(
-          paymentData
-        )
+        JSON.stringify(paymentData)
       );
 
+      setSuccess("Preparing secure PhonePe payment...");
 
       /* ===================================================
-         GO TO PAYMENT SCANNER
+         START MEMBER OR GUEST PHONEPE CHECKOUT
       =================================================== */
 
-      setSuccess(
-        "Order created successfully. Opening payment scanner..."
-      );
+      const authToken =
+        localStorage.getItem("token") ||
+        sessionStorage.getItem("token");
 
+      let paymentResponse;
 
-      navigate(
-        "/payment/scan",
-        {
-          state:
-            paymentData,
+      if (authToken) {
+        paymentResponse = await createPhonePePayment(orderId);
+      } else {
+        const guestPaymentToken = order?.guestPaymentToken;
+
+        if (!guestPaymentToken) {
+          throw new Error(
+            "The guest payment access token was not returned. Your order may have been created; please contact support before creating another order."
+          );
         }
-      );
+
+        sessionStorage.setItem(
+          "bhagyamma_guest_payment_token",
+          guestPaymentToken
+        );
+
+        paymentResponse = await createGuestPhonePePayment(
+          orderId,
+          guestPaymentToken
+        );
+      }
+
+      const paymentResult =
+        paymentResponse?.data?.data ||
+        paymentResponse?.data ||
+        paymentResponse;
+
+      const redirectUrl =
+        paymentResult?.redirectUrl ||
+        paymentResult?.redirectURL;
+
+      if (
+        !redirectUrl ||
+        !/^https:\/\//i.test(redirectUrl)
+      ) {
+        throw new Error(
+          "PhonePe did not return a valid secure payment URL."
+        );
+      }
+
+      // Do not clear the cart here. Payment callback handles verification.
+      window.location.assign(redirectUrl);
 
     } catch (err) {
 

@@ -1,3 +1,4 @@
+
 const express = require("express");
 
 const router = express.Router();
@@ -9,10 +10,12 @@ const {
 const {
   createPhonePePayment,
   verifyPhonePePayment,
+  createGuestPhonePePayment,
+  verifyGuestPhonePePayment,
 } = require("../controllers/phonepe.controller");
 
 /* ==========================================
-   Create PhonePe Payment
+   MEMBER - Create PhonePe Payment
 ========================================== */
 
 router.post(
@@ -22,13 +25,31 @@ router.post(
 );
 
 /* ==========================================
-   Verify PhonePe Payment
+   MEMBER - Verify PhonePe Payment
 ========================================== */
 
 router.get(
   "/status/:merchantOrderId",
   protect,
   verifyPhonePePayment
+);
+
+/* ==========================================
+   GUEST - Create PhonePe Payment
+========================================== */
+
+router.post(
+  "/guest/create",
+  createGuestPhonePePayment
+);
+
+/* ==========================================
+   GUEST - Verify PhonePe Payment
+========================================== */
+
+router.post(
+  "/guest/status",
+  verifyGuestPhonePePayment
 );
 
 module.exports = router;

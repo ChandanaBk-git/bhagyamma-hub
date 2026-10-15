@@ -104,6 +104,7 @@ import AdminPolicies from "../pages/Admin/Policies/AdminPolicies";
 import EditPolicy from "../pages/Admin/Policies/EditPolicy";
 import PolicyPreview from "../pages/Admin/Policies/PolicyPreview";    
 import PolicyPage from "../pages/Policies/PolicyPage";
+import FinanceAuditLogs from "../pages/Admin/FinanceAuditLogs";
 // =====================================================
 // MANAGER
 // =====================================================
@@ -129,6 +130,7 @@ import ManagerPackagingTeams
 import ManagerPackagingTeamOrders
   from "../pages/manager/ManagerPackagingTeamOrders";
 
+  import ManagerFinance from "../pages/manager/Finance";
 // =====================================================
 // NOTIFICATIONS
 // =====================================================
@@ -491,6 +493,11 @@ const AppRoutes = () => {
   path="policies"
   element={<AdminPolicies />}
 />
+
+<Route
+  path="finance/audit-logs"
+  element={<FinanceAuditLogs />}
+/>
         
 <Route
   path="policies/:id/preview"
@@ -699,6 +706,11 @@ const AppRoutes = () => {
             path="profile"
             element={<ManagerProfile />}
           />
+
+          <Route
+  path="finance"
+  element={<ManagerFinance />}
+/>
 
           <Route
             path="referral-tree"

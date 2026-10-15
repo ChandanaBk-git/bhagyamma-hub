@@ -11,6 +11,8 @@ require("../middleware/auth.middleware");
 const authorize =
 require("../middleware/role.middleware");
 
+const financeAuditController = require("../controllers/financeAudit.controller");
+
 // ==========================================
 // Dashboard
 // ==========================================
@@ -42,6 +44,13 @@ router.get(
     protect,
     authorize("SUPER_ADMIN"),
     adminController.getUserById
+);
+
+router.get(
+  "/finance/audit-logs",
+  protect,
+  authorize("SUPER_ADMIN"),
+  financeAuditController.getFinanceAuditLogs
 );
 
 // Activate / Deactivate User
