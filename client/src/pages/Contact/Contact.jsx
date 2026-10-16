@@ -207,7 +207,7 @@ const Contact = () => {
                         },
                       }}
                     >
-                      Prakash Reddy
+                      HuchaRaddy
                     </Typography>
                   </Box>
                 </Box>
@@ -358,7 +358,7 @@ const Contact = () => {
                         },
                       }}
                     >
-                      Bengaluru, Karnataka, India
+                      Gadag, Karnataka, India
                     </Typography>
                   </Box>
                 </Box>

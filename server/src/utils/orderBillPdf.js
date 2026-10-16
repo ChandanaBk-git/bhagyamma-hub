@@ -689,5 +689,5 @@ const createOrderBillPdf = async ({
 // EXPORT
 // =====================================================
 
-module.exports = createOrderBillPdf;
+//module.exports = createOrderBillPdf;
 module.exports.createOrderBillPdf = createOrderBillPdf;
