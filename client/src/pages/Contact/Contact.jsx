@@ -207,7 +207,7 @@ const Contact = () => {
                         },
                       }}
                     >
-                      HuchaRaddy
+                      HuchaRaddi
                     </Typography>
                   </Box>
                 </Box>
