@@ -322,15 +322,14 @@ const summary = {
                 ? "SUPERVISOR"
                 : "MEMBER",
 
-        supervisorTarget:
-            25000,
 
-        remainingTarget:
-            Math.max(
-                25000 -
-                    (sellingPoints?.lifetimePurchase || 0),
-                0
-            ),
+supervisorTarget: 500,
+
+remainingTarget: Math.max(
+    500 - Number(sellingPoints?.sellingPoints || 0),
+    0
+),
+
 
         totalOrders:
             orders.length,

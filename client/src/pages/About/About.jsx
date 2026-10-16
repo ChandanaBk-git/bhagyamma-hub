@@ -47,7 +47,7 @@ const benefits = [
     icon: <StarRounded />,
     title: "Premium Ayurvedic Products",
     description:
-      "Explore authentic herbal and wellness products carefully selected for everyday health and natural care.",
+      "Explore Ayurvedic, herbal and wellness products marketed by Bhagyamma Hub from Kisra and Vedgiri.",
     color: "#F9A825",
     background: "#FFF8E1",
   },
@@ -55,7 +55,7 @@ const benefits = [
     icon: <VerifiedRounded />,
     title: "Trusted Quality",
     description:
-      "Every product is chosen with quality, safety and customer satisfaction in mind.",
+      "We aim to provide clear product information and source products through appropriate suppliers.",
     color: "#2E7D32",
     background: "#E8F5E9",
   },
@@ -63,7 +63,7 @@ const benefits = [
     icon: <LocalShippingRounded />,
     title: "Fast Delivery",
     description:
-      "Quick order processing and reliable delivery so your wellness products reach you on time.",
+      "Orders are processed according to our published shipping policy and delivery estimates.",
     color: "#1565C0",
     background: "#E3F2FD",
   },
@@ -86,7 +86,7 @@ const whyChoose = [
     icon: <ShoppingBagRounded />,
     title: "Trusted Herbal Wellness",
     description:
-      "We provide premium Ayurvedic products made to support everyday wellness and help customers choose natural solutions with confidence.",
+      "We market and retail Ayurvedic, herbal and wellness products from Kisra and Vedgiri, with product information available to support informed shopping.",
     color: "#2E7D32",
     background: "#E8F5E9",
   },
@@ -94,7 +94,7 @@ const whyChoose = [
     icon: <FavoriteRounded />,
     title: "Customer First",
     description:
-      "Your satisfaction is our priority. We focus on quality products, transparent pricing and a smooth shopping experience from order placement to delivery.",
+      "We focus on transparent product information, clear pricing, published policies and a smooth shopping experience from order placement to delivery.",
     color: "#D32F2F",
     background: "#FFEBEE",
   },
@@ -165,7 +165,7 @@ const shoppingSteps = [
     icon: <SearchRounded />,
     title: "Explore Products",
     description:
-      "Browse our premium herbal, Ayurvedic and wellness products.",
+      "Browse our available Kisra and Vedgiri products.",
     color: "#2E7D32",
     background: "#E8F5E9",
   },
@@ -332,10 +332,10 @@ const About = () => {
                 lineHeight: 1.55,
               }}
             >
-              Experience the goodness of Ayurveda with premium herbal
-              products, trusted quality, secure shopping and exclusive
-              member benefits. Our mission is to make natural wellness
-              simple, affordable and accessible for every family.
+              Bhagyamma Hub, operated by BHAGYAMMA ENTERPRISES, markets and retails
+              products from Kisra and Vedgiri. We aim to provide transparent
+              product information, clear policies and a convenient online
+              shopping experience.
             </Typography>
           </Box>
         </Container>
@@ -367,7 +367,7 @@ const About = () => {
         <Box>
           <SectionHeading
             title="What You'll Get"
-            description="Bhagyamma Hub offers carefully selected Ayurvedic products designed to support your daily wellness with trusted quality and reliable customer service."
+            description="Bhagyamma Hub markets and retails products from Kisra and Vedgiri. Product details and applicable terms are provided to help customers make informed purchasing decisions."
           />
 
           <Box
@@ -817,6 +817,185 @@ const About = () => {
         </Box>
 
         {/* =================================================
+            PRODUCT SOURCING & TRANSPARENCY
+        ================================================= */}
+
+        <Box
+          sx={{
+            mt: {
+              xs: 4,
+              sm: 6,
+              md: 7,
+            },
+          }}
+        >
+          <SectionHeading
+            title="Product Sourcing & Transparency"
+            description="Clear information about our Kisra and Vedgiri product offerings and our approach to responsible trading."
+          />
+
+          <Box
+            sx={{
+              display: "grid",
+              gridTemplateColumns: {
+                xs: "1fr",
+                sm: "repeat(2, 1fr)",
+              },
+              gap: {
+                xs: 1,
+                sm: 1.5,
+                md: 2,
+              },
+            }}
+          >
+            <Card
+              elevation={0}
+              sx={{
+                borderRadius: 0,
+                border: `1px solid ${COLORS.border}`,
+                bgcolor: COLORS.white,
+                height: "100%",
+              }}
+            >
+              <CardContent sx={{ p: { xs: 1.5, sm: 2 } }}>
+                <Typography
+                  sx={{
+                    color: COLORS.primary,
+                    fontWeight: 700,
+                    fontSize: { xs: "0.78rem", sm: "0.9rem" },
+                  }}
+                >
+                  Kisra & Vedgiri Products
+                </Typography>
+                <Typography
+                  sx={{
+                    mt: 0.7,
+                    color: COLORS.secondaryText,
+                    fontSize: { xs: "0.62rem", sm: "0.74rem" },
+                    lineHeight: 1.6,
+                  }}
+                >
+                  Bhagyamma Hub markets and retails products from Kisra and Vedgiri.
+                  The products are supplied under their respective brand names,
+                  and manufacturing details are provided on the applicable
+                  product packaging or listing. Additional brands may be added
+                  in the future.
+                </Typography>
+              </CardContent>
+            </Card>
+
+            <Card
+              elevation={0}
+              sx={{
+                borderRadius: 0,
+                border: `1px solid ${COLORS.border}`,
+                bgcolor: COLORS.white,
+                height: "100%",
+              }}
+            >
+              <CardContent sx={{ p: { xs: 1.5, sm: 2 } }}>
+                <Typography
+                  sx={{
+                    color: COLORS.primary,
+                    fontWeight: 700,
+                    fontSize: { xs: "0.78rem", sm: "0.9rem" },
+                  }}
+                >
+                  Responsible Trading & Compliance
+                </Typography>
+                <Typography
+                  sx={{
+                    mt: 0.7,
+                    color: COLORS.secondaryText,
+                    fontSize: { xs: "0.62rem", sm: "0.74rem" },
+                    lineHeight: 1.6,
+                  }}
+                >
+                  We aim to source products through appropriate suppliers and
+                  provide accurate product and business information. Products
+                  subject to specific licensing, labelling or other regulatory
+                  requirements should be offered only when the applicable
+                  requirements are met. Our trading registration does not
+                  replace product-specific licences or approvals that may be
+                  required by law.
+                </Typography>
+              </CardContent>
+            </Card>
+
+            <Card
+              elevation={0}
+              sx={{
+                borderRadius: 0,
+                border: `1px solid ${COLORS.border}`,
+                bgcolor: COLORS.white,
+                height: "100%",
+              }}
+            >
+              <CardContent sx={{ p: { xs: 1.5, sm: 2 } }}>
+                <Typography
+                  sx={{
+                    color: COLORS.primary,
+                    fontWeight: 700,
+                    fontSize: { xs: "0.78rem", sm: "0.9rem" },
+                  }}
+                >
+                  Product Information
+                </Typography>
+                <Typography
+                  sx={{
+                    mt: 0.7,
+                    color: COLORS.secondaryText,
+                    fontSize: { xs: "0.62rem", sm: "0.74rem" },
+                    lineHeight: 1.6,
+                  }}
+                >
+                  Customers should read the product label, ingredients,
+                  directions, warnings and manufacturer information before use.
+                  Product listings are informational and do not promise to
+                  diagnose, treat, cure or prevent any disease.
+                </Typography>
+              </CardContent>
+            </Card>
+
+            <Card
+              elevation={0}
+              sx={{
+                borderRadius: 0,
+                border: `1px solid ${COLORS.border}`,
+                bgcolor: COLORS.white,
+                height: "100%",
+              }}
+            >
+              <CardContent sx={{ p: { xs: 1.5, sm: 2 } }}>
+                <Typography
+                  sx={{
+                    color: COLORS.primary,
+                    fontWeight: 700,
+                    fontSize: { xs: "0.78rem", sm: "0.9rem" },
+                  }}
+                >
+                  Brand Independence
+                </Typography>
+                <Typography
+                  sx={{
+                    mt: 0.7,
+                    color: COLORS.secondaryText,
+                    fontSize: { xs: "0.62rem", sm: "0.74rem" },
+                    lineHeight: 1.6,
+                  }}
+                >
+                  Brand names and trademarks belong to their respective owners.
+                  Listing a brand on Bhagyamma Hub does not, by itself, mean
+                  that we own that brand or are its authorised distributor.
+                  Any distributor or partnership claim will be made only where
+                  it can be supported.
+                </Typography>
+              </CardContent>
+            </Card>
+          </Box>
+        </Box>
+
+        {/* =================================================
             OUR PROMISE
         ================================================= */}
 
@@ -868,11 +1047,12 @@ const About = () => {
                 lineHeight: 1.55,
               }}
             >
-              We are committed to providing premium Ayurvedic products
-              with trusted quality, affordable pricing, secure shopping,
-              fast delivery and excellent customer support. Every order
-              is handled with care so you can shop confidently and enjoy
-              a better wellness experience.
+              We aim to provide a transparent shopping experience for
+              Kisra and Vedgiri products. Product availability,
+              descriptions, delivery estimates and applicable terms are
+              displayed on our website. Products are manufactured by their
+              respective manufacturers, and product-specific claims should
+              be checked against the product label and manufacturer information.
             </Typography>
           </Box>
         </Box>

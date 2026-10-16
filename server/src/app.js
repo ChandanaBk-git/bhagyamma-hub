@@ -9,6 +9,9 @@ const policyRoutes = require("./routes/policy.routes");
 
 const adminPolicyRoutes = require("./routes/adminPolicy.routes");
 
+// KYC
+const kycRoutes = require("./routes/kyc.routes");
+
 // =====================================
 // MIDDLEWARE
 // =====================================
@@ -91,6 +94,8 @@ app.use("/api/v1/orders", orderRoutes);
 // PhonePe Payment API
 app.use("/api/v1/payment/phonepe", phonepeRoutes);
 
+app.use("/api/v1/kyc", kycRoutes);
+
 
 app.use("/api/v1/admin", adminRoutes);
 
@@ -100,7 +105,9 @@ app.use("/api/v1/user", userRoutes);
 
 app.use("/api/v1/wallet", walletRoutes);
 
+// Commission API — keep both paths for compatibility
 app.use("/api/v1/commission", commissionRoutes);
+app.use("/api/v1/commissions", commissionRoutes);
 
 app.use("/api/v1/packaging", packagingRoutes);
 

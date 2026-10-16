@@ -7,6 +7,20 @@ const productRepository =
 const Category = require("../models/category.model");
 
 /* =========================================================
+   SEO SLUG HELPER
+========================================================= */
+
+const createProductSlug = (productName) => {
+  return String(productName || "")
+    .normalize("NFKD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+};
+
+/* =========================================================
    REMOVE INVENTORY STOCK
 ========================================================= */
 
@@ -123,10 +137,20 @@ const validateProductCategories = async (productData) => {
    CREATE PRODUCT
 ========================================================= */
 
+
+/* =========================================================
+   CREATE PRODUCT
+========================================================= */
+
 const createProduct = async (productData) => {
   const cleanData = removeStockField(productData);
 
   await validateProductCategories(cleanData);
+
+  // Generate an SEO-friendly URL slug from the product name.
+cleanData.slug = await createUniqueProductSlug(
+  cleanData.productName
+);
 
   return await productRepository.create(cleanData);
 };
@@ -218,12 +242,35 @@ const getProductById = async (id) => {
   return await productRepository.findById(id);
 };
 
+
+/* =========================================================
+   GET PRODUCT BY SEO SLUG
+========================================================= */
+
+const getProductBySlug = async (slug) => {
+  const normalizedSlug = String(slug || "").trim().toLowerCase();
+
+  if (!normalizedSlug) {
+    throw new Error("Product slug is required.");
+  }
+
+  return await productRepository.findBySlug(normalizedSlug);
+};
+
+
 /* =========================================================
    UPDATE PRODUCT
 ========================================================= */
 
 const updateProduct = async (id, data) => {
   const cleanData = removeStockField(data);
+
+if (cleanData.productName) {
+  cleanData.slug = await createUniqueProductSlug(
+    cleanData.productName,
+    id
+  );
+}
 
   if (
     cleanData.parentCategory !== undefined ||
@@ -269,6 +316,36 @@ const deleteProduct = async (id) => {
   return await productRepository.deleteById(id);
 };
 
+
+const createUniqueProductSlug = async (productName, excludeProductId = null) => {
+  const baseSlug = createProductSlug(productName);
+
+  if (!baseSlug) {
+    throw new Error("Product name cannot produce a valid URL slug.");
+  }
+
+  let slug = baseSlug;
+  let counter = 2;
+
+  while (true) {
+    const filter = { slug };
+
+    if (excludeProductId) {
+      filter._id = { $ne: excludeProductId };
+    }
+
+    const existingProduct = await require("../models/product").findOne(filter).select("_id");
+
+    if (!existingProduct) {
+      return slug;
+    }
+
+    slug = `${baseSlug}-${counter}`;
+    counter += 1;
+  }
+};
+
+
 /* =========================================================
    EXPORTS
 ========================================================= */
@@ -277,6 +354,7 @@ module.exports = {
   createProduct,
   getAllProducts,
   getProductById,
+  getProductBySlug,
   updateProduct,
   deleteProduct,
 };

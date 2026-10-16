@@ -15,7 +15,7 @@ import banner from "../../assets/banner/banner.jpg";
 // =====================================================
 
 const marqueeText =
-  "BHAGYAMMA HUB • PREMIUM HERBAL & WELLNESS PRODUCTS • QUALITY • TRUST • WELLNESS • OPPORTUNITY •";
+  "BHAGYAMMA HUB • KISRA PRODUCTS • VEDGIRI PRODUCTS • CUSTOMER TRUST •";
 
 // =====================================================
 // MOVING ROW
@@ -29,16 +29,13 @@ const MovingRow = ({ direction = "left" }) => {
       sx={{
         width: "100%",
         overflow: "hidden",
-
         bgcolor: "#1B5E20",
         color: "#fff",
-
         py: {
           xs: "3px",
           sm: "5px",
           md: "7px",
         },
-
         position: "relative",
       }}
     >
@@ -47,7 +44,6 @@ const MovingRow = ({ direction = "left" }) => {
           display: "flex",
           width: "max-content",
           whiteSpace: "nowrap",
-
           animation:
             direction === "right"
               ? "moveRight 28s linear infinite"
@@ -57,7 +53,6 @@ const MovingRow = ({ direction = "left" }) => {
             "0%": {
               transform: "translateX(0)",
             },
-
             "100%": {
               transform: "translateX(-50%)",
             },
@@ -67,7 +62,6 @@ const MovingRow = ({ direction = "left" }) => {
             "0%": {
               transform: "translateX(-50%)",
             },
-
             "100%": {
               transform: "translateX(0)",
             },
@@ -80,27 +74,22 @@ const MovingRow = ({ direction = "left" }) => {
             component="span"
             sx={{
               display: "inline-block",
-
               px: {
                 xs: "8px",
                 sm: "14px",
                 md: "22px",
               },
-
               fontSize: {
                 xs: "0.46rem",
                 sm: "0.6rem",
                 md: "0.78rem",
               },
-
               fontWeight: 800,
-
               letterSpacing: {
                 xs: "0.4px",
                 sm: "0.7px",
                 md: "1.1px",
               },
-
               lineHeight: 1.35,
             }}
           >
@@ -121,12 +110,7 @@ const HeroBanner = () => {
     <Box
       sx={{
         position: "relative",
-
         width: "100%",
-
-        // =================================================
-        // COMPACT HERO SIZE
-        // =================================================
 
         height: {
           xs: "240px",
@@ -148,10 +132,6 @@ const HeroBanner = () => {
 
         overflow: "hidden",
 
-        // =================================================
-        // BACKGROUND
-        // =================================================
-
         backgroundImage: `
           linear-gradient(
             rgba(0, 0, 0, 0.42),
@@ -161,7 +141,6 @@ const HeroBanner = () => {
         `,
 
         backgroundRepeat: "no-repeat",
-
         backgroundSize: "cover",
 
         backgroundPosition: {
@@ -171,42 +150,31 @@ const HeroBanner = () => {
         },
 
         backgroundColor: "#f8f5ef",
-
         display: "flex",
-
         alignItems: "center",
       }}
     >
-      {/* =================================================
-          TOP MARQUEE
-      ================================================= */}
+      {/* TOP MARQUEE */}
 
       <Box
         sx={{
           position: "absolute",
-
           top: 0,
           left: 0,
-
           width: "100%",
-
           zIndex: 5,
         }}
       >
         <MovingRow direction="right" />
       </Box>
 
-      {/* =================================================
-          HERO CONTENT
-          FIXED TO LOWER PART OF HERO
-      ================================================= */}
+      {/* HERO CONTENT */}
 
       <Container
         maxWidth="lg"
         disableGutters
         sx={{
           position: "absolute",
-
           left: 0,
           right: 0,
 
@@ -217,7 +185,6 @@ const HeroBanner = () => {
           },
 
           zIndex: 3,
-
           width: "100%",
 
           px: {
@@ -230,13 +197,11 @@ const HeroBanner = () => {
         <Stack
           sx={{
             width: "100%",
-
             maxWidth: {
               xs: "320px",
               sm: "560px",
               md: "700px",
             },
-
             gap: {
               xs: "5px",
               sm: "10px",
@@ -244,75 +209,52 @@ const HeroBanner = () => {
             },
           }}
         >
-          {/* =================================================
-              TITLE
-          ================================================= */}
-
           <Typography
             component="h1"
             sx={{
               margin: 0,
-
               color: "#fff",
-
               fontWeight: 900,
-
               fontSize: {
                 xs: "1.05rem",
                 sm: "1.8rem",
                 md: "3.8rem",
               },
-
               lineHeight: 1.1,
-
-              textShadow:
-                "0 2px 6px rgba(0,0,0,.7)",
+              textShadow: "0 2px 6px rgba(0,0,0,.7)",
             }}
           >
             Bhagyamma Hub
           </Typography>
 
-          {/* =================================================
-              DESCRIPTION
-          ================================================= */}
-
           <Typography
             sx={{
               margin: 0,
-
               color: "#fff",
-
               fontSize: {
                 xs: "0.60rem",
                 sm: "0.78rem",
                 md: "1.15rem",
               },
-
               lineHeight: {
                 xs: 1.3,
                 sm: 1.4,
                 md: 1.55,
               },
-
               maxWidth: {
                 xs: "290px",
                 sm: "500px",
                 md: "650px",
               },
-
-              textShadow:
-                "0 1px 4px rgba(0,0,0,.8)",
+              textShadow: "0 1px 4px rgba(0,0,0,.8)",
             }}
           >
-            Experience the power of nature with premium
-            herbal, skincare and wellness products crafted
-            for a healthier lifestyle.
+            Explore Ayurvedic, herbal, skincare and wellness products
+            from Kisra and Vedgiri. We focus on clear product
+            information and a convenient online shopping experience.
           </Typography>
 
-          {/* =================================================
-              BUTTONS
-              SMALL + SIDE BY SIDE
-          ================================================= */}
+          {/* BUTTONS */}
 
           <Stack
             direction="row"
@@ -323,9 +265,7 @@ const HeroBanner = () => {
             }}
             sx={{
               width: "fit-content",
-
               maxWidth: "100%",
-
               mt: {
                 xs: "3px",
                 sm: "5px",
@@ -333,10 +273,6 @@ const HeroBanner = () => {
               },
             }}
           >
-            {/* =================================================
-                SHOP NOW
-            ================================================= */}
-
             <Button
               component={Link}
               to="/products"
@@ -344,44 +280,32 @@ const HeroBanner = () => {
               color="success"
               sx={{
                 minWidth: "auto",
-
                 width: {
                   xs: "105px",
                   sm: "125px",
                   md: "150px",
                 },
-
                 height: {
                   xs: "28px",
                   sm: "36px",
                   md: "46px",
                 },
-
                 padding: 0,
-
                 borderRadius: {
                   xs: "14px",
                   sm: "18px",
                   md: "23px",
                 },
-
                 textTransform: "none",
-
                 fontWeight: 700,
-
                 fontSize: {
                   xs: "0.60rem",
                   sm: "0.74rem",
                   md: "0.92rem",
                 },
-
                 lineHeight: 1,
-
                 whiteSpace: "nowrap",
-
-                boxShadow:
-                  "0 2px 5px rgba(0,0,0,.25)",
-
+                boxShadow: "0 2px 5px rgba(0,0,0,.25)",
                 "&:hover": {
                   bgcolor: "#43A047",
                 },
@@ -390,66 +314,44 @@ const HeroBanner = () => {
               Shop Now
             </Button>
 
-            {/* =================================================
-                LEARN MORE
-            ================================================= */}
-
             <Button
               component={Link}
               to="/about"
               variant="outlined"
               sx={{
                 minWidth: "auto",
-
                 width: {
                   xs: "105px",
                   sm: "125px",
                   md: "150px",
                 },
-
                 height: {
                   xs: "28px",
                   sm: "36px",
                   md: "46px",
                 },
-
                 padding: 0,
-
                 borderRadius: {
                   xs: "14px",
                   sm: "18px",
                   md: "23px",
                 },
-
-                border:
-                  "1px solid rgba(255,255,255,0.95)",
-
-                bgcolor:
-                  "rgba(0,0,0,0.18)",
-
+                border: "1px solid rgba(255,255,255,0.95)",
+                bgcolor: "rgba(0,0,0,0.18)",
                 color: "#fff",
-
                 textTransform: "none",
-
                 fontWeight: 700,
-
                 fontSize: {
                   xs: "0.60rem",
                   sm: "0.74rem",
                   md: "0.92rem",
                 },
-
                 lineHeight: 1,
-
                 whiteSpace: "nowrap",
-
                 backdropFilter: "blur(2px)",
-
                 "&:hover": {
                   borderColor: "#fff",
-
-                  bgcolor:
-                    "rgba(0,0,0,0.28)",
+                  bgcolor: "rgba(0,0,0,0.28)",
                 },
               }}
             >
@@ -459,19 +361,14 @@ const HeroBanner = () => {
         </Stack>
       </Container>
 
-      {/* =================================================
-          BOTTOM MARQUEE
-      ================================================= */}
+      {/* BOTTOM MARQUEE */}
 
       <Box
         sx={{
           position: "absolute",
-
           bottom: 0,
           left: 0,
-
           width: "100%",
-
           zIndex: 5,
         }}
       >

@@ -15,7 +15,6 @@ const Features = () => {
       sx={{
         width: "100%",
         bgcolor: "#FFFFFF",
-
         py: {
           xs: 3,
           sm: 5,
@@ -33,10 +32,6 @@ const Features = () => {
           },
         }}
       >
-        {/* =================================================
-            HEADING
-        ================================================= */}
-
         <Typography
           variant="h3"
           align="center"
@@ -48,9 +43,7 @@ const Features = () => {
               sm: "1.7rem",
               md: "2.5rem",
             },
-
             lineHeight: 1.2,
-
             mb: {
               xs: 0.8,
               sm: 1,
@@ -61,10 +54,6 @@ const Features = () => {
           Why Customers Choose Us
         </Typography>
 
-        {/* =================================================
-            SUBTITLE
-        ================================================= */}
-
         <Typography
           align="center"
           color="text.secondary"
@@ -74,27 +63,20 @@ const Features = () => {
               sm: "0.82rem",
               md: "0.98rem",
             },
-
             lineHeight: 1.5,
-
             mb: {
               xs: 2.5,
               sm: 3.5,
               md: 5,
             },
-
             px: {
               xs: 1,
               sm: 0,
             },
           }}
         >
-          We are committed to quality, trust, and customer satisfaction.
+          Explore products from Kisra and Vedgiri with clear product information, customer service and a convenient shopping experience.
         </Typography>
-
-        {/* =================================================
-            FEATURES
-        ================================================= */}
 
         <Grid
           container
@@ -108,13 +90,8 @@ const Features = () => {
             <Grid
               key={feature.id}
               size={{
-                // 2 PER ROW ON MOBILE
                 xs: 6,
-
-                // 2 PER ROW ON TABLET
                 sm: 6,
-
-                // 4 PER ROW ON DESKTOP
                 md: 3,
               }}
               sx={{
@@ -125,36 +102,23 @@ const Features = () => {
                 elevation={0}
                 sx={{
                   width: "100%",
-
                   height: {
                     xs: "175px",
                     sm: "205px",
                     md: "240px",
                   },
-
                   borderRadius: 0,
-
-                  border:
-                    "1px solid #E2E6E8",
-
+                  border: "1px solid #E2E6E8",
                   bgcolor: "#FFFFFF",
-
                   textAlign: "center",
-
                   display: "flex",
-
                   flexDirection: "column",
-
                   justifyContent: "center",
-
                   transition:
                     "border-color 0.2s ease, box-shadow 0.2s ease",
-
                   "&:hover": {
                     borderColor: "#A9CFAF",
-
-                    boxShadow:
-                      "0 4px 12px rgba(0,0,0,0.07)",
+                    boxShadow: "0 4px 12px rgba(0,0,0,0.07)",
                   },
                 }}
               >
@@ -165,7 +129,6 @@ const Features = () => {
                       sm: 1.8,
                       md: 2.5,
                     },
-
                     "&:last-child": {
                       pb: {
                         xs: 1.2,
@@ -175,10 +138,6 @@ const Features = () => {
                     },
                   }}
                 >
-                  {/* =================================================
-                      ICON
-                  ================================================= */}
-
                   <Typography
                     sx={{
                       fontSize: {
@@ -186,9 +145,7 @@ const Features = () => {
                         sm: "36px",
                         md: "45px",
                       },
-
                       lineHeight: 1,
-
                       mb: {
                         xs: 1,
                         sm: 1.2,
@@ -199,10 +156,6 @@ const Features = () => {
                     {feature.icon}
                   </Typography>
 
-                  {/* =================================================
-                      TITLE
-                  ================================================= */}
-
                   <Typography
                     variant="h6"
                     fontWeight={700}
@@ -212,9 +165,7 @@ const Features = () => {
                         sm: "0.85rem",
                         md: "1rem",
                       },
-
                       lineHeight: 1.25,
-
                       mb: {
                         xs: 0.6,
                         sm: 0.8,
@@ -225,10 +176,6 @@ const Features = () => {
                     {feature.title}
                   </Typography>
 
-                  {/* =================================================
-                      DESCRIPTION
-                  ================================================= */}
-
                   <Typography
                     color="text.secondary"
                     sx={{
@@ -237,25 +184,18 @@ const Features = () => {
                         sm: "0.65rem",
                         md: "0.78rem",
                       },
-
                       lineHeight: {
                         xs: 1.35,
                         sm: 1.45,
                         md: 1.55,
                       },
-
-                      display:
-                        "-webkit-box",
-
+                      display: "-webkit-box",
                       WebkitLineClamp: {
                         xs: 3,
                         sm: 3,
                         md: 4,
                       },
-
-                      WebkitBoxOrient:
-                        "vertical",
-
+                      WebkitBoxOrient: "vertical",
                       overflow: "hidden",
                     }}
                   >

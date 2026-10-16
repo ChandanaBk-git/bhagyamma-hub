@@ -24,14 +24,12 @@ const Hero = () => {
             variant="h4"
             fontWeight={600}
           >
-            Premium Herbal &
-            Natural Products
+            Kisra & Vedgiri
+            Marketing Products
           </Typography>
 
           <Typography color="text.secondary">
-            Discover quality products that promote
-            health, wellness and business opportunities
-            through Bhagyamma Hub Membership.
+            Discover Ayurvedic, herbal, skincare and wellness products from Kisra and Vedgiri, along with membership opportunities through Bhagyamma Hub.
           </Typography>
 
           <Stack

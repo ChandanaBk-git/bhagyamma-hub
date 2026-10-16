@@ -32,6 +32,7 @@ const Testimonials = () => {
         }}
       >
         {/* Heading */}
+
         <Typography
           align="center"
           fontWeight={700}
@@ -69,6 +70,7 @@ const Testimonials = () => {
         </Typography>
 
         {/* Testimonials */}
+
         <Grid
           container
           spacing={{

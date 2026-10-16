@@ -1,66 +1,94 @@
-import axios from "axios";
 
-const API = axios.create({
-  baseURL: import.meta.env.VITE_API_URL,
-});
+import API from "../api";
 
-// Automatically attach JWT token
-API.interceptors.request.use((config) => {
-  const token = localStorage.getItem("token");
-
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
-  }
-
-  return config;
-});
-
-/*
-|--------------------------------------------------------------------------
-| Get Logged-in Member Network
-|--------------------------------------------------------------------------
-*/
+// =====================================================
+// GET LOGGED-IN MEMBER NETWORK
+// Backend route: GET /api/v1/user/my-network
+// =====================================================
 
 export const getMyNetwork = async () => {
-  const response = await API.get("/users/my-network");
-
+  const response = await API.get("/user/my-network");
   return response.data.data;
 };
 
-/*
-|--------------------------------------------------------------------------
-| Get Referral Tree
-|--------------------------------------------------------------------------
-*/
+// =====================================================
+// GET REFERRAL TREE
+// Backend route: GET /api/v1/user/referral-tree
+// =====================================================
 
 export const getReferralTree = async () => {
-  const response = await API.get("/users/referral-tree");
+  const response = await API.get("/user/referral-tree");
   return response.data.data;
 };
 
-/*
-|--------------------------------------------------------------------------
-| Search Members in Network
-|--------------------------------------------------------------------------
-*/
+// =====================================================
+// SEARCH MEMBERS IN THE LOADED NETWORK
+// The backend has no dedicated network-search endpoint,
+// so search the existing network data without adding
+// an unsupported API route.
+// =====================================================
 
 export const searchNetwork = async (keyword) => {
-  const response = await API.get(
-    `/users/network/search?keyword=${keyword}`
-  );
+  const query = String(keyword || "").trim().toLowerCase();
 
-  return response.data.data;
+  if (!query) {
+    return [];
+  }
+
+  const data = await getMyNetwork();
+  const members = [];
+  const visited = new Set();
+
+  const visit = (member) => {
+    if (!member || typeof member !== "object") return;
+
+    const id = String(member._id || member.id || "");
+
+    if (id && visited.has(id)) return;
+    if (id) visited.add(id);
+
+    const searchableText = [
+      member.name,
+      member.email,
+      member.mobile,
+      member.userId,
+    ]
+      .filter(Boolean)
+      .join(" ")
+      .toLowerCase();
+
+    if (searchableText.includes(query)) {
+      members.push(member);
+    }
+
+    if (Array.isArray(member.children)) {
+      member.children.forEach(visit);
+    }
+  };
+
+  const network = Array.isArray(data)
+    ? data
+    : Array.isArray(data?.network)
+      ? data.network
+      : [];
+
+  network.forEach(visit);
+
+  return members;
 };
 
-/*
-|--------------------------------------------------------------------------
-| Get Member Details
-|--------------------------------------------------------------------------
-*/
+// =====================================================
+// GET MEMBER DETAILS
+// Backend route: GET /api/v1/user/:id
+// =====================================================
 
 export const getMemberDetails = async (memberId) => {
+  if (!memberId) {
+    throw new Error("Member ID is required");
+  }
+
   const response = await API.get(
-    `/users/member/${memberId}`
+    `/user/${encodeURIComponent(memberId)}`
   );
 
   return response.data.data;

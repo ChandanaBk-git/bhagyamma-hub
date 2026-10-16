@@ -331,11 +331,14 @@ const getTotalByUser = async (
 
     const result =
         await CommissionTransaction.aggregate([
-            {
-                $match: {
-                    receiver: objectId,
-                },
-            },
+{
+    $match: {
+        receiver: objectId,
+        status: {
+            $in: ["PAID", "COMPLETED"],
+        },
+    },
+},
 
             {
                 $group: {
@@ -380,11 +383,14 @@ const getCommissionSummary = async (
 
     const result =
         await CommissionTransaction.aggregate([
-            {
-                $match: {
-                    receiver: objectId,
-                },
-            },
+{
+    $match: {
+        receiver: objectId,
+        status: {
+            $in: ["PAID", "COMPLETED"],
+        },
+    },
+},
 
             {
                 $group: {

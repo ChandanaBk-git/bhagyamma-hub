@@ -12,9 +12,6 @@ const Intro = () => {
       sx={{
         width: "100%",
         bgcolor: "#fff",
-
-        // Keep original section spacing,
-        // slightly reduced on mobile
         py: {
           xs: 4,
           sm: 6,
@@ -41,10 +38,6 @@ const Intro = () => {
           }}
           alignItems="center"
         >
-          {/* =================================================
-              LEFT SIDE
-          ================================================= */}
-
           <Grid size={{ xs: 12, md: 6 }}>
             <Typography
               variant="h3"
@@ -57,13 +50,11 @@ const Intro = () => {
                   sm: "1.7rem",
                   md: "3rem",
                 },
-
                 lineHeight: {
                   xs: 1.2,
                   sm: 1.25,
                   md: 1.2,
                 },
-
                 mb: {
                   xs: 1.5,
                   sm: 2,
@@ -83,7 +74,6 @@ const Intro = () => {
                   sm: "0.98rem",
                   md: "1rem",
                 },
-
                 lineHeight: {
                   xs: 1.65,
                   sm: 1.8,
@@ -91,11 +81,11 @@ const Intro = () => {
                 },
               }}
             >
-              Bhagyamma Hub is dedicated to bringing premium herbal,
-              wellness, and lifestyle products to every family. Our
-              mission is to provide high-quality products while creating
-              opportunities for individuals to grow through our trusted
-              membership network.
+              Bhagyamma Hub markets and retails selected Ayurvedic,
+              herbal, skincare, wellness and lifestyle products from
+              Kisra and Vedgiri. We aim to provide clear product
+              information and a convenient shopping experience while
+              creating opportunities through our membership network.
             </Typography>
 
             <Typography
@@ -107,13 +97,11 @@ const Intro = () => {
                   sm: 2.5,
                   md: 3,
                 },
-
                 fontSize: {
                   xs: "0.9rem",
                   sm: "0.98rem",
                   md: "1rem",
                 },
-
                 lineHeight: {
                   xs: 1.65,
                   sm: 1.8,
@@ -121,14 +109,11 @@ const Intro = () => {
                 },
               }}
             >
-              We believe in quality, trust, customer satisfaction, and
-              empowering people to build a better future together.
+              We value clear product information, customer satisfaction
+              and building a trusted shopping community through
+              Bhagyamma Hub.
             </Typography>
           </Grid>
-
-          {/* =================================================
-              RIGHT SIDE
-          ================================================= */}
 
           <Grid size={{ xs: 12, md: 6 }}>
             <Paper
@@ -139,16 +124,10 @@ const Intro = () => {
                   sm: 3.5,
                   md: 5,
                 },
-
                 borderRadius: 4,
-
                 bgcolor: "#F7F8FA",
               }}
             >
-              {/* =================================================
-                  OUR VISION
-              ================================================= */}
-
               <Typography
                 variant="h5"
                 fontWeight={700}
@@ -159,7 +138,6 @@ const Intro = () => {
                     sm: "1.2rem",
                     md: "1.5rem",
                   },
-
                   lineHeight: 1.25,
                 }}
               >
@@ -174,7 +152,6 @@ const Intro = () => {
                     sm: "0.9rem",
                     md: "1rem",
                   },
-
                   lineHeight: {
                     xs: 1.55,
                     sm: 1.65,
@@ -182,14 +159,10 @@ const Intro = () => {
                   },
                 }}
               >
-                To become India's most trusted platform for premium
-                herbal products and membership-driven business
-                opportunities.
+                To build a trusted platform for marketing and retailing
+                products from Kisra and Vedgiri while offering a
+                customer-focused shopping and membership experience.
               </Typography>
-
-              {/* =================================================
-                  OUR MISSION
-              ================================================= */}
 
               <Typography
                 variant="h5"
@@ -201,13 +174,11 @@ const Intro = () => {
                     sm: 3.5,
                     md: 4,
                   },
-
                   fontSize: {
                     xs: "1.05rem",
                     sm: "1.2rem",
                     md: "1.5rem",
                   },
-
                   lineHeight: 1.25,
                 }}
               >
@@ -222,7 +193,6 @@ const Intro = () => {
                     sm: "0.9rem",
                     md: "1rem",
                   },
-
                   lineHeight: {
                     xs: 1.55,
                     sm: 1.65,
@@ -230,9 +200,9 @@ const Intro = () => {
                   },
                 }}
               >
-                Deliver quality products, create opportunities, and
-                build a strong community through innovation, trust, and
-                customer satisfaction.
+                Market and retail products from Kisra and Vedgiri with
+                clear product information, reliable service and a focus
+                on customer satisfaction.
               </Typography>
             </Paper>
           </Grid>

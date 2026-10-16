@@ -19,47 +19,41 @@ const CommissionSummary = ({
   commissions = [],
 }) => {
 
-  const today = new Date();
 
-  let todayCommission = 0;
-  let monthlyCommission = 0;
-  let lifetimeCommission = 0;
+const today = new Date();
 
+let todayCommission = 0;
+let monthlyCommission = 0;
+let lifetimeCommission = 0;
 
-  /* =====================================================
-     CALCULATE COMMISSIONS
-  ===================================================== */
+const paidCommissions = commissions.filter((item) => {
+  const status = String(item?.status || "").toUpperCase();
 
-  commissions.forEach((item) => {
+  return status === "PAID" || status === "COMPLETED";
+});
 
-    const amount = Number(
-      item?.commissionAmount || 0
-    );
+paidCommissions.forEach((item) => {
+  const amount = Number(item?.commissionAmount || 0);
 
-    lifetimeCommission += amount;
+  lifetimeCommission += amount;
 
-    const commissionDate =
-      new Date(item?.createdAt);
+  const commissionDate = new Date(item?.createdAt);
 
+  if (Number.isNaN(commissionDate.getTime())) {
+    return;
+  }
 
-    if (
-      commissionDate.toDateString() ===
-      today.toDateString()
-    ) {
-      todayCommission += amount;
-    }
+  if (commissionDate.toDateString() === today.toDateString()) {
+    todayCommission += amount;
+  }
 
-
-    if (
-      commissionDate.getMonth() ===
-        today.getMonth() &&
-      commissionDate.getFullYear() ===
-        today.getFullYear()
-    ) {
-      monthlyCommission += amount;
-    }
-
-  });
+  if (
+    commissionDate.getMonth() === today.getMonth() &&
+    commissionDate.getFullYear() === today.getFullYear()
+  ) {
+    monthlyCommission += amount;
+  }
+});
 
 
   /* =====================================================

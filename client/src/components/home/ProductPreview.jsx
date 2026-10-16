@@ -103,10 +103,7 @@ const ProductPreview = () => {
               py: 4,
             }}
           >
-            <CircularProgress
-              color="success"
-              size={28}
-            />
+            <CircularProgress color="success" size={28} />
           </Box>
         </Container>
       </Box>
@@ -122,7 +119,6 @@ const ProductPreview = () => {
       sx={{
         width: "100%",
         bgcolor: "#fff",
-
         py: {
           xs: 3,
           sm: 5,
@@ -140,9 +136,7 @@ const ProductPreview = () => {
           },
         }}
       >
-        {/* =================================================
-            HEADER
-        ================================================= */}
+        {/* HEADER */}
 
         <Typography
           align="center"
@@ -154,7 +148,6 @@ const ProductPreview = () => {
               sm: "1.75rem",
               md: "2.5rem",
             },
-
             lineHeight: 1.2,
           }}
         >
@@ -166,28 +159,24 @@ const ProductPreview = () => {
           color="text.secondary"
           sx={{
             mt: 0.5,
-
             mb: {
               xs: 2,
               sm: 3,
               md: 5,
             },
-
             fontSize: {
               xs: "0.68rem",
               sm: "0.85rem",
               md: "0.98rem",
             },
-
             lineHeight: 1.45,
           }}
         >
-          Discover our premium Ayurvedic and herbal wellness products.
+          Discover Ayurvedic, herbal, skincare and wellness products
+          from Kisra and Vedgiri.
         </Typography>
 
-        {/* =================================================
-            ERROR
-        ================================================= */}
+        {/* ERROR */}
 
         {error && (
           <Typography
@@ -202,9 +191,7 @@ const ProductPreview = () => {
           </Typography>
         )}
 
-        {/* =================================================
-            EMPTY
-        ================================================= */}
+        {/* EMPTY STATE */}
 
         {!error && products.length === 0 && (
           <Typography
@@ -218,10 +205,7 @@ const ProductPreview = () => {
           </Typography>
         )}
 
-        {/* =================================================
-            SIX PRODUCTS
-            2 PER ROW ON MOBILE
-        ================================================= */}
+        {/* PRODUCT GRID */}
 
         {products.length > 0 && (
           <Grid
@@ -233,11 +217,8 @@ const ProductPreview = () => {
             }}
           >
             {products.slice(0, 4).map((product) => {
-              const rawImage =
-                product?.images?.[0] || "";
-
-              const imageUrl =
-                getImageUrl(rawImage);
+              const rawImage = product?.images?.[0] || "";
+              const imageUrl = getImageUrl(rawImage);
 
               return (
                 <Grid
@@ -252,98 +233,61 @@ const ProductPreview = () => {
                     display: "flex",
                   }}
                 >
-                  {/* =================================================
-                      PRODUCT CARD
-                  ================================================= */}
+                  {/* PRODUCT CARD */}
 
                   <Card
                     elevation={0}
                     sx={{
                       width: "100%",
-
-                      /*
-                       * COMPACT CARD HEIGHT
-                       */
                       height: {
                         xs: "300px",
                         sm: "350px",
                         md: "400px",
                         lg: "410px",
                       },
-
                       borderRadius: 0,
-
-                      border:
-                        "1px solid #E1E5E8",
-
+                      border: "1px solid #E1E5E8",
                       bgcolor: "#fff",
-
                       overflow: "hidden",
-
                       display: "flex",
-
                       flexDirection: "column",
-
                       boxShadow: "none",
-
                       "&:hover": {
                         borderColor: "#A9CFAF",
-
-                        boxShadow:
-                          "0 3px 10px rgba(0,0,0,0.06)",
+                        boxShadow: "0 3px 10px rgba(0,0,0,0.06)",
                       },
                     }}
                   >
-                    {/* =================================================
-                        IMAGE
-                    ================================================= */}
+                    {/* PRODUCT IMAGE */}
 
                     <Box
                       sx={{
                         width: "100%",
-
-                        /*
-                         * SMALLER IMAGE AREA
-                         */
-
                         height: {
                           xs: "112px",
                           sm: "140px",
                           md: "170px",
                           lg: "175px",
                         },
-
                         flexShrink: 0,
-
                         bgcolor: "#fff",
-
-                        borderBottom:
-                          "1px solid #EEEEEE",
-
+                        borderBottom: "1px solid #EEEEEE",
                         display: "flex",
-
                         alignItems: "center",
-
                         justifyContent: "center",
-
                         overflow: "hidden",
-
                         p: {
                           xs: 0.5,
                           sm: 0.8,
                           md: 1,
                         },
-
                         boxSizing: "border-box",
                       }}
                     >
                       <CardMedia
                         component="img"
                         src={imageUrl}
-                        alt={
-                          product?.productName ||
-                          "Product"
-                        }
+                        alt={product?.productName || "Product"}
                         onError={(event) => {
                           if (
                             event.currentTarget.src.endsWith(
@@ -353,47 +297,31 @@ const ProductPreview = () => {
                             return;
                           }
 
-                          event.currentTarget.src =
-                            FALLBACK_IMAGE;
+                          event.currentTarget.src = FALLBACK_IMAGE;
                         }}
                         sx={{
                           width: "100%",
-
                           height: "100%",
-
-                          /*
-                           * COMPLETE IMAGE
-                           */
                           objectFit: "contain",
-
-                          objectPosition:
-                            "center",
-
+                          objectPosition: "center",
                           display: "block",
                         }}
                       />
                     </Box>
 
-                    {/* =================================================
-                        CONTENT
-                    ================================================= */}
+                    {/* PRODUCT CONTENT */}
 
                     <CardContent
                       sx={{
                         flex: 1,
-
                         minHeight: 0,
-
                         display: "flex",
-
                         flexDirection: "column",
-
                         p: {
                           xs: 0.9,
                           sm: 1.2,
                           md: 1.7,
                         },
-
                         "&:last-child": {
                           pb: {
                             xs: 0.9,
@@ -403,9 +331,7 @@ const ProductPreview = () => {
                         },
                       }}
                     >
-                      {/* =================================================
-                          CATEGORY
-                      ================================================= */}
+                      {/* CATEGORY */}
 
                       <Box
                         sx={{
@@ -414,18 +340,13 @@ const ProductPreview = () => {
                             sm: "21px",
                             md: "23px",
                           },
-
                           mb: {
                             xs: 0.3,
                             sm: 0.5,
                             md: 0.7,
                           },
-
                           display: "flex",
-
-                          alignItems:
-                            "flex-start",
-
+                          alignItems: "flex-start",
                           overflow: "hidden",
                         }}
                       >
@@ -440,33 +361,25 @@ const ProductPreview = () => {
                                 sm: "19px",
                                 md: "21px",
                               },
-
-                              maxWidth:
-                                "100%",
-
+                              maxWidth: "100%",
                               fontSize: {
                                 xs: "0.42rem",
                                 sm: "0.52rem",
                                 md: "0.62rem",
                               },
-
                               fontWeight: 600,
-
-                              "& .MuiChip-label":
-                                {
-                                  px: {
-                                    xs: 0.6,
-                                    sm: 0.8,
-                                  },
+                              "& .MuiChip-label": {
+                                px: {
+                                  xs: 0.6,
+                                  sm: 0.8,
                                 },
+                              },
                             }}
                           />
                         )}
                       </Box>
 
-                      {/* =================================================
-                          PRODUCT NAME
-                      ================================================= */}
+                      {/* PRODUCT NAME */}
 
                       <Box
                         sx={{
@@ -475,7 +388,6 @@ const ProductPreview = () => {
                             sm: "36px",
                             md: "42px",
                           },
-
                           overflow: "hidden",
                         }}
                       >
@@ -484,43 +396,29 @@ const ProductPreview = () => {
                           fontWeight={700}
                           sx={{
                             margin: 0,
-
                             color: "#222",
-
                             fontSize: {
                               xs: "0.63rem",
                               sm: "0.74rem",
                               md: "0.9rem",
                             },
-
                             lineHeight: {
                               xs: 1.25,
                               sm: 1.3,
                               md: 1.35,
                             },
-
-                            display:
-                              "-webkit-box",
-
+                            display: "-webkit-box",
                             WebkitLineClamp: 2,
-
-                            WebkitBoxOrient:
-                              "vertical",
-
-                            overflow:
-                              "hidden",
-
-                            wordBreak:
-                              "break-word",
+                            WebkitBoxOrient: "vertical",
+                            overflow: "hidden",
+                            wordBreak: "break-word",
                           }}
                         >
                           {product?.productName}
                         </Typography>
                       </Box>
 
-                      {/* =================================================
-                          BRAND
-                      ================================================= */}
+                      {/* BRAND */}
 
                       <Box
                         sx={{
@@ -529,7 +427,6 @@ const ProductPreview = () => {
                             sm: "18px",
                             md: "20px",
                           },
-
                           overflow: "hidden",
                         }}
                       >
@@ -542,17 +439,10 @@ const ProductPreview = () => {
                                 sm: "0.56rem",
                                 md: "0.68rem",
                               },
-
                               lineHeight: 1.25,
-
-                              whiteSpace:
-                                "nowrap",
-
-                              overflow:
-                                "hidden",
-
-                              textOverflow:
-                                "ellipsis",
+                              whiteSpace: "nowrap",
+                              overflow: "hidden",
+                              textOverflow: "ellipsis",
                             }}
                           >
                             {product.brand}
@@ -560,9 +450,7 @@ const ProductPreview = () => {
                         )}
                       </Box>
 
-                      {/* =================================================
-                          DESCRIPTION
-                      ================================================= */}
+                      {/* DESCRIPTION */}
 
                       <Box
                         sx={{
@@ -571,13 +459,11 @@ const ProductPreview = () => {
                             sm: "36px",
                             md: "44px",
                           },
-
                           mt: {
                             xs: 0.2,
                             sm: 0.4,
                             md: 0.6,
                           },
-
                           overflow: "hidden",
                         }}
                       >
@@ -585,46 +471,29 @@ const ProductPreview = () => {
                           color="text.secondary"
                           sx={{
                             margin: 0,
-
                             fontSize: {
                               xs: "0.47rem",
                               sm: "0.57rem",
                               md: "0.7rem",
                             },
-
                             lineHeight: {
                               xs: 1.3,
                               sm: 1.4,
                               md: 1.45,
                             },
-
-                            display:
-                              "-webkit-box",
-
-                            /*
-                             * Only 2 lines so
-                             * cards stay compact.
-                             */
+                            display: "-webkit-box",
                             WebkitLineClamp: 2,
-
-                            WebkitBoxOrient:
-                              "vertical",
-
-                            overflow:
-                              "hidden",
-
-                            wordBreak:
-                              "break-word",
+                            WebkitBoxOrient: "vertical",
+                            overflow: "hidden",
+                            wordBreak: "break-word",
                           }}
                         >
                           {product?.description ||
-                            "Premium quality product from Bhagyamma Hub."}
+                            "Check the product label and manufacturer information for product details."}
                         </Typography>
                       </Box>
 
-                      {/* =================================================
-                          PRICE
-                      ================================================= */}
+                      {/* PRICE */}
 
                       <Typography
                         color="success.main"
@@ -635,13 +504,11 @@ const ProductPreview = () => {
                             sm: 0.7,
                             md: 1,
                           },
-
                           fontSize: {
                             xs: "0.72rem",
                             sm: "0.85rem",
                             md: "1.05rem",
                           },
-
                           lineHeight: 1.2,
                         }}
                       >
@@ -651,14 +518,11 @@ const ProductPreview = () => {
                           0}
                       </Typography>
 
-                      {/* =================================================
-                          BUTTON
-                      ================================================= */}
+                      {/* VIEW DETAILS BUTTON */}
 
                       <Box
                         sx={{
                           mt: "auto",
-
                           pt: {
                             xs: 0.6,
                             sm: 0.8,
@@ -678,39 +542,25 @@ const ProductPreview = () => {
                               sm: "30px",
                               md: "36px",
                             },
-
                             minHeight: {
                               xs: "26px",
                               sm: "30px",
                               md: "36px",
                             },
-
                             padding: 0,
-
                             borderRadius: 0,
-
-                            borderWidth:
-                              "1px",
-
-                            textTransform:
-                              "none",
-
+                            borderWidth: "1px",
+                            textTransform: "none",
                             fontWeight: 600,
-
                             fontSize: {
                               xs: "0.50rem",
                               sm: "0.6rem",
                               md: "0.75rem",
                             },
-
                             lineHeight: 1,
-
-                            whiteSpace:
-                              "nowrap",
-
+                            whiteSpace: "nowrap",
                             "&:hover": {
-                              borderWidth:
-                                "1px",
+                              borderWidth: "1px",
                             },
                           }}
                         >
@@ -725,9 +575,7 @@ const ProductPreview = () => {
           </Grid>
         )}
 
-        {/* =================================================
-            VIEW ALL PRODUCTS
-        ================================================= */}
+        {/* VIEW ALL PRODUCTS */}
 
         <Stack
           alignItems="center"
@@ -750,19 +598,14 @@ const ProductPreview = () => {
                 sm: "38px",
                 md: "44px",
               },
-
               px: {
                 xs: 2.2,
                 sm: 3.5,
                 md: 5,
               },
-
               borderRadius: 0,
-
               textTransform: "none",
-
               fontWeight: 700,
-
               fontSize: {
                 xs: "0.6rem",
                 sm: "0.7rem",

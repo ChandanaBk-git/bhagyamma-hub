@@ -37,7 +37,6 @@ const CallToAction = () => {
             textAlign: "center",
           }}
         >
-          {/* Heading */}
           <Typography
             fontWeight={700}
             sx={{
@@ -52,7 +51,6 @@ const CallToAction = () => {
             Ready to Start Your Journey?
           </Typography>
 
-          {/* Gold Accent */}
           <Box
             sx={{
               width: 35,
@@ -63,7 +61,6 @@ const CallToAction = () => {
             }}
           />
 
-          {/* Description */}
           <Typography
             sx={{
               color: "#555",
@@ -77,12 +74,11 @@ const CallToAction = () => {
               lineHeight: 1.45,
             }}
           >
-            Join the Bhagyamma Hub community today. Explore our premium
-            products, become a member, and take the first step toward a
-            healthier lifestyle and exciting business opportunities.
+            Explore products from Kisra and Vedgiri, review product
+            information and our published policies, or learn more
+            about Bhagyamma Hub and its membership programme.
           </Typography>
 
-          {/* Buttons */}
           <Stack
             direction="row"
             justifyContent="center"
@@ -98,7 +94,6 @@ const CallToAction = () => {
               width: "100%",
             }}
           >
-            {/* Explore Products */}
             <Button
               component={RouterLink}
               to="/products"
@@ -136,7 +131,6 @@ const CallToAction = () => {
               Explore Products
             </Button>
 
-            {/* Join Membership */}
             <Button
               component={RouterLink}
               to="/register"
@@ -174,7 +168,6 @@ const CallToAction = () => {
               Join Membership
             </Button>
 
-            {/* Contact Us */}
             <Button
               component={RouterLink}
               to="/contact"

@@ -12,6 +12,22 @@ const productSchema = new mongoose.Schema(
       trim: true,
     },
 
+    
+productName: {
+  type: String,
+  required: true,
+  trim: true,
+},
+
+// SEO: URL-friendly product name
+slug: {
+  type: String,
+  trim: true,
+  lowercase: true,
+  default: "",
+},
+
+
     parentCategory: {
   type: mongoose.Schema.Types.ObjectId,
   ref: "Category",
@@ -135,19 +151,18 @@ const productSchema = new mongoose.Schema(
     // =================================================
 
     images: {
-      type: [String],
+  type: [String],
 
-      validate: {
-        validator: function (value) {
-          return value.length <= 4;
-        },
-
-        message: "Maximum 4 images are allowed.",
-      },
-
-      default: [],
+  validate: {
+    validator: function (value) {
+      return Array.isArray(value) && value.length <= 5;
     },
 
+    message: "Maximum 5 images are allowed.",
+  },
+
+  default: [],
+},
     // =================================================
     // STATUS
     // =================================================

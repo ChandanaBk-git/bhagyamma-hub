@@ -211,6 +211,30 @@ const getProductById = asyncHandler(async (req, res) => {
   );
 });
 
+
+/* =================================================
+// GET PRODUCT BY SEO SLUG
+================================================= */
+
+const getProductBySlug = asyncHandler(async (req, res) => {
+  const product = await ProductService.getProductBySlug(
+    req.params.slug
+  );
+
+  if (!product) {
+    throw new ApiError(404, "Product not found.");
+  }
+
+  return res.status(200).json(
+    new ApiResponse(
+      200,
+      "Product fetched successfully.",
+      product
+    )
+  );
+});
+
+
 // =================================================
 // UPDATE PRODUCT
 // =================================================
@@ -284,10 +308,12 @@ const deleteProduct = asyncHandler(async (req, res) => {
   );
 });
 
+
 module.exports = {
   createProduct,
   getAllProducts,
   getProductById,
+  getProductBySlug,
   updateProduct,
   deleteProduct,
 };

@@ -99,6 +99,7 @@ export const getProducts = async (activeOnly = true) => {
   );
 };
 
+// ```javascript
 // =====================================================
 // GET PRODUCT BY ID
 // =====================================================
@@ -110,6 +111,29 @@ export const getProductById = async (id) => {
     return response.data?.data || null;
   } catch (error) {
     console.error("Get Product Error:", error);
+
+    throw (
+      error.response?.data || {
+        success: false,
+        message: "Unable to fetch product.",
+      }
+    );
+  }
+};
+
+// =====================================================
+// GET PRODUCT BY SEO SLUG
+// =====================================================
+
+export const getProductBySlug = async (slug) => {
+  try {
+    const response = await API.get(
+      `/products/slug/${encodeURIComponent(slug)}`
+    );
+
+    return response.data?.data || null;
+  } catch (error) {
+    console.error("Get Product By Slug Error:", error);
 
     throw (
       error.response?.data || {

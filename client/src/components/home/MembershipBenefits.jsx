@@ -11,6 +11,8 @@ import {
 import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
 import ArrowBackIosNewIcon from "@mui/icons-material/ArrowBackIosNew";
 
+import { Link as RouterLink } from "react-router-dom";
+
 import { membershipBenefits } from "../../utils/dummyData";
 
 const MembershipBenefits = () => {
@@ -36,8 +38,7 @@ const MembershipBenefits = () => {
     <Box
       sx={{
         width: "100%",
-        background:
-          "linear-gradient(135deg, #2E7D32, #1B5E20)",
+        background: "linear-gradient(135deg, #2E7D32, #1B5E20)",
         color: "#FFFFFF",
         py: {
           xs: 3,
@@ -56,10 +57,6 @@ const MembershipBenefits = () => {
           },
         }}
       >
-        {/* ================================
-            HEADING
-        ================================= */}
-
         <Box
           sx={{
             textAlign: "center",
@@ -98,14 +95,10 @@ const MembershipBenefits = () => {
               lineHeight: 1.45,
             }}
           >
-            Unlock exclusive benefits by joining the
-            Bhagyamma Hub family.
+            Explore member benefits while shopping for products from
+            Kisra and Vedgiri through Bhagyamma Hub.
           </Typography>
         </Box>
-
-        {/* ================================
-            SINGLE BENEFIT
-        ================================= */}
 
         {activeBenefit && (
           <Box
@@ -113,73 +106,53 @@ const MembershipBenefits = () => {
               position: "relative",
               width: "100%",
               bgcolor: "#FFFFFF",
-
               minHeight: {
                 xs: "165px",
                 sm: "190px",
                 md: "210px",
               },
-
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
-
               px: {
                 xs: 5,
                 sm: 7,
                 md: 9,
               },
-
               py: {
                 xs: 2,
                 sm: 2.5,
                 md: 3,
               },
-
               boxSizing: "border-box",
             }}
           >
-            {/* ================================
-                PREVIOUS BUTTON
-            ================================= */}
-
             <IconButton
               onClick={handlePrevious}
               aria-label="Previous benefit"
               sx={{
                 position: "absolute",
-
                 left: {
                   xs: 7,
                   sm: 12,
                   md: 16,
                 },
-
                 top: "50%",
-
                 transform: "translateY(-50%)",
-
                 width: {
                   xs: 30,
                   sm: 36,
                   md: 42,
                 },
-
                 height: {
                   xs: 30,
                   sm: 36,
                   md: 42,
                 },
-
-                border:
-                  "1px solid #B7D7BA",
-
+                border: "1px solid #B7D7BA",
                 borderRadius: 0,
-
                 color: "#1B5E20",
-
                 bgcolor: "#F5FAF6",
-
                 "&:hover": {
                   bgcolor: "#E8F5E9",
                 },
@@ -196,10 +169,6 @@ const MembershipBenefits = () => {
               />
             </IconButton>
 
-            {/* ================================
-                BENEFIT CONTENT
-            ================================= */}
-
             <Box
               sx={{
                 width: "100%",
@@ -214,9 +183,7 @@ const MembershipBenefits = () => {
                     sm: "38px",
                     md: "45px",
                   },
-
                   lineHeight: 1,
-
                   mb: {
                     xs: 1,
                     sm: 1.2,
@@ -231,17 +198,13 @@ const MembershipBenefits = () => {
                 component="h3"
                 sx={{
                   color: "#1B5E20",
-
                   fontWeight: 700,
-
                   fontSize: {
                     xs: "0.85rem",
                     sm: "1rem",
                     md: "1.2rem",
                   },
-
                   lineHeight: 1.3,
-
                   mb: {
                     xs: 0.6,
                     sm: 0.8,
@@ -259,19 +222,14 @@ const MembershipBenefits = () => {
                     sm: "0.72rem",
                     md: "0.82rem",
                   },
-
                   lineHeight: 1.5,
-
                   display: "-webkit-box",
-
                   WebkitLineClamp: {
                     xs: 3,
                     sm: 3,
                     md: 4,
                   },
-
                   WebkitBoxOrient: "vertical",
-
                   overflow: "hidden",
                 }}
               >
@@ -279,47 +237,32 @@ const MembershipBenefits = () => {
               </Typography>
             </Box>
 
-            {/* ================================
-                NEXT BUTTON
-            ================================= */}
-
             <IconButton
               onClick={handleNext}
               aria-label="Next benefit"
               sx={{
                 position: "absolute",
-
                 right: {
                   xs: 7,
                   sm: 12,
                   md: 16,
                 },
-
                 top: "50%",
-
                 transform: "translateY(-50%)",
-
                 width: {
                   xs: 30,
                   sm: 36,
                   md: 42,
                 },
-
                 height: {
                   xs: 30,
                   sm: 36,
                   md: 42,
                 },
-
-                border:
-                  "1px solid #B7D7BA",
-
+                border: "1px solid #B7D7BA",
                 borderRadius: 0,
-
                 color: "#1B5E20",
-
                 bgcolor: "#F5FAF6",
-
                 "&:hover": {
                   bgcolor: "#E8F5E9",
                 },
@@ -338,38 +281,25 @@ const MembershipBenefits = () => {
           </Box>
         )}
 
-        {/* ================================
-            COUNTER
-        ================================= */}
-
         <Typography
           textAlign="center"
           sx={{
             mt: 1,
-
-            color:
-              "rgba(255,255,255,0.8)",
-
+            color: "rgba(255,255,255,0.8)",
             fontSize: {
               xs: "0.55rem",
               sm: "0.65rem",
               md: "0.72rem",
             },
-
             letterSpacing: "1px",
           }}
         >
           {activeIndex + 1} / {totalBenefits}
         </Typography>
 
-        {/* ================================
-            JOIN BUTTON
-        ================================= */}
-
         <Box
           sx={{
             textAlign: "center",
-
             mt: {
               xs: 1.5,
               sm: 2,
@@ -377,6 +307,8 @@ const MembershipBenefits = () => {
           }}
         >
           <Button
+            component={RouterLink}
+            to="/register"
             variant="contained"
             color="secondary"
             sx={{
@@ -385,27 +317,20 @@ const MembershipBenefits = () => {
                 sm: 36,
                 md: 42,
               },
-
               px: {
                 xs: 2.5,
                 sm: 3.5,
                 md: 4.5,
               },
-
               borderRadius: 0,
-
               textTransform: "none",
-
               fontWeight: 700,
-
               fontSize: {
                 xs: "0.6rem",
                 sm: "0.7rem",
                 md: "0.82rem",
               },
-
               boxShadow: "none",
-
               "&:hover": {
                 boxShadow: "none",
               },

@@ -19,10 +19,13 @@ import ProductTabs from "../../components/products/ProductTabs";
 import ProductGallery from "../../components/products/ProductGallery";
 import ProductInfo from "../../components/products/ProductInfo";
 
-import { getProductById } from "../../services/product.service";
+import {
+  getProductById,
+  getProductBySlug,
+} from "../../services/product.service";
 
 const ProductDetails = () => {
-  const { id } = useParams();
+const { id: slugOrId } = useParams();
 
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -38,7 +41,11 @@ const ProductDetails = () => {
         setLoading(true);
         setError("");
 
-        const data = await getProductById(id);
+const isMongoId = /^[a-f\d]{24}$/i.test(slugOrId);
+
+const data = isMongoId
+  ? await getProductById(slugOrId)
+  : await getProductBySlug(slugOrId);
 
         setProduct(data);
       } catch (err) {
@@ -55,7 +62,7 @@ const ProductDetails = () => {
     };
 
     loadProduct();
-  }, [id]);
+}, [slugOrId]);
 
   // =====================================================
   // LOADING
