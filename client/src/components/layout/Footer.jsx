@@ -46,18 +46,18 @@ const Footer = () => {
       label: "Returns & Refunds",
       path: "/policies/cancellation-returns-refunds",
     },
-    {
-      label: "Membership & Commission",
-      path: "/policies/membership-referral-commission",
-    },
-    {
-      label: "SP & Rewards",
-      path: "/policies/sp-supervisor-rewards",
-    },
-    {
-      label: "Wallet & Withdrawal",
-      path: "/policies/wallet-withdrawal",
-    },
+    // {
+    //   label: "Membership & Commission",
+    //   path: "/policies/membership-referral-commission",
+    // },
+    // {
+    //   label: "SP & Rewards",
+    //   path: "/policies/sp-supervisor-rewards",
+    // },
+    // {
+    //   label: "Wallet & Withdrawal",
+    //   path: "/policies/wallet-withdrawal",
+    // },
     {
       label: "Account & Conduct",
       path: "/policies/account-conduct-supervisor",

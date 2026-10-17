@@ -7,7 +7,10 @@ import {
   Typography,
   TextField,
   Button,
+  Alert,
+  Snackbar,
 } from "@mui/material";
+import { useState } from "react";
 
 import {
   Person,
@@ -17,6 +20,51 @@ import {
 } from "@mui/icons-material";
 
 const Contact = () => {
+  const [form, setForm] = useState({
+    name: "",
+    email: "",
+    subject: "",
+    message: "",
+  });
+
+  const [loading, setLoading] = useState(false);
+  const [notice, setNotice] = useState({
+    open: false,
+    type: "success",
+    message: "",
+  });
+
+  const handleChange = (event) => {
+    const { name, value } = event.target;
+    setForm((previous) => ({ ...previous, [name]: value }));
+  };
+
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+    if (loading) return;
+
+    setLoading(true);
+    try {
+      const response = await API.post("/contact", form);
+      setNotice({
+        open: true,
+        type: "success",
+        message: response.data?.message || "Your message has been sent successfully.",
+      });
+      setForm({ name: "", email: "", subject: "", message: "" });
+    } catch (error) {
+      setNotice({
+        open: true,
+        type: "error",
+        message:
+          error.response?.data?.message ||
+          "Unable to send your message right now. Please try again.",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <Box
       sx={{
@@ -420,12 +468,18 @@ const Contact = () => {
                   Send Us a Message
                 </Typography>
 
+                <Box component="form" onSubmit={handleSubmit} noValidate>
                 {/* NAME */}
 
                 <TextField
                   fullWidth
                   size="small"
                   label="Full Name"
+                  name="name"
+                  value={form.name}
+                  onChange={handleChange}
+                  required
+                  inputProps={{ maxLength: 100 }}
                   margin="dense"
                   sx={{
                     mt: 0.8,
@@ -454,6 +508,11 @@ const Contact = () => {
                   size="small"
                   label="Email Address"
                   type="email"
+                  name="email"
+                  value={form.email}
+                  onChange={handleChange}
+                  required
+                  inputProps={{ maxLength: 254 }}
                   margin="dense"
                   sx={{
                     "& .MuiInputBase-root": {
@@ -479,6 +538,11 @@ const Contact = () => {
                   fullWidth
                   size="small"
                   label="Subject"
+                  name="subject"
+                  value={form.subject}
+                  onChange={handleChange}
+                  required
+                  inputProps={{ maxLength: 200 }}
                   margin="dense"
                   sx={{
                     "& .MuiInputBase-root": {
@@ -504,8 +568,13 @@ const Contact = () => {
                   fullWidth
                   size="small"
                   label="Message"
+                  name="message"
+                  value={form.message}
+                  onChange={handleChange}
+                  required
                   multiline
                   rows={3}
+                  inputProps={{ maxLength: 5000 }}
                   margin="dense"
                   sx={{
                     "& .MuiInputBase-root": {
@@ -528,8 +597,10 @@ const Contact = () => {
                 {/* SEND BUTTON */}
 
                 <Button
+                  type="submit"
                   variant="contained"
                   disableElevation
+                  disabled={loading}
                   sx={{
                     mt: 1.2,
 
@@ -562,13 +633,34 @@ const Contact = () => {
                     },
                   }}
                 >
-                  Send Message
+                  {loading ? "Sending..." : "Send Message"}
                 </Button>
+                </Box>
               </CardContent>
             </Card>
           </Grid>
         </Grid>
       </Container>
+
+      <Snackbar
+        open={notice.open}
+        autoHideDuration={5000}
+        onClose={() =>
+          setNotice((previous) => ({ ...previous, open: false }))
+        }
+        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+      >
+        <Alert
+          severity={notice.type}
+          variant="filled"
+          onClose={() =>
+            setNotice((previous) => ({ ...previous, open: false }))
+          }
+          sx={{ width: "100%" }}
+        >
+          {notice.message}
+        </Alert>
+      </Snackbar>
     </Box>
   );
 };

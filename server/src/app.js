@@ -9,6 +9,8 @@ const policyRoutes = require("./routes/policy.routes");
 
 const adminPolicyRoutes = require("./routes/adminPolicy.routes");
 
+const contactRoutes = require("./routes/contact.routes");
+
 // KYC
 const kycRoutes = require("./routes/kyc.routes");
 
@@ -110,6 +112,9 @@ app.use("/api/v1/commission", commissionRoutes);
 app.use("/api/v1/commissions", commissionRoutes);
 
 app.use("/api/v1/packaging", packagingRoutes);
+
+// Contact Form
+app.use("/api/v1/contact", contactRoutes);
 
 // Notification API
 app.use("/api/v1/notifications", notificationRoutes);
