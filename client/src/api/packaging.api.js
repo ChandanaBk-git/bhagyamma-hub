@@ -323,3 +323,37 @@ export const updatePackagingStaff =
             }
         );
     };
+
+
+/*
+=====================================================
+PACKAGING — DOWNLOAD ORDER BILL PDF
+=====================================================
+*/
+export const downloadPackagingOrderBill = async (
+    orderId,
+    token = null
+) => {
+    if (!orderId) {
+        throw new Error("Order ID is required.");
+    }
+
+    const packagingToken =
+        getValidPackagingToken(token);
+
+    if (!packagingToken) {
+        throw new Error(
+            "Packaging authentication token not found."
+        );
+    }
+
+    return axios.get(
+        `${API_URL}/packaging/orders/${orderId}/bill`,
+        {
+            responseType: "arraybuffer",
+            headers: {
+                Authorization: `Bearer ${packagingToken}`,
+            },
+        }
+    );
+};

@@ -76,6 +76,20 @@ router.get(
     controller.orderDetails
 );
 
+
+/*
+=========================================================
+DOWNLOAD ORDER BILL PDF
+PACKAGING STAFF ONLY
+=========================================================
+*/
+router.get(
+    "/orders/:id/bill",
+    authorize("PACKAGING"),
+    controller.downloadOrderBill
+);
+
+
 // Update packing status
 router.patch(
     "/orders/:id/status",
