@@ -1,23 +1,22 @@
+
 const express = require("express");
 
 const router = express.Router();
 
-const controller =
-    require("../controllers/packaging.controller");
+const controller = require("../controllers/packaging.controller");
 
 const {
-    protect,
-    authorize,
+  protect,
+  authorize,
 } = require("../middleware/auth.middleware");
 
 // =====================================================
-// PACKAGING LOGIN
-// Public route
+// PACKAGING LOGIN — PUBLIC ROUTE
 // =====================================================
 
 router.post(
-    "/login",
-    controller.login
+  "/login",
+  controller.login
 );
 
 // =====================================================
@@ -32,80 +31,90 @@ router.use(protect);
 
 // Create Packaging account
 router.post(
-    "/staff",
-    authorize("ADMIN", "SUPER_ADMIN"),
-    controller.createStaff
+  "/staff",
+  authorize("ADMIN", "SUPER_ADMIN"),
+  controller.createStaff
 );
 
 // Get all Packaging accounts
 router.get(
-    "/staff",
-    authorize("ADMIN", "SUPER_ADMIN"),
-    controller.listStaff
+  "/staff",
+  authorize("ADMIN", "SUPER_ADMIN"),
+  controller.listStaff
 );
 
 // Update Packaging account
 router.patch(
-    "/staff/:id",
-    authorize("ADMIN", "SUPER_ADMIN"),
-    controller.updateStaff
+  "/staff/:id",
+  authorize("ADMIN", "SUPER_ADMIN"),
+  controller.updateStaff
 );
 
 // =====================================================
-// PACKAGING STAFF
+// PACKAGING STAFF — DASHBOARD
 // =====================================================
 
-// Dashboard
 router.get(
-    "/dashboard",
-    authorize("PACKAGING"),
-    controller.dashboard
+  "/dashboard",
+  authorize("PACKAGING"),
+  controller.dashboard
 );
 
-// Assigned orders
+// =====================================================
+// PACKAGING STAFF — ORDERS
+// =====================================================
+
+// Get assigned orders
 router.get(
-    "/orders",
-    authorize("PACKAGING"),
-    controller.orders
+  "/orders",
+  authorize("PACKAGING"),
+  controller.orders
 );
 
-// Assigned order details
+// Get assigned order details
 router.get(
-    "/orders/:id",
-    authorize("PACKAGING"),
-    controller.orderDetails
+  "/orders/:id",
+  authorize("PACKAGING"),
+  controller.orderDetails
 );
 
+// =====================================================
+// DOWNLOAD ORDER BILL / INVOICE PDF
+// Both URLs use the same controller.
+// =====================================================
 
-/*
-=========================================================
-DOWNLOAD ORDER BILL PDF
-PACKAGING STAFF ONLY
-=========================================================
-*/
+// Frontend currently requests this endpoint
 router.get(
-    "/orders/:id/bill",
-    authorize("PACKAGING"),
-    controller.downloadOrderBill
+  "/orders/:id/bill",
+  authorize("PACKAGING"),
+  controller.downloadOrderBill
 );
 
+// Alternative document endpoint
+router.get(
+  "/orders/:id/document",
+  authorize("PACKAGING"),
+  controller.downloadOrderBill
+);
 
-// Update packing status
+// =====================================================
+// UPDATE PACKING STATUS
+// =====================================================
+
 router.patch(
-    "/orders/:id/status",
-    authorize("PACKAGING"),
-    controller.updateStatus
+  "/orders/:id/status",
+  authorize("PACKAGING"),
+  controller.updateStatus
 );
 
 // =====================================================
 // ADMIN — ASSIGN ORDER TO PACKAGING STAFF
 // =====================================================
 
-// Only Admin/Super Admin can assign orders
 router.patch(
-    "/orders/:id/assign",
-    authorize("ADMIN", "SUPER_ADMIN"),
-    controller.assignOrder
+  "/orders/:id/assign",
+  authorize("ADMIN", "SUPER_ADMIN"),
+  controller.assignOrder
 );
 
 module.exports = router;
