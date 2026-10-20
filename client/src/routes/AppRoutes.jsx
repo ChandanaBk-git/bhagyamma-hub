@@ -152,37 +152,7 @@ import ProtectedRoute from "../components/auth/ProtectedRoute";
 // =====================================================
 // ROLE BASED HOME LAYOUT
 // =====================================================
-
 const RoleBasedHomeLayout = () => {
-  let user = {};
-
-  try {
-    user = JSON.parse(
-      localStorage.getItem("user") || "{}"
-    );
-  } catch (error) {
-    user = {};
-  }
-
-  const role = String(
-    user?.role || ""
-  ).toUpperCase();
-
-  if (role === "MEMBER") {
-    return <MemberLayout />;
-  }
-
-  if (role === "MANAGER") {
-    return <ManagerLayout />;
-  }
-
-  if (
-    role === "ADMIN" ||
-    role === "SUPER_ADMIN"
-  ) {
-    return <AdminLayout />;
-  }
-
   return <MainLayout />;
 };
 

@@ -1,85 +1,185 @@
-import { createContext, useEffect, useState } from "react";
+
+import {
+  createContext,
+  useCallback,
+  useEffect,
+  useState,
+} from "react";
+
 import {
   login as loginService,
   logout as logoutService,
   getProfile,
 } from "../services/auth.service";
 
-export const AuthContext = createContext();
+export const AuthContext = createContext(null);
+
+// =====================================================
+// SAFELY READ STORED USER
+// =====================================================
+
+const readStoredUser = () => {
+  try {
+    const storedUser = localStorage.getItem("user");
+
+    return storedUser ? JSON.parse(storedUser) : null;
+  } catch (error) {
+    console.error("Unable to read stored user:", error);
+
+    localStorage.removeItem("user");
+
+    return null;
+  }
+};
+
+// =====================================================
+// AUTH PROVIDER
+// =====================================================
 
 const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(
-    JSON.parse(localStorage.getItem("user")) || null
-  );
+  const [user, setUser] = useState(readStoredUser);
 
   const [token, setToken] = useState(
-    localStorage.getItem("token") || null
+    () => localStorage.getItem("token") || null
   );
 
   const [loading, setLoading] = useState(true);
 
+  // =====================================================
+  // LOGOUT
+  // =====================================================
+
+  const logout = useCallback(() => {
+    try {
+      logoutService();
+    } catch (error) {
+      console.error("Logout service error:", error);
+    }
+
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+
+    setUser(null);
+    setToken(null);
+  }, []);
+
+  // =====================================================
+  // VALIDATE STORED SESSION
+  // =====================================================
+
   useEffect(() => {
+    let active = true;
+
     const loadUser = async () => {
-      if (!token) {
-        setLoading(false);
+      const storedToken = localStorage.getItem("token");
+
+      if (!storedToken) {
+        if (active) {
+          setUser(null);
+          setToken(null);
+          setLoading(false);
+        }
+
         return;
       }
 
       try {
         const response = await getProfile();
 
-        const profile = response.data;
+        // Support common API response formats.
+        const profile =
+          response?.data?.user ||
+          response?.data?.data?.user ||
+          response?.data?.data ||
+          response?.data;
 
-        setUser(profile);
-        localStorage.setItem(
-          "user",
-          JSON.stringify(profile)
-        );
+        if (!profile || typeof profile !== "object") {
+          throw new Error("Invalid user profile response.");
+        }
+
+        if (active) {
+          setUser(profile);
+          setToken(storedToken);
+
+          localStorage.setItem(
+            "user",
+            JSON.stringify(profile)
+          );
+        }
       } catch (error) {
-        logout();
+        console.error(
+          "Session validation failed:",
+          error?.response?.status || error?.message
+        );
+
+        if (active) {
+          localStorage.removeItem("token");
+          localStorage.removeItem("user");
+
+          setUser(null);
+          setToken(null);
+        }
       } finally {
-        setLoading(false);
+        if (active) {
+          setLoading(false);
+        }
       }
     };
 
     loadUser();
-  }, [token]);
 
-  const login = async (credentials) => {
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  // =====================================================
+  // LOGIN
+  // =====================================================
+
+  const login = useCallback(async (credentials) => {
     const response = await loginService(credentials);
 
-    const { token, user } = response.data;
+    const responseData =
+      response?.data?.data || response?.data;
 
-    localStorage.setItem("token", token);
+    const newToken = responseData?.token;
+    const loggedInUser = responseData?.user;
+
+    if (!newToken || !loggedInUser) {
+      throw new Error(
+        "Login failed: token or user details were not received."
+      );
+    }
+
+    localStorage.setItem("token", newToken);
+
     localStorage.setItem(
       "user",
-      JSON.stringify(user)
+      JSON.stringify(loggedInUser)
     );
 
-    setToken(token);
-    setUser(user);
+    setToken(newToken);
+    setUser(loggedInUser);
 
     return response;
-  };
+  }, []);
 
-  const logout = () => {
-    logoutService();
+  // =====================================================
+  // AUTH CONTEXT
+  // =====================================================
 
-    setUser(null);
-    setToken(null);
+  const value = {
+    user,
+    token,
+    loading,
+    login,
+    logout,
+    isAuthenticated: Boolean(token && user),
   };
 
   return (
-    <AuthContext.Provider
-      value={{
-        user,
-        token,
-        loading,
-        login,
-        logout,
-        isAuthenticated: !!token,
-      }}
-    >
+    <AuthContext.Provider value={value}>
       {children}
     </AuthContext.Provider>
   );

@@ -2,6 +2,16 @@
 const PDFDocument = require("pdfkit");
 const QRCode = require("qrcode");
 
+
+const BUSINESS_NAME = "Bhagyamma Hub";
+
+const BUSINESS_ADDRESS = [
+    "Ward No. 22, Near Veeranjaneya Temple",
+    "Gadag Betageri, Gadag District",
+    "Karnataka - 582101, India",
+].join(", ");
+
+
 const createOrderBillPdf = async (order, orderItems = []) => {
   const PAGE_WIDTH = 841.89;
   const PAGE_HEIGHT = 1190.55;

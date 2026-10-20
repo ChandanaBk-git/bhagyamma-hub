@@ -163,6 +163,10 @@ const getCustomerMobile = (order) => {
     );
 };
 
+
+
+
+
 const getCustomerEmail = (order) => {
     const customer = getCustomer(order);
 
@@ -230,13 +234,18 @@ const getItemImage = (item) => {
 const getItemQuantity = (item) =>
     Number(item?.quantity ?? item?.qty ?? 1);
 
-const getItemPrice = (item) =>
+const getItemPrice = (item) => {
+  const product = item?.productId;
+
+  return (
+    item?.unitPrice ??
     item?.price ??
     item?.sellingPrice ??
-    item?.unitPrice ??
-    item?.productId?.price ??
-    item?.product?.price ??
-    0;
+    product?.sellingPrice ??
+    product?.price ??
+    0
+  );
+};
 
 const getItemTotal = (item) => {
     const explicitTotal =
@@ -252,6 +261,78 @@ const getItemTotal = (item) => {
 
     return Number(getItemPrice(item)) * getItemQuantity(item);
 };
+
+
+const getFirstAvailableValue = (source, keys) => {
+    for (const key of keys) {
+        const value = source?.[key];
+
+        if (value !== undefined && value !== null && value !== "") {
+            return value;
+        }
+    }
+
+    return null;
+};
+
+const getOrderPricing = (order, items, savedOrderTotal) => {
+    const productSubtotalFromOrder = getFirstAvailableValue(order, [
+        "productSubtotal",
+        "itemsSubtotal",
+        "subTotal",
+        "subtotal",
+    ]);
+
+    const productSubtotal =
+        productSubtotalFromOrder !== null
+            ? Number(productSubtotalFromOrder)
+            : items.length > 0
+                ? items.reduce((sum, item) => sum + getItemTotal(item), 0)
+                : null;
+
+    const discount = getFirstAvailableValue(order, [
+        "discountAmount",
+        "discount",
+        "totalDiscount",
+    ]);
+
+    const deliveryCharge = getFirstAvailableValue(order, [
+        "deliveryCharge",
+        "shippingCharge",
+        "shippingCost",
+    ]);
+
+    const paymentMethod =
+        order?.paymentMethod ||
+        order?.payment?.method ||
+        order?.paymentType ||
+        null;
+
+    return {
+        productSubtotal:
+            productSubtotal !== null && Number.isFinite(productSubtotal)
+                ? productSubtotal
+                : null,
+        discount:
+            discount !== null && Number.isFinite(Number(discount))
+                ? Number(discount)
+                : null,
+        deliveryCharge:
+            deliveryCharge !== null &&
+            Number.isFinite(Number(deliveryCharge))
+                ? Number(deliveryCharge)
+                : null,
+        finalTotal:
+            savedOrderTotal !== undefined &&
+            savedOrderTotal !== null &&
+            savedOrderTotal !== "" &&
+            Number.isFinite(Number(savedOrderTotal))
+                ? Number(savedOrderTotal)
+                : null,
+        paymentMethod,
+    };
+};
+
 
 // =====================================================
 // WHATSAPP
@@ -604,6 +685,10 @@ const PackagingOrderDetails = () => {
         order?.total ??
         order?.orderTotal;
 
+        
+const pricing = getOrderPricing(order, items, orderTotal);
+
+
     return (
         <Box sx={{ pb: 3 }}>
             {/* HEADER */}
@@ -918,6 +1003,155 @@ const PackagingOrderDetails = () => {
                     </Button>
                 </CardContent>
             </Card>
+
+            
+{/* ORDER PRICE BREAKDOWN */}
+
+<Card
+    sx={{
+        borderRadius: 3,
+        mb: 2,
+        border: "1px solid #e5e7eb",
+        background: "#ffffff",
+    }}
+    elevation={0}
+>
+    <CardContent sx={{ p: 3 }}>
+        <Stack
+            direction="row"
+            spacing={1}
+            alignItems="center"
+            sx={{ mb: 2 }}
+        >
+            <PaymentRoundedIcon color="secondary" />
+            <Typography variant="h6" fontWeight={800}>
+                Order Price Breakdown
+            </Typography>
+        </Stack>
+
+        <Stack spacing={1.8}>
+            <Box
+                sx={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    gap: 2,
+                }}
+            >
+                <Typography color="text.secondary">
+                    Product Subtotal
+                </Typography>
+                <Typography fontWeight={700}>
+                    {formatCurrency(pricing.productSubtotal)}
+                </Typography>
+            </Box>
+
+            <Box
+                sx={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    gap: 2,
+                }}
+            >
+                <Typography color="text.secondary">
+                    Discount
+                </Typography>
+                <Typography fontWeight={700} color="success.main">
+                    {pricing.discount !== null
+                        ? `−${formatCurrency(pricing.discount)}`
+                        : "Not available"}
+                </Typography>
+            </Box>
+
+            <Box
+                sx={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    gap: 2,
+                }}
+            >
+                <Typography color="text.secondary">
+                    Delivery / Shipping
+                </Typography>
+                <Typography fontWeight={700}>
+                    {formatCurrency(pricing.deliveryCharge)}
+                </Typography>
+            </Box>
+
+            <Divider />
+
+            <Box
+                sx={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                    gap: 2,
+                }}
+            >
+                <Typography fontWeight={800}>
+                    Final Order Total
+                </Typography>
+                <Typography
+                    variant="h5"
+                    fontWeight={900}
+                    sx={{ color: "#245b35" }}
+                >
+                    {formatCurrency(pricing.finalTotal)}
+                </Typography>
+            </Box>
+
+            <Divider />
+
+            <Box
+                sx={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "flex-start",
+                    gap: 2,
+                }}
+            >
+                <Typography color="text.secondary">
+                    Payment Method
+                </Typography>
+                <Typography
+                    fontWeight={700}
+                    textAlign="right"
+                    sx={{ textTransform: "capitalize" }}
+                >
+                    {pricing.paymentMethod || "Not available"}
+                </Typography>
+            </Box>
+
+            <Box
+                sx={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                    gap: 2,
+                }}
+            >
+                <Typography color="text.secondary">
+                    Payment Status
+                </Typography>
+                <Chip
+                    size="small"
+                    label={paymentStatus}
+                    color={
+                        String(paymentStatus).toLowerCase() === "paid"
+                            ? "success"
+                            : "warning"
+                    }
+                    variant="outlined"
+                />
+            </Box>
+        </Stack>
+
+        <Alert severity="info" sx={{ mt: 2 }}>
+            The final total uses the saved order amount. Missing discount
+            or delivery values are not assumed to be zero.
+        </Alert>
+    </CardContent>
+</Card>
+
 
             {/* PRODUCTS */}
 
