@@ -1,6 +1,5 @@
 
 const express = require("express");
-
 const router = express.Router();
 
 const controller = require("../controllers/packaging.controller");
@@ -11,39 +10,30 @@ const {
 } = require("../middleware/auth.middleware");
 
 // =====================================================
-// PACKAGING LOGIN — PUBLIC ROUTE
+// PACKAGING LOGIN
 // =====================================================
 
-router.post(
-  "/login",
-  controller.login
-);
+router.post("/login", controller.login);
 
-// =====================================================
-// AUTHENTICATED PACKAGING ROUTES
-// =====================================================
-
+// All routes below require authentication
 router.use(protect);
 
 // =====================================================
-// ADMIN — PACKAGING STAFF MANAGEMENT
+// ADMIN — PACKAGING STAFF
 // =====================================================
 
-// Create Packaging account
 router.post(
   "/staff",
   authorize("ADMIN", "SUPER_ADMIN"),
   controller.createStaff
 );
 
-// Get all Packaging accounts
 router.get(
   "/staff",
   authorize("ADMIN", "SUPER_ADMIN"),
   controller.listStaff
 );
 
-// Update Packaging account
 router.patch(
   "/staff/:id",
   authorize("ADMIN", "SUPER_ADMIN"),
@@ -51,7 +41,7 @@ router.patch(
 );
 
 // =====================================================
-// PACKAGING STAFF — DASHBOARD
+// PACKAGING DASHBOARD
 // =====================================================
 
 router.get(
@@ -61,17 +51,15 @@ router.get(
 );
 
 // =====================================================
-// PACKAGING STAFF — ORDERS
+// PACKAGING ORDERS
 // =====================================================
 
-// Get assigned orders
 router.get(
   "/orders",
   authorize("PACKAGING"),
   controller.orders
 );
 
-// Get assigned order details
 router.get(
   "/orders/:id",
   authorize("PACKAGING"),
@@ -79,25 +67,25 @@ router.get(
 );
 
 // =====================================================
-// DOWNLOAD ORDER INVOICE / BILL PDF
+// DOWNLOAD ORDER BILL PDF
+// IMPORTANT: Matches packaging.controller.js export
 // =====================================================
 
-// Frontend invoice download endpoint
 router.get(
   "/orders/:id/bill",
   authorize("PACKAGING"),
-  controller.downloadOrderDocument
+  controller.downloadOrderBill
 );
 
-// Backward-compatible document endpoint
+// Keep the document URL for backward compatibility
 router.get(
   "/orders/:id/document",
   authorize("PACKAGING"),
-  controller.downloadOrderDocument
+  controller.downloadOrderBill
 );
 
 // =====================================================
-// UPDATE PACKING STATUS
+// UPDATE PACKAGING STATUS
 // =====================================================
 
 router.patch(
@@ -107,7 +95,7 @@ router.patch(
 );
 
 // =====================================================
-// ADMIN — ASSIGN ORDER TO PACKAGING STAFF
+// ADMIN — ASSIGN ORDER
 // =====================================================
 
 router.patch(
