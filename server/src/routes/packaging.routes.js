@@ -79,22 +79,21 @@ router.get(
 );
 
 // =====================================================
-// DOWNLOAD ORDER BILL / INVOICE PDF
-// Both URLs use the same controller.
+// DOWNLOAD ORDER INVOICE / BILL PDF
 // =====================================================
 
-// Frontend currently requests this endpoint
+// Frontend invoice download endpoint
 router.get(
   "/orders/:id/bill",
   authorize("PACKAGING"),
-  controller.downloadOrderBill
+  controller.downloadOrderDocument
 );
 
-// Alternative document endpoint
+// Backward-compatible document endpoint
 router.get(
   "/orders/:id/document",
   authorize("PACKAGING"),
-  controller.downloadOrderBill
+  controller.downloadOrderDocument
 );
 
 // =====================================================
