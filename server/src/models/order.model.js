@@ -69,16 +69,15 @@ const orderSchema = new mongoose.Schema(
     // GUEST PHONEPE PAYMENT ACCESS
     // =====================================================
 
-    // Store only the hash of the guest access token.
-    // Never store or expose the original token here.
+    // Store only the hash of the guest payment token.
+    // Never store the original token in this field.
     guestPaymentTokenHash: {
       type: String,
       default: null,
       select: false,
     },
 
-    // Guest payment access expires after the time
-    // established by the service layer.
+    // Expiration time for guest payment access.
     guestPaymentTokenExpiresAt: {
       type: Date,
       default: null,
@@ -137,11 +136,8 @@ const orderSchema = new mongoose.Schema(
     // SELLING POINTS
     // =====================================================
 
-    /*
-     * Guest orders do not have a User document yet.
-     * Store their SP calculation on the order so it can
-     * be recovered if they later register.
-     */
+    // Guest SP calculation is retained on the order
+    // so it can be recovered if the guest registers.
 
     spPreviousCarryForward: {
       type: Number,
@@ -229,7 +225,7 @@ const orderSchema = new mongoose.Schema(
     },
 
     // =====================================================
-    // PHONEPE
+    // PHONEPE PAYMENT DETAILS
     // =====================================================
 
     merchantOrderId: {

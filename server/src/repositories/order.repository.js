@@ -390,6 +390,59 @@ const getLastOrder =
       });
   };
 
+/* ==========================================
+   SAVE GUEST PAYMENT TOKEN
+========================================== */
+
+const saveGuestPaymentToken = async (
+  orderId,
+  tokenHash,
+  expiresAt
+) => {
+  if (!orderId || !tokenHash || !expiresAt) {
+    throw new Error(
+      "Order ID, guest payment token hash and expiry are required"
+    );
+  }
+
+  return await Order.findOneAndUpdate(
+    {
+      _id: orderId,
+      orderType: "GUEST",
+      paymentStatus: "PENDING",
+    },
+    {
+      $set: {
+        guestPaymentTokenHash: tokenHash,
+        guestPaymentTokenExpiresAt: expiresAt,
+      },
+    },
+    {
+      new: true,
+      runValidators: true,
+    }
+  );
+};
+
+// =====================================================
+// FIND GUEST ORDER BY PAYMENT TOKEN HASH
+// =====================================================
+
+const findGuestOrderByPaymentTokenHash = async (tokenHash) => {
+  if (!tokenHash) {
+    return null;
+  }
+
+  return Order.findOne({
+    orderType: "GUEST",
+    guestPaymentTokenHash: tokenHash,
+    paymentStatus: "PENDING",
+    guestPaymentTokenExpiresAt: {
+      $gt: new Date(),
+    },
+  }).select("+guestPaymentTokenHash");
+};
+
 module.exports = {
   createOrder,
 
@@ -422,4 +475,7 @@ module.exports = {
   updatePaymentStatus,
 
   getLastOrder,
+  saveGuestPaymentToken,
+  findGuestOrderByPaymentTokenHash,
+
 };

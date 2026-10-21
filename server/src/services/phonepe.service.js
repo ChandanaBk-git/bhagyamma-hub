@@ -33,68 +33,65 @@ const AUTH_URL = isProduction
 |--------------------------------------------------------------------------
 */
 
+
 const getAccessToken = async () => {
+  const clientId = process.env.PHONEPE_CLIENT_ID?.trim();
+  const clientSecret = process.env.PHONEPE_CLIENT_SECRET?.trim();
+  const clientVersion = process.env.PHONEPE_CLIENT_VERSION?.trim();
+
+  if (!clientId || !clientSecret || !clientVersion) {
+    throw new Error(
+      "PhonePe configuration missing: check PHONEPE_CLIENT_ID, PHONEPE_CLIENT_SECRET and PHONEPE_CLIENT_VERSION in server/.env"
+    );
+  }
+
   try {
-    const params = new URLSearchParams();
+    const params = new URLSearchParams({
+      client_id: clientId,
+      client_version: clientVersion,
+      client_secret: clientSecret,
+      grant_type: "client_credentials",
+    });
 
-    params.append(
-      "client_id",
-      process.env.PHONEPE_CLIENT_ID
-    );
+    const response = await axios.post(AUTH_URL, params.toString(), {
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+        Accept: "application/json",
+      },
+      timeout: 15000,
+    });
 
-    params.append(
-      "client_version",
-      process.env.PHONEPE_CLIENT_VERSION || "1"
-    );
-
-    params.append(
-      "client_secret",
-      process.env.PHONEPE_CLIENT_SECRET
-    );
-
-    params.append(
-      "grant_type",
-      "client_credentials"
-    );
-
-    const response = await axios.post(
-      AUTH_URL,
-      params.toString(),
-      {
-        headers: {
-          "Content-Type":
-            "application/x-www-form-urlencoded",
-        },
-      }
-    );
-
-    const accessToken =
-      response.data?.access_token;
+    const accessToken = response.data?.access_token;
 
     if (!accessToken) {
       console.error(
-        "PhonePe authentication response:",
+        "PhonePe token response did not contain access_token:",
         response.data
       );
-
-      throw new Error(
-        "PhonePe access token was not received"
-      );
+      throw new Error("PhonePe did not return an access token");
     }
 
+    console.log("PhonePe authentication successful.");
     return accessToken;
   } catch (error) {
-    console.error(
-      "PhonePe authentication error:",
-      error.response?.data ||
-        error.message
-    );
+    console.error("PhonePe authentication failed:", {
+      status: error.response?.status || "No HTTP response",
+      code: error.response?.data?.code || "Unknown",
+      message:
+        error.response?.data?.message ||
+        error.response?.data?.error_description ||
+        error.message,
+      environment: isProduction ? "PRODUCTION" : "SANDBOX",
+      authUrl: AUTH_URL,
+      clientIdPresent: Boolean(clientId),
+      clientSecretPresent: Boolean(clientSecret),
+      clientVersionPresent: Boolean(clientVersion),
+    });
 
-    throw new Error(
-      "Unable to authenticate with PhonePe"
-    );
+    throw new Error("Unable to authenticate with PhonePe");
   }
 };
+
 
 /*
 |--------------------------------------------------------------------------
@@ -173,18 +170,21 @@ const createPayment = async ({
       );
 
     return response.data;
+  
   } catch (error) {
-    console.error(
-      "PhonePe create payment error:",
-      error.response?.data ||
-        error.message
-    );
+    console.error("PHONEPE CREATE PAYMENT FAILED:", {
+      status: error.response?.status || null,
+      data: error.response?.data || null,
+      message: error.message,
+    });
 
     throw new Error(
       error.response?.data?.message ||
-        "Unable to create PhonePe payment"
+      error.response?.data?.code ||
+      "Unable to create PhonePe payment"
     );
   }
+
 };
 
 /*
