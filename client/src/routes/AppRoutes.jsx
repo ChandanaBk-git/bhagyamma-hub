@@ -37,6 +37,7 @@ import Products from "../pages/Products/Products";
 import Cart from "../pages/Cart/Cart";
 import Checkout from "../pages/Checkout/Checkout";
 import Orders from "../pages/Orders/Orders";
+import OrderDetails from "../pages/Orders/OrderDetails";
 
 // =====================================================
 // PRODUCT
@@ -214,6 +215,10 @@ const AppRoutes = () => {
           element={<Orders />}
         />
 
+<Route
+  path="/orders/:orderId"
+  element={<OrderDetails />}
+/>
         <Route
           path="/checkout"
           element={<Checkout />}
@@ -352,6 +357,10 @@ const AppRoutes = () => {
             element={<MemberOrders />}
           />
 
+          <Route
+  path="orders/:orderId"
+  element={<OrderDetails />}
+/>
           <Route
             path="commission"
             element={<MemberCommission />}

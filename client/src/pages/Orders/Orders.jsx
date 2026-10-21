@@ -343,28 +343,18 @@ const getStatusLabel = (status) => {
      ORDER DETAILS
   ====================================================== */
 
-  const handleOrderClick =
-    (order) => {
+const handleOrderClick = (order) => {
+  if (!order?._id) {
+    console.error("Order ID is missing:", order);
+    return;
+  }
 
-      if (!order?._id) {
-        return;
-      }
-
-      /*
-       * Member order details are protected
-       * by JWT.
-       *
-       * Guest order details currently use
-       * the guest mobile search result.
-       */
-
-      navigate(
-        `/orders/${order._id}`
-      );
-
-    };
-
-
+  navigate(`/orders/${order._id}`, {
+    state: {
+      order,
+    },
+  });
+};
   /* ======================================================
      HEADER
   ====================================================== */

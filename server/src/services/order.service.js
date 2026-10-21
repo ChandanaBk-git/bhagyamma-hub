@@ -5,6 +5,7 @@ const crypto = require("crypto");
 
 const Order = require("../models/order.model");
 const OrderItem = require("../models/orderItem.model");
+const Product = require("../models/product");
 const User = require("../models/user.model");
 
 const cartService = require("./cart.service");
@@ -50,6 +51,104 @@ const normalizeMobile = (mobile) => {
     return String(mobile || "")
         .replace(/\D/g, "");
 };
+
+/* ==========================================================================
+   NORMALIZE ORDER ITEMS FOR BILL / TRACKING RESPONSES
+   ========================================================================== */
+
+const normalizeOrderItems = (items = []) => {
+    return (Array.isArray(items) ? items : []).map((item) => {
+        const product =
+            item.productId && typeof item.productId === "object"
+                ? item.productId
+                : item.product && typeof item.product === "object"
+                    ? item.product
+                    : {};
+
+        const quantity = Math.max(1, Number(item.quantity || 1));
+        const savedPrice = Number(item.price);
+        const productPrice = Number(product.price);
+        const price =
+            Number.isFinite(savedPrice) && savedPrice > 0
+                ? savedPrice
+                : Number.isFinite(productPrice) && productPrice >= 0
+                    ? productPrice
+                    : 0;
+
+        const savedTotal = Number(item.total);
+        const total =
+            Number.isFinite(savedTotal) && savedTotal > 0
+                ? savedTotal
+                : price * quantity;
+
+        const storedName = String(item.productName || "").trim();
+        const productName =
+            storedName && storedName.toLowerCase() !== "product"
+                ? storedName
+                : product.productName || product.name || item.name || "Product";
+
+        return {
+            ...item,
+            productName,
+            quantity,
+            price,
+            total,
+            productId: item.productId || null,
+        };
+    });
+};
+
+/* ==========================================================================
+   ATTACH CUSTOMER-SAFE PACKAGING / DELIVERY TRACKING
+   ========================================================================== */
+
+const attachPackagingTracking = async (orders = []) => {
+    const list = Array.isArray(orders) ? orders : [];
+    if (!list.length) return list;
+
+    const orderIds = list.map((order) => order._id).filter(Boolean);
+    const assignments = await PackagingAssignment.find({
+        order: { $in: orderIds },
+    })
+        .select("order status assignedAt packingStartedAt packedAt readyForDispatchAt history updatedAt")
+        .lean();
+
+    const assignmentByOrder = new Map(
+        assignments.map((assignment) => [String(assignment.order), assignment])
+    );
+
+    return list.map((order) => {
+        const assignment = assignmentByOrder.get(String(order._id));
+
+        return {
+            ...order,
+            packagingTracking: assignment
+                ? {
+                    status: assignment.status || "UNASSIGNED",
+                    assignedAt: assignment.assignedAt || null,
+                    packingStartedAt: assignment.packingStartedAt || null,
+                    packedAt: assignment.packedAt || null,
+                    readyForDispatchAt: assignment.readyForDispatchAt || null,
+                    updatedAt: assignment.updatedAt || null,
+                    history: (assignment.history || []).map((entry) => ({
+                        action: entry.action,
+                        note: entry.note || "",
+                        at: entry.at || null,
+                    })),
+                }
+                : {
+                    status: "UNASSIGNED",
+                    assignedAt: null,
+                    packingStartedAt: null,
+                    packedAt: null,
+                    readyForDispatchAt: null,
+                    updatedAt: null,
+                    history: [],
+                },
+        };
+    });
+};
+
 
 
 /* ==========================================================================
@@ -745,104 +844,99 @@ spEligibleAmount:
            SAVE ORDER ITEMS
            ================================================================== */
 
-        let itemsToSave = [];
+        const itemsToSave = !isGuest
+            ? (Array.isArray(cart?.items) ? cart.items : [])
+            : (Array.isArray(guestItems) ? guestItems : []);
 
+        if (itemsToSave.length > 0) {
+            const orderItems = await Promise.all(
+                itemsToSave.map(async (item) => {
+                    const rawProductId =
+                        item.productId?._id ||
+                        item.product?._id ||
+                        item.productId ||
+                        item.product ||
+                        item._id ||
+                        null;
 
-        if (!isGuest) {
+                    const productId =
+                        rawProductId && mongoose.Types.ObjectId.isValid(String(rawProductId))
+                            ? new mongoose.Types.ObjectId(String(rawProductId))
+                            : null;
 
-            itemsToSave =
-                Array.isArray(
-                    cart?.items
-                )
-                    ? cart.items
-                    : [];
+                    let product = (
+                        item.productId && typeof item.productId === "object"
+                            ? item.productId
+                            : item.product && typeof item.product === "object"
+                                ? item.product
+                                : {}
+                    );
 
-        } else {
+                    if (
+                        productId &&
+                        ((!product.productName && !product.name) ||
+                            item.price === undefined ||
+                            item.price === null ||
+                            item.price === "")
+                    ) {
+                        const databaseProduct = await Product.findById(productId)
+                            .select("productName name images price category brand sku weight quantity")
+                            .lean();
 
-            itemsToSave =
-                Array.isArray(
-                    guestItems
-                )
-                    ? guestItems
-                    : [];
-        }
-
-
-        if (
-            itemsToSave.length > 0
-        ) {
-
-            const orderItems =
-                itemsToSave.map(
-                    (item) => {
-
-                        const quantity =
-                            Number(
-                                item.quantity ||
-                                1
-                            );
-
-
-                        const price =
-                            Number(
-                                item.price ||
-                                item.productId?.price ||
-                                0
-                            );
-
-
-                        const total =
-                            Number(
-                                item.total ||
-                                price * quantity
-                            );
-
-
-                        return {
-
-                            orderId:
-                                order._id,
-
-
-                            productId:
-                                item.productId?._id ||
-                                item.productId ||
-                                null,
-
-
-                            productName:
-                                item.productId?.name ||
-                                item.productId?.productName ||
-                                item.productName ||
-                                item.name ||
-                                "Product",
-
-
-                            quantity,
-
-
-                            price,
-
-
-                            total,
-                        };
+                        if (databaseProduct) {
+                            product = { ...databaseProduct, ...product };
+                        }
                     }
-                );
 
+                    const quantity = Math.max(1, Number(item.quantity || 1));
+                    const candidatePrice =
+                        item.price ??
+                        item.productPrice ??
+                        item.unitPrice ??
+                        product.price;
 
-            const validOrderItems =
-                orderItems.filter(
-                    (item) =>
-                        item.productId
-                );
+                    const priceNumber = Number(candidatePrice);
+                    const price =
+                        Number.isFinite(priceNumber) && priceNumber >= 0
+                            ? priceNumber
+                            : 0;
 
+                    const candidateTotal = Number(item.total);
+                    const total =
+                        Number.isFinite(candidateTotal) && candidateTotal > 0
+                            ? candidateTotal
+                            : price * quantity;
 
-            if (
-                validOrderItems.length > 0
-            ) {
+                    const suppliedName = String(
+                        item.productName || item.name || ""
+                    ).trim();
 
-                await OrderItem.insertMany(
-                    validOrderItems
+                    const productName =
+                        (suppliedName && suppliedName.toLowerCase() !== "product"
+                            ? suppliedName
+                            : "") ||
+                        product.productName ||
+                        product.name ||
+                        "Product";
+
+                    return {
+                        orderId: order._id,
+                        productId,
+                        productName,
+                        quantity,
+                        price,
+                        total,
+                    };
+                })
+            );
+
+            const validOrderItems = orderItems.filter((item) => item.productId);
+
+            if (validOrderItems.length > 0) {
+                await OrderItem.insertMany(validOrderItems);
+            } else {
+                console.warn(
+                    `ORDER ${order.orderNumber}: no valid product IDs were found in the checkout items.`
                 );
             }
         }
@@ -1263,23 +1357,20 @@ const getOrderById = async (
         }
 
 
-        const items =
-            await OrderItem.find({
-                orderId:
-                    order._id,
-            })
-                .populate(
-                    "productId",
-                    "name productName images price"
-                )
-                .lean();
+        const savedItems = await OrderItem.find({
+            orderId: order._id,
+        })
+            .populate(
+                "productId",
+                "name productName images price category brand sku weight quantity"
+            )
+            .lean();
 
+        const [enrichedOrder] = await attachPackagingTracking([order]);
 
         return {
-
-            ...order,
-
-            items,
+            ...enrichedOrder,
+            items: normalizeOrderItems(savedItems),
         };
 
     } catch (error) {
@@ -1372,17 +1463,14 @@ const getMyOrders = async (
         }
 
 
-        return orders.map(
-            (order) => ({
+        const ordersWithItems = orders.map((order) => ({
+            ...order,
+            items: normalizeOrderItems(
+                itemsByOrder[order._id.toString()] || []
+            ),
+        }));
 
-                ...order,
-
-                items:
-                    itemsByOrder[
-                        order._id.toString()
-                    ] || [],
-            })
-        );
+        return attachPackagingTracking(ordersWithItems);
 
     } catch (error) {
 
@@ -1661,23 +1749,16 @@ const getAllOrders = async (
                FINAL ITEM
             ================================================= */
 
-            itemsByOrder[key].push({
-
-                ...item,
-
-                productName,
-
-                quantity,
-
-                price,
-
-                total,
-
-                /* Keep populated product */
-                productId:
-                    item.productId || null,
-
-            });
+            itemsByOrder[key].push(
+                normalizeOrderItems([{
+                    ...item,
+                    productName,
+                    quantity,
+                    price,
+                    total,
+                    productId: item.productId || null,
+                }])[0]
+            );
 
         }
 
@@ -1737,112 +1818,107 @@ const getAllOrders = async (
 
 };
 
+/* =====================================================
+   GUEST ORDERS BY MOBILE
+===================================================== */
 
-/* ==========================================================================
-   GET ORDERS BY MOBILE
-   ========================================================================== */
-
-const getOrdersByMobile = async (
-    mobile
-) => {
-
+const getGuestOrdersByMobile = async (mobile) => {
     try {
+        const normalizedMobile = normalizeMobile(mobile);
 
-        const normalizedMobile =
-            normalizeMobile(
-                mobile
-            );
-
-
-        if (
-            normalizedMobile.length !== 10
-        ) {
+        if (!/^[6-9]\d{9}$/.test(normalizedMobile)) {
             throw new Error(
                 "Valid 10-digit mobile number is required"
             );
         }
 
-
-        const orders =
-            await Order.find({
-                customerMobile:
-                    normalizedMobile,
-            })
-                .sort({
-                    createdAt: -1,
-                })
-                .lean();
-
+        const orders = await Order.find({
+            orderType: "GUEST",
+            customerMobile: normalizedMobile,
+            userId: null,
+        })
+            .sort({ createdAt: -1 })
+            .lean();
 
         if (!orders.length) {
             return [];
         }
 
+        const orderIds = orders.map((order) => order._id);
 
-        const orderIds =
-            orders.map(
-                (order) =>
-                    order._id
-            );
-
-
-        const items =
-            await OrderItem.find({
-                orderId: {
-                    $in:
-                        orderIds,
-                },
-            })
-                .populate(
-                    "productId",
-                    "name productName images price category brand"
-                )
-                .lean();
-
+        const savedItems = await OrderItem.find({
+            orderId: { $in: orderIds },
+        })
+            .populate(
+                "productId",
+                "name productName images price category brand"
+            )
+            .lean();
 
         const itemsByOrder = {};
 
+        for (const item of savedItems) {
+            const key = String(item.orderId);
 
-        for (
-            const item
-            of items
-        ) {
-
-            const key =
-                item.orderId.toString();
-
-
-            if (
-                !itemsByOrder[key]
-            ) {
-
-                itemsByOrder[key] =
-                    [];
+            if (!itemsByOrder[key]) {
+                itemsByOrder[key] = [];
             }
 
+            const product =
+                item.productId &&
+                typeof item.productId === "object"
+                    ? item.productId
+                    : {};
 
-            itemsByOrder[key].push(
-                item
+            const quantity = Math.max(
+                1,
+                Number(item.quantity || 1)
             );
+
+            // Prefer the saved order price. If it is missing or zero,
+            // fall back to the current product price when available.
+            const savedPrice = Number(item.price || 0);
+            const productPrice = Number(product.price || 0);
+
+            const price =
+                savedPrice > 0
+                    ? savedPrice
+                    : productPrice;
+
+            const savedTotal = Number(item.total || 0);
+
+            const total =
+                savedTotal > 0
+                    ? savedTotal
+                    : price * quantity;
+
+            itemsByOrder[key].push({
+                ...item,
+                productName:
+                    (item.productName && String(item.productName).toLowerCase() !== "product"
+                        ? item.productName
+                        : "") ||
+                    product.productName ||
+                    product.name ||
+                    "Product",
+                quantity,
+                price,
+                total,
+                productId: item.productId || null,
+            });
         }
 
+        const ordersWithItems = orders.map((order) => ({
+            ...order,
+            items: normalizeOrderItems(
+                itemsByOrder[String(order._id)] || []
+            ),
+        }));
 
-        return orders.map(
-            (order) => ({
-
-                ...order,
-
-                items:
-                    itemsByOrder[
-                        order._id.toString()
-                    ] || [],
-            })
-        );
-
+        return attachPackagingTracking(ordersWithItems);
     } catch (error) {
-
         console.error(
-            "GET ORDERS BY MOBILE ERROR:",
+            "GET GUEST ORDERS BY MOBILE ERROR:",
             error
         );
 
@@ -3188,16 +3264,19 @@ const updateOrderStatus = async (orderId, status) => {
   ];
 
   if (!allowedStatuses.includes(status)) {
-    throw new ApiError(
-      400,
+    const error = new Error(
       `Invalid order status. Allowed statuses: ${allowedStatuses.join(", ")}`
     );
+    error.statusCode = 400;
+    throw error;
   }
 
   const order = await Order.findById(orderId);
 
   if (!order) {
-    throw new ApiError(404, "Order not found");
+    const error = new Error("Order not found");
+    error.statusCode = 404;
+    throw error;
   }
 
   // =====================================================
@@ -4246,42 +4325,23 @@ const getOrderStats = async (
    ========================================================================== */
 
 module.exports = {
-
     createOrder,
-
     placeOrder,
-
     placeGuestOrder,
-
     getOrderById,
-
     getMyOrders,
-
     getAllOrders,
-
-    getOrdersByMobile,
-
+    getGuestOrdersByMobile,
     linkGuestOrdersToUser,
-
     claimGuestOrders,
-
     claimGuestOrdersForMember,
-
     processSellingPoints,
-
     calculateOrderSellingPoints,
-
     updatePaymentStatus,
-
     updateOrderStatus,
-
     updateStatus,
-
     cancelOrder,
-
     deleteOrder,
-
     getManagerOrders,
-
     getOrderStats,
 };

@@ -394,6 +394,16 @@ const assignOrder = async (orderId, staffId, adminUserId) => {
 
     await assignment.save();
 
+    // Once an order is assigned to packaging, move a newly placed order
+    // into CONFIRMED so the customer bill reflects the workflow.
+    if (String(order.status || "").toUpperCase() === "PLACED") {
+        order.status = "CONFIRMED";
+        if (!order.confirmedAt) {
+            order.confirmedAt = new Date();
+        }
+        await order.save();
+    }
+
     await assignment.populate("staff", "name loginId");
 
     return assignment;
