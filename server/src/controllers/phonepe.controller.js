@@ -1,4 +1,3 @@
-
 const crypto = require("crypto");
 
 const asyncHandler = require("../utils/asyncHandler");
@@ -136,6 +135,8 @@ const createPhonePeCheckout = async (order) => {
 
   return {
     orderId: order._id,
+    orderNumber: order.orderNumber,
+    finalAmount: Number(order.finalAmount),
     merchantOrderId,
     phonePeOrderId: payment?.orderId || null,
     redirectUrl: checkoutUrl,
@@ -230,6 +231,8 @@ const verifyPaymentWithPhonePe = async (order) => {
       success: true,
       paymentStatus: "PAID",
       orderId: order._id,
+      orderNumber: order.orderNumber,
+      finalAmount: Number(order.finalAmount || 0),
       orderStatus: order.status,
       transactionId: order.phonePeTransactionId || null,
     };
@@ -239,7 +242,7 @@ const verifyPaymentWithPhonePe = async (order) => {
     throw new ApiError(400, "Merchant order ID is missing");
   }
 
-  // The authoritative status comes from PhonePe.
+  // PhonePe is the authoritative source for payment status.
   const phonePeStatus =
     await phonepeService.getPaymentStatus(order.merchantOrderId);
 
@@ -248,12 +251,14 @@ const verifyPaymentWithPhonePe = async (order) => {
   ).toUpperCase();
 
   if (state === "COMPLETED") {
+    // PhonePe returns the amount in paise.
     const paidAmount = Number(phonePeStatus?.amount);
+
     const expectedAmountInPaise = Math.round(
       Number(order.finalAmount) * 100
     );
 
-    // Require an amount from PhonePe and match it to the saved order.
+    // Require a valid amount and match it against the saved order.
     if (
       !Number.isFinite(paidAmount) ||
       paidAmount <= 0 ||
@@ -268,8 +273,7 @@ const verifyPaymentWithPhonePe = async (order) => {
     const transactionId = getTransactionId(phonePeStatus);
     const phonePeOrderId = getPhonePeOrderId(phonePeStatus);
 
-    // Use the existing service so established SP and commission
-    // processing continues after the payment is confirmed.
+    // Preserve the existing SP and commission processing.
     const paidOrder = await orderService.updatePaymentStatus(
       order._id,
       "PAID",
@@ -291,6 +295,8 @@ const verifyPaymentWithPhonePe = async (order) => {
       success: true,
       paymentStatus: "PAID",
       orderId: paidOrder._id,
+      orderNumber: paidOrder.orderNumber,
+      finalAmount: Number(paidOrder.finalAmount || 0),
       orderStatus: paidOrder.status,
       transactionId:
         paidOrder.phonePeTransactionId || transactionId,
@@ -302,14 +308,17 @@ const verifyPaymentWithPhonePe = async (order) => {
 
     const latestOrder = await orderRepository.findById(order._id);
 
-    // Do not report failure if a concurrent verification succeeded.
+    // Do not report failure if another verification succeeded meanwhile.
     if (latestOrder?.paymentStatus === "PAID") {
       return {
         success: true,
         paymentStatus: "PAID",
         orderId: latestOrder._id,
+        orderNumber: latestOrder.orderNumber,
+        finalAmount: Number(latestOrder.finalAmount || 0),
         orderStatus: latestOrder.status,
-        transactionId: latestOrder.phonePeTransactionId || null,
+        transactionId:
+          latestOrder.phonePeTransactionId || null,
       };
     }
 
@@ -317,7 +326,11 @@ const verifyPaymentWithPhonePe = async (order) => {
       success: false,
       paymentStatus: latestOrder?.paymentStatus || "FAILED",
       state,
-      orderId: order._id,
+      orderId: latestOrder?._id || order._id,
+      orderNumber: latestOrder?.orderNumber || order.orderNumber,
+      finalAmount: Number(
+        latestOrder?.finalAmount ?? order.finalAmount ?? 0
+      ),
     };
   }
 
@@ -326,6 +339,8 @@ const verifyPaymentWithPhonePe = async (order) => {
     paymentStatus: "PENDING",
     state: state || "PENDING",
     orderId: order._id,
+    orderNumber: order.orderNumber,
+    finalAmount: Number(order.finalAmount || 0),
   };
 };
 
