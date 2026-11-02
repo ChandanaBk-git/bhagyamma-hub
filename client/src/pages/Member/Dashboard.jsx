@@ -10,7 +10,7 @@ import {
   Typography,
 } from "@mui/material";
 
-import PaymentScannerCard from "../../components/members/dashboard/PaymentScannerCard";
+// import PaymentScannerCard from "../../components/members/dashboard/PaymentScannerCard";
 
 import {
   AccountCircle,
@@ -833,8 +833,6 @@ useEffect(() => {
         />
 
         {/* PAYMENT */}
-
-        <PaymentScannerCard />
 
         {/* SUPERVISOR */}
 

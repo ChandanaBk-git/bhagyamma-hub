@@ -153,3 +153,69 @@ export const verifyGuestPhonePePayment = async (
     throw error;
   }
 };
+
+/* =====================================================
+   MEMBERSHIP - CREATE PHONEPE PAYMENT
+===================================================== */
+
+export const createMembershipPhonePePayment = async () => {
+  try {
+    const response = await api.post(
+      "/payment/membership-phonepe/create"
+    );
+
+    const data = response?.data?.data;
+
+    if (!data?.redirectUrl || !data?.merchantOrderId) {
+      throw new Error(
+        "Membership PhonePe checkout details were not returned."
+      );
+    }
+
+    return data;
+  } catch (error) {
+    console.error(
+      "CREATE MEMBERSHIP PAYMENT ERROR:",
+      error?.response?.data || error
+    );
+
+    throw error;
+  }
+};
+
+/* =====================================================
+   MEMBERSHIP - VERIFY PHONEPE PAYMENT
+===================================================== */
+
+export const verifyMembershipPhonePePayment = async (
+  merchantOrderId
+) => {
+  if (!merchantOrderId) {
+    throw new Error("Merchant Order ID is required.");
+  }
+
+  try {
+    const response = await api.get(
+      `/payment/membership-phonepe/status/${encodeURIComponent(
+        merchantOrderId
+      )}`
+    );
+
+    const data = response?.data?.data;
+
+    if (!data) {
+      throw new Error(
+        "Membership payment verification response is invalid."
+      );
+    }
+
+    return data;
+  } catch (error) {
+    console.error(
+      "VERIFY MEMBERSHIP PAYMENT ERROR:",
+      error?.response?.data || error
+    );
+
+    throw error;
+  }
+};

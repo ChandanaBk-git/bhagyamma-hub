@@ -1,4 +1,5 @@
 import HeroBanner from "../../components/home/HeroBanner";
+import MovingText from "../../components/home/MovingText";
 import Intro from "../../components/home/Intro";
 import ProductPreview from "../../components/home/ProductPreview";
 import Features from "../../components/home/Features";
@@ -11,24 +12,23 @@ import CallToAction from "../../components/home/CallToAction";
 const Home = () => {
   return (
     <>
-      {/* HERO + TOP/BOTTOM MARQUEE */}
+      {/* TOP MARQUEE */}
+      <MovingText direction="right" />
+
+      {/* HERO BANNER */}
       <HeroBanner />
 
-      {/* HOME SECTIONS */}
+      {/* BOTTOM MARQUEE */}
+      <MovingText direction="left" />
+
+      {/* EXISTING HOME SECTIONS */}
       <Intro />
-
       <ProductPreview />
-
       <Features />
-
       <WhyBhagyamma />
-
       <HowItWorks />
-
       <MembershipBenefits />
-
       <Testimonials />
-
       <CallToAction />
     </>
   );

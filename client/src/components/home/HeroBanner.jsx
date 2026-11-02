@@ -1,378 +1,263 @@
+import { useEffect, useState } from "react";
 import {
   Box,
   Button,
   Container,
+  IconButton,
   Stack,
   Typography,
 } from "@mui/material";
-
+import { ChevronLeft, ChevronRight } from "@mui/icons-material";
 import { Link } from "react-router-dom";
 
-import banner from "../../assets/banner/banner.jpg";
+import detanBanner from "../../assets/banner/detan-combo-banner.png";
+import skinCareBanner from "../../assets/banner/skin-care-banner.png";
+import painReliefBanner from "../../assets/banner/pain-relief-banner.png";
 
-// =====================================================
-// MARQUEE TEXT
-// =====================================================
-
-const marqueeText =
-  "BHAGYAMMA HUB • KISRA PRODUCTS • VEDGIRI PRODUCTS • CUSTOMER TRUST •";
-
-// =====================================================
-// MOVING ROW
-// =====================================================
-
-const MovingRow = ({ direction = "left" }) => {
-  const repeatedItems = Array.from({ length: 8 });
-
-  return (
-    <Box
-      sx={{
-        width: "100%",
-        overflow: "hidden",
-        bgcolor: "#1B5E20",
-        color: "#fff",
-        py: {
-          xs: "3px",
-          sm: "5px",
-          md: "7px",
-        },
-        position: "relative",
-      }}
-    >
-      <Box
-        sx={{
-          display: "flex",
-          width: "max-content",
-          whiteSpace: "nowrap",
-          animation:
-            direction === "right"
-              ? "moveRight 28s linear infinite"
-              : "moveLeft 28s linear infinite",
-
-          "@keyframes moveLeft": {
-            "0%": {
-              transform: "translateX(0)",
-            },
-            "100%": {
-              transform: "translateX(-50%)",
-            },
-          },
-
-          "@keyframes moveRight": {
-            "0%": {
-              transform: "translateX(-50%)",
-            },
-            "100%": {
-              transform: "translateX(0)",
-            },
-          },
-        }}
-      >
-        {repeatedItems.map((_, index) => (
-          <Typography
-            key={index}
-            component="span"
-            sx={{
-              display: "inline-block",
-              px: {
-                xs: "8px",
-                sm: "14px",
-                md: "22px",
-              },
-              fontSize: {
-                xs: "0.46rem",
-                sm: "0.6rem",
-                md: "0.78rem",
-              },
-              fontWeight: 800,
-              letterSpacing: {
-                xs: "0.4px",
-                sm: "0.7px",
-                md: "1.1px",
-              },
-              lineHeight: 1.35,
-            }}
-          >
-            {marqueeText}
-          </Typography>
-        ))}
-      </Box>
-    </Box>
-  );
-};
-
-// =====================================================
-// HERO BANNER
-// =====================================================
+const slides = [
+  {
+    image: detanBanner,
+    eyebrow: "KISRA SKINCARE",
+    title: "Everyday Skin Care.",
+    highlight: "A Fresh Start.",
+    description:
+      "Discover the Kisra De-Tan Magic Soap and Face Wash collection at Bhagyamma Hub.",
+  },
+  {
+    image: skinCareBanner,
+    eyebrow: "SKIN CARE COLLECTION",
+    title: "Care for Your Skin.",
+    highlight: "Feel Confident.",
+    description:
+      "Explore our skincare collection and discover products for your everyday routine.",
+  },
+  {
+    image: painReliefBanner,
+    eyebrow: "EVERYDAY WELLNESS",
+    title: "Comfort in Every Day.",
+    highlight: "Care You Can Trust.",
+    description:
+      "Discover Kisra Grass Oil and Mahishmati Adivasi Ayurvedic Pain Relief Oil.",
+  },
+];
 
 const HeroBanner = () => {
+  const [activeSlide, setActiveSlide] = useState(0);
+  const slide = slides[activeSlide];
+
+  useEffect(() => {
+    const timer = window.setInterval(() => {
+      setActiveSlide((current) => (current + 1) % slides.length);
+    }, 6000);
+
+    return () => window.clearInterval(timer);
+  }, []);
+
+  const previous = () =>
+    setActiveSlide((current) =>
+      current === 0 ? slides.length - 1 : current - 1
+    );
+
+  const next = () =>
+    setActiveSlide((current) => (current + 1) % slides.length);
+
   return (
     <Box
+      component="section"
       sx={{
-        position: "relative",
         width: "100%",
-
-        height: {
-          xs: "240px",
-          sm: "320px",
-          md: "calc(100vh - 75px)",
-        },
-
-        minHeight: {
-          xs: "240px",
-          sm: "320px",
-          md: "600px",
-        },
-
-        maxHeight: {
-          xs: "240px",
-          sm: "320px",
-          md: "none",
-        },
-
-        overflow: "hidden",
-
-        backgroundImage: `
-          linear-gradient(
-            rgba(0, 0, 0, 0.42),
-            rgba(0, 0, 0, 0.42)
-          ),
-          url(${banner})
-        `,
-
-        backgroundRepeat: "no-repeat",
-        backgroundSize: "cover",
-
-        backgroundPosition: {
-          xs: "center center",
-          sm: "center center",
-          md: "center center",
-        },
-
-        backgroundColor: "#f8f5ef",
-        display: "flex",
-        alignItems: "center",
+        boxSizing: "border-box",
+        bgcolor: "#fff",
+        py: { xs: 0, sm: 1, md: 2 },
+        px: { xs: 0, sm: 1.5, md: 2 },
       }}
     >
-      {/* TOP MARQUEE */}
-
       <Box
         sx={{
-          position: "absolute",
-          top: 0,
-          left: 0,
+          position: "relative",
           width: "100%",
-          zIndex: 5,
-        }}
-      >
-        <MovingRow direction="right" />
-      </Box>
-
-      {/* HERO CONTENT */}
-
-      <Container
-        maxWidth="lg"
-        disableGutters
-        sx={{
-          position: "absolute",
-          left: 0,
-          right: 0,
-
-          bottom: {
-            xs: "25px",
-            sm: "32px",
-            md: "70px",
-          },
-
-          zIndex: 3,
-          width: "100%",
-
-          px: {
-            xs: "16px",
-            sm: "24px",
-            md: "48px",
+          height: { xs: 230, sm: 340, md: 480 },
+          overflow: "hidden",
+          borderRadius: 0,
+          bgcolor: "#F7F1E5",
+          backgroundImage: `url("${slide.image}")`,
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+          display: "flex",
+          alignItems: "center",
+          isolation: "isolate",
+          "&::before": {
+            content: '""',
+            position: "absolute",
+            inset: 0,
+            zIndex: -1,
+            background:
+              "linear-gradient(90deg, rgba(255,250,242,.78) 0%, rgba(255,250,242,.48) 38%, rgba(255,250,242,0) 68%)",
           },
         }}
       >
-        <Stack
+        <Container maxWidth="xl" sx={{ px: { xs: 2, sm: 3, md: 5 } }}>
+          <Stack
+            key={activeSlide}
+            spacing={{ xs: 0.8, sm: 1.5, md: 2 }}
+            sx={{
+              width: { xs: "65%", sm: "52%", md: "45%" },
+              maxWidth: 520,
+              py: 1,
+              animation: "heroTextIn .4s ease-out",
+              "@keyframes heroTextIn": {
+                from: { opacity: 0, transform: "translateY(5px)" },
+                to: { opacity: 1, transform: "translateY(0)" },
+              },
+            }}
+          >
+            <Typography
+              sx={{
+                color: "#65411F",
+                fontSize: { xs: 7, sm: 10, md: 11 },
+                fontWeight: 800,
+                letterSpacing: { xs: 0.7, sm: 1.5 },
+                textShadow: "0 1px 3px rgba(255,255,255,.9)",
+              }}
+            >
+              {slide.eyebrow}
+            </Typography>
+
+            <Typography
+              component="h1"
+              sx={{
+                color: "#302316",
+                fontSize: {
+                  xs: "1.05rem",
+                  sm: "2rem",
+                  md: "3.1rem",
+                },
+                lineHeight: 1.12,
+                fontWeight: 800,
+                letterSpacing: { xs: "-0.3px", md: "-1px" },
+                textShadow: "0 1px 4px rgba(255,255,255,.85)",
+              }}
+            >
+              {slide.title}
+              <Box
+                component="span"
+                sx={{
+                  display: "block",
+                  color: "#875526",
+                  textShadow: "0 1px 4px rgba(255,255,255,.9)",
+                }}
+              >
+                {slide.highlight}
+              </Box>
+            </Typography>
+
+            <Typography
+              sx={{
+                color: "#3F3022",
+                fontSize: { xs: 8, sm: 13, md: 15 },
+                lineHeight: { xs: 1.45, sm: 1.65 },
+                maxWidth: 390,
+                textShadow: "0 1px 3px rgba(255,255,255,.95)",
+              }}
+            >
+              {slide.description}
+            </Typography>
+
+            <Box>
+              <Button
+                component={Link}
+                to="/products"
+                variant="contained"
+                size="small"
+                sx={{
+                  bgcolor: "#76502B",
+                  color: "#fff",
+                  px: { xs: 1.2, sm: 2, md: 2.5 },
+                  py: { xs: 0.45, sm: 0.8, md: 1 },
+                  minWidth: 0,
+                  borderRadius: 1,
+                  textTransform: "none",
+                  fontSize: { xs: 8, sm: 11, md: 13 },
+                  fontWeight: 700,
+                  whiteSpace: "nowrap",
+                  boxShadow: "none",
+                  "&:hover": {
+                    bgcolor: "#5E3E20",
+                    boxShadow: "none",
+                  },
+                }}
+              >
+                Explore Products →
+              </Button>
+            </Box>
+          </Stack>
+        </Container>
+
+        <IconButton
+          aria-label="Previous banner"
+          onClick={previous}
+          size="small"
           sx={{
-            width: "100%",
-            maxWidth: {
-              xs: "320px",
-              sm: "560px",
-              md: "700px",
-            },
-            gap: {
-              xs: "5px",
-              sm: "10px",
-              md: "18px",
-            },
+            position: "absolute",
+            left: { xs: 4, sm: 12 },
+            top: "50%",
+            transform: "translateY(-50%)",
+            bgcolor: "rgba(255,255,255,.85)",
+            color: "#76502B",
+            "&:hover": { bgcolor: "#fff" },
           }}
         >
-          <Typography
-            component="h1"
-            sx={{
-              margin: 0,
-              color: "#fff",
-              fontWeight: 900,
-              fontSize: {
-                xs: "1.05rem",
-                sm: "1.8rem",
-                md: "3.8rem",
-              },
-              lineHeight: 1.1,
-              textShadow: "0 2px 6px rgba(0,0,0,.7)",
-            }}
-          >
-            Bhagyamma Hub
-          </Typography>
+          <ChevronLeft fontSize="small" />
+        </IconButton>
 
-          <Typography
-            sx={{
-              margin: 0,
-              color: "#fff",
-              fontSize: {
-                xs: "0.60rem",
-                sm: "0.78rem",
-                md: "1.15rem",
-              },
-              lineHeight: {
-                xs: 1.3,
-                sm: 1.4,
-                md: 1.55,
-              },
-              maxWidth: {
-                xs: "290px",
-                sm: "500px",
-                md: "650px",
-              },
-              textShadow: "0 1px 4px rgba(0,0,0,.8)",
-            }}
-          >
-            Explore Ayurvedic, herbal, skincare and wellness products
-            from Kisra and Vedgiri. We focus on clear product
-            information and a convenient online shopping experience.
-          </Typography>
+        <IconButton
+          aria-label="Next banner"
+          onClick={next}
+          size="small"
+          sx={{
+            position: "absolute",
+            right: { xs: 4, sm: 12 },
+            top: "50%",
+            transform: "translateY(-50%)",
+            bgcolor: "rgba(255,255,255,.85)",
+            color: "#76502B",
+            "&:hover": { bgcolor: "#fff" },
+          }}
+        >
+          <ChevronRight fontSize="small" />
+        </IconButton>
 
-          {/* BUTTONS */}
-
-          <Stack
-            direction="row"
-            spacing={{
-              xs: "7px",
-              sm: "10px",
-              md: "14px",
-            }}
-            sx={{
-              width: "fit-content",
-              maxWidth: "100%",
-              mt: {
-                xs: "3px",
-                sm: "5px",
-                md: "8px",
-              },
-            }}
-          >
-            <Button
-              component={Link}
-              to="/products"
-              variant="contained"
-              color="success"
+        <Stack
+          direction="row"
+          spacing={0.7}
+          sx={{
+            position: "absolute",
+            bottom: { xs: 7, sm: 12 },
+            left: "50%",
+            transform: "translateX(-50%)",
+          }}
+        >
+          {slides.map((item, index) => (
+            <Box
+              key={item.eyebrow}
+              component="button"
+              aria-label={`Show banner ${index + 1}`}
+              onClick={() => setActiveSlide(index)}
               sx={{
-                minWidth: "auto",
-                width: {
-                  xs: "105px",
-                  sm: "125px",
-                  md: "150px",
-                },
-                height: {
-                  xs: "28px",
-                  sm: "36px",
-                  md: "46px",
-                },
-                padding: 0,
-                borderRadius: {
-                  xs: "14px",
-                  sm: "18px",
-                  md: "23px",
-                },
-                textTransform: "none",
-                fontWeight: 700,
-                fontSize: {
-                  xs: "0.60rem",
-                  sm: "0.74rem",
-                  md: "0.92rem",
-                },
-                lineHeight: 1,
-                whiteSpace: "nowrap",
-                boxShadow: "0 2px 5px rgba(0,0,0,.25)",
-                "&:hover": {
-                  bgcolor: "#43A047",
-                },
+                width: activeSlide === index ? 18 : 6,
+                height: 6,
+                p: 0,
+                border: 0,
+                borderRadius: 8,
+                cursor: "pointer",
+                bgcolor:
+                  activeSlide === index
+                    ? "#76502B"
+                    : "rgba(118,80,43,.35)",
               }}
-            >
-              Shop Now
-            </Button>
-
-            <Button
-              component={Link}
-              to="/about"
-              variant="outlined"
-              sx={{
-                minWidth: "auto",
-                width: {
-                  xs: "105px",
-                  sm: "125px",
-                  md: "150px",
-                },
-                height: {
-                  xs: "28px",
-                  sm: "36px",
-                  md: "46px",
-                },
-                padding: 0,
-                borderRadius: {
-                  xs: "14px",
-                  sm: "18px",
-                  md: "23px",
-                },
-                border: "1px solid rgba(255,255,255,0.95)",
-                bgcolor: "rgba(0,0,0,0.18)",
-                color: "#fff",
-                textTransform: "none",
-                fontWeight: 700,
-                fontSize: {
-                  xs: "0.60rem",
-                  sm: "0.74rem",
-                  md: "0.92rem",
-                },
-                lineHeight: 1,
-                whiteSpace: "nowrap",
-                backdropFilter: "blur(2px)",
-                "&:hover": {
-                  borderColor: "#fff",
-                  bgcolor: "rgba(0,0,0,0.28)",
-                },
-              }}
-            >
-              Learn More
-            </Button>
-          </Stack>
+            />
+          ))}
         </Stack>
-      </Container>
-
-      {/* BOTTOM MARQUEE */}
-
-      <Box
-        sx={{
-          position: "absolute",
-          bottom: 0,
-          left: 0,
-          width: "100%",
-          zIndex: 5,
-        }}
-      >
-        <MovingRow direction="left" />
       </Box>
     </Box>
   );

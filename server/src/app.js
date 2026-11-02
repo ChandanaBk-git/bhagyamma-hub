@@ -56,6 +56,12 @@ const orderRoutes = require("./routes/order.routes");
 // Phonepay Integration
 const phonepeRoutes = require("./routes/phonepe.routes");
 
+
+const membershipPhonePeRoutes = require(
+  "./routes/membershipPhonePe.routes"
+);
+
+
 // Admin
 const adminRoutes = require("./routes/admin.routes");
 
@@ -95,6 +101,13 @@ app.use("/api/v1/orders", orderRoutes);
 
 // PhonePe Payment API
 app.use("/api/v1/payment/phonepe", phonepeRoutes);
+
+
+app.use(
+  "/api/v1/payment/membership-phonepe",
+  membershipPhonePeRoutes
+);
+
 
 app.use("/api/v1/kyc", kycRoutes);
 

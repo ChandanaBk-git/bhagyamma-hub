@@ -25,7 +25,6 @@ import {
   PhoneOutlined,
   LockOutlined,
   GroupsOutlined,
-  QrCode2,
 } from "@mui/icons-material";
 
 import {
@@ -35,6 +34,7 @@ import {
 } from "react-router-dom";
 
 import { register } from "../../services/auth.service";
+import { createMembershipPhonePePayment } from "../../services/payment.service";
 
 // =====================================================
 // TEMPORARY REGISTRATION FORM STORAGE
@@ -223,49 +223,6 @@ const RegisterForm = () => {
   };
 
   // =====================================================
-  // SAVE REGISTRATION FORM TEMPORARILY
-  // =====================================================
-
-  const saveRegistrationForm = () => {
-    try {
-      sessionStorage.setItem(
-        REGISTRATION_STORAGE_KEY,
-        JSON.stringify(formData)
-      );
-    } catch (error) {
-      console.error(
-        "Unable to save registration form:",
-        error
-      );
-    }
-  };
-
-  // =====================================================
-  // OPTIONAL REGISTRATION PAYMENT
-  //
-  // IMPORTANT:
-  // This is only the ₹2,000 membership payment.
-  // It is NOT product payment.
-  // =====================================================
-
-  const handleRegistrationPayment = () => {
-    setError("");
-    setSuccess("");
-
-    // Save everything entered so far.
-    saveRegistrationForm();
-
-    navigate(
-      "/membership-payment",
-      {
-        state: {
-          from: "register",
-        },
-      }
-    );
-  };
-
-  // =====================================================
   // VALIDATION
   // =====================================================
 
@@ -363,7 +320,7 @@ const RegisterForm = () => {
   };
 
   // =====================================================
-  // REGISTER
+  // REGISTER AND START MEMBERSHIP PAYMENT
   // =====================================================
 
   const handleSubmit = async (e) => {
@@ -372,14 +329,9 @@ const RegisterForm = () => {
     setError("");
     setSuccess("");
 
-    const validationError =
-      validateForm();
-
+    const validationError = validateForm();
     if (validationError) {
-      setError(
-        validationError
-      );
-
+      setError(validationError);
       return;
     }
 
@@ -387,90 +339,78 @@ const RegisterForm = () => {
       setLoading(true);
 
       const payload = {
-        name:
-          formData.name.trim(),
-
-        email:
-          formData.email
-            .trim()
-            .toLowerCase(),
-
-        mobile:
-          formData.mobile.trim(),
-
-        password:
-          formData.password,
-
-        referralCode:
-          formData.referralCode
-            .trim()
-            .toUpperCase(),
+        name: formData.name.trim(),
+        email: formData.email.trim().toLowerCase(),
+        mobile: formData.mobile.trim(),
+        password: formData.password,
+        referralCode: formData.referralCode.trim().toUpperCase(),
       };
 
-      const response =
-        await register(payload);
+      // auth.service.js returns response.data from Axios.
+      // The backend ApiResponse puts registration data in `data`.
+      const response = await register(payload);
+      const result = response?.data || response;
 
-      const token =
-        response?.data?.token ||
-        response?.token;
+      const token = result?.token || result?.accessToken;
+      const user = result?.user;
 
-      const user =
-        response?.data?.user ||
-        response?.user;
-
-      if (token) {
-        localStorage.setItem(
-          "token",
-          token
+      if (!token) {
+        throw new Error(
+          "Registration was received, but the server did not return an access token. Please contact support before trying again."
         );
       }
 
+      // Save authentication before calling the protected payment API.
+      localStorage.setItem("token", token);
       if (user) {
-        localStorage.setItem(
-          "user",
-          JSON.stringify(user)
-        );
+        localStorage.setItem("user", JSON.stringify(user));
       }
 
-      // =================================================
-      // REGISTRATION SUCCESS
-      //
-      // Remove temporary form data only after
-      // successful registration.
-      // =================================================
+      sessionStorage.removeItem(REGISTRATION_STORAGE_KEY);
 
-      sessionStorage.removeItem(
-        REGISTRATION_STORAGE_KEY
-      );
+      // Some recovered guest-order accounts may already be active.
+      const membershipStatus = String(
+        result?.guestOrderRecovery?.membershipStatus || user?.membershipStatus || "Pending"
+      ).toLowerCase();
 
-      setSuccess(
-        response?.data?.message ||
-          response?.message ||
-          "Registration successful."
-      );
+      if (membershipStatus === "active") {
+        setSuccess("Registration successful. Your membership is already active.");
+        navigate("/login", { replace: true });
+        return;
+      }
 
-      setTimeout(() => {
-        navigate(
-          "/login",
-          {
-            replace: true,
-          }
+      // Create the ₹2,000 membership payment and redirect to PhonePe.
+      // If checkout creation fails, the account remains pending and can
+      // retry payment later from the member profile.
+      try {
+        const payment = await createMembershipPhonePePayment();
+
+        if (!payment?.redirectUrl || !payment?.merchantOrderId) {
+          throw new Error("PhonePe did not return valid checkout details.");
+        }
+
+        sessionStorage.setItem(
+          "bhagyamma_pending_membership_payment",
+          payment.merchantOrderId
         );
-      }, 1500);
 
+        window.location.assign(payment.redirectUrl);
+      } catch (paymentError) {
+        console.error("MEMBERSHIP PAYMENT CREATION ERROR:", paymentError);
+        setError(
+          paymentError?.response?.data?.message ||
+          paymentError?.message ||
+          "Your account was created, but membership payment could not be started. Please log in and retry from your profile."
+        );
+      }
     } catch (err) {
-      console.error(
-        "REGISTRATION ERROR:",
-        err
-      );
-
+      console.error("REGISTRATION ERROR:", err);
       setError(
         err?.response?.data?.message ||
-          err?.response?.data?.error ||
-          err?.message ||
-          "Registration failed. Please try again."
+        err?.response?.data?.error ||
+        err?.message ||
+        "Registration failed. Please try again."
       );
-
     } finally {
       setLoading(false);
     }
@@ -950,84 +890,6 @@ const RegisterForm = () => {
                 />
               </Grid>
 
-              {/* =================================================
-                  OPTIONAL ₹2,000 REGISTRATION PAYMENT
-              ================================================= */}
-
-              <Grid
-                item
-                xs={12}
-              >
-                <Button
-                  component={motion.button}
-                  whileHover={{ y: -2 }}
-                  whileTap={{ y: 0 }}
-                  transition={{ duration: 0.18 }}
-                  fullWidth
-                  type="button"
-                  variant="outlined"
-                  color="success"
-                  size="large"
-                  onClick={
-                    handleRegistrationPayment
-                  }
-                  startIcon={
-                    <QrCode2 />
-                  }
-                  sx={{
-                    py: 1.35,
-
-                    borderRadius: 0,
-
-                    textTransform:
-                      "none",
-
-                    fontSize: 15,
-
-                    fontWeight: 700,
-
-                    borderWidth: 1.5,
-
-                    "&:hover": {
-                      borderWidth: 1.5,
-                    },
-                  }}
-                >
-                  Pay Registration Fee ₹2,000
-
-                  <Box
-                    component="span"
-                    sx={{
-                      ml: 0.5,
-
-                      fontSize: 12,
-
-                      fontWeight: 600,
-
-                      opacity: 0.75,
-                    }}
-                  >
-                    (Optional)
-                  </Box>
-                </Button>
-
-                <Typography
-                  align="center"
-                  color="text.secondary"
-                  sx={{
-                    mt: 1,
-
-                    fontSize: 12,
-
-                    lineHeight: 1.5,
-                  }}
-                >
-                  Registration payment is
-                  optional. You can register
-                  without paying this fee.
-                </Typography>
-              </Grid>
-
               {/* CREATE ACCOUNT */}
 
               <Grid
@@ -1073,7 +935,7 @@ const RegisterForm = () => {
                       color="inherit"
                     />
                   ) : (
-                    "Create Account"
+                    "Register & Pay ₹2,000"
                   )}
                 </Button>
               </Grid>

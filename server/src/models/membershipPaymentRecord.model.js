@@ -1,3 +1,4 @@
+
 const mongoose = require("mongoose");
 
 const membershipPaymentRecordSchema = new mongoose.Schema(
@@ -9,55 +10,103 @@ const membershipPaymentRecordSchema = new mongoose.Schema(
       unique: true,
       index: true,
     },
+
     amount: {
       type: Number,
       required: true,
       default: 2000,
       min: 0,
     },
+
     status: {
       type: String,
-      enum: ["PENDING_VERIFICATION", "VERIFIED", "REJECTED"],
+      enum: [
+        "PENDING_VERIFICATION",
+        "VERIFIED",
+        "REJECTED",
+      ],
       default: "PENDING_VERIFICATION",
       index: true,
     },
+
     paymentMethod: {
       type: String,
-      enum: ["Cash", "Bank", "UPI", "Card", "Other"],
+      enum: ["Cash", "Bank", "UPI", "Card", "Other", "PhonePe"],
       default: "Other",
     },
+
     paymentReference: {
       type: String,
       trim: true,
       default: "",
     },
+
     paymentDate: {
       type: Date,
       default: null,
     },
+
     evidenceDescription: {
       type: String,
       trim: true,
       default: "",
     },
+
     recordedBy: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
       default: null,
     },
+
     verifiedBy: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
       default: null,
     },
+
     verifiedAt: {
       type: Date,
       default: null,
     },
+
     verificationNotes: {
       type: String,
       trim: true,
       default: "",
+    },
+
+    // PHONEPE MEMBERSHIP PAYMENT
+
+    merchantOrderId: {
+      type: String,
+      default: null,
+      index: true,
+    },
+
+    phonePeOrderId: {
+      type: String,
+      default: null,
+    },
+
+    phonePeTransactionId: {
+      type: String,
+      default: null,
+    },
+
+    phonePeState: {
+      type: String,
+      enum: ["PENDING", "COMPLETED", "FAILED", "CANCELLED"],
+      default: "PENDING",
+    },
+
+    paidAmount: {
+      type: Number,
+      default: 0,
+    },
+
+    phonePePaidAt: {
+      type: Date,
+      default: null,
     },
   },
   { timestamps: true }
