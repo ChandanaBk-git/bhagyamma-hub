@@ -1,4 +1,3 @@
-
 const mongoose = require("mongoose");
 
 const orderSchema = new mongoose.Schema(
@@ -136,9 +135,6 @@ const orderSchema = new mongoose.Schema(
     // SELLING POINTS
     // =====================================================
 
-    // Guest SP calculation is retained on the order
-    // so it can be recovered if the guest registers.
-
     spPreviousCarryForward: {
       type: Number,
       default: 0,
@@ -193,6 +189,7 @@ const orderSchema = new mongoose.Schema(
     status: {
       type: String,
       enum: [
+        "AWAITING_PAYMENT",
         "PLACED",
         "CONFIRMED",
         "PACKING",
@@ -306,7 +303,6 @@ const orderSchema = new mongoose.Schema(
       default: null,
     },
 
-    // Packaging timestamps
     packingAt: {
       type: Date,
       default: null,
@@ -322,7 +318,6 @@ const orderSchema = new mongoose.Schema(
       default: null,
     },
 
-    // Delivery timestamps
     shippedAt: {
       type: Date,
       default: null,
@@ -338,7 +333,6 @@ const orderSchema = new mongoose.Schema(
       default: null,
     },
 
-    // Cancellation
     cancelledAt: {
       type: Date,
       default: null,
