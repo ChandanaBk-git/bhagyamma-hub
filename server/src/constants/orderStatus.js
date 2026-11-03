@@ -1,4 +1,5 @@
 const ORDER_STATUSES = [
+  "AWAITING_PAYMENT",
   "PLACED",
   "CONFIRMED",
   "PACKING",

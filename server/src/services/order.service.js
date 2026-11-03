@@ -4,6 +4,20 @@ const mongoose = require("mongoose");
 const crypto = require("crypto");
 
 const Order = require("../models/order.model");
+// Verify the actual Order schema loaded by this backend.
+const loadedOrderStatuses =
+    Order.schema.path("status").enumValues;
+
+console.log(
+    "[ORDER STATUS CHECK] Loaded statuses:",
+    loadedOrderStatuses
+);
+
+if (!loadedOrderStatuses.includes("AWAITING_PAYMENT")) {
+    throw new Error(
+        "ORDER MODEL CONFIGURATION ERROR: AWAITING_PAYMENT is missing from the loaded Order schema."
+    );
+}
 const OrderItem = require("../models/orderItem.model");
 const Product = require("../models/product");
 const User = require("../models/user.model");

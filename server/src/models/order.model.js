@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+const ORDER_STATUSES = require("../constants/orderStatus");
 
 const orderSchema = new mongoose.Schema(
   {
@@ -186,23 +187,12 @@ const orderSchema = new mongoose.Schema(
     // ORDER STATUS
     // =====================================================
 
-    status: {
-      type: String,
-      enum: [
-        "AWAITING_PAYMENT",
-        "PLACED",
-        "CONFIRMED",
-        "PACKING",
-        "PACKED",
-        "READY_FOR_DISPATCH",
-        "SHIPPED",
-        "OUT_FOR_DELIVERY",
-        "DELIVERED",
-        "CANCELLED",
-      ],
-      default: "PLACED",
-      index: true,
-    },
+status: {
+  type: String,
+  enum: ORDER_STATUSES,
+  default: "PLACED",
+  index: true,
+},
 
     // =====================================================
     // PAYMENT
