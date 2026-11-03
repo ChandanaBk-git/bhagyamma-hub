@@ -1,112 +1,87 @@
 import {
+  Alert,
   Box,
   Button,
   CircularProgress,
   Container,
+  Divider,
   Paper,
   Typography,
-  Alert,
-  Divider,
 } from "@mui/material";
-
 import {
   CheckCircle,
   ErrorOutline,
   HourglassTop,
 } from "@mui/icons-material";
-
-import {
-  useEffect,
-  useState,
-} from "react";
-
-import {
-  useNavigate,
-  useSearchParams,
-} from "react-router-dom";
-
+import { useEffect, useState } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import {
   verifyPhonePePayment,
   verifyGuestPhonePePayment,
+  createMembershipPhonePePayment,
+  verifyMembershipPhonePePayment,
 } from "../../services/payment.service";
-
 import { useCart } from "../../context/CartContext";
 
 const PhonePeCallback = () => {
   const navigate = useNavigate();
   const { clearAll } = useCart();
-
   const [searchParams] = useSearchParams();
 
-  const merchantOrderId =
-    searchParams.get("merchantOrderId");
-
-  const source = searchParams.get("source");
-
+  const merchantOrderId = searchParams.get("merchantOrderId");
+  const paymentType = String(searchParams.get("type") || "order").toLowerCase();
+  const isMembership = paymentType === "membership";
   const guestPaymentToken = sessionStorage.getItem(
     "bhagyamma_guest_payment_token"
   );
-
   const authToken =
-    localStorage.getItem("token") ||
-    sessionStorage.getItem("token");
+    localStorage.getItem("token") || sessionStorage.getItem("token");
+  const isMember = Boolean(authToken) && !guestPaymentToken;
 
-  const isMember =
-    source === "member" ||
-    (!guestPaymentToken && Boolean(authToken));
+  const membershipPaymentOrigin =
+    sessionStorage.getItem("bhagyamma_membership_payment_origin") ||
+    "profile";
 
   const [status, setStatus] = useState("VERIFYING");
-  const [order, setOrder] = useState(null);
+  const [details, setDetails] = useState(null);
   const [error, setError] = useState("");
+  const [retrying, setRetrying] = useState(false);
 
   useEffect(() => {
     if (!merchantOrderId) {
       setStatus("FAILED");
-      setError("Payment reference was not found.");
-      return;
+      setError("Payment reference was not found. Please retry from your profile.");
+      return undefined;
     }
 
     let cancelled = false;
-    let retryTimer;
+    let timer;
     let attempts = 0;
-
-    const MAX_ATTEMPTS = 20;
+    const maxAttempts = 20;
 
     const verify = async () => {
       try {
         attempts += 1;
+        let result;
 
-        let response;
-
-        if (guestPaymentToken) {
-          response = await verifyGuestPhonePePayment(
+        if (isMembership) {
+          result = await verifyMembershipPhonePePayment(merchantOrderId);
+        } else if (guestPaymentToken) {
+          result = await verifyGuestPhonePePayment(
             merchantOrderId,
             guestPaymentToken
           );
         } else if (authToken) {
-          response = await verifyPhonePePayment(
-            merchantOrderId
-          );
+          result = await verifyPhonePePayment(merchantOrderId);
         } else {
           throw new Error(
-            "Your payment verification session has expired. Please contact support before making another payment."
+            "Your payment session expired. Please log in and check your payment status."
           );
         }
 
         if (cancelled) return;
-
-        // Support both a direct result and common API response wrappers.
-        const result =
-          response?.data?.data ??
-          response?.data ??
-          response?.data?.result ??
-          response?.result ??
-          response;
-
-        console.log(
-          "PhonePe verification result:",
-          result
-        );
+        result = result?.data?.data ?? result?.data ?? result;
+        setDetails(result);
 
         const paymentStatus = String(
           result?.paymentStatus ||
@@ -115,106 +90,70 @@ const PhonePeCallback = () => {
             ""
         ).toUpperCase();
 
-        // Only the backend-confirmed PAID status is accepted.
-        if (paymentStatus === "PAID") {
-          const orderData = result?.order || result;
-
-          setOrder({
-            orderId:
-              orderData?.orderId ||
-              orderData?._id ||
-              result?.orderId ||
-              "",
-
-            orderNumber:
-              orderData?.orderNumber ||
-              result?.orderNumber ||
-              "",
-
-            finalAmount:
-              orderData?.finalAmount ??
-              result?.finalAmount ??
-              null,
-
-            paymentStatus: "PAID",
-
-            orderStatus:
-              orderData?.orderStatus ||
-              orderData?.status ||
-              result?.orderStatus ||
-              "",
-
-            transactionId:
-              orderData?.transactionId ||
-              orderData?.phonePeTransactionId ||
-              result?.transactionId ||
-              "",
-          });
-
-          setStatus("SUCCESS");
-
-          // Clear the cart only after server-confirmed payment.
-          try {
-            await clearAll();
-          } catch (cartError) {
-            console.warn(
-              "Payment confirmed, but cart cleanup failed:",
-              cartError
+        if (isMembership) {
+          if (
+            paymentStatus === "COMPLETED" ||
+            paymentStatus === "PAID" ||
+            String(result?.membershipStatus || "").toLowerCase() === "active"
+          ) {
+            setStatus("SUCCESS");
+            sessionStorage.removeItem("bhagyamma_pending_membership_payment");
+            sessionStorage.removeItem(
+              "bhagyamma_membership_payment_origin"
             );
+            return;
           }
 
-          sessionStorage.removeItem(
-            "bhagyamma_guest_payment_token"
-          );
-          sessionStorage.removeItem(
-            "bhagyamma_pending_payment"
-          );
-          sessionStorage.removeItem(
-            "bhagyamma_pending_cart"
-          );
+          if (["FAILED", "FAILURE", "CANCELLED"].includes(paymentStatus)) {
+            setStatus("FAILED");
+            setError(
+              "Membership payment failed. Please try again later. Your membership has not been activated."
+            );
+            return;
+          }
+        } else {
+          if (paymentStatus === "PAID") {
+            setStatus("SUCCESS");
+            try {
+              await clearAll();
+            } catch (cartError) {
+              console.warn(
+                "Payment confirmed, but cart cleanup failed:",
+                cartError
+              );
+            }
+            sessionStorage.removeItem("bhagyamma_guest_payment_token");
+            sessionStorage.removeItem("bhagyamma_pending_payment");
+            sessionStorage.removeItem("bhagyamma_pending_cart");
+            return;
+          }
 
-          return;
+          if (["FAILED", "FAILURE", "CANCELLED"].includes(paymentStatus)) {
+            setStatus("FAILED");
+            setError(
+              "Product payment failed. Your order has not been confirmed. You can return to the product page and try again."
+            );
+            return;
+          }
         }
 
-        if (
-          paymentStatus === "FAILED" ||
-          paymentStatus === "FAILURE" ||
-          paymentStatus === "CANCELLED"
-        ) {
-          setOrder(result);
-          setStatus("FAILED");
-          setError(
-            "PhonePe did not confirm a successful payment. Check your order status before trying again."
-          );
-          return;
-        }
-
-        if (attempts >= MAX_ATTEMPTS) {
-          setOrder(result);
+        if (attempts >= maxAttempts) {
           setStatus("ERROR");
           setError(
-            "Payment verification is still pending. Please check your order status before making another payment."
+            "Payment status is still pending. Please check again before making another payment."
           );
           return;
         }
 
         setStatus("PENDING");
-
-        retryTimer = setTimeout(verify, 3000);
+        timer = setTimeout(verify, 3000);
       } catch (err) {
         if (cancelled) return;
-
-        console.error(
-          "PhonePe payment verification error:",
-          err
-        );
-
         setError(
           err?.response?.data?.message ||
             err?.message ||
             "Unable to verify your payment."
         );
-
         setStatus("ERROR");
       }
     };
@@ -223,50 +162,54 @@ const PhonePeCallback = () => {
 
     return () => {
       cancelled = true;
-      clearTimeout(retryTimer);
+      clearTimeout(timer);
     };
   }, [
     merchantOrderId,
+    isMembership,
     guestPaymentToken,
     authToken,
     clearAll,
   ]);
 
-  const goToOrders = () => {
-    navigate(
-      isMember ? "/member/orders" : "/orders"
-    );
-  };
+  const retryMembershipPayment = async () => {
+    try {
+      setRetrying(true);
+      setError("");
 
-  const goToShopping = () => {
-    navigate(
-      isMember ? "/member/products" : "/products"
-    );
+      const payment = await createMembershipPhonePePayment();
+
+      if (!payment?.redirectUrl || !payment?.merchantOrderId) {
+        throw new Error("PhonePe did not return valid checkout details.");
+      }
+
+      sessionStorage.setItem(
+        "bhagyamma_pending_membership_payment",
+        payment.merchantOrderId
+      );
+      window.location.assign(payment.redirectUrl);
+    } catch (err) {
+      setError(
+        err?.response?.data?.message ||
+          err?.message ||
+          "Could not restart membership payment. Please try again later."
+      );
+      setRetrying(false);
+    }
   };
 
   const formatAmount = (amount) => {
     const value = Number(amount);
-
-    if (
-      amount === null ||
-      amount === undefined ||
-      amount === "" ||
-      !Number.isFinite(value)
-    ) {
-      return "Unavailable";
-    }
-
-    return `₹${value.toLocaleString("en-IN", {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
-    })}`;
+    return Number.isFinite(value)
+      ? `₹${value.toLocaleString("en-IN", {
+          minimumFractionDigits: 2,
+          maximumFractionDigits: 2,
+        })}`
+      : "Unavailable";
   };
 
   const renderPage = (content) => (
-    <Container
-      maxWidth="sm"
-      sx={{ py: { xs: 4, sm: 8 } }}
-    >
+    <Container maxWidth="sm" sx={{ py: { xs: 4, sm: 8 } }}>
       <Paper
         elevation={3}
         sx={{
@@ -284,15 +227,9 @@ const PhonePeCallback = () => {
     return renderPage(
       <>
         <CircularProgress size={60} color="success" />
-
-        <Typography
-          variant="h5"
-          fontWeight={700}
-          sx={{ mt: 3 }}
-        >
+        <Typography variant="h5" fontWeight={700} sx={{ mt: 3 }}>
           Verifying Payment
         </Typography>
-
         <Typography color="text.secondary" sx={{ mt: 1 }}>
           Please wait while we confirm your PhonePe payment.
         </Typography>
@@ -303,18 +240,10 @@ const PhonePeCallback = () => {
   if (status === "PENDING") {
     return renderPage(
       <>
-        <HourglassTop
-          sx={{ fontSize: 70, color: "warning.main" }}
-        />
-
-        <Typography
-          variant="h5"
-          fontWeight={700}
-          sx={{ mt: 2 }}
-        >
+        <HourglassTop sx={{ fontSize: 70, color: "warning.main" }} />
+        <Typography variant="h5" fontWeight={700} sx={{ mt: 2 }}>
           Payment Verification in Progress
         </Typography>
-
         <Typography color="text.secondary" sx={{ mt: 1 }}>
           Your payment is being confirmed. Please wait.
         </Typography>
@@ -325,139 +254,100 @@ const PhonePeCallback = () => {
   if (status === "SUCCESS") {
     return renderPage(
       <>
-        <CheckCircle
-          sx={{ fontSize: 85, color: "success.main" }}
-        />
-
-        <Typography
-          variant="h4"
-          fontWeight={800}
-          sx={{ mt: 2 }}
-        >
-          Payment Successful!
+        <CheckCircle sx={{ fontSize: 85, color: "success.main" }} />
+        <Typography variant="h4" fontWeight={800} sx={{ mt: 2 }}>
+          {isMembership
+            ? "Registration Payment Successful!"
+            : "Payment Successful!"}
         </Typography>
-
         <Typography color="text.secondary" sx={{ mt: 1 }}>
-          Your payment has been successfully verified.
+          {isMembership
+            ? "Your ₹2,000 payment is verified and your membership is active."
+            : "Your payment has been successfully verified."}
         </Typography>
-
         <Alert severity="success" sx={{ mt: 3 }}>
           Payment confirmed by PhonePe
         </Alert>
 
-        <Box
-          sx={{
-            mt: 3,
-            p: 2.5,
-            border: "1px solid",
-            borderColor: "divider",
-            borderRadius: 3,
-            textAlign: "left",
-            overflowWrap: "anywhere",
-          }}
-        >
-          <Typography color="text.secondary" variant="body2">
-            Order ID
-          </Typography>
-
-          <Typography fontWeight={700} sx={{ mt: 0.5 }}>
-            {order?.orderNumber ||
-              order?.orderId ||
-              "Order reference unavailable"}
-          </Typography>
-
-          <Divider sx={{ my: 2 }} />
-
-          <Typography color="text.secondary" variant="body2">
-            Amount Received
-          </Typography>
-
-          <Typography
-            variant="h5"
-            fontWeight={800}
-            color="success.main"
-            sx={{ mt: 0.5 }}
+        {isMembership ? (
+          <Button
+            fullWidth
+            variant="contained"
+            color="success"
+            sx={{ mt: 4 }}
+            onClick={() =>
+              navigate("/member/dashboard", { replace: true })
+            }
           >
-            {formatAmount(order?.finalAmount)}
-          </Typography>
-
-          <Divider sx={{ my: 2 }} />
-
-          <Typography color="text.secondary" variant="body2">
-            Payment Status
-          </Typography>
-
-          <Typography fontWeight={700} sx={{ mt: 0.5 }}>
-            {order?.paymentStatus}
-          </Typography>
-
-          {order?.transactionId && (
-            <>
-              <Divider sx={{ my: 2 }} />
-
-              <Typography
-                color="text.secondary"
-                variant="body2"
-              >
-                PhonePe Transaction ID
+            Go to Member Dashboard
+          </Button>
+        ) : (
+          <>
+            <Box
+              sx={{
+                mt: 3,
+                p: 2.5,
+                border: "1px solid",
+                borderColor: "divider",
+                borderRadius: 3,
+                textAlign: "left",
+                overflowWrap: "anywhere",
+              }}
+            >
+              <Typography color="text.secondary" variant="body2">
+                Order ID
               </Typography>
-
+              <Typography fontWeight={700} sx={{ mt: 0.5 }}>
+                {details?.orderNumber ||
+                  details?.orderId ||
+                  "Order reference unavailable"}
+              </Typography>
+              <Divider sx={{ my: 2 }} />
+              <Typography color="text.secondary" variant="body2">
+                Amount Received
+              </Typography>
               <Typography
-                fontWeight={600}
+                variant="h5"
+                fontWeight={800}
+                color="success.main"
                 sx={{ mt: 0.5 }}
               >
-                {order.transactionId}
+                {formatAmount(details?.finalAmount)}
               </Typography>
-            </>
-          )}
-        </Box>
+            </Box>
 
-        <Button
-          variant="contained"
-          color="success"
-          fullWidth
-          sx={{
-            mt: 4,
-            py: 1.4,
-            borderRadius: 2,
-            fontWeight: 700,
-          }}
-          onClick={goToOrders}
-        >
-          View My Orders
-        </Button>
-
-        <Button
-          fullWidth
-          sx={{ mt: 1 }}
-          onClick={goToShopping}
-        >
-          Continue Shopping
-        </Button>
+            <Button
+              variant="contained"
+              color="success"
+              fullWidth
+              sx={{ mt: 4 }}
+              onClick={() =>
+                navigate(isMember ? "/member/orders" : "/orders")
+              }
+            >
+              View My Orders
+            </Button>
+          </>
+        )}
       </>
     );
   }
 
   return renderPage(
     <>
-      <ErrorOutline
-        sx={{ fontSize: 80, color: "error.main" }}
-      />
-
-      <Typography
-        variant="h5"
-        fontWeight={700}
-        sx={{ mt: 2 }}
-      >
+      <ErrorOutline sx={{ fontSize: 80, color: "error.main" }} />
+      <Typography variant="h5" fontWeight={700} sx={{ mt: 2 }}>
         {status === "ERROR"
-          ? "Payment Verification Pending"
-          : "Payment Not Confirmed"}
+          ? "Payment Status Not Confirmed"
+          : isMembership
+          ? "Membership Payment Failed"
+          : "Product Payment Failed"}
       </Typography>
 
       <Typography color="text.secondary" sx={{ mt: 1 }}>
-        {status === "ERROR"
-          ? "We could not confirm the payment status. Do not pay again until you check your order."
-          : "The payment has not been confirmed as successful."}
+        {isMembership
+          ? "Your membership is not active. Membership failed; please try again later."
+          : "Your order has not been confirmed because payment was unsuccessful."}
       </Typography>
 
       {error && (
@@ -466,23 +356,53 @@ const PhonePeCallback = () => {
         </Alert>
       )}
 
-      <Button
-        variant="contained"
-        color="success"
-        fullWidth
-        sx={{ mt: 4 }}
-        onClick={goToOrders}
-      >
-        Check My Orders
-      </Button>
+      {isMembership ? (
+        <>
+          <Button
+            variant="contained"
+            color="success"
+            fullWidth
+            sx={{ mt: 4 }}
+            onClick={() => {
+              const destination =
+                membershipPaymentOrigin === "registration"
+                  ? "/register"
+                  : "/member/profile";
 
-      <Button
-        fullWidth
-        sx={{ mt: 1 }}
-        onClick={goToShopping}
-      >
-        Continue Shopping
-      </Button>
+              sessionStorage.removeItem(
+                "bhagyamma_membership_payment_origin"
+              );
+              navigate(destination, { replace: true });
+            }}
+          >
+            {membershipPaymentOrigin === "registration"
+              ? "Back to Create Account"
+              : "Go to Profile"}
+          </Button>
+        </>
+      ) : (
+        <Button
+          variant="contained"
+          color="success"
+          fullWidth
+          sx={{ mt: 4 }}
+          onClick={() => {
+            const productId =
+              details?.productId ||
+              details?.product?._id ||
+              details?.items?.[0]?.productId ||
+              details?.items?.[0]?.product?._id;
+
+            if (productId) {
+              navigate(`/products/${productId}`, { replace: true });
+            } else {
+              navigate("/products", { replace: true });
+            }
+          }}
+        >
+          Back to Product Page
+        </Button>
+      )}
     </>
   );
 };

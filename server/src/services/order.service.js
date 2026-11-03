@@ -769,15 +769,12 @@ spEligibleAmount:
                     0,
 
 
-                status:
-                    "PLACED",
+// Order is not confirmed until PhonePe verifies payment.
+status: "AWAITING_PAYMENT",
 
+paymentMethod,
 
-                paymentMethod,
-
-
-                paymentStatus:
-                    "PENDING",
+paymentStatus: "PENDING",
 
 
                 phonePeOrderId:

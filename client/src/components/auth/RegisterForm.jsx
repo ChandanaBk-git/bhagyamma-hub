@@ -383,7 +383,10 @@ const RegisterForm = () => {
       // If checkout creation fails, the account remains pending and can
       // retry payment later from the member profile.
       try {
-        const payment = await createMembershipPhonePePayment();
+sessionStorage.setItem("bhagyamma_membership_payment_origin", "registration");
+
+const payment = await createMembershipPhonePePayment();
+
 
         if (!payment?.redirectUrl || !payment?.merchantOrderId) {
           throw new Error("PhonePe did not return valid checkout details.");

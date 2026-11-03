@@ -112,6 +112,8 @@ const Profile = () => {
     try {
       setMembershipPaymentLoading(true);
 
+      sessionStorage.setItem("bhagyamma_membership_payment_origin", "profile");
+
       const payment = await createMembershipPhonePePayment();
 
       if (!payment?.redirectUrl || !payment?.merchantOrderId) {
