@@ -154,6 +154,9 @@ const RegisterForm = () => {
   const [success, setSuccess] =
     useState("");
 
+  const [registrationCreatedPaymentFailed, setRegistrationCreatedPaymentFailed] =
+    useState(false);
+
   // =====================================================
   // RESTORE FORM WHEN RETURNING FROM PAYMENT SCANNER
   // =====================================================
@@ -189,6 +192,19 @@ const RegisterForm = () => {
       );
     }
   }, [location.key]);
+
+  // Handle a failed membership payment callback. The account was already
+  // created before checkout, so prevent a second registration attempt.
+  useEffect(() => {
+    if (location.state?.membershipPaymentFailed) {
+      setRegistrationCreatedPaymentFailed(true);
+      setError(
+        location.state.message ||
+          "Membership payment failed. Your account has been created, but your membership is not active. Please log in and try again later."
+      );
+      navigate(location.pathname, { replace: true, state: null });
+    }
+  }, [location.key, location.pathname, location.state, navigate]);
 
   // =====================================================
   // HANDLE INPUT
@@ -620,15 +636,16 @@ const payment = await createMembershipPhonePePayment();
               REGISTRATION FORM
           ================================================= */}
 
-          <Box
-            component={motion.form}
-            variants={contentVariants}
-            initial="hidden"
-            animate="visible"
-            custom={0.4}
-            onSubmit={handleSubmit}
-            noValidate
-          >
+          {!registrationCreatedPaymentFailed && (
+            <Box
+              component={motion.form}
+              variants={contentVariants}
+              initial="hidden"
+              animate="visible"
+              custom={0.4}
+              onSubmit={handleSubmit}
+              noValidate
+            >
             <Grid
               container
               spacing={2.2}
@@ -944,7 +961,27 @@ const payment = await createMembershipPhonePePayment();
               </Grid>
 
             </Grid>
-          </Box>
+            </Box>
+          )}
+
+          {registrationCreatedPaymentFailed && (
+            <Stack spacing={2} alignItems="center">
+              <Typography color="text.secondary" textAlign="center">
+                Your account has been created. Membership is still pending because the payment did not complete.
+                Log in to your account and retry the membership payment from your Profile.
+              </Typography>
+              <Button
+                component={Link}
+                to="/login"
+                variant="contained"
+                color="success"
+                fullWidth
+                sx={{ borderRadius: 0, py: 1.4, textTransform: "none", fontWeight: 700 }}
+              >
+                Go to Login
+              </Button>
+            </Stack>
+          )}
 
           {/* LOGIN */}
 
