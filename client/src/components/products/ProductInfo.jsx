@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
@@ -16,7 +17,6 @@ import { useCart } from "../../context/CartContext";
 
 const ProductInfo = ({ product }) => {
   const navigate = useNavigate();
-
   const { addToCart } = useCart();
 
   const [snackbar, setSnackbar] = useState({
@@ -24,6 +24,8 @@ const ProductInfo = ({ product }) => {
     severity: "success",
     message: "",
   });
+
+  const [buyNowLoading, setBuyNowLoading] = useState(false);
 
   // =====================================================
   // ADD TO CART
@@ -39,7 +41,6 @@ const ProductInfo = ({ product }) => {
           severity: "success",
           message: "Product added to cart successfully.",
         });
-
         return;
       }
 
@@ -65,6 +66,48 @@ const ProductInfo = ({ product }) => {
     }
   };
 
+  // =====================================================
+  // BUY NOW
+  // Add this product to the existing cart, then display it.
+  // =====================================================
+
+  const handleBuyNow = async () => {
+    if (buyNowLoading) return;
+
+    try {
+      setBuyNowLoading(true);
+
+      const result = await addToCart(product, 1);
+
+      if (!result?.success) {
+        setSnackbar({
+          open: true,
+          severity: "error",
+          message:
+            result?.error?.response?.data?.message ||
+            result?.error?.message ||
+            "Unable to add product to cart.",
+        });
+        return;
+      }
+
+      navigate("/cart");
+    } catch (error) {
+      console.error("Buy Now Error:", error);
+
+      setSnackbar({
+        open: true,
+        severity: "error",
+        message:
+          error?.response?.data?.message ||
+          error?.message ||
+          "Unable to add product to cart.",
+      });
+    } finally {
+      setBuyNowLoading(false);
+    }
+  };
+
   return (
     <>
       <Stack
@@ -73,10 +116,7 @@ const ProductInfo = ({ product }) => {
           sm: 1.5,
         }}
       >
-        {/* =================================================
-            PRODUCT NAME
-        ================================================= */}
-
+        {/* PRODUCT NAME */}
         <Typography
           component="h1"
           sx={{
@@ -93,10 +133,7 @@ const ProductInfo = ({ product }) => {
           {product.productName}
         </Typography>
 
-        {/* =================================================
-            CATEGORY + STATUS
-        ================================================= */}
-
+        {/* CATEGORY + STATUS */}
         <Stack
           direction="row"
           spacing={0.7}
@@ -152,10 +189,7 @@ const ProductInfo = ({ product }) => {
           )}
         </Stack>
 
-        {/* =================================================
-            BRAND
-        ================================================= */}
-
+        {/* BRAND */}
         {product.brand && (
           <Typography
             sx={{
@@ -179,10 +213,7 @@ const ProductInfo = ({ product }) => {
           </Typography>
         )}
 
-        {/* =================================================
-            PRICE
-        ================================================= */}
-
+        {/* PRICE */}
         <Typography
           sx={{
             color: "#1B5E20",
@@ -200,10 +231,7 @@ const ProductInfo = ({ product }) => {
 
         <Divider />
 
-        {/* =================================================
-            DESCRIPTION
-        ================================================= */}
-
+        {/* DESCRIPTION */}
         <Typography
           sx={{
             color: "#666",
@@ -220,10 +248,7 @@ const ProductInfo = ({ product }) => {
 
         <Divider />
 
-        {/* =================================================
-            SPECIFICATIONS
-        ================================================= */}
-
+        {/* SPECIFICATIONS */}
         <Typography
           sx={{
             fontWeight: 700,
@@ -243,52 +268,20 @@ const ProductInfo = ({ product }) => {
             bgcolor: "#fff",
           }}
         >
-          <Specification
-            title="Category"
-            value={product.category}
-          />
-
-          <Specification
-            title="Brand"
-            value={product.brand}
-          />
-
-          <Specification
-            title="Weight"
-            value={product.weight || "-"}
-          />
-
-          <Specification
-            title="Quantity"
-            value={product.quantity || "-"}
-          />
-
-          <Specification
-            title="Shelf Life"
-            value={product.shelfLife || "-"}
-          />
-
-          <Specification
-            title="Manufacturer"
-            value={product.manufacturer || "-"}
-          />
-
+          <Specification title="Category" value={product.category} />
+          <Specification title="Brand" value={product.brand} />
+          <Specification title="Weight" value={product.weight || "-"} />
+          <Specification title="Quantity" value={product.quantity || "-"} />
+          <Specification title="Shelf Life" value={product.shelfLife || "-"} />
+          <Specification title="Manufacturer" value={product.manufacturer || "-"} />
           <Specification
             title="Country Of Origin"
             value={product.countryOfOrigin || "-"}
           />
-
-          <Specification
-            title="SKU"
-            value={product.sku || "-"}
-            last
-          />
+          <Specification title="SKU" value={product.sku || "-"} last />
         </Box>
 
-        {/* =================================================
-            ACTION BUTTONS
-        ================================================= */}
-
+        {/* ACTION BUTTONS */}
         <Stack
           direction="row"
           spacing={1}
@@ -315,7 +308,6 @@ const ProductInfo = ({ product }) => {
                 sm: "0.68rem",
               },
               boxShadow: "none",
-
               "&:hover": {
                 bgcolor: "#154A19",
                 boxShadow: "none",
@@ -328,7 +320,8 @@ const ProductInfo = ({ product }) => {
           <Button
             fullWidth
             variant="outlined"
-            onClick={() => navigate("/cart")}
+            onClick={handleBuyNow}
+            disabled={buyNowLoading}
             sx={{
               height: {
                 xs: 36,
@@ -343,22 +336,18 @@ const ProductInfo = ({ product }) => {
                 xs: "0.58rem",
                 sm: "0.68rem",
               },
-
               "&:hover": {
                 borderColor: "#8A6B25",
                 bgcolor: "#FBF8EF",
               },
             }}
           >
-            Buy Now
+            {buyNowLoading ? "Adding..." : "Buy Now"}
           </Button>
         </Stack>
       </Stack>
 
-      {/* =================================================
-          SNACKBAR
-      ================================================= */}
-
+      {/* SNACKBAR */}
       <Snackbar
         open={snackbar.open}
         autoHideDuration={3000}
