@@ -349,4 +349,9 @@ const orderSchema = new mongoose.Schema(
   }
 );
 
+console.log(
+  "[Order Model] Loaded status enum:",
+  orderSchema.path("status").enumValues
+);
+
 module.exports = mongoose.model("Order", orderSchema);
