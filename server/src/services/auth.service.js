@@ -1059,24 +1059,19 @@ const getProfile = async (userId) => {
     const user = await userRepository.findById(userId);
 
     if (!user) {
-        throw new ApiError(
-            404,
-            "User not found"
-        );
+        throw new ApiError(404, "User not found");
     }
 
-    // Count users directly sponsored by this member.
     const directMembers = await User.countDocuments({
         sponsorId: user._id,
+        isActive: true,
     });
 
-    // Return the user profile with the direct-member count.
     return {
         ...user.toObject(),
         directMembers,
     };
 };
-
 // =====================================================
 // EMAIL FORGOT PASSWORD
 // =====================================================
