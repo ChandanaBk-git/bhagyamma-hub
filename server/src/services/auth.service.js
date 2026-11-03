@@ -1055,14 +1055,8 @@ const verifyOtp = async ({
 // GET PROFILE
 // =====================================================
 
-const getProfile = async (
-    userId
-) => {
-
-    const user =
-        await userRepository.findById(
-            userId
-        );
+const getProfile = async (userId) => {
+    const user = await userRepository.findById(userId);
 
     if (!user) {
         throw new ApiError(
@@ -1071,9 +1065,17 @@ const getProfile = async (
         );
     }
 
-    return user;
-};
+    // Count users directly sponsored by this member.
+    const directMembers = await User.countDocuments({
+        sponsorId: user._id,
+    });
 
+    // Return the user profile with the direct-member count.
+    return {
+        ...user.toObject(),
+        directMembers,
+    };
+};
 
 // =====================================================
 // EMAIL FORGOT PASSWORD
