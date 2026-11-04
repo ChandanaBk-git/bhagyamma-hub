@@ -13,7 +13,7 @@ import {
   ErrorOutline,
   HourglassTop,
 } from "@mui/icons-material";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import {
   verifyPhonePePayment,
@@ -46,6 +46,7 @@ const PhonePeCallback = () => {
   const [details, setDetails] = useState(null);
   const [error, setError] = useState("");
   const [retrying, setRetrying] = useState(false);
+  const failureRedirected = useRef(false);
 
   useEffect(() => {
     if (!merchantOrderId) {
@@ -171,6 +172,89 @@ const PhonePeCallback = () => {
     authToken,
     clearAll,
   ]);
+
+  useEffect(() => {
+  if (status !== "FAILED" || failureRedirected.current) {
+    return;
+  }
+
+  failureRedirected.current = true;
+
+  if (isMembership) {
+    const origin =
+      sessionStorage.getItem(
+        "bhagyamma_membership_payment_origin"
+      ) || membershipPaymentOrigin;
+
+    sessionStorage.removeItem(
+      "bhagyamma_membership_payment_origin"
+    );
+
+    sessionStorage.removeItem(
+      "bhagyamma_pending_membership_payment"
+    );
+
+    if (origin === "registration") {
+      navigate("/register", {
+        replace: true,
+        state: {
+          membershipPaymentFailed: true,
+          message:
+            "Membership payment failed. Your account has been created, but your membership is not active. You can retry payment from your profile.",
+        },
+      });
+    } else {
+      navigate("/member/profile", {
+        replace: true,
+        state: {
+          membershipPaymentFailed: true,
+        },
+      });
+    }
+
+    return;
+  }
+
+  let productId = "";
+
+  try {
+    const pendingCart = JSON.parse(
+      sessionStorage.getItem("bhagyamma_pending_cart") || "{}"
+    );
+
+    const firstItem = pendingCart?.items?.[0];
+
+    productId =
+      firstItem?.productId?._id ||
+      firstItem?.productId ||
+      firstItem?.product?._id ||
+      "";
+  } catch (readError) {
+    console.warn("Unable to read pending cart:", readError);
+  }
+
+  sessionStorage.removeItem(
+    "bhagyamma_guest_payment_token"
+  );
+  sessionStorage.removeItem("bhagyamma_pending_payment");
+
+  navigate(
+    productId ? `/products/${productId}` : "/products",
+    {
+      replace: true,
+      state: {
+        paymentFailed: true,
+        message:
+          "Product payment failed. Your order was not confirmed. Please try again.",
+      },
+    }
+  );
+}, [
+  status,
+  isMembership,
+  membershipPaymentOrigin,
+  navigate,
+]);
 
   const retryMembershipPayment = async () => {
     try {
