@@ -246,6 +246,20 @@ const verifyPaymentWithPhonePe = async (order) => {
   const phonePeStatus =
     await phonepeService.getPaymentStatus(order.merchantOrderId);
 
+    console.log("[PhonePe Verification Debug]", {
+  orderNumber: order.orderNumber,
+  merchantOrderId: order.merchantOrderId,
+  environment: process.env.PHONEPE_ENV,
+  phonePeState: phonePeStatus?.state,
+  phonePeAmountPaise: phonePeStatus?.amount,
+  expectedAmountPaise: Math.round(
+    Number(order.finalAmount) * 100
+  ),
+  phonePeOrderId: phonePeStatus?.orderId,
+  transactionId: getTransactionId(phonePeStatus),
+});
+
+
   const state = String(
     phonePeStatus?.state || ""
   ).toUpperCase();
