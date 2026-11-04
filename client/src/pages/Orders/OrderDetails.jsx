@@ -361,12 +361,7 @@ const OrderDetails = () => {
         ? "error"
         : "warning";
 
-  const orderColor =
-    normalizedOrderStatus === "CANCELLED"
-      ? "error"
-      : normalizedOrderStatus === "DELIVERED"
-        ? "success"
-        : "default";
+
 
   const customerName =
     order?.customerName ||
@@ -588,19 +583,6 @@ const OrderDetails = () => {
                 <Typography fontWeight={700}>
                   {formatDate(order.createdAt || order.placedAt)}
                 </Typography>
-              </Box>
-
-              <Box>
-                <Typography variant="body2" color="text.secondary">
-                  Order Status
-                </Typography>
-
-                <Chip
-                  size="small"
-                  label={prettyStatus(normalizedOrderStatus)}
-                  color={orderColor}
-                  sx={{ mt: 0.5, fontWeight: 700 }}
-                />
               </Box>
 
               <Box>
