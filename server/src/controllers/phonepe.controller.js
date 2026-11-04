@@ -132,11 +132,10 @@ const createGuestPhonePeSession = asyncHandler(async (req, res) => {
 });
 
 /**
- * Verify the PhonePe payment.
+ * Verify PhonePe payment.
  *
- * IMPORTANT:
- * A product order is created only after PhonePe returns COMPLETED
- * and the verified amount matches the saved checkout amount.
+ * Normal checkout: creates the order only after verified payment.
+ * Retry checkout: updates the existing order, never creates another one.
  */
 const verifyPhonePeSession = asyncHandler(async (req, res) => {
   const merchantOrderId =
@@ -167,7 +166,6 @@ const verifyPhonePeSession = asyncHandler(async (req, res) => {
     throw new ApiError(400, "Unsupported checkout session type");
   }
 
-  // Idempotency: do not create a second order for an already-completed session.
   if (session.status === "COMPLETED" && session.createdOrderId) {
     return res.status(200).json(
       new ApiResponse(200, "Payment already processed", {
@@ -183,9 +181,6 @@ const verifyPhonePeSession = asyncHandler(async (req, res) => {
 
   const state = String(phonePeStatus?.state || "").toUpperCase();
 
-  // ---------------------------------------------------------
-  // PAYMENT SUCCESS
-  // ---------------------------------------------------------
   if (state === "COMPLETED") {
     const paidAmount = Number(phonePeStatus?.amount);
 
@@ -238,6 +233,53 @@ const verifyPhonePeSession = asyncHandler(async (req, res) => {
       const quote = session.checkoutData || {};
       let order;
 
+      // Retry: pay the existing order; do not create another order.
+      if (quote.retryOrderId) {
+        order = await orderService.getOrderById(
+          String(quote.retryOrderId),
+          String(quote.userId)
+        );
+
+        if (
+          Math.round(Number(order.finalAmount) * 100) !==
+          Number(session.amountPaise)
+        ) {
+          throw new ApiError(
+            409,
+            "Existing order amount differs from verified payment amount"
+          );
+        }
+
+        const paidOrder = await orderService.updatePaymentStatus(
+          String(quote.retryOrderId),
+          "PAID",
+          {
+            phonePeTransactionId: getTransactionId(phonePeStatus),
+            phonePeOrderId:
+              phonePeStatus?.orderId || session.phonePeOrderId || null,
+            paidAt: new Date(),
+          }
+        );
+
+        session.status = "COMPLETED";
+        session.phonePeState = state;
+        session.phonePeTransactionId = getTransactionId(phonePeStatus);
+        session.createdOrderId = paidOrder._id;
+        session.completedAt = new Date();
+        await session.save();
+
+        return res.status(200).json(
+          new ApiResponse(200, "Payment successful", {
+            success: true,
+            paymentStatus: "PAID",
+            orderId: paidOrder._id,
+            orderNumber: paidOrder.orderNumber,
+            finalAmount: Number(paidOrder.finalAmount || 0),
+            transactionId: paidOrder.phonePeTransactionId || null,
+          })
+        );
+      }
+
       if (quote.orderType === "GUEST") {
         order = await orderService.placeGuestOrder({
           ...quote,
@@ -274,9 +316,7 @@ const verifyPhonePeSession = asyncHandler(async (req, res) => {
         {
           phonePeTransactionId: getTransactionId(phonePeStatus),
           phonePeOrderId:
-            phonePeStatus?.orderId ||
-            session.phonePeOrderId ||
-            null,
+            phonePeStatus?.orderId || session.phonePeOrderId || null,
           paidAt: new Date(),
         }
       );
@@ -303,16 +343,12 @@ const verifyPhonePeSession = asyncHandler(async (req, res) => {
         })
       );
     } catch (error) {
-      // Keep verified payments recoverable for reconciliation.
       session.status = "PROCESSING";
       await session.save();
       throw error;
     }
   }
 
-  // ---------------------------------------------------------
-  // PAYMENT FAILED / CANCELLED / REJECTED
-  // ---------------------------------------------------------
   if (
     state === "FAILED" ||
     state === "CANCELLED" ||
@@ -322,8 +358,6 @@ const verifyPhonePeSession = asyncHandler(async (req, res) => {
     session.phonePeState = state;
     await session.save();
 
-    // Keep the checkout session so the customer can retry payment.
-    // No product order is created in this branch.
     return res.status(200).json(
       new ApiResponse(200, "Payment was not successful", {
         success: false,
@@ -334,9 +368,6 @@ const verifyPhonePeSession = asyncHandler(async (req, res) => {
     );
   }
 
-  // ---------------------------------------------------------
-  // PAYMENT PENDING
-  // ---------------------------------------------------------
   session.phonePeState = state || "PENDING";
   await session.save();
 
@@ -356,40 +387,84 @@ const verifyPhonePeSession = asyncHandler(async (req, res) => {
 
 const retryPhonePePayment = asyncHandler(async (req, res) => {
   const { orderId } = req.params;
-
-  if (!orderId) {
-    throw new ApiError(400, "Order ID is required");
-  }
-
-  const order = await orderRepository.findById(orderId);
-
-  if (!order) {
-    throw new ApiError(404, "Order not found");
-  }
-
   const authenticatedUserId = getUserId(req.user);
-  const orderUserId = getOrderUserId(order);
 
-  if (
-    !authenticatedUserId ||
-    !orderUserId ||
-    authenticatedUserId !== orderUserId
-  ) {
-    throw new ApiError(403, "Unauthorized order");
+  if (!orderId) throw new ApiError(400, "Order ID is required");
+  if (!authenticatedUserId) throw new ApiError(401, "Authentication required");
+
+  const order = await orderService.getOrderById(orderId, authenticatedUserId);
+
+  if (order.orderType === "GUEST" || !order.userId) {
+    throw new ApiError(403, "Guest orders must use the guest payment flow");
   }
 
-  if (order.orderType === "GUEST") {
-    throw new ApiError(
-      403,
-      "Guest orders must use the guest payment flow"
+  if (String(order.paymentStatus || "").toUpperCase() === "PAID") {
+    throw new ApiError(409, "This order is already paid");
+  }
+
+  const amount = Number(order.finalAmount);
+  const amountPaise = Math.round(amount * 100);
+
+  if (!Number.isFinite(amount) || amountPaise < 1) {
+    throw new ApiError(400, "Order has an invalid payable amount");
+  }
+
+  const merchantOrderId = `BHPP_${crypto.randomBytes(16).toString("hex")}`;
+  const sessionToken = crypto.randomBytes(32).toString("hex");
+  const frontendUrl = getFrontendUrl();
+
+  const redirectUrl =
+    `${frontendUrl}/payment/phonepe/callback` +
+    `?merchantOrderId=${encodeURIComponent(merchantOrderId)}`;
+
+  const session = await PhonePeCheckoutSession.create({
+    merchantOrderId,
+    sessionType: "PRODUCT",
+    sessionTokenHash: sha256(sessionToken),
+    amountPaise,
+    userId: authenticatedUserId,
+    checkoutData: {
+      orderType: "RETRY",
+      retryOrderId: String(order._id),
+      userId: authenticatedUserId,
+    },
+    status: "PENDING",
+    expiresAt: new Date(Date.now() + 20 * 60 * 1000),
+  });
+
+  try {
+    const payment = await phonepeService.createPayment({
+      merchantOrderId,
+      amount,
+      redirectUrl,
+    });
+
+    const checkoutUrl = getCheckoutUrl(payment);
+
+    if (!checkoutUrl || !/^https:\/\//i.test(checkoutUrl)) {
+      throw new ApiError(502, "PhonePe did not return a valid checkout URL");
+    }
+
+    session.phonePeOrderId = payment?.orderId || null;
+    session.phonePeState = payment?.state || "PENDING";
+    await session.save();
+
+    return res.status(200).json(
+      new ApiResponse(200, "PhonePe retry checkout created", {
+        merchantOrderId,
+        sessionToken,
+        amount,
+        amountPaise,
+        redirectUrl: checkoutUrl,
+        state: session.phonePeState,
+      })
     );
+  } catch (error) {
+    session.status = "FAILED";
+    session.phonePeState = "CREATE_FAILED";
+    await session.save();
+    throw error;
   }
-
-  const result = await createPhonePeCheckout(order);
-
-  return res.status(200).json(
-    new ApiResponse(200, "PhonePe retry checkout created", result)
-  );
 });
 
 module.exports = {
