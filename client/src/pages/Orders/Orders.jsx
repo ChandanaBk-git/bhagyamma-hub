@@ -1035,12 +1035,21 @@ const handleOrderClick = (order) => {
                         </Box>
 
 
-                        <Box sx={{ minWidth: 130 }}>
+                        <Box
+                          sx={{
+                            minWidth: { xs: "100%", sm: 150 },
+                            flex: { xs: "1 1 100%", sm: "0 0 auto" },
+                          }}
+                        >
                           <Typography variant="caption" color="text.secondary">
                             Payment
                           </Typography>
 
-                          <Stack spacing={1} alignItems="flex-start" sx={{ mt: 0.3 }}>
+                          <Stack
+                            spacing={1}
+                            alignItems="flex-start"
+                            sx={{ mt: 0.5, width: "100%" }}
+                          >
                             <Chip
                               size="small"
                               label={String(order.paymentStatus || "PENDING").toUpperCase()}
@@ -1052,18 +1061,22 @@ const handleOrderClick = (order) => {
                               String(order.status || "").toUpperCase() !== "CANCELLED" && (
                                 <Button
                                   variant="contained"
-                                  size="small"
+                                  size="medium"
+                                  fullWidth
                                   onClick={() => handleRetryPayment(order)}
                                   disabled={retryingOrderId === String(order._id || order.orderId)}
                                   sx={{
-                                    minWidth: 112,
-                                    minHeight: 38,
-                                    px: 2,
+                                    width: { xs: "100%", sm: "auto" },
+                                    minWidth: { xs: "100%", sm: 140 },
+                                    minHeight: 44,
+                                    px: 2.5,
                                     borderRadius: 2,
                                     bgcolor: "#5F259F",
                                     color: "#FFFFFF",
                                     fontWeight: 800,
+                                    fontSize: "0.9rem",
                                     textTransform: "none",
+                                    whiteSpace: "nowrap",
                                     boxShadow: "0 3px 8px rgba(95, 37, 159, 0.22)",
                                     "&:hover": { bgcolor: "#4B1C80" },
                                     "&.Mui-disabled": { bgcolor: "#B9A0D3", color: "#FFFFFF" },
@@ -1077,12 +1090,15 @@ const handleOrderClick = (order) => {
                           </Stack>
 
                           {paymentErrors[String(order._id || order.orderId)] && (
-                            <Typography variant="caption" color="error" sx={{ display: "block", mt: 0.75, maxWidth: 220 }}>
+                            <Typography
+                              variant="caption"
+                              color="error"
+                              sx={{ display: "block", mt: 0.75, maxWidth: 260, overflowWrap: "anywhere" }}
+                            >
                               {paymentErrors[String(order._id || order.orderId)]}
                             </Typography>
                           )}
                         </Box>
-
 
                         <Box>
 
