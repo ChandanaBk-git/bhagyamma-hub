@@ -692,17 +692,17 @@ const Checkout = () => {
     }
   };
 
-  // const data = response?.data?.data ?? response?.data;
+//   // const data = response?.data?.data ?? response?.data;
 
-sessionStorage.setItem(
-  "bhagyamma_pending_checkout_session",
-  JSON.stringify({
-    merchantOrderId: data.merchantOrderId,
-    sessionToken: data.sessionToken,
-  })
-);
+// sessionStorage.setItem(
+//   "bhagyamma_pending_checkout_session",
+//   JSON.stringify({
+//     merchantOrderId: data.merchantOrderId,
+//     sessionToken: data.sessionToken,
+//   })
+// );
 
-window.location.assign(data.redirectUrl);
+// window.location.assign(data.redirectUrl);
   /* =======================================================
      BACK TO CART
   ======================================================= */
