@@ -35,6 +35,8 @@ import {
   getGuestOrdersByMobile,
 } from "../../services/order.service";
 
+import { retryPhonePePayment } from "../../services/payment.service";
+
 
 const Orders = () => {
 
@@ -72,6 +74,9 @@ const Orders = () => {
 
   const [error, setError] =
     useState("");
+
+  const [retryingOrderId, setRetryingOrderId] = useState("");
+  const [paymentErrors, setPaymentErrors] = useState({});
 
 
   /* ======================================================
@@ -342,6 +347,35 @@ const getStatusLabel = (status) => {
   /* ======================================================
      ORDER DETAILS
   ====================================================== */
+
+const handleRetryPayment = async (order) => {
+  const orderId = order?._id || order?.orderId;
+
+  if (!orderId) return;
+
+  try {
+    setRetryingOrderId(String(orderId));
+    setPaymentErrors((previous) => ({ ...previous, [String(orderId)]: "" }));
+
+    const payment = await retryPhonePePayment(orderId);
+
+    if (!payment?.redirectUrl) {
+      throw new Error("PhonePe checkout URL was not returned.");
+    }
+
+    window.location.href = payment.redirectUrl;
+  } catch (err) {
+    setPaymentErrors((previous) => ({
+      ...previous,
+      [String(orderId)]:
+        err?.response?.data?.message ||
+        err?.message ||
+        "Unable to start payment. Please try again.",
+    }));
+  } finally {
+    setRetryingOrderId("");
+  }
+};
 
 const handleOrderClick = (order) => {
   if (!order?._id) {
@@ -1001,39 +1035,52 @@ const handleOrderClick = (order) => {
                         </Box>
 
 
-                        <Box>
-
-                          <Typography
-                            variant="caption"
-                            color="text.secondary"
-                          >
+                        <Box sx={{ minWidth: 130 }}>
+                          <Typography variant="caption" color="text.secondary">
                             Payment
                           </Typography>
 
-                          <Box>
-
+                          <Stack spacing={1} alignItems="flex-start" sx={{ mt: 0.3 }}>
                             <Chip
                               size="small"
-                              label={
-                                order.paymentStatus ||
-                                "PENDING"
-                              }
-                              color={
-                                getPaymentColor(
-                                  order.paymentStatus
-                                )
-                              }
-                              sx={{
-                                mt:
-                                  0.3,
-
-                                fontWeight:
-                                  700,
-                              }}
+                              label={String(order.paymentStatus || "PENDING").toUpperCase()}
+                              color={getPaymentColor(order.paymentStatus)}
+                              sx={{ fontWeight: 700 }}
                             />
 
-                          </Box>
+                            {String(order.paymentStatus || "PENDING").toUpperCase() !== "PAID" &&
+                              String(order.status || "").toUpperCase() !== "CANCELLED" && (
+                                <Button
+                                  variant="contained"
+                                  size="small"
+                                  onClick={() => handleRetryPayment(order)}
+                                  disabled={retryingOrderId === String(order._id || order.orderId)}
+                                  sx={{
+                                    minWidth: 112,
+                                    minHeight: 38,
+                                    px: 2,
+                                    borderRadius: 2,
+                                    bgcolor: "#5F259F",
+                                    color: "#FFFFFF",
+                                    fontWeight: 800,
+                                    textTransform: "none",
+                                    boxShadow: "0 3px 8px rgba(95, 37, 159, 0.22)",
+                                    "&:hover": { bgcolor: "#4B1C80" },
+                                    "&.Mui-disabled": { bgcolor: "#B9A0D3", color: "#FFFFFF" },
+                                  }}
+                                >
+                                  {retryingOrderId === String(order._id || order.orderId)
+                                    ? <CircularProgress size={18} color="inherit" />
+                                    : "Pay Now"}
+                                </Button>
+                              )}
+                          </Stack>
 
+                          {paymentErrors[String(order._id || order.orderId)] && (
+                            <Typography variant="caption" color="error" sx={{ display: "block", mt: 0.75, maxWidth: 220 }}>
+                              {paymentErrors[String(order._id || order.orderId)]}
+                            </Typography>
+                          )}
                         </Box>
 
 

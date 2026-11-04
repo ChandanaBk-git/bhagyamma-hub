@@ -608,29 +608,41 @@ const OrderDetails = () => {
                   Payment Status
                 </Typography>
 
-                <Chip
-                  size="small"
-                  label={prettyStatus(paymentStatus)}
-                  color={paymentColor}
-                  sx={{ mt: 0.5, fontWeight: 700 }}
-                />
-
-                {paymentStatus !== "PAID" && !isCancelled && (
-                  <Button
-                    variant="contained"
-                    color="success"
+                <Stack spacing={1} alignItems="flex-start" sx={{ mt: 0.75 }}>
+                  <Chip
                     size="small"
-                    sx={{ mt: 1, display: "block" }}
-                    onClick={handleRetryPayment}
-                    disabled={retryingPayment}
-                  >
-                    {retryingPayment ? (
-                      <CircularProgress size={20} color="inherit" />
-                    ) : (
-                      "Pay Now"
-                    )}
-                  </Button>
-                )}
+                    label={prettyStatus(paymentStatus)}
+                    color={paymentColor}
+                    sx={{ fontWeight: 700 }}
+                  />
+
+                  {paymentStatus !== "PAID" && !isCancelled && (
+                    <Button
+                      variant="contained"
+                      size="medium"
+                      fullWidth
+                      onClick={handleRetryPayment}
+                      disabled={retryingPayment}
+                      sx={{
+                        minWidth: 124,
+                        minHeight: 42,
+                        px: 2.5,
+                        borderRadius: 2,
+                        bgcolor: "#5F259F",
+                        color: "#FFFFFF",
+                        fontWeight: 800,
+                        textTransform: "none",
+                        boxShadow: "0 3px 8px rgba(95, 37, 159, 0.25)",
+                        "&:hover": { bgcolor: "#4B1C80" },
+                        "&.Mui-disabled": { bgcolor: "#B9A0D3", color: "#FFFFFF" },
+                      }}
+                    >
+                      {retryingPayment ? (
+                        <CircularProgress size={20} color="inherit" />
+                      ) : "Pay Now"}
+                    </Button>
+                  )}
+                </Stack>
               </Box>
             </Stack>
 
