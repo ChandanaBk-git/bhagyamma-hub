@@ -1,4 +1,3 @@
-
 import {
   Alert,
   Box,
@@ -18,10 +17,12 @@ import { useEffect, useRef, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import {
   verifyPhonePePayment,
-  verifyGuestPhonePePayment,
   verifyMembershipPhonePePayment,
 } from "../../services/payment.service";
 import { useCart } from "../../context/CartContext";
+
+const PENDING_SESSION_KEY =
+  "bhagyamma_pending_checkout_session";
 
 const PhonePeCallback = () => {
   const navigate = useNavigate();
@@ -35,15 +36,11 @@ const PhonePeCallback = () => {
 
   const isMembership = paymentType === "membership";
 
-  const guestPaymentToken = sessionStorage.getItem(
-    "bhagyamma_guest_payment_token"
-  );
-
   const authToken =
     localStorage.getItem("token") ||
     sessionStorage.getItem("token");
 
-  const isMember = Boolean(authToken) && !guestPaymentToken;
+  const isMember = Boolean(authToken);
 
   const membershipPaymentOrigin =
     sessionStorage.getItem(
@@ -55,8 +52,6 @@ const PhonePeCallback = () => {
   const [error, setError] = useState("");
   const [checkAgain, setCheckAgain] = useState(0);
 
-  // CartContext recreates clearAll on each render.
-  // Keep the latest function without restarting verification.
   const clearAllRef = useRef(clearAll);
 
   useEffect(() => {
@@ -85,31 +80,47 @@ const PhonePeCallback = () => {
         let result;
 
         if (isMembership) {
-          result =
-            await verifyMembershipPhonePePayment(
-              merchantOrderId
-            );
-        } else if (guestPaymentToken) {
-          result =
-            await verifyGuestPhonePePayment(
-              merchantOrderId,
-              guestPaymentToken
-            );
-        } else if (authToken) {
-          result =
-            await verifyPhonePePayment(
-              merchantOrderId
-            );
+          result = await verifyMembershipPhonePePayment(
+            merchantOrderId
+          );
         } else {
-          throw new Error(
-            "Your payment session expired. Please log in and check your payment status."
+          let pendingSession;
+
+          try {
+            pendingSession = JSON.parse(
+              sessionStorage.getItem(PENDING_SESSION_KEY) ||
+                "null"
+            );
+          } catch {
+            pendingSession = null;
+          }
+
+          if (
+            !pendingSession?.merchantOrderId ||
+            !pendingSession?.sessionToken
+          ) {
+            throw new Error(
+              "Your checkout session is missing. Check your order status before trying again."
+            );
+          }
+
+          if (
+            pendingSession.merchantOrderId !== merchantOrderId
+          ) {
+            throw new Error(
+              "The payment reference does not match your checkout session."
+            );
+          }
+
+          result = await verifyPhonePePayment(
+            pendingSession.merchantOrderId,
+            pendingSession.sessionToken
           );
         }
 
         if (cancelled) return;
 
-        // Services normally return response.data.data.
-        // This also safely handles wrapped responses.
+        // payment.service.js returns response.data.data.
         result =
           result?.data?.data ??
           result?.data ??
@@ -126,9 +137,8 @@ const PhonePeCallback = () => {
         ).toUpperCase();
 
         const membershipActive =
-          String(
-            result?.membershipStatus || ""
-          ).toLowerCase() === "active";
+          String(result?.membershipStatus || "").toLowerCase() ===
+          "active";
 
         if (isMembership) {
           if (
@@ -159,15 +169,17 @@ const PhonePeCallback = () => {
             return;
           }
         } else {
-          // Backend marks an order PAID only after PhonePe
-          // confirms COMPLETED and the amount matches.
-          const paymentConfirmed =
-            paymentStatus === "PAID" ||
-            String(
-              result?.order?.paymentStatus || ""
-            ).toUpperCase() === "PAID";
+          const orderPaymentStatus = String(
+            result?.order?.paymentStatus ||
+              result?.paymentStatus ||
+              ""
+          ).toUpperCase();
 
-          if (paymentConfirmed) {
+          if (
+            result?.success === true &&
+            (orderPaymentStatus === "PAID" ||
+              result?.alreadyPaid === true)
+          ) {
             setStatus("SUCCESS");
 
             try {
@@ -179,6 +191,7 @@ const PhonePeCallback = () => {
               );
             }
 
+            sessionStorage.removeItem(PENDING_SESSION_KEY);
             sessionStorage.removeItem(
               "bhagyamma_guest_payment_token"
             );
@@ -236,8 +249,6 @@ const PhonePeCallback = () => {
   }, [
     merchantOrderId,
     isMembership,
-    guestPaymentToken,
-    authToken,
     checkAgain,
   ]);
 
@@ -345,24 +356,20 @@ const PhonePeCallback = () => {
                 overflowWrap: "anywhere",
               }}
             >
-              <Typography
-                color="text.secondary"
-                variant="body2"
-              >
+              <Typography color="text.secondary" variant="body2">
                 Order ID
               </Typography>
               <Typography fontWeight={700} sx={{ mt: 0.5 }}>
-                {details?.orderNumber ||
+                {details?.order?.orderNumber ||
+                  details?.orderNumber ||
+                  details?.order?.orderId ||
                   details?.orderId ||
                   "Order reference unavailable"}
               </Typography>
 
               <Divider sx={{ my: 2 }} />
 
-              <Typography
-                color="text.secondary"
-                variant="body2"
-              >
+              <Typography color="text.secondary" variant="body2">
                 Amount Received
               </Typography>
               <Typography
@@ -371,7 +378,11 @@ const PhonePeCallback = () => {
                 color="success.main"
                 sx={{ mt: 0.5 }}
               >
-                {formatAmount(details?.finalAmount)}
+                {formatAmount(
+                  details?.order?.finalAmount ??
+                    details?.finalAmount ??
+                    details?.amount
+                )}
               </Typography>
             </Box>
 
@@ -381,11 +392,7 @@ const PhonePeCallback = () => {
               fullWidth
               sx={{ mt: 4 }}
               onClick={() =>
-                navigate(
-                  isMember
-                    ? "/member/orders"
-                    : "/orders"
-                )
+                navigate(isMember ? "/member/orders" : "/orders")
               }
             >
               View My Orders
@@ -479,9 +486,7 @@ const PhonePeCallback = () => {
               details?.items?.[0]?.product?._id;
 
             navigate(
-              productId
-                ? `/products/${productId}`
-                : "/products",
+              productId ? `/products/${productId}` : "/products",
               { replace: true }
             );
           }}

@@ -1,55 +1,23 @@
 
 const express = require("express");
-
 const router = express.Router();
 
-const {
-  protect,
-} = require("../middleware/auth.middleware");
+const { protect } = require("../middleware/auth.middleware");
 
 const {
-  createPhonePePayment,
-  verifyPhonePePayment,
-  createGuestPhonePePayment,
-  verifyGuestPhonePePayment,
+  createMemberPhonePeSession,
+  createGuestPhonePeSession,
+  verifyPhonePeSession,
 } = require("../controllers/phonepe.controller");
 
-/* ==========================================
-   MEMBER - Create PhonePe Payment
-========================================== */
+// Authenticated member checkout
+router.post("/session/create", protect, createMemberPhonePeSession);
 
-router.post(
-  "/create",
-  protect,
-  createPhonePePayment
-);
+// Guest checkout
+router.post("/guest/session/create", createGuestPhonePeSession);
 
-/* ==========================================
-   MEMBER - Verify PhonePe Payment
-========================================== */
-
-router.get(
-  "/status/:merchantOrderId",
-  protect,
-  verifyPhonePePayment
-);
-
-/* ==========================================
-   GUEST - Create PhonePe Payment
-========================================== */
-
-router.post(
-  "/guest/create",
-  createGuestPhonePePayment
-);
-
-/* ==========================================
-   GUEST - Verify PhonePe Payment
-========================================== */
-
-router.post(
-  "/guest/status",
-  verifyGuestPhonePePayment
-);
+// Server-side PhonePe status verification
+router.post("/session/status", verifyPhonePeSession);
+router.get("/session/status/:merchantOrderId", verifyPhonePeSession);
 
 module.exports = router;

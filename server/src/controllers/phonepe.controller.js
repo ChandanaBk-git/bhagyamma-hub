@@ -1,467 +1,333 @@
+
 const crypto = require("crypto");
 
 const asyncHandler = require("../utils/asyncHandler");
 const ApiResponse = require("../utils/ApiResponse");
 const ApiError = require("../utils/ApiError");
 
-const orderRepository = require("../repositories/order.repository");
-const cartRepository = require("../repositories/cart.repository");
+const PhonePeCheckoutSession = require("../models/phonePeCheckoutSession.model");
 const phonepeService = require("../services/phonepe.service");
 const orderService = require("../services/order.service");
+const cartRepository = require("../repositories/cart.repository");
 
-/* =====================================================
-   HELPERS
-===================================================== */
+const getUserId = (user) =>
+  user?._id?.toString() || user?.id?.toString() || null;
 
-const getUserId = (user) => {
-  return user?._id?.toString() || user?.id?.toString() || null;
-};
-
-const getOrderUserId = (order) => {
-  const userId = order?.userId?._id || order?.userId;
-  return userId?.toString?.() || null;
-};
-
-const hashGuestToken = (token) => {
-  return crypto
-    .createHash("sha256")
-    .update(String(token))
-    .digest("hex");
-};
-
-const getTransactionId = (paymentStatus) => {
-  return (
-    paymentStatus?.paymentDetails?.find(
-      (payment) => payment?.transactionId
-    )?.transactionId ||
-    paymentStatus?.transactionId ||
-    null
-  );
-};
-
-const getPhonePeOrderId = (paymentStatus) => {
-  return paymentStatus?.orderId || null;
-};
-
-const getCheckoutUrl = (payment) => {
-  return (
-    payment?.redirectUrl ||
-    payment?.redirectURL ||
-    payment?.data?.redirectUrl ||
-    payment?.data?.redirectURL ||
-    null
-  );
-};
+const sha256 = (value) =>
+  crypto.createHash("sha256").update(String(value)).digest("hex");
 
 const getFrontendUrl = () => {
-  const frontendUrl = process.env.PHONEPE_FRONTEND_URL;
+  const value = process.env.PHONEPE_FRONTEND_URL;
 
-  if (!frontendUrl || !/^https?:\/\//i.test(frontendUrl)) {
-    throw new ApiError(
-      500,
-      "PHONEPE_FRONTEND_URL is missing or invalid"
-    );
+  if (!value || !/^https?:\/\//i.test(value)) {
+    throw new ApiError(500, "PHONEPE_FRONTEND_URL is missing or invalid");
   }
 
-  return frontendUrl.replace(/\/+$/, "");
+  return value.replace(/\/+$/, "");
 };
 
-const validateOrderForPayment = (order) => {
-  if (!order) {
-    throw new ApiError(404, "Order not found");
-  }
+const getCheckoutUrl = (payment) =>
+  payment?.redirectUrl ||
+  payment?.redirectURL ||
+  payment?.data?.redirectUrl ||
+  payment?.data?.redirectURL ||
+  null;
 
-  if (order.paymentStatus === "PAID") {
-    throw new ApiError(409, "This order is already paid");
-  }
+const getTransactionId = (status) =>
+  status?.paymentDetails?.find((p) => p?.transactionId)?.transactionId ||
+  status?.transactionId ||
+  null;
 
-  if (order.status === "CANCELLED") {
-    throw new ApiError(
-      400,
-      "Payment cannot be initiated for a cancelled order"
-    );
-  }
+const createSession = async ({
+  userId = null,
+  orderData = {},
+}) => {
+  const quote = await orderService.getPhonePeCheckoutQuote(
+    userId,
+    orderData
+  );
 
-  const amount = Number(order.finalAmount);
-
-  if (!Number.isFinite(amount) || amount <= 0) {
-    throw new ApiError(400, "Invalid order payment amount");
-  }
-
-  return amount;
-};
-
-/* =====================================================
-   CREATE PHONEPE CHECKOUT
-===================================================== */
-
-const createPhonePeCheckout = async (order) => {
-  const amount = validateOrderForPayment(order);
+  const merchantOrderId = `BHPP_${crypto.randomBytes(16).toString("hex")}`;
+  const sessionToken = crypto.randomBytes(32).toString("hex");
   const frontendUrl = getFrontendUrl();
-
-  const merchantOrderId =
-    order.merchantOrderId ||
-    `PP_${order.orderNumber}_${Date.now()}`;
-
-  await orderRepository.updatePaymentDetails(order._id, {
-    merchantOrderId,
-    paymentMethod: "PHONEPE",
-  });
 
   const redirectUrl =
     `${frontendUrl}/payment/phonepe/callback` +
     `?merchantOrderId=${encodeURIComponent(merchantOrderId)}`;
 
-  const payment = await phonepeService.createPayment({
+  const session = await PhonePeCheckoutSession.create({
     merchantOrderId,
-    amount,
-    redirectUrl,
+    sessionType: "PRODUCT",
+    sessionTokenHash: sha256(sessionToken),
+    amountPaise: quote.amountPaise,
+    checkoutData: quote,
+    status: "PENDING",
+    expiresAt: new Date(Date.now() + 20 * 60 * 1000),
   });
 
-  const checkoutUrl = getCheckoutUrl(payment);
+  try {
+    const payment = await phonepeService.createPayment({
+      merchantOrderId,
+      amount: quote.finalAmount,
+      redirectUrl,
+    });
 
-  if (!checkoutUrl || !/^https:\/\//i.test(checkoutUrl)) {
-    throw new ApiError(
-      502,
-      "PhonePe did not return a valid checkout URL"
-    );
+    const checkoutUrl = getCheckoutUrl(payment);
+
+    if (!checkoutUrl || !/^https:\/\//i.test(checkoutUrl)) {
+      throw new ApiError(
+        502,
+        "PhonePe did not return a valid checkout URL"
+      );
+    }
+
+    session.phonePeOrderId = payment?.orderId || null;
+    session.phonePeState = payment?.state || "PENDING";
+    await session.save();
+
+    return {
+      merchantOrderId,
+      sessionToken,
+      amount: quote.finalAmount,
+      amountPaise: quote.amountPaise,
+      redirectUrl: checkoutUrl,
+      state: session.phonePeState,
+    };
+  } catch (error) {
+    session.status = "FAILED";
+    session.phonePeState = "CREATE_FAILED";
+    await session.save();
+    throw error;
   }
-
-  await orderRepository.updatePaymentDetails(order._id, {
-    merchantOrderId,
-    phonePeOrderId: payment?.orderId || null,
-    paymentMethod: "PHONEPE",
-  });
-
-  return {
-    orderId: order._id,
-    orderNumber: order.orderNumber,
-    finalAmount: Number(order.finalAmount),
-    merchantOrderId,
-    phonePeOrderId: payment?.orderId || null,
-    redirectUrl: checkoutUrl,
-    state: payment?.state || "PENDING",
-  };
 };
 
-/* =====================================================
-   MEMBER - CREATE PHONEPE PAYMENT
-===================================================== */
+const createMemberPhonePeSession = asyncHandler(async (req, res) => {
+  const userId = getUserId(req.user);
 
-const createPhonePePayment = asyncHandler(async (req, res) => {
-  const { orderId } = req.body || {};
-
-  if (!orderId) {
-    throw new ApiError(400, "Order ID is required");
+  if (!userId) {
+    throw new ApiError(401, "Authentication required");
   }
 
-  const order = await orderRepository.findById(orderId);
+  const result = await createSession({
+    userId,
+    orderData: req.body || {},
+  });
 
-  if (!order) {
-    throw new ApiError(404, "Order not found");
-  }
-
-  const authenticatedUserId = getUserId(req.user);
-  const orderUserId = getOrderUserId(order);
-
-  if (
-    !authenticatedUserId ||
-    !orderUserId ||
-    authenticatedUserId !== orderUserId
-  ) {
-    throw new ApiError(403, "Unauthorized order");
-  }
-
-  if (order.orderType === "GUEST") {
-    throw new ApiError(
-      403,
-      "Use the guest payment endpoint for guest orders"
-    );
-  }
-
-  const result = await createPhonePeCheckout(order);
-
-  return res.status(200).json(
-    new ApiResponse(200, "PhonePe payment created", result)
+  return res.status(201).json(
+    new ApiResponse(201, "PhonePe checkout session created", result)
   );
 });
 
-/* =====================================================
-   GUEST - CREATE PHONEPE PAYMENT
-===================================================== */
+const createGuestPhonePeSession = asyncHandler(async (req, res) => {
+  const result = await createSession({
+    orderData: req.body || {},
+  });
 
-const createGuestPhonePePayment = asyncHandler(async (req, res) => {
-  const { orderId, guestPaymentToken } = req.body || {};
+  return res.status(201).json(
+    new ApiResponse(201, "Guest PhonePe checkout session created", result)
+  );
+});
 
-  if (!orderId || !guestPaymentToken) {
+const verifyPhonePeSession = asyncHandler(async (req, res) => {
+  const merchantOrderId =
+    req.params.merchantOrderId || req.body?.merchantOrderId;
+
+  const sessionToken = req.body?.sessionToken;
+
+  if (!merchantOrderId || !sessionToken) {
     throw new ApiError(
       400,
-      "Order ID and guest payment token are required"
+      "Merchant order ID and session token are required"
     );
   }
 
-  const tokenHash = hashGuestToken(guestPaymentToken);
+  const session = await PhonePeCheckoutSession.findOne({
+    merchantOrderId,
+  }).select("+sessionTokenHash +registrationData");
 
-  const order =
-    await orderRepository.findGuestOrderByPaymentTokenHash(
-      tokenHash
+  if (!session || session.expiresAt <= new Date()) {
+    throw new ApiError(404, "Checkout session is missing or expired");
+  }
+
+  if (session.sessionTokenHash !== sha256(sessionToken)) {
+    throw new ApiError(403, "Invalid checkout session token");
+  }
+
+  if (session.sessionType !== "PRODUCT") {
+    throw new ApiError(400, "Unsupported checkout session type");
+  }
+
+  if (session.status === "COMPLETED" && session.createdOrderId) {
+    return res.status(200).json(
+      new ApiResponse(200, "Payment already processed", {
+        success: true,
+        paymentStatus: "PAID",
+        orderId: session.createdOrderId,
+      })
     );
-
-  if (!order || String(order._id) !== String(orderId)) {
-    throw new ApiError(
-      403,
-      "Invalid or expired guest payment access"
-    );
   }
 
-  const result = await createPhonePeCheckout(order);
-
-  return res.status(200).json(
-    new ApiResponse(200, "Guest PhonePe payment created", result)
-  );
-});
-
-/* =====================================================
-   COMMON - VERIFY PAYMENT WITH PHONEPE
-===================================================== */
-
-const verifyPaymentWithPhonePe = async (order) => {
-  if (order.paymentStatus === "PAID") {
-    return {
-      success: true,
-      paymentStatus: "PAID",
-      orderId: order._id,
-      orderNumber: order.orderNumber,
-      finalAmount: Number(order.finalAmount || 0),
-      orderStatus: order.status,
-      transactionId: order.phonePeTransactionId || null,
-    };
-  }
-
-  if (!order.merchantOrderId) {
-    throw new ApiError(400, "Merchant order ID is missing");
-  }
-
-  // PhonePe is the authoritative source for payment status.
   const phonePeStatus =
-    await phonepeService.getPaymentStatus(order.merchantOrderId);
+    await phonepeService.getPaymentStatus(merchantOrderId);
 
-    console.log("[PhonePe Verification Debug]", {
-  orderNumber: order.orderNumber,
-  merchantOrderId: order.merchantOrderId,
-  environment: process.env.PHONEPE_ENV,
-  phonePeState: phonePeStatus?.state,
-  phonePeAmountPaise: phonePeStatus?.amount,
-  expectedAmountPaise: Math.round(
-    Number(order.finalAmount) * 100
-  ),
-  phonePeOrderId: phonePeStatus?.orderId,
-  transactionId: getTransactionId(phonePeStatus),
-});
-
-
-  const state = String(
-    phonePeStatus?.state || ""
-  ).toUpperCase();
+  const state = String(phonePeStatus?.state || "").toUpperCase();
 
   if (state === "COMPLETED") {
-    // PhonePe returns the amount in paise.
     const paidAmount = Number(phonePeStatus?.amount);
 
-    const expectedAmountInPaise = Math.round(
-      Number(order.finalAmount) * 100
-    );
-
-    // Require a valid amount and match it against the saved order.
     if (
       !Number.isFinite(paidAmount) ||
-      paidAmount <= 0 ||
-      paidAmount !== expectedAmountInPaise
+      paidAmount !== Number(session.amountPaise)
     ) {
       throw new ApiError(
         409,
-        "PhonePe payment amount is missing or does not match the order amount"
+        "PhonePe payment amount does not match the checkout amount"
       );
     }
 
-    const transactionId = getTransactionId(phonePeStatus);
-    const phonePeOrderId = getPhonePeOrderId(phonePeStatus);
-
-    // Preserve the existing SP and commission processing.
-    const paidOrder = await orderService.updatePaymentStatus(
-      order._id,
-      "PAID",
+    const claimed = await PhonePeCheckoutSession.findOneAndUpdate(
       {
-        phonePeTransactionId: transactionId,
-        phonePeOrderId,
-        paidAt: new Date(),
-      }
+        _id: session._id,
+        status: { $in: ["PENDING", "PROCESSING"] },
+        createdOrderId: null,
+      },
+      {
+        $set: {
+          status: "PROCESSING",
+          phonePeState: state,
+          phonePeTransactionId: getTransactionId(phonePeStatus),
+        },
+      },
+      { new: true }
     );
 
-    if (paidOrder?.paymentStatus !== "PAID") {
+    if (!claimed) {
+      const latest = await PhonePeCheckoutSession.findById(session._id);
+
+      if (latest?.createdOrderId) {
+        return res.status(200).json(
+          new ApiResponse(200, "Payment already processed", {
+            success: true,
+            paymentStatus: "PAID",
+            orderId: latest.createdOrderId,
+          })
+        );
+      }
+
       throw new ApiError(
-        500,
-        "PhonePe confirmed payment, but the order could not be updated"
+        409,
+        "Checkout session is already being processed"
       );
     }
 
-    return {
-      success: true,
-      paymentStatus: "PAID",
-      orderId: paidOrder._id,
-      orderNumber: paidOrder.orderNumber,
-      finalAmount: Number(paidOrder.finalAmount || 0),
-      orderStatus: paidOrder.status,
-      transactionId:
-        paidOrder.phonePeTransactionId || transactionId,
-    };
-  }
+    try {
+      const quote = session.checkoutData || {};
+      let order;
 
-  if (state === "FAILED" || state === "CANCELLED") {
-    await orderRepository.markPaymentFailed(order._id);
+      if (quote.orderType === "GUEST") {
+        order = await orderService.placeGuestOrder({
+          ...quote,
+          items: quote.items,
+          subtotal: quote.subtotal,
+          discount: quote.discount,
+          walletAmount: quote.walletAmount,
+          deliveryCharge: quote.deliveryCharge,
+          paymentMethod: "PHONEPE",
+        });
+      } else {
+        order = await orderService.createOrder(
+          String(quote.userId),
+          {
+            ...quote,
+            paymentMethod: "PHONEPE",
+          }
+        );
+      }
 
-    const latestOrder = await orderRepository.findById(order._id);
+      if (
+        Math.round(Number(order.finalAmount) * 100) !==
+        Number(session.amountPaise)
+      ) {
+        throw new ApiError(
+          409,
+          "Created order amount differs from verified payment amount"
+        );
+      }
 
-    // Do not report failure if another verification succeeded meanwhile.
-    if (latestOrder?.paymentStatus === "PAID") {
-      return {
-        success: true,
-        paymentStatus: "PAID",
-        orderId: latestOrder._id,
-        orderNumber: latestOrder.orderNumber,
-        finalAmount: Number(latestOrder.finalAmount || 0),
-        orderStatus: latestOrder.status,
-        transactionId:
-          latestOrder.phonePeTransactionId || null,
-      };
+      const paidOrder = await orderService.updatePaymentStatus(
+        order._id,
+        "PAID",
+        {
+          phonePeTransactionId: getTransactionId(phonePeStatus),
+          phonePeOrderId:
+            phonePeStatus?.orderId ||
+            session.phonePeOrderId ||
+            null,
+          paidAt: new Date(),
+        }
+      );
+
+      session.status = "COMPLETED";
+      session.phonePeState = state;
+      session.phonePeTransactionId = getTransactionId(phonePeStatus);
+      session.createdOrderId = paidOrder._id;
+      session.completedAt = new Date();
+      await session.save();
+
+      if (quote.orderType === "MEMBER" && quote.userId) {
+        await cartRepository.clearCart(String(quote.userId));
+      }
+
+      return res.status(200).json(
+        new ApiResponse(200, "Payment successful", {
+          success: true,
+          paymentStatus: "PAID",
+          orderId: paidOrder._id,
+          orderNumber: paidOrder.orderNumber,
+          finalAmount: Number(paidOrder.finalAmount || 0),
+          transactionId: paidOrder.phonePeTransactionId || null,
+        })
+      );
+    } catch (error) {
+      // A verified payment must remain recoverable for retry/reconciliation.
+      session.status = "PROCESSING";
+      await session.save();
+      throw error;
     }
+  }
 
-    return {
+  if (
+    state === "FAILED" ||
+    state === "CANCELLED" ||
+    state === "REJECTED"
+  ) {
+    session.status = "FAILED";
+    session.phonePeState = state;
+    await session.save();
+
+    return res.status(200).json(
+      new ApiResponse(200, "Payment was not successful", {
+        success: false,
+        paymentStatus: "FAILED",
+        state,
+      })
+    );
+  }
+
+  session.phonePeState = state || "PENDING";
+  await session.save();
+
+  return res.status(200).json(
+    new ApiResponse(200, "Payment is pending", {
       success: false,
-      paymentStatus: latestOrder?.paymentStatus || "FAILED",
-      state,
-      orderId: latestOrder?._id || order._id,
-      orderNumber: latestOrder?.orderNumber || order.orderNumber,
-      finalAmount: Number(
-        latestOrder?.finalAmount ?? order.finalAmount ?? 0
-      ),
-    };
-  }
-
-  return {
-    success: false,
-    paymentStatus: "PENDING",
-    state: state || "PENDING",
-    orderId: order._id,
-    orderNumber: order.orderNumber,
-    finalAmount: Number(order.finalAmount || 0),
-  };
-};
-
-/* =====================================================
-   MEMBER - VERIFY PHONEPE PAYMENT
-===================================================== */
-
-const verifyPhonePePayment = asyncHandler(async (req, res) => {
-  const { merchantOrderId } = req.params;
-
-  if (!merchantOrderId) {
-    throw new ApiError(400, "Merchant order ID is required");
-  }
-
-  const order =
-    await orderRepository.findByMerchantOrderId(merchantOrderId);
-
-  if (!order) {
-    throw new ApiError(404, "Order not found");
-  }
-
-  const authenticatedUserId = getUserId(req.user);
-  const orderUserId = getOrderUserId(order);
-
-  if (
-    !authenticatedUserId ||
-    !orderUserId ||
-    authenticatedUserId !== orderUserId
-  ) {
-    throw new ApiError(403, "Unauthorized order");
-  }
-
-  if (order.orderType === "GUEST") {
-    throw new ApiError(
-      403,
-      "Use the guest payment verification endpoint"
-    );
-  }
-
-  const result = await verifyPaymentWithPhonePe(order);
-
-  if (result.paymentStatus === "PAID") {
-    await cartRepository.clearCart(authenticatedUserId);
-  }
-
-  return res.status(200).json(
-    new ApiResponse(
-      200,
-      result.success
-        ? "Payment successful"
-        : result.paymentStatus === "PENDING"
-          ? "Payment is still pending"
-          : "Payment was not successful",
-      result
-    )
-  );
-});
-
-/* =====================================================
-   GUEST - VERIFY PHONEPE PAYMENT
-===================================================== */
-
-const verifyGuestPhonePePayment = asyncHandler(async (req, res) => {
-  const { merchantOrderId, guestPaymentToken } = req.body || {};
-
-  if (!merchantOrderId || !guestPaymentToken) {
-    throw new ApiError(
-      400,
-      "Merchant order ID and guest payment token are required"
-    );
-  }
-
-  const tokenHash = hashGuestToken(guestPaymentToken);
-
-  const order =
-    await orderRepository.findGuestOrderByPaymentTokenHash(
-      tokenHash
-    );
-
-  if (
-    !order ||
-    order.merchantOrderId !== merchantOrderId
-  ) {
-    throw new ApiError(
-      403,
-      "Invalid or expired guest payment access"
-    );
-  }
-
-  const result = await verifyPaymentWithPhonePe(order);
-
-  return res.status(200).json(
-    new ApiResponse(
-      200,
-      result.success
-        ? "Payment successful"
-        : result.paymentStatus === "PENDING"
-          ? "Payment is still pending"
-          : "Payment was not successful",
-      result
-    )
+      paymentStatus: "PENDING",
+      state: state || "PENDING",
+    })
   );
 });
 
 module.exports = {
-  createPhonePePayment,
-  verifyPhonePePayment,
-  createGuestPhonePePayment,
-  verifyGuestPhonePePayment,
+  createMemberPhonePeSession,
+  createGuestPhonePeSession,
+  verifyPhonePeSession,
 };

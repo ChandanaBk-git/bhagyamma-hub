@@ -322,6 +322,139 @@ const purchaseAmount =
 };
 
 
+
+/* ==========================================================================
+   GET TRUSTED PHONEPE CHECKOUT QUOTE
+   Calculates pricing without creating an Order.
+   ========================================================================== */
+
+const getPhonePeCheckoutQuote = async (
+    userId,
+    orderData = {}
+) => {
+    const isGuest = !userId;
+
+    let items = [];
+    let subtotal = 0;
+    let discount = 0;
+    let walletAmount = 0;
+    let deliveryCharge = 0;
+
+    if (!isGuest) {
+        const cart = await cartService.getCart(userId);
+
+        if (!cart || !Array.isArray(cart.items) || cart.items.length === 0) {
+            throw new Error("Cart not found or empty");
+        }
+
+        const buyer = await User.findById(userId).lean();
+
+        if (!buyer) {
+            throw new Error("User not found");
+        }
+
+        items = cart.items;
+        subtotal = Number(cart.totalAmount || 0);
+
+        const isActiveMember =
+            String(buyer.membershipStatus || "")
+                .trim()
+                .toLowerCase() === "active";
+
+        discount = isActiveMember
+            ? Math.round(subtotal * 20) / 100
+            : 0;
+
+        walletAmount = Number(cart.walletAmount || 0);
+        deliveryCharge = 50;
+    } else {
+        const guestItems = Array.isArray(orderData.items)
+            ? orderData.items
+            : [];
+
+        if (guestItems.length === 0) {
+            throw new Error("Guest cart is empty");
+        }
+
+        // Never trust product prices supplied by the browser.
+        for (const item of guestItems) {
+            const productId =
+                item.productId?._id ||
+                item.productId ||
+                item._id;
+
+            const quantity = Number(item.quantity || 0);
+
+            if (!productId || !Number.isInteger(quantity) || quantity < 1) {
+                throw new Error("Invalid guest cart item");
+            }
+
+            const product = await Product.findById(productId).lean();
+
+            if (!product) {
+                throw new Error("A product in your cart no longer exists");
+            }
+
+            const price = Number(product.price || 0);
+
+            if (!Number.isFinite(price) || price < 0) {
+                throw new Error("Invalid product price");
+            }
+
+            subtotal += price * quantity;
+
+            items.push({
+                productId: product._id,
+                quantity,
+                price,
+            });
+        }
+
+        discount = 0;
+        walletAmount = 0;
+        deliveryCharge = 50;
+    }
+
+    if (
+        !Number.isFinite(subtotal) ||
+        !Number.isFinite(discount) ||
+        !Number.isFinite(walletAmount) ||
+        !Number.isFinite(deliveryCharge) ||
+        walletAmount < 0 ||
+        discount < 0 ||
+        deliveryCharge < 0 ||
+        walletAmount > subtotal - discount
+    ) {
+        throw new Error("Invalid checkout pricing");
+    }
+
+    const finalAmount = Math.max(
+        0,
+        subtotal - discount - walletAmount + deliveryCharge
+    );
+
+    if (!Number.isFinite(finalAmount) || finalAmount <= 0) {
+        throw new Error("Invalid checkout payment amount");
+    }
+
+    return {
+        userId: userId || null,
+        orderType: isGuest ? "GUEST" : "MEMBER",
+        items,
+        subtotal,
+        discount,
+        walletAmount,
+        deliveryCharge,
+        finalAmount,
+        amountPaise: Math.round(finalAmount * 100),
+        customerName: String(orderData.customerName || "").trim(),
+        customerMobile: String(orderData.customerMobile || "").trim(),
+        customerEmail: String(orderData.customerEmail || "").trim(),
+        deliveryDetails: orderData.deliveryDetails || {},
+        paymentMethod: "PHONEPE",
+    };
+};
+
 /* ==========================================================================
    CREATE ORDER
    ========================================================================== */
@@ -4355,4 +4488,5 @@ module.exports = {
     deleteOrder,
     getManagerOrders,
     getOrderStats,
+    getPhonePeCheckoutQuote,
 };

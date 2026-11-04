@@ -530,15 +530,17 @@ const Checkout = () => {
     return "";
   };
 
-
   /* =======================================================
-     PLACE ORDER AND START PHONEPE PAYMENT
+     CREATE PHONEPE CHECKOUT SESSION
+     NO ORDER IS CREATED BEFORE PAYMENT VERIFICATION
+  ======================================================= */
+  /* =======================================================
+     CREATE PHONEPE CHECKOUT SESSION
+     NO ORDER IS CREATED BEFORE PAYMENT VERIFICATION
   ======================================================= */
 
   const handlePlaceOrder = async () => {
-    if (placingOrder) {
-      return;
-    }
+    if (placingOrder) return;
 
     setError("");
     setSuccess("");
@@ -547,7 +549,6 @@ const Checkout = () => {
       setError(
         "Your cart is empty. Please add products before checkout."
       );
-
       return;
     }
 
@@ -555,7 +556,6 @@ const Checkout = () => {
       setError(
         "Unable to calculate the cart amount. Please return to the cart and try again."
       );
-
       return;
     }
 
@@ -569,99 +569,27 @@ const Checkout = () => {
     try {
       setPlacingOrder(true);
 
-      /* ===================================================
-         NORMALIZED CUSTOMER DATA
-      =================================================== */
-
       const customerName = form.name.trim();
-
-      const customerMobile = form.mobile.replace(
-        /\D/g,
-        ""
-      );
-
-      const customerEmail = form.email
-        .trim()
-        .toLowerCase();
-
+      const customerMobile = form.mobile.replace(/\D/g, "");
+      const customerEmail = form.email.trim().toLowerCase();
       const customerAddress = form.address.trim();
       const customerCity = form.city.trim();
       const customerState = form.state.trim();
+      const customerPincode = form.pincode.replace(/\D/g, "");
 
-      const customerPincode = form.pincode.replace(
-        /\D/g,
-        ""
-      );
-
-
-      /* ===================================================
-         SAVE CART SNAPSHOT
-         DO NOT CLEAR CART BEFORE PAYMENT VERIFICATION
-      =================================================== */
-
-      const cartSnapshot = {
-        items: items.map((item) => ({
-          productId:
-            item?.product?._id ||
-            item?.productId?._id ||
-            item?.productId ||
-            item?._id,
-
-          productName: getProductName(item),
-
-          price: getProductPrice(item),
-
-          quantity: getQuantity(item),
-        })),
-
-        subtotal,
-        discount,
-        productPayable,
-        deliveryCharge,
-        finalAmount,
-      };
-
-      sessionStorage.setItem(
-        "bhagyamma_pending_cart",
-        JSON.stringify(cartSnapshot)
-      );
-
-
-      /* ===================================================
-         ORDER ITEMS
-      =================================================== */
-
-      const orderItems = items.map((item) => ({
-        productId:
-          item?.product?._id ||
-          item?.productId?._id ||
-          item?.productId ||
-          item?._id,
-
-        quantity: getQuantity(item),
-      }));
-
-
-      /* ===================================================
-         ORDER PAYLOAD
-      =================================================== */
-
-      const orderPayload = {
+      const checkoutData = {
         name: customerName,
         mobile: customerMobile,
         email: customerEmail,
-        address: customerAddress,
-        city: customerCity,
-        state: customerState,
-        pincode: customerPincode,
 
         customerName,
         customerMobile,
         customerEmail,
 
-        paymentMethod: "PHONEPE",
-
-        items: orderItems,
+        address: customerAddress,
+        city: customerCity,
+        state: customerState,
+        pincode: customerPincode,
 
         deliveryDetails: {
           name: customerName,
@@ -672,192 +600,56 @@ const Checkout = () => {
           pincode: customerPincode,
         },
 
-        subtotal,
-        discount,
-        deliveryCharge,
-        finalAmount,
+        items: items.map((item) => ({
+          productId:
+            item?.product?._id ||
+            item?.productId?._id ||
+            item?.productId ||
+            item?._id,
+          quantity: getQuantity(item),
+        })),
+
+        paymentMethod: "PHONEPE",
       };
 
-
-      /* ===================================================
-         CREATE ORDER
-      =================================================== */
-
-      console.log("CREATING ORDER", orderPayload);
-
-      const response = await createOrder(orderPayload);
-
-      console.log("CREATE ORDER RESPONSE:", response);
-
-      const order =
-        response?.data?.data ||
-        response?.data ||
-        response;
-
-      if (!order) {
-        throw new Error(
-          "Order was created but order details were not returned."
-        );
-      }
-
-      const orderId = order?._id || order?.id;
-
-      if (!orderId) {
-        throw new Error(
-          "Order ID was not returned by the server."
-        );
-      }
-
-
-      /* ===================================================
-         SERVER ORDER AMOUNTS
-      =================================================== */
-
-      const orderNumber = order?.orderNumber || "";
-
-      const serverSubtotal =
-        getNumber(order?.subtotal) || subtotal;
-
-      const serverDiscount =
-        order?.discount !== undefined &&
-        order?.discount !== null
-          ? getNumber(order.discount)
-          : discount;
-
-      const serverDelivery =
-        getNumber(order?.deliveryCharge) > 0
-          ? getNumber(order.deliveryCharge)
-          : deliveryCharge;
-
-      const serverProductPayable = Math.max(
-        0,
-        serverSubtotal - serverDiscount
-      );
-
-      let serverFinalAmount = getNumber(
-        order?.finalAmount
-      );
-
-      if (serverFinalAmount <= 0) {
-        serverFinalAmount =
-          serverProductPayable + serverDelivery;
-      }
-
-      const expectedAmount =
-        serverProductPayable + serverDelivery;
-
-      if (
-        Math.abs(
-          serverFinalAmount - expectedAmount
-        ) > 0.01
-      ) {
-        serverFinalAmount = expectedAmount;
-      }
-
-
-      /* ===================================================
-         PAYMENT DATA
-         NO SELLING POINTS ARE MODIFIED HERE
-      =================================================== */
-
-      const paymentData = {
-        orderId,
-        orderNumber,
-
-        subtotal: serverSubtotal,
-        discount: serverDiscount,
-        productPayable: serverProductPayable,
-        deliveryCharge: serverDelivery,
-        finalAmount: serverFinalAmount,
-        amount: serverFinalAmount,
-
-        paymentMethod:
-          order?.paymentMethod || "PHONEPE",
-
-        customerName:
-          order?.customerName ||
-          order?.name ||
-          customerName,
-
-        customerMobile:
-          order?.customerMobile ||
-          order?.mobile ||
-          customerMobile,
-
-        customerEmail:
-          order?.customerEmail ||
-          order?.email ||
-          customerEmail,
-      };
-
-      console.log(
-        "PHONEPE PAYMENT DATA:",
-        paymentData
-      );
-
-
-      /* ===================================================
-         SAVE PENDING PAYMENT SUMMARY
-      =================================================== */
-
+      // Save temporary checkout details only.
+      // Do not create an order or clear the cart here.
       sessionStorage.setItem(
-        "bhagyamma_pending_payment",
-        JSON.stringify(paymentData)
+        "bhagyamma_pending_checkout",
+        JSON.stringify(checkoutData)
       );
 
-      setSuccess(
-        "Preparing secure PhonePe payment..."
-      );
-
-
-      /* ===================================================
-         MEMBER OR GUEST PHONEPE CHECKOUT
-      =================================================== */
+      setSuccess("Preparing secure PhonePe payment...");
 
       const authToken =
         localStorage.getItem("token") ||
         sessionStorage.getItem("token");
 
-      let paymentResponse;
-
-      if (authToken) {
-        paymentResponse =
-          await createPhonePePayment(orderId);
-      } else {
-        const guestPaymentToken =
-          order?.guestPaymentToken;
-
-        if (!guestPaymentToken) {
-          throw new Error(
-            "The guest payment access token was not returned. Your order may have been created; please contact support before creating another order."
-          );
-        }
-
-        sessionStorage.setItem(
-          "bhagyamma_guest_payment_token",
-          guestPaymentToken
-        );
-
-        paymentResponse =
-          await createGuestPhonePePayment(
-            orderId,
-            guestPaymentToken
-          );
-      }
-
-
-      /* ===================================================
-         PHONEPE REDIRECT URL
-      =================================================== */
+      const paymentResponse = authToken
+        ? await createPhonePePayment(checkoutData)
+        : await createGuestPhonePePayment(checkoutData);
 
       const paymentResult =
         paymentResponse?.data?.data ||
         paymentResponse?.data ||
         paymentResponse;
 
+      const merchantOrderId =
+        paymentResult?.merchantOrderId;
+
+      const sessionToken =
+        paymentResult?.sessionToken;
+
       const redirectUrl =
         paymentResult?.redirectUrl ||
-        paymentResult?.redirectURL;
+        paymentResult?.redirectURL ||
+        paymentResult?.data?.redirectUrl;
+
+      if (!merchantOrderId || !sessionToken) {
+        throw new Error(
+          "PhonePe did not return the checkout session credentials. Please try again."
+        );
+      }
 
       if (
         !redirectUrl ||
@@ -868,12 +660,19 @@ const Checkout = () => {
         );
       }
 
-      // Cart remains intact until payment is verified.
-      window.location.assign(redirectUrl);
+      // The callback uses these values to verify payment.
+      sessionStorage.setItem(
+        "bhagyamma_pending_checkout_session",
+        JSON.stringify({
+          merchantOrderId,
+          sessionToken,
+        })
+      );
 
+      window.location.assign(redirectUrl);
     } catch (err) {
       console.error(
-        "PHONEPE CHECKOUT ERROR:",
+        "PHONEPE CHECKOUT SESSION ERROR:",
         err
       );
 
@@ -882,20 +681,28 @@ const Checkout = () => {
         err?.response?.data
       );
 
-      const message =
+      setError(
         err?.response?.data?.message ||
-        err?.response?.data?.error ||
-        err?.message ||
-        "Unable to initiate payment. Please try again.";
-
-      setError(message);
-
+          err?.response?.data?.error ||
+          err?.message ||
+          "Unable to initiate payment. Please try again."
+      );
     } finally {
       setPlacingOrder(false);
     }
   };
 
+  // const data = response?.data?.data ?? response?.data;
 
+sessionStorage.setItem(
+  "bhagyamma_pending_checkout_session",
+  JSON.stringify({
+    merchantOrderId: data.merchantOrderId,
+    sessionToken: data.sessionToken,
+  })
+);
+
+window.location.assign(data.redirectUrl);
   /* =======================================================
      BACK TO CART
   ======================================================= */

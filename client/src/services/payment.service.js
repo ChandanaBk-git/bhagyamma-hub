@@ -2,137 +2,133 @@
 import api from "../api";
 
 // =====================================================
-// MEMBER - CREATE PHONEPE PAYMENT
+// MEMBER - CREATE PHONEPE CHECKOUT SESSION
 // =====================================================
 
-export const createPhonePePayment = async (orderId) => {
-  if (!orderId) {
-    throw new Error("Order ID is required.");
+export const createPhonePePayment = async (checkoutData) => {
+  if (!checkoutData || typeof checkoutData !== "object") {
+    throw new Error("Checkout details are required.");
   }
 
   try {
     const response = await api.post(
-      "/payment/phonepe/create",
-      { orderId }
+      "/payment/phonepe/session/create",
+      checkoutData
     );
 
     const data = response?.data?.data;
 
-    if (!data?.redirectUrl) {
+    if (
+      !data?.redirectUrl ||
+      !data?.merchantOrderId ||
+      !data?.sessionToken
+    ) {
       throw new Error(
-        "PhonePe checkout URL was not returned by the server."
+        "PhonePe checkout session details were not returned."
       );
     }
 
     return data;
   } catch (error) {
     console.error(
-      "CREATE PHONEPE PAYMENT ERROR:",
+      "CREATE PHONEPE SESSION ERROR:",
       error?.response?.data || error
     );
-
     throw error;
   }
 };
 
 // =====================================================
-// MEMBER - VERIFY PHONEPE PAYMENT
+// MEMBER - VERIFY PHONEPE CHECKOUT SESSION
 // =====================================================
 
-export const verifyPhonePePayment = async (merchantOrderId) => {
-  if (!merchantOrderId) {
-    throw new Error("Merchant Order ID is required.");
+export const verifyPhonePePayment = async (
+  merchantOrderId,
+  sessionToken
+) => {
+  if (!merchantOrderId || !sessionToken) {
+    throw new Error(
+      "Merchant Order ID and session token are required."
+    );
   }
 
   try {
-    const response = await api.get(
-      `/payment/phonepe/status/${encodeURIComponent(
-        merchantOrderId
-      )}`
+    const response = await api.post(
+      "/payment/phonepe/session/status",
+      { merchantOrderId, sessionToken }
     );
 
     const data = response?.data?.data;
 
     if (!data) {
-      throw new Error(
-        "Invalid payment verification response."
-      );
+      throw new Error("Invalid payment verification response.");
     }
 
     return data;
   } catch (error) {
     console.error(
-      "VERIFY PHONEPE PAYMENT ERROR:",
+      "VERIFY PHONEPE SESSION ERROR:",
       error?.response?.data || error
     );
-
     throw error;
   }
 };
 
 // =====================================================
-// GUEST - CREATE PHONEPE PAYMENT
+// GUEST - CREATE PHONEPE CHECKOUT SESSION
 // =====================================================
 
-export const createGuestPhonePePayment = async (
-  orderId,
-  guestPaymentToken
-) => {
-  if (!orderId || !guestPaymentToken) {
-    throw new Error(
-      "Order ID and guest payment token are required."
-    );
+export const createGuestPhonePePayment = async (checkoutData) => {
+  if (!checkoutData || typeof checkoutData !== "object") {
+    throw new Error("Guest checkout details are required.");
   }
 
   try {
     const response = await api.post(
-      "/payment/phonepe/guest/create",
-      {
-        orderId,
-        guestPaymentToken,
-      }
+      "/payment/phonepe/guest/session/create",
+      checkoutData
     );
 
     const data = response?.data?.data;
 
-    if (!data?.redirectUrl || !data?.merchantOrderId) {
+    if (
+      !data?.redirectUrl ||
+      !data?.merchantOrderId ||
+      !data?.sessionToken
+    ) {
       throw new Error(
-        "PhonePe guest checkout details were not returned."
+        "PhonePe guest checkout session details were not returned."
       );
     }
 
     return data;
   } catch (error) {
     console.error(
-      "CREATE GUEST PHONEPE PAYMENT ERROR:",
+      "CREATE GUEST PHONEPE SESSION ERROR:",
       error?.response?.data || error
     );
-
     throw error;
   }
 };
 
 // =====================================================
-// GUEST - VERIFY PHONEPE PAYMENT
+// GUEST - VERIFY PHONEPE CHECKOUT SESSION
 // =====================================================
 
 export const verifyGuestPhonePePayment = async (
   merchantOrderId,
-  guestPaymentToken
+  sessionToken
 ) => {
-  if (!merchantOrderId || !guestPaymentToken) {
+  if (!merchantOrderId || !sessionToken) {
     throw new Error(
-      "Merchant Order ID and guest payment token are required."
+      "Merchant Order ID and session token are required."
     );
   }
 
   try {
     const response = await api.post(
-      "/payment/phonepe/guest/status",
-      {
-        merchantOrderId,
-        guestPaymentToken,
-      }
+      "/payment/phonepe/session/status",
+      { merchantOrderId, sessionToken }
     );
 
     const data = response?.data?.data;
@@ -146,17 +142,17 @@ export const verifyGuestPhonePePayment = async (
     return data;
   } catch (error) {
     console.error(
-      "VERIFY GUEST PHONEPE PAYMENT ERROR:",
+      "VERIFY GUEST PHONEPE SESSION ERROR:",
       error?.response?.data || error
     );
-
     throw error;
   }
 };
 
-/* =====================================================
-   MEMBERSHIP - CREATE PHONEPE PAYMENT
-===================================================== */
+// =====================================================
+// MEMBERSHIP - CREATE PHONEPE PAYMENT
+// Existing membership flow preserved.
+// =====================================================
 
 export const createMembershipPhonePePayment = async () => {
   try {
@@ -178,14 +174,14 @@ export const createMembershipPhonePePayment = async () => {
       "CREATE MEMBERSHIP PAYMENT ERROR:",
       error?.response?.data || error
     );
-
     throw error;
   }
 };
 
-/* =====================================================
-   MEMBERSHIP - VERIFY PHONEPE PAYMENT
-===================================================== */
+// =====================================================
+// MEMBERSHIP - VERIFY PHONEPE PAYMENT
+// Existing membership flow preserved.
+// =====================================================
 
 export const verifyMembershipPhonePePayment = async (
   merchantOrderId
@@ -215,7 +211,6 @@ export const verifyMembershipPhonePePayment = async (
       "VERIFY MEMBERSHIP PAYMENT ERROR:",
       error?.response?.data || error
     );
-
     throw error;
   }
 };
