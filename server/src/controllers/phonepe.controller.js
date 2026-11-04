@@ -1,4 +1,3 @@
-
 const crypto = require("crypto");
 
 const asyncHandler = require("../utils/asyncHandler");
@@ -38,6 +37,10 @@ const getTransactionId = (status) =>
   status?.transactionId ||
   null;
 
+/**
+ * Create a PhonePe checkout session.
+ * This creates a checkout session only—not a product order.
+ */
 const createSession = async ({
   userId = null,
   orderData = {},
@@ -128,6 +131,13 @@ const createGuestPhonePeSession = asyncHandler(async (req, res) => {
   );
 });
 
+/**
+ * Verify the PhonePe payment.
+ *
+ * IMPORTANT:
+ * A product order is created only after PhonePe returns COMPLETED
+ * and the verified amount matches the saved checkout amount.
+ */
 const verifyPhonePeSession = asyncHandler(async (req, res) => {
   const merchantOrderId =
     req.params.merchantOrderId || req.body?.merchantOrderId;
@@ -157,6 +167,7 @@ const verifyPhonePeSession = asyncHandler(async (req, res) => {
     throw new ApiError(400, "Unsupported checkout session type");
   }
 
+  // Idempotency: do not create a second order for an already-completed session.
   if (session.status === "COMPLETED" && session.createdOrderId) {
     return res.status(200).json(
       new ApiResponse(200, "Payment already processed", {
@@ -172,6 +183,9 @@ const verifyPhonePeSession = asyncHandler(async (req, res) => {
 
   const state = String(phonePeStatus?.state || "").toUpperCase();
 
+  // ---------------------------------------------------------
+  // PAYMENT SUCCESS
+  // ---------------------------------------------------------
   if (state === "COMPLETED") {
     const paidAmount = Number(phonePeStatus?.amount);
 
@@ -188,7 +202,7 @@ const verifyPhonePeSession = asyncHandler(async (req, res) => {
     const claimed = await PhonePeCheckoutSession.findOneAndUpdate(
       {
         _id: session._id,
-        status: { $in: ["PENDING", "PROCESSING"] },
+        status: { $in: ["PENDING", "PROCESSING", "FAILED"] },
         createdOrderId: null,
       },
       {
@@ -289,13 +303,16 @@ const verifyPhonePeSession = asyncHandler(async (req, res) => {
         })
       );
     } catch (error) {
-      // A verified payment must remain recoverable for retry/reconciliation.
+      // Keep verified payments recoverable for reconciliation.
       session.status = "PROCESSING";
       await session.save();
       throw error;
     }
   }
 
+  // ---------------------------------------------------------
+  // PAYMENT FAILED / CANCELLED / REJECTED
+  // ---------------------------------------------------------
   if (
     state === "FAILED" ||
     state === "CANCELLED" ||
@@ -305,15 +322,21 @@ const verifyPhonePeSession = asyncHandler(async (req, res) => {
     session.phonePeState = state;
     await session.save();
 
+    // Keep the checkout session so the customer can retry payment.
+    // No product order is created in this branch.
     return res.status(200).json(
       new ApiResponse(200, "Payment was not successful", {
         success: false,
         paymentStatus: "FAILED",
         state,
+        merchantOrderId: session.merchantOrderId,
       })
     );
   }
 
+  // ---------------------------------------------------------
+  // PAYMENT PENDING
+  // ---------------------------------------------------------
   session.phonePeState = state || "PENDING";
   await session.save();
 
@@ -322,7 +345,50 @@ const verifyPhonePeSession = asyncHandler(async (req, res) => {
       success: false,
       paymentStatus: "PENDING",
       state: state || "PENDING",
+      merchantOrderId: session.merchantOrderId,
     })
+  );
+});
+
+/* =====================================================
+   MEMBER - RETRY PHONEPE PAYMENT FOR EXISTING ORDER
+===================================================== */
+
+const retryPhonePePayment = asyncHandler(async (req, res) => {
+  const { orderId } = req.params;
+
+  if (!orderId) {
+    throw new ApiError(400, "Order ID is required");
+  }
+
+  const order = await orderRepository.findById(orderId);
+
+  if (!order) {
+    throw new ApiError(404, "Order not found");
+  }
+
+  const authenticatedUserId = getUserId(req.user);
+  const orderUserId = getOrderUserId(order);
+
+  if (
+    !authenticatedUserId ||
+    !orderUserId ||
+    authenticatedUserId !== orderUserId
+  ) {
+    throw new ApiError(403, "Unauthorized order");
+  }
+
+  if (order.orderType === "GUEST") {
+    throw new ApiError(
+      403,
+      "Guest orders must use the guest payment flow"
+    );
+  }
+
+  const result = await createPhonePeCheckout(order);
+
+  return res.status(200).json(
+    new ApiResponse(200, "PhonePe retry checkout created", result)
   );
 });
 
@@ -330,4 +396,5 @@ module.exports = {
   createMemberPhonePeSession,
   createGuestPhonePeSession,
   verifyPhonePeSession,
+  retryPhonePePayment,
 };

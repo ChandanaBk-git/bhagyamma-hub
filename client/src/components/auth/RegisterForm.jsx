@@ -34,7 +34,6 @@ import {
 } from "react-router-dom";
 
 import { register } from "../../services/auth.service";
-import { createMembershipPhonePePayment } from "../../services/payment.service";
 
 // =====================================================
 // TEMPORARY REGISTRATION FORM STORAGE
@@ -154,8 +153,6 @@ const RegisterForm = () => {
   const [success, setSuccess] =
     useState("");
 
-  const [registrationCreatedPaymentFailed, setRegistrationCreatedPaymentFailed] =
-    useState(false);
 
   // =====================================================
   // RESTORE FORM WHEN RETURNING FROM PAYMENT SCANNER
@@ -192,19 +189,6 @@ const RegisterForm = () => {
       );
     }
   }, [location.key]);
-
-  // Handle a failed membership payment callback. The account was already
-  // created before checkout, so prevent a second registration attempt.
-  useEffect(() => {
-    if (location.state?.membershipPaymentFailed) {
-      setRegistrationCreatedPaymentFailed(true);
-      setError(
-        location.state.message ||
-          "Membership payment failed. Your account has been created, but your membership is not active. Please log in and try again later."
-      );
-      navigate(location.pathname, { replace: true, state: null });
-    }
-  }, [location.key, location.pathname, location.state, navigate]);
 
   // =====================================================
   // HANDLE INPUT
@@ -362,66 +346,14 @@ const RegisterForm = () => {
         referralCode: formData.referralCode.trim().toUpperCase(),
       };
 
-      // auth.service.js returns response.data from Axios.
-      // The backend ApiResponse puts registration data in `data`.
-      const response = await register(payload);
-      const result = response?.data || response;
-
-      const token = result?.token || result?.accessToken;
-      const user = result?.user;
-
-      if (!token) {
-        throw new Error(
-          "Registration was received, but the server did not return an access token. Please contact support before trying again."
-        );
-      }
-
-      // Save authentication before calling the protected payment API.
-      localStorage.setItem("token", token);
-      if (user) {
-        localStorage.setItem("user", JSON.stringify(user));
-      }
+      await register(payload);
 
       sessionStorage.removeItem(REGISTRATION_STORAGE_KEY);
-
-      // Some recovered guest-order accounts may already be active.
-      const membershipStatus = String(
-        result?.guestOrderRecovery?.membershipStatus || user?.membershipStatus || "Pending"
-      ).toLowerCase();
-
-      if (membershipStatus === "active") {
-        setSuccess("Registration successful. Your membership is already active.");
-        navigate("/login", { replace: true });
-        return;
-      }
-
-      // Create the ₹2,000 membership payment and redirect to PhonePe.
-      // If checkout creation fails, the account remains pending and can
-      // retry payment later from the member profile.
-      try {
-sessionStorage.setItem("bhagyamma_membership_payment_origin", "registration");
-
-const payment = await createMembershipPhonePePayment();
-
-
-        if (!payment?.redirectUrl || !payment?.merchantOrderId) {
-          throw new Error("PhonePe did not return valid checkout details.");
-        }
-
-        sessionStorage.setItem(
-          "bhagyamma_pending_membership_payment",
-          payment.merchantOrderId
-        );
-
-        window.location.assign(payment.redirectUrl);
-      } catch (paymentError) {
-        console.error("MEMBERSHIP PAYMENT CREATION ERROR:", paymentError);
-        setError(
-          paymentError?.response?.data?.message ||
-          paymentError?.message ||
-          "Your account was created, but membership payment could not be started. Please log in and retry from your profile."
-        );
-      }
+      setSuccess("Account created successfully. Please log in to continue.");
+      navigate("/login", {
+        replace: true,
+        state: { registrationSuccess: true },
+      });
     } catch (err) {
       console.error("REGISTRATION ERROR:", err);
       setError(
@@ -635,9 +567,7 @@ const payment = await createMembershipPhonePePayment();
           {/* =================================================
               REGISTRATION FORM
           ================================================= */}
-
-          {!registrationCreatedPaymentFailed && (
-            <Box
+          <Box
               component={motion.form}
               variants={contentVariants}
               initial="hidden"
@@ -955,33 +885,13 @@ const payment = await createMembershipPhonePePayment();
                       color="inherit"
                     />
                   ) : (
-                    "Register & Pay ₹2,000"
+                    "Create Account"
                   )}
                 </Button>
               </Grid>
 
             </Grid>
             </Box>
-          )}
-
-          {registrationCreatedPaymentFailed && (
-            <Stack spacing={2} alignItems="center">
-              <Typography color="text.secondary" textAlign="center">
-                Your account has been created. Membership is still pending because the payment did not complete.
-                Log in to your account and retry the membership payment from your Profile.
-              </Typography>
-              <Button
-                component={Link}
-                to="/login"
-                variant="contained"
-                color="success"
-                fullWidth
-                sx={{ borderRadius: 0, py: 1.4, textTransform: "none", fontWeight: 700 }}
-              >
-                Go to Login
-              </Button>
-            </Stack>
-          )}
 
           {/* LOGIN */}
 

@@ -11,6 +11,7 @@ import {
   Stack,
   Typography,
   LinearProgress,
+  CircularProgress,
 } from "@mui/material";
 
 import {
@@ -37,6 +38,8 @@ import {
   getOrderById,
   getGuestOrdersByMobile,
 } from "../../services/order.service";
+
+import { retryPhonePePayment } from "../../services/payment.service";
 
 const REFRESH_INTERVAL_MS = 15000;
 
@@ -241,6 +244,8 @@ const OrderDetails = () => {
   const [order, setOrder] = useState(initialOrder);
   const [loading, setLoading] = useState(!initialOrder);
   const [refreshError, setRefreshError] = useState("");
+  const [retryingPayment, setRetryingPayment] = useState(false);
+  const [paymentRetryError, setPaymentRetryError] = useState("");
 
   const token =
     typeof window !== "undefined"
@@ -381,6 +386,36 @@ const OrderDetails = () => {
   );
 
   const isCancelled = normalizedOrderStatus === "CANCELLED";
+
+  const handleRetryPayment = async () => {
+    const currentOrderId = order?._id || order?.orderId;
+
+    if (!currentOrderId) {
+      setPaymentRetryError("Order ID is missing.");
+      return;
+    }
+
+    try {
+      setRetryingPayment(true);
+      setPaymentRetryError("");
+
+      const payment = await retryPhonePePayment(currentOrderId);
+
+      if (!payment?.redirectUrl) {
+        throw new Error("PhonePe checkout URL was not returned.");
+      }
+
+      window.location.href = payment.redirectUrl;
+    } catch (error) {
+      setPaymentRetryError(
+        error?.response?.data?.message ||
+          error?.message ||
+          "Unable to start payment. Please try again."
+      );
+    } finally {
+      setRetryingPayment(false);
+    }
+  };
 
   // =====================================================
   // LOADING STATE
@@ -579,8 +614,31 @@ const OrderDetails = () => {
                   color={paymentColor}
                   sx={{ mt: 0.5, fontWeight: 700 }}
                 />
+
+                {paymentStatus !== "PAID" && !isCancelled && (
+                  <Button
+                    variant="contained"
+                    color="success"
+                    size="small"
+                    sx={{ mt: 1, display: "block" }}
+                    onClick={handleRetryPayment}
+                    disabled={retryingPayment}
+                  >
+                    {retryingPayment ? (
+                      <CircularProgress size={20} color="inherit" />
+                    ) : (
+                      "Pay Now"
+                    )}
+                  </Button>
+                )}
               </Box>
             </Stack>
+
+            {paymentRetryError && (
+              <Alert severity="error" sx={{ mt: 2 }}>
+                {paymentRetryError}
+              </Alert>
+            )}
 
             {/* DELIVERY DETAILS */}
             {(customerName ||

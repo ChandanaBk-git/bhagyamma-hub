@@ -148,6 +148,7 @@ const Profile = () => {
   // Active, suspended, missing, or any other status will not show it.
   const membershipStatus = normalizeStatus(user?.membershipStatus);
   const showMembershipPayment = membershipStatus === "pending";
+  const membershipIsActive = membershipStatus === "active";
 
   // =====================================================
   // OPEN EDIT
@@ -370,6 +371,38 @@ const Profile = () => {
       </Box>
 
       {/* =================================================
+          MEMBERSHIP STATUS
+      ================================================= */}
+
+      {membershipIsActive && (
+        <Box
+          sx={{
+            width: "100%",
+            px: { xs: 1.5, sm: 2 },
+            py: 1,
+            boxSizing: "border-box",
+          }}
+        >
+          <Box
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              gap: 1,
+              border: "1px solid #C8E6C9",
+              backgroundColor: "#F1F8E9",
+              px: 1.5,
+              py: 1,
+            }}
+          >
+            <Chip label="✓" color="success" size="small" />
+            <Typography fontWeight={700} fontSize="13px" color="success.dark">
+              Membership Activated
+            </Typography>
+          </Box>
+        </Box>
+      )}
+
+      {/* =================================================
           MEMBERSHIP REGISTRATION PAYMENT
           Visible ONLY when membershipStatus is Pending.
       ================================================= */}
@@ -444,8 +477,12 @@ const Profile = () => {
                   <Typography
                     color="text.secondary"
                     fontSize="11px"
+                    mt={0.75}
+                    sx={{ lineHeight: 1.5 }}
                   >
-                    One-time membership activation fee
+                    Disclaimer: Pay the one-time ₹2,000 registration amount to
+                    activate your membership. After successful payment, 40 SP
+                    will be credited to your account.
                   </Typography>
                 </Box>
 

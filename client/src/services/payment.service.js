@@ -39,6 +39,37 @@ export const createPhonePePayment = async (checkoutData) => {
 };
 
 // =====================================================
+// RETRY PHONEPE PAYMENT FOR AN EXISTING MEMBER ORDER
+// =====================================================
+
+export const retryPhonePePayment = async (orderId) => {
+  if (!orderId) {
+    throw new Error("Order ID is required.");
+  }
+
+  try {
+    const response = await api.post(
+      `/payment/phonepe/orders/${encodeURIComponent(orderId)}/retry`
+    );
+
+    const data = response?.data?.data;
+
+    if (!data?.redirectUrl || !data?.merchantOrderId) {
+      throw new Error(
+        "PhonePe retry checkout details were not returned."
+      );
+    }
+
+    return data;
+  } catch (error) {
+    console.error(
+      "RETRY PHONEPE PAYMENT ERROR:",
+      error?.response?.data || error
+    );
+    throw error;
+  }
+};
+// =====================================================
 // MEMBER - VERIFY PHONEPE CHECKOUT SESSION
 // =====================================================
 
