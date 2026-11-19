@@ -38,6 +38,7 @@ import Cart from "../pages/Cart/Cart";
 import Checkout from "../pages/Checkout/Checkout";
 import Orders from "../pages/Orders/Orders";
 import OrderDetails from "../pages/Orders/OrderDetails";
+import DeleteAccount from "../pages/DeleteAccount";
 
 // =====================================================
 // PRODUCT
@@ -194,6 +195,11 @@ const AppRoutes = () => {
           path="/contact"
           element={<Contact />}
         />
+
+        <Route
+  path="/delete-account"
+  element={<DeleteAccount />}
+/>
 
         <Route
           path="/products"
