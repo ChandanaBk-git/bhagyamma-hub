@@ -125,7 +125,7 @@ const otherMenu = [
 {
   title: "Delete Account",
   icon: <DeleteOutlineRounded />,
-  path: "/member/settings",
+  path: "/member/delete-account",
 },
 ];
 

@@ -401,6 +401,10 @@ const AppRoutes = () => {
             path="settings"
             element={<MemberSettings />}
           />
+          <Route
+  path="delete-account"
+  element={<MemberSettings />}
+/>
 
           <Route
             path="cart"
