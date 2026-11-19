@@ -290,6 +290,10 @@ membershipActivationMethod: {
             type: Boolean,
             default: true,
         },
+        deletedAt: {
+            type: Date,
+            default: null,
+        },
         isKycVerified: {
             type: Boolean,
             default: false,

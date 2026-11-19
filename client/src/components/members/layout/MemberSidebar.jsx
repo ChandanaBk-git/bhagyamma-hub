@@ -10,6 +10,7 @@ import {
   ListItemText,
   Tooltip,
 } from "@mui/material";
+import { DeleteOutlineRounded } from "@mui/icons-material";
 
 import {
   HomeRounded,
@@ -23,6 +24,7 @@ import {
   AccountBalanceWalletRounded,
   PaymentsRounded,
   CardGiftcardRounded,
+  SettingsRounded,
   LogoutRounded,
 } from "@mui/icons-material";
 
@@ -120,6 +122,11 @@ const otherMenu = [
     icon: <CardGiftcardRounded />,
     path: "/member/welcome-kit",
   },
+{
+  title: "Delete Account",
+  icon: <DeleteOutlineRounded />,
+  path: "/member/settings",
+},
 ];
 
 

@@ -23,6 +23,13 @@ router.get(
 // Logged In User
 // ======================================
 
+// Delete own account (MEMBER only; password confirmation required)
+router.delete(
+  "/me",
+  protect,
+  controller.deleteMyAccount
+);
+
 // My Profile
 router.get(
   "/me",

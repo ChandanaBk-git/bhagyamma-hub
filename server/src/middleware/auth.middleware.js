@@ -1,12 +1,13 @@
 
 const jwt = require("jsonwebtoken");
 const ApiError = require("../utils/ApiError");
+const User = require("../models/user.model");
 
 // =====================================
 // AUTHENTICATION MIDDLEWARE
 // =====================================
 
-const protect = (req, res, next) => {
+const protect = async (req, res, next) => {
     const authHeader = req.headers.authorization;
 
     // Check Authorization header
@@ -47,7 +48,15 @@ const protect = (req, res, next) => {
             );
         }
 
-        // Attach authenticated user
+        // Reject deleted/deactivated member JWTs, including tokens still present
+        // on another device. Packaging staff use their separate identity model.
+        if (!decoded.packagingStaffId) {
+            const account = await User.findById(decoded.id).select("isActive role");
+            if (!account || account.isActive === false) {
+                return next(new ApiError(401, "This account is inactive or has been deleted"));
+            }
+        }
+
         req.user = {
             id: decoded.id,
             userId: decoded.userId || decoded.id,

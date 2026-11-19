@@ -128,3 +128,15 @@ export const resetPassword = async (data) => {
 
   return response.data;
 };
+
+// =====================================================
+// DELETE CURRENT MEMBER ACCOUNT
+// =====================================================
+
+export const deleteMyAccount = async (password) => {
+  const response = await axios.delete("/users/me", {
+    data: { password },
+  });
+
+  return response.data;
+};

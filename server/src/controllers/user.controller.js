@@ -48,6 +48,17 @@ const updateMyProfile = asyncHandler(async (req, res) => {
     );
 });
 
+const deleteMyAccount = asyncHandler(async (req, res) => {
+    const result = await userService.deleteMyMemberAccount(
+        req.user.id,
+        req.body?.password
+    );
+
+    res.status(200).json(
+        new ApiResponse(200, "Your member account has been deleted", result)
+    );
+});
+
 const deleteUser = asyncHandler(async (req, res) => {
 
     const user = await userService.deleteUser(req.params.id);
@@ -159,6 +170,7 @@ module.exports = {
     updateUser,
     updateMyProfile,
     deleteUser,
+    deleteMyAccount,
     getUserStats,
     getMyProfile,
 

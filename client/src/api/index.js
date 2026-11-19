@@ -1,12 +1,17 @@
+
 import axios from "axios";
 
+// Automatically detect the frontend hostname
+const hostname = window.location.hostname;
+
 const baseURL = import.meta.env.DEV
-  ? "http://localhost:5000/api/v1"
-  : import.meta.env.VITE_API_URL || "https://bhagyamma-hub.onrender.com/api/v1";
+  ? `http://${hostname}:5000/api/v1`
+  : import.meta.env.VITE_API_URL ||
+    "https://bhagyamma-hub.onrender.com/api/v1";
 
 const API = axios.create({
   baseURL,
-  timeout: 15000,
+  timeout: 20000,
 });
 
 API.interceptors.request.use(
@@ -19,9 +24,7 @@ API.interceptors.request.use(
 
     return config;
   },
-  (error) => {
-    return Promise.reject(error);
-  }
+  (error) => Promise.reject(error)
 );
 
 API.interceptors.response.use(

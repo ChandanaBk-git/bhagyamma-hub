@@ -20,14 +20,53 @@ const kycRoutes = require("./routes/kyc.routes");
 
 app.use(helmet());
 
+
+const allowedOrigins = [
+    ...(process.env.CLIENT_URL || "")
+        .split(",")
+        .map(url => url.trim())
+        .filter(Boolean),
+
+    "http://localhost:5173",
+    "http://127.0.0.1:5173",
+    "http://192.168.31.127:5173",
+];
+
 app.use(
     cors({
-        origin: process.env.CLIENT_URL
-            ? process.env.CLIENT_URL.split(",").map(url => url.trim())
-            : true,
+        origin: (origin, callback) => {
+            // Allow requests without an Origin header
+            // such as server-to-server requests
+            if (!origin) {
+                return callback(null, true);
+            }
+
+            if (allowedOrigins.includes(origin)) {
+                return callback(null, true);
+            }
+
+            console.error("CORS blocked origin:", origin);
+
+            return callback(
+                new Error("Origin not allowed by CORS")
+            );
+        },
         credentials: true,
+        methods: [
+            "GET",
+            "POST",
+            "PUT",
+            "PATCH",
+            "DELETE",
+            "OPTIONS",
+        ],
+        allowedHeaders: [
+            "Content-Type",
+            "Authorization",
+        ],
     })
 );
+
 
 app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ extended: true }));
@@ -116,7 +155,9 @@ app.use("/api/v1/admin", adminRoutes);
 
 app.use("/api/v1/manager", managerRoutes);
 
+// User API — support singular and plural paths
 app.use("/api/v1/user", userRoutes);
+app.use("/api/v1/users", userRoutes);
 
 app.use("/api/v1/wallet", walletRoutes);
 

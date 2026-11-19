@@ -5,6 +5,11 @@ const commissionRepository = require("../repositories/commission.repository");
 const sellingPointService = require("./sellingPoint.service");
 const orderRepository = require("../repositories/order.repository");
 const referralRepository = require("../repositories/referral.repository");
+const User = require("../models/user.model");
+const Cart = require("../models/cart.model");
+const PhonePeCheckoutSession = require("../models/phonePeCheckoutSession.model");
+const bcrypt = require("bcryptjs");
+const crypto = require("crypto");
 
 // =====================================================
 // GET ALL USERS
@@ -200,6 +205,88 @@ const deleteUser = async (id) => {
 };
 
 // =====================================================
+// MEMBER SELF-SERVICE ACCOUNT DELETION
+// =====================================================
+
+const deleteMyMemberAccount = async (userId, currentPassword) => {
+    if (!currentPassword || typeof currentPassword !== "string") {
+        throw new ApiError(400, "Enter your current password to delete the account");
+    }
+
+    // Load the password explicitly because the schema hides it by default.
+    const user = await User.findById(userId).select("+password role isActive");
+
+    if (!user || !user.isActive) {
+        throw new ApiError(404, "Active account not found");
+    }
+
+    // This endpoint is strictly for MEMBER accounts. Supervisors/admins/managers
+    // must use their designated account-management process.
+    if (user.role !== "MEMBER") {
+        throw new ApiError(403, "Only member accounts can be deleted here");
+    }
+
+    const passwordMatches = await user.comparePassword(currentPassword);
+    if (!passwordMatches) {
+        throw new ApiError(401, "Current password is incorrect");
+    }
+
+    const deletedAt = new Date();
+    const id = String(user._id);
+    const replacementPassword = crypto.randomBytes(48).toString("hex");
+    const passwordHash = await bcrypt.hash(replacementPassword, 10);
+
+    // Preserve financial, order, commission, referral and SP records for
+    // accounting/audit purposes. Remove the member's directly identifying data.
+    await User.findByIdAndUpdate(user._id, {
+        $set: {
+            name: "Deleted Member",
+            email: `deleted-${id}@deleted.invalid`,
+            mobile: `deleted-${id}`,
+            password: passwordHash,
+            referralCode: `DELETED-${id}`,
+            gender: null,
+            dateOfBirth: null,
+            address: "",
+            city: "",
+            state: "",
+            pincode: "",
+            country: "",
+            aadhaarNumber: "",
+            panNumber: "",
+            bankName: "",
+            accountHolderName: "",
+            accountNumber: "",
+            ifscCode: "",
+            branch: "",
+            adminNotes: "",
+            aadhaarDocument: { fileName: "", filePath: "", uploadedAt: null },
+            panDocument: { fileName: "", filePath: "", uploadedAt: null },
+            bankPassbookDocument: { fileName: "", filePath: "", uploadedAt: null },
+            isActive: false,
+            deletedAt,
+            passwordChangedAt: deletedAt,
+            otp: undefined,
+            otpExpires: undefined,
+            otpPurpose: undefined,
+            passwordResetToken: undefined,
+            passwordResetExpires: undefined,
+        },
+    }, { new: true, runValidators: true });
+
+    // Cart is disposable; completed checkout/order and financial records are not.
+    await Cart.deleteOne({ userId: user._id });
+
+    // Stop only unfinished checkouts. Completed payment records are retained.
+    await PhonePeCheckoutSession.updateMany(
+        { userId: user._id, status: { $in: ["PENDING", "PROCESSING"] } },
+        { $set: { status: "EXPIRED", checkoutData: null, registrationData: null } }
+    );
+
+    return { deleted: true, deletedAt };
+};
+
+// =====================================================
 // USER STATISTICS
 // =====================================================
 
@@ -366,6 +453,7 @@ module.exports = {
     updateUser,
     updateMyProfile,
     deleteUser,
+    deleteMyMemberAccount,
     getUserStats,
     getMyNetwork,
     getReferralTree,
