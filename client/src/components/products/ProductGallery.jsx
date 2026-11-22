@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 
 import {
   Box,
-  Grid,
   Paper,
   Typography,
 } from "@mui/material";
@@ -29,11 +28,7 @@ const ProductGallery = ({ images = [] }) => {
       <Paper
         elevation={0}
         sx={{
-          height: {
-            xs: 280,
-            sm: 350,
-            md: 420,
-          },
+          height: { xs: 220, sm: 270, md: 300 },
           display: "flex",
           justifyContent: "center",
           alignItems: "center",
@@ -45,10 +40,7 @@ const ProductGallery = ({ images = [] }) => {
         <Typography
           sx={{
             color: "#888",
-            fontSize: {
-              xs: "0.65rem",
-              sm: "0.75rem",
-            },
+            fontSize: { xs: "0.7rem", sm: "0.78rem" },
           }}
         >
           No Image Available
@@ -58,20 +50,77 @@ const ProductGallery = ({ images = [] }) => {
   }
 
   return (
-    <Box sx={{ width: "100%" }}>
-      {/* =================================================
-          MAIN IMAGE
-      ================================================= */}
+    <Box
+      sx={{
+        width: "100%",
+        display: "flex",
+        flexDirection: { xs: "column-reverse", sm: "row" },
+        gap: 1,
+      }}
+    >
+      {/* VERTICAL / HORIZONTAL THUMBNAIL STRIP */}
+      {images.length > 1 && (
+        <Box
+          sx={{
+            display: "flex",
+            flexDirection: { xs: "row", sm: "column" },
+            gap: 0.75,
+            overflowX: { xs: "auto", sm: "visible" },
+            overflowY: { xs: "visible", sm: "auto" },
+            maxHeight: { sm: 280, md: 310 },
+            flexShrink: 0,
+          }}
+        >
+          {images.map((image, index) => {
+            const imageUrl = getImageUrl(image);
+            const isSelected = selectedImage === imageUrl;
 
+            return (
+              <Paper
+                key={index}
+                elevation={0}
+                onClick={() => setSelectedImage(imageUrl)}
+                sx={{
+                  width: { xs: 48, sm: 54 },
+                  height: { xs: 48, sm: 54 },
+                  flexShrink: 0,
+                  borderRadius: 0,
+                  overflow: "hidden",
+                  cursor: "pointer",
+                  border: isSelected
+                    ? "2px solid #1B5E20"
+                    : "1px solid #DDE3DE",
+                  bgcolor: "#F7F8F7",
+                  transition: "border-color 0.2s ease",
+                  "&:hover": {
+                    borderColor: "#2E7D32",
+                  },
+                }}
+              >
+                <Box
+                  component="img"
+                  src={imageUrl}
+                  alt={`Product ${index + 1}`}
+                  sx={{
+                    width: "100%",
+                    height: "100%",
+                    objectFit: "contain",
+                    p: 0.4,
+                  }}
+                />
+              </Paper>
+            );
+          })}
+        </Box>
+      )}
+
+      {/* MAIN IMAGE */}
       <Paper
         elevation={0}
         sx={{
-          width: "100%",
-          height: {
-            xs: 280,
-            sm: 350,
-            md: 420,
-          },
+          flex: 1,
+          minWidth: 0,
+          height: { xs: 220, sm: 280, md: 310 },
           borderRadius: 0,
           overflow: "hidden",
           border: "1px solid #E1E6E2",
@@ -89,92 +138,10 @@ const ProductGallery = ({ images = [] }) => {
             width: "100%",
             height: "100%",
             objectFit: "contain",
-            p: {
-              xs: 1.5,
-              sm: 2,
-              md: 2.5,
-            },
+            p: { xs: 1, sm: 1.5 },
           }}
         />
       </Paper>
-
-      {/* =================================================
-          THUMBNAILS
-      ================================================= */}
-
-      <Grid
-        container
-        spacing={{
-          xs: 0.8,
-          sm: 1,
-        }}
-        sx={{
-          mt: {
-            xs: 1,
-            sm: 1.5,
-          },
-        }}
-      >
-        {images.map((image, index) => {
-          const imageUrl = getImageUrl(image);
-          const isSelected =
-            selectedImage === imageUrl;
-
-          return (
-            <Grid
-              item
-              xs={3}
-              sm={2}
-              md={2}
-              key={index}
-            >
-              <Paper
-                elevation={0}
-                sx={{
-                  width: "100%",
-                  height: {
-                    xs: 62,
-                    sm: 72,
-                    md: 80,
-                  },
-
-                  borderRadius: 0,
-                  overflow: "hidden",
-                  cursor: "pointer",
-
-                  border: isSelected
-                    ? "2px solid #1B5E20"
-                    : "1px solid #DDE3DE",
-
-                  bgcolor: "#F7F8F7",
-
-                  transition:
-                    "border-color 0.2s ease",
-
-                  "&:hover": {
-                    borderColor: "#2E7D32",
-                  },
-                }}
-                onClick={() =>
-                  setSelectedImage(imageUrl)
-                }
-              >
-                <Box
-                  component="img"
-                  src={imageUrl}
-                  alt={`Product ${index + 1}`}
-                  sx={{
-                    width: "100%",
-                    height: "100%",
-                    objectFit: "contain",
-                    p: 0.5,
-                  }}
-                />
-              </Paper>
-            </Grid>
-          );
-        })}
-      </Grid>
     </Box>
   );
 };

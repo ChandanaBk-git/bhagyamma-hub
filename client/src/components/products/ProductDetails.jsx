@@ -25,7 +25,7 @@ import {
 } from "../../services/product.service";
 
 const ProductDetails = () => {
-const { id: slugOrId } = useParams();
+  const { id: slugOrId } = useParams();
 
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -41,11 +41,11 @@ const { id: slugOrId } = useParams();
         setLoading(true);
         setError("");
 
-const isMongoId = /^[a-f\d]{24}$/i.test(slugOrId);
+        const isMongoId = /^[a-f\d]{24}$/i.test(slugOrId);
 
-const data = isMongoId
-  ? await getProductById(slugOrId)
-  : await getProductBySlug(slugOrId);
+        const data = isMongoId
+          ? await getProductById(slugOrId)
+          : await getProductBySlug(slugOrId);
 
         setProduct(data);
       } catch (err) {
@@ -62,7 +62,7 @@ const data = isMongoId
     };
 
     loadProduct();
-}, [slugOrId]);
+  }, [slugOrId]);
 
   // =====================================================
   // LOADING
@@ -72,7 +72,7 @@ const data = isMongoId
     return (
       <Box
         sx={{
-          minHeight: "50vh",
+          minHeight: "40vh",
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
@@ -81,17 +81,8 @@ const data = isMongoId
           bgcolor: "#F8FAF8",
         }}
       >
-        <CircularProgress
-          color="success"
-          size={30}
-        />
-
-        <Typography
-          color="text.secondary"
-          sx={{
-            fontSize: "0.7rem",
-          }}
-        >
+        <CircularProgress color="success" size={26} />
+        <Typography color="text.secondary" sx={{ fontSize: "0.75rem" }}>
           Loading product...
         </Typography>
       </Box>
@@ -106,7 +97,7 @@ const data = isMongoId
     return (
       <Box
         sx={{
-          minHeight: "50vh",
+          minHeight: "40vh",
           bgcolor: "#F8FAF8",
           display: "flex",
           alignItems: "center",
@@ -117,12 +108,7 @@ const data = isMongoId
         <Typography
           align="center"
           color="error"
-          sx={{
-            fontSize: {
-              xs: "0.7rem",
-              sm: "0.8rem",
-            },
-          }}
+          sx={{ fontSize: { xs: "0.75rem", sm: "0.85rem" } }}
         >
           {error}
         </Typography>
@@ -138,7 +124,7 @@ const data = isMongoId
     return (
       <Box
         sx={{
-          minHeight: "50vh",
+          minHeight: "40vh",
           bgcolor: "#F8FAF8",
           display: "flex",
           alignItems: "center",
@@ -147,12 +133,7 @@ const data = isMongoId
       >
         <Typography
           color="text.secondary"
-          sx={{
-            fontSize: {
-              xs: "0.7rem",
-              sm: "0.8rem",
-            },
-          }}
+          sx={{ fontSize: { xs: "0.75rem", sm: "0.85rem" } }}
         >
           Product Not Found
         </Typography>
@@ -168,40 +149,25 @@ const data = isMongoId
     <Box
       sx={{
         width: "100%",
-        minHeight: "100vh",
         bgcolor: "#F8FAF8",
+        pb: { xs: 2.5, sm: 3.5 },
       }}
     >
       <Container
-        maxWidth="xl"
+        maxWidth="lg"
         sx={{
-          px: {
-            xs: 1.5,
-            sm: 2,
-            md: 3,
-          },
-
-          py: {
-            xs: 2,
-            sm: 3,
-            md: 4,
-          },
+          px: { xs: 1.5, sm: 2.5 },
+          pt: { xs: 1.5, sm: 2 },
         }}
       >
-        {/* =================================================
-            BREADCRUMBS
-        ================================================= */}
-
+        {/* BREADCRUMBS */}
         <Breadcrumbs
           sx={{
-            mb: {
-              xs: 1.5,
-              sm: 2,
-            },
-
+            mb: 1.25,
             "& .MuiBreadcrumbs-separator": {
-              fontSize: "0.65rem",
+              fontSize: "0.7rem",
               color: "#999",
+              mx: 0.6,
             },
           }}
         >
@@ -210,12 +176,7 @@ const data = isMongoId
             underline="hover"
             color="inherit"
             to="/"
-            sx={{
-              fontSize: {
-                xs: "0.55rem",
-                sm: "0.65rem",
-              },
-            }}
+            sx={{ fontSize: { xs: "0.68rem", sm: "0.74rem" } }}
           >
             Home
           </Link>
@@ -225,12 +186,7 @@ const data = isMongoId
             underline="hover"
             color="inherit"
             to="/products"
-            sx={{
-              fontSize: {
-                xs: "0.55rem",
-                sm: "0.65rem",
-              },
-            }}
+            sx={{ fontSize: { xs: "0.68rem", sm: "0.74rem" } }}
           >
             Products
           </Link>
@@ -238,17 +194,11 @@ const data = isMongoId
           <Typography
             color="text.primary"
             sx={{
-              maxWidth: {
-                xs: 150,
-                sm: 300,
-              },
+              maxWidth: { xs: 160, sm: 320 },
               overflow: "hidden",
               textOverflow: "ellipsis",
               whiteSpace: "nowrap",
-              fontSize: {
-                xs: "0.55rem",
-                sm: "0.65rem",
-              },
+              fontSize: { xs: "0.68rem", sm: "0.74rem" },
               fontWeight: 600,
             }}
           >
@@ -256,62 +206,34 @@ const data = isMongoId
           </Typography>
         </Breadcrumbs>
 
-        {/* =================================================
-            PRODUCT SECTION
-        ================================================= */}
-
-        <Grid
-          container
-          spacing={{
-            xs: 2,
-            sm: 3,
-            md: 4,
-          }}
-          alignItems="flex-start"
-        >
-          {/* PRODUCT GALLERY */}
-
-          <Grid
-            size={{
-              xs: 12,
-              md: 6,
-            }}
-          >
-            <ProductGallery
-              images={product.images}
-            />
-          </Grid>
-
-          {/* PRODUCT INFORMATION */}
-
-          <Grid
-            size={{
-              xs: 12,
-              md: 6,
-            }}
-          >
-            <ProductInfo
-              product={product}
-            />
-          </Grid>
-        </Grid>
-
-        {/* =================================================
-            PRODUCT TABS
-        ================================================= */}
-
+        {/* COMPACT PRODUCT CARD */}
         <Box
           sx={{
-            mt: {
-              xs: 3,
-              sm: 4,
-              md: 5,
-            },
+            bgcolor: "#FFFFFF",
+            border: "1px solid #E1E6E2",
+            p: { xs: 1.5, sm: 2, md: 2.5 },
           }}
         >
-          <ProductTabs
-            product={product}
-          />
+          <Grid
+            container
+            spacing={{ xs: 2, sm: 2.5, md: 3 }}
+            alignItems="flex-start"
+          >
+            {/* PRODUCT GALLERY */}
+            <Grid size={{ xs: 12, md: 5 }}>
+              <ProductGallery images={product.images} />
+            </Grid>
+
+            {/* PRODUCT INFORMATION */}
+            <Grid size={{ xs: 12, md: 7 }}>
+              <ProductInfo product={product} />
+            </Grid>
+          </Grid>
+        </Box>
+
+        {/* PRODUCT TABS */}
+        <Box sx={{ mt: { xs: 1.5, sm: 2 } }}>
+          <ProductTabs product={product} />
         </Box>
       </Container>
     </Box>

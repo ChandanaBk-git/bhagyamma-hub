@@ -15,20 +15,13 @@ import {
 
 import {
   ArrowForward,
-  Inventory2Outlined,
   Phone,
   Search,
   ShoppingBag,
 } from "@mui/icons-material";
 
-import {
-  useEffect,
-  useState,
-} from "react";
-
-import {
-  useNavigate,
-} from "react-router-dom";
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 import {
   getMyOrders,
@@ -37,1166 +30,514 @@ import {
 
 import { retryPhonePePayment } from "../../services/payment.service";
 
-
 const Orders = () => {
-
-  const navigate =
-    useNavigate();
-
-
-  /* ======================================================
-     AUTHENTICATION
-  ====================================================== */
+  const navigate = useNavigate();
 
   const token =
     localStorage.getItem("token") ||
     sessionStorage.getItem("token");
 
-  const isLoggedIn =
-    Boolean(token);
+  const isLoggedIn = Boolean(token);
 
-
-  /* ======================================================
-     STATE
-  ====================================================== */
-
-  const [mobile, setMobile] =
-    useState("");
-
-  const [orders, setOrders] =
-    useState([]);
-
-  const [loading, setLoading] =
-    useState(false);
-
-  const [searched, setSearched] =
-    useState(false);
-
-  const [error, setError] =
-    useState("");
-
+  const [mobile, setMobile] = useState("");
+  const [orders, setOrders] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [searched, setSearched] = useState(false);
+  const [error, setError] = useState("");
   const [retryingOrderId, setRetryingOrderId] = useState("");
   const [paymentErrors, setPaymentErrors] = useState({});
 
-
-  /* ======================================================
-     LOGGED-IN MEMBER
-     
-     Fetch automatically.
-  ====================================================== */
-
   useEffect(() => {
+    if (!isLoggedIn) return;
+    loadMemberOrders();
+  }, [isLoggedIn]);
 
-    if (!isLoggedIn) {
+  const loadMemberOrders = async () => {
+    try {
+      setLoading(true);
+      setError("");
+      const result = await getMyOrders();
+      setOrders(Array.isArray(result) ? result : []);
+      setSearched(true);
+    } catch (err) {
+      console.error("Member orders error:", err);
+      setError(
+        err?.response?.data?.message ||
+          err?.message ||
+          "Unable to load your orders."
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleGuestSearch = async () => {
+    const normalizedMobile = mobile.replace(/\D/g, "");
+
+    if (
+      normalizedMobile.length !== 10 ||
+      !/^[6-9]\d{9}$/.test(normalizedMobile)
+    ) {
+      setError("Please enter a valid 10-digit mobile number.");
       return;
     }
 
-    loadMemberOrders();
+    try {
+      setLoading(true);
+      setError("");
+      setSearched(true);
 
-  }, [
-    isLoggedIn,
-  ]);
-
-
-  /* ======================================================
-     LOAD MEMBER ORDERS
-  ====================================================== */
-
-  const loadMemberOrders =
-    async () => {
-
-      try {
-
-        setLoading(true);
-
-        setError("");
-
-        const result =
-          await getMyOrders();
-
-
-        setOrders(
-          Array.isArray(result)
-            ? result
-            : []
-        );
-
-        setSearched(true);
-
-      } catch (err) {
-
-        console.error(
-          "Member orders error:",
-          err
-        );
-
-        setError(
-          err?.response?.data?.message ||
-          err?.message ||
-          "Unable to load your orders."
-        );
-
-      } finally {
-
-        setLoading(false);
-
-      }
-
-    };
-
-
-  /* ======================================================
-     GUEST SEARCH
-  ====================================================== */
-
-  const handleGuestSearch =
-    async () => {
-
-      const normalizedMobile =
-        mobile.replace(
-          /\D/g,
-          ""
-        );
-
-
-      if (
-        normalizedMobile.length !==
-        10 ||
-        !/^[6-9]\d{9}$/.test(
-          normalizedMobile
-        )
-      ) {
-
-        setError(
-          "Please enter a valid 10-digit mobile number."
-        );
-
-        return;
-      }
-
-
-      try {
-
-        setLoading(true);
-
-        setError("");
-
-        setSearched(true);
-
-
-        const result =
-          await getGuestOrdersByMobile(
-            normalizedMobile
-          );
-
-
-        setOrders(
-          Array.isArray(result)
-            ? result
-            : []
-        );
-
-
-      } catch (err) {
-
-        console.error(
-          "Guest orders error:",
-          err
-        );
-
-        setOrders([]);
-
-        setError(
-          err?.response?.data?.message ||
+      const result = await getGuestOrdersByMobile(normalizedMobile);
+      setOrders(Array.isArray(result) ? result : []);
+    } catch (err) {
+      console.error("Guest orders error:", err);
+      setOrders([]);
+      setError(
+        err?.response?.data?.message ||
           err?.message ||
           "Unable to find orders for this mobile number."
-        );
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
 
-      } finally {
-
-        setLoading(false);
-
-      }
-
-    };
-
-
-  /* ======================================================
-     FORMAT DATE
-  ====================================================== */
-
-  const formatDate =
-    (date) => {
-
-      if (!date) {
-        return "-";
-      }
-
-      try {
-
-        return new Date(
-          date
-        ).toLocaleDateString(
-          "en-IN",
-          {
-            day: "2-digit",
-            month: "short",
-            year: "numeric",
-          }
-        );
-
-      } catch {
-
-        return "-";
-
-      }
-
-    };
-
-
-  /* ======================================================
-     STATUS COLOR
-  ====================================================== */
+  const formatDate = (date) => {
+    if (!date) return "-";
+    try {
+      return new Date(date).toLocaleDateString("en-IN", {
+        day: "2-digit",
+        month: "short",
+        year: "numeric",
+      });
+    } catch {
+      return "-";
+    }
+  };
 
   const getStatusColor = (status) => {
-  switch (String(status || "").toUpperCase()) {
-    case "DELIVERED":
-      return "success";
+    switch (String(status || "").toUpperCase()) {
+      case "DELIVERED":
+      case "READY_FOR_DISPATCH":
+      case "PACKED":
+        return "success";
+      case "CANCELLED":
+        return "error";
+      case "SHIPPED":
+      case "OUT_FOR_DELIVERY":
+        return "info";
+      case "PACKING":
+      case "CONFIRMED":
+        return "primary";
+      case "PLACED":
+      default:
+        return "warning";
+    }
+  };
 
-    case "CANCELLED":
-      return "error";
+  const getStatusLabel = (status) => {
+    const map = {
+      READY_FOR_DISPATCH: "READY FOR DISPATCH",
+      OUT_FOR_DELIVERY: "OUT FOR DELIVERY",
+      PACKING: "PACKING",
+      PACKED: "PACKED",
+      CONFIRMED: "CONFIRMED",
+      SHIPPED: "SHIPPED",
+      DELIVERED: "DELIVERED",
+      CANCELLED: "CANCELLED",
+      PLACED: "PLACED",
+    };
+    return map[String(status || "").toUpperCase()] || "PLACED";
+  };
 
-    case "SHIPPED":
-    case "OUT_FOR_DELIVERY":
-      return "info";
+  const getPaymentColor = (status) => {
+    switch (String(status || "").toUpperCase()) {
+      case "PAID":
+        return "success";
+      case "FAILED":
+      case "REFUNDED":
+        return "error";
+      default:
+        return "warning";
+    }
+  };
 
-    case "READY_FOR_DISPATCH":
-    case "PACKED":
-      return "success";
+  const handleRetryPayment = async (order) => {
+    const orderId = order?._id || order?.orderId;
+    if (!orderId) return;
 
-    case "PACKING":
-    case "CONFIRMED":
-      return "primary";
+    try {
+      setRetryingOrderId(String(orderId));
+      setPaymentErrors((previous) => ({ ...previous, [String(orderId)]: "" }));
 
-    case "PLACED":
-    default:
-      return "warning";
-  }
-};
-
-const getStatusLabel = (status) => {
-  switch (String(status || "").toUpperCase()) {
-    case "READY_FOR_DISPATCH":
-      return "READY FOR DISPATCH";
-
-    case "OUT_FOR_DELIVERY":
-      return "OUT FOR DELIVERY";
-
-    case "PACKING":
-      return "PACKING";
-
-    case "PACKED":
-      return "PACKED";
-
-    case "CONFIRMED":
-      return "CONFIRMED";
-
-    case "SHIPPED":
-      return "SHIPPED";
-
-    case "DELIVERED":
-      return "DELIVERED";
-
-    case "CANCELLED":
-      return "CANCELLED";
-
-    case "PLACED":
-    default:
-      return "PLACED";
-  }
-};
-
-  /* ======================================================
-     PAYMENT STATUS
-  ====================================================== */
-
-  const getPaymentColor =
-    (status) => {
-
-      switch (
-        String(
-          status || ""
-        ).toUpperCase()
-      ) {
-
-        case "PAID":
-          return "success";
-
-        case "FAILED":
-        case "REFUNDED":
-          return "error";
-
-        default:
-          return "warning";
-
+      const payment = await retryPhonePePayment(orderId);
+      if (!payment?.redirectUrl) {
+        throw new Error("PhonePe checkout URL was not returned.");
       }
 
-    };
-
-
-  /* ======================================================
-     ORDER DETAILS
-  ====================================================== */
-
-const handleRetryPayment = async (order) => {
-  const orderId = order?._id || order?.orderId;
-
-  if (!orderId) return;
-
-  try {
-    setRetryingOrderId(String(orderId));
-    setPaymentErrors((previous) => ({ ...previous, [String(orderId)]: "" }));
-
-    const payment = await retryPhonePePayment(orderId);
-
-    if (!payment?.redirectUrl) {
-      throw new Error("PhonePe checkout URL was not returned.");
+      window.location.href = payment.redirectUrl;
+    } catch (err) {
+      setPaymentErrors((previous) => ({
+        ...previous,
+        [String(orderId)]:
+          err?.response?.data?.message ||
+          err?.message ||
+          "Unable to start payment. Please try again.",
+      }));
+    } finally {
+      setRetryingOrderId("");
     }
+  };
 
-    window.location.href = payment.redirectUrl;
-  } catch (err) {
-    setPaymentErrors((previous) => ({
-      ...previous,
-      [String(orderId)]:
-        err?.response?.data?.message ||
-        err?.message ||
-        "Unable to start payment. Please try again.",
-    }));
-  } finally {
-    setRetryingOrderId("");
-  }
-};
-
-const handleOrderClick = (order) => {
-  if (!order?._id) {
-    console.error("Order ID is missing:", order);
-    return;
-  }
-
-  navigate(`/orders/${order._id}`, {
-    state: {
-      order,
-    },
-  });
-};
-  /* ======================================================
-     HEADER
-  ====================================================== */
+  const handleOrderClick = (order) => {
+    if (!order?._id) {
+      console.error("Order ID is missing:", order);
+      return;
+    }
+    navigate(`/orders/${order._id}`, { state: { order } });
+  };
 
   return (
-
     <Box
       sx={{
-        minHeight:
-          "100vh",
-
-        backgroundColor:
-          "#F5F7FA",
-
-        px: {
-          xs: 1.5,
-          sm: 3,
-        },
-
-        py: {
-          xs: 3,
-          sm: 5,
-        },
+        minHeight: "100vh",
+        backgroundColor: "#F5F7FA",
+        px: { xs: 1.5, sm: 2.5 },
+        py: { xs: 2, sm: 3 },
       }}
     >
-
-      <Box
-        sx={{
-          width:
-            "100%",
-
-          maxWidth:
-            900,
-
-          mx:
-            "auto",
-        }}
-      >
-
-        {/* ==================================================
-            PAGE HEADER
-        ================================================== */}
-
-        <Box
-          sx={{
-            textAlign:
-              "center",
-
-            mb: 3,
-          }}
+      <Box sx={{ width: "100%", maxWidth: 880, mx: "auto" }}>
+        {/* COMPACT PAGE HEADER */}
+        <Stack
+          direction="row"
+          alignItems="center"
+          justifyContent="space-between"
+          flexWrap="wrap"
+          gap={1}
+          sx={{ mb: 2 }}
         >
-
-          <Box
-            sx={{
-              width: 65,
-
-              height: 65,
-
-              mx: "auto",
-
-              borderRadius:
-                "50%",
-
-              backgroundColor:
-                "#E8F5E9",
-
-              color:
-                "#2E7D32",
-
-              display:
-                "flex",
-
-              alignItems:
-                "center",
-
-              justifyContent:
-                "center",
-
-              mb: 1.5,
-            }}
-          >
-
-            <ShoppingBag
+          <Stack direction="row" spacing={1.25} alignItems="center">
+            <Box
               sx={{
-                fontSize:
-                  34,
-              }}
-            />
-
-          </Box>
-
-
-          <Typography
-            variant="h4"
-            fontWeight={900}
-            sx={{
-              fontSize: {
-                xs: "1.7rem",
-                sm: "2.2rem",
-              },
-            }}
-          >
-            My Orders
-          </Typography>
-
-
-          <Typography
-            color="text.secondary"
-            sx={{
-              mt: 0.7,
-
-              fontSize: {
-                xs: "0.82rem",
-                sm: "0.95rem",
-              },
-            }}
-          >
-            View and track your
-            previous Bhagyamma Hub
-            orders.
-          </Typography>
-
-        </Box>
-
-
-        {/* ==================================================
-            LOGGED-IN USER
-        ================================================== */}
-
-        {isLoggedIn ? (
-
-          <Card
-            elevation={0}
-            sx={{
-              borderRadius:
-                3,
-
-              border:
-                "1px solid #DDE7DE",
-
-              mb: 3,
-            }}
-          >
-
-            <CardContent
-              sx={{
-                p: {
-                  xs: 2,
-                  sm: 3,
-                },
+                width: 38,
+                height: 38,
+                borderRadius: "50%",
+                backgroundColor: "#E8F5E9",
+                color: "#2E7D32",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                flexShrink: 0,
               }}
             >
+              <ShoppingBag sx={{ fontSize: 20 }} />
+            </Box>
 
-              <Stack
-                direction="row"
-                spacing={1.5}
-                alignItems="center"
-              >
-
-                <Inventory2Outlined
-                  sx={{
-                    color:
-                      "#2E7D32",
-                  }}
-                />
-
-                <Box>
-
-                  <Typography
-                    fontWeight={800}
-                  >
-                    Your Previous Orders
-                  </Typography>
-
-                  <Typography
-                    variant="body2"
-                    color="text.secondary"
-                  >
-                    Your orders are loaded
-                    automatically from your
-                    account.
-                  </Typography>
-
-                </Box>
-
-              </Stack>
-
-            </CardContent>
-
-          </Card>
-
-        ) : (
-
-          /* ==================================================
-             GUEST USER
-          ================================================== */
-
-          <Card
-            elevation={0}
-            sx={{
-              borderRadius:
-                3,
-
-              border:
-                "1px solid #DDE7DE",
-
-              mb: 3,
-            }}
-          >
-
-            <CardContent
-              sx={{
-                p: {
-                  xs: 2,
-                  sm: 3,
-                },
-              }}
-            >
-
+            <Box>
               <Typography
+                variant="h6"
                 fontWeight={800}
-                sx={{
-                  mb: 0.7,
-                }}
+                sx={{ fontSize: { xs: "1.15rem", sm: "1.35rem" }, lineHeight: 1.2 }}
               >
-                Find Your Previous Orders
+                My Orders
               </Typography>
-
-
-              <Typography
-                variant="body2"
-                color="text.secondary"
-                sx={{
-                  mb: 2,
-                  lineHeight:
-                    1.6,
-                }}
-              >
-                Enter the mobile number
-                you used while placing
-                your guest order.
+              <Typography color="text.secondary" sx={{ fontSize: "0.76rem" }}>
+                View and track your Bhagyamma Hub orders
               </Typography>
+            </Box>
+          </Stack>
 
+          {!loading && orders.length > 0 && (
+            <Chip
+              size="small"
+              label={`${orders.length} ${orders.length === 1 ? "Order" : "Orders"}`}
+              sx={{ fontWeight: 700, bgcolor: "#E8F5E9", color: "#1B5E20" }}
+            />
+          )}
+        </Stack>
 
+        {/* COMPACT GUEST SEARCH */}
+        {!isLoggedIn && (
+          <Card
+            elevation={0}
+            sx={{
+              borderRadius: 2,
+              border: "1px solid #DDE7DE",
+              mb: 2,
+            }}
+          >
+            <CardContent sx={{ p: { xs: 1.5, sm: 2 }, "&:last-child": { pb: { xs: 1.5, sm: 2 } } }}>
               <Stack
-                direction={{
-                  xs: "column",
-                  sm: "row",
-                }}
-                spacing={1.5}
+                direction={{ xs: "column", sm: "row" }}
+                spacing={1.25}
+                alignItems={{ xs: "stretch", sm: "center" }}
               >
-
                 <TextField
                   fullWidth
-                  label="Mobile Number"
-                  placeholder="10-digit mobile number"
+                  size="small"
+                  placeholder="Enter 10-digit mobile number for guest orders"
                   value={mobile}
                   onChange={(event) => {
-
-                    const value =
-                      event.target.value
-                        .replace(
-                          /\D/g,
-                          ""
-                        )
-                        .slice(
-                          0,
-                          10
-                        );
-
-                    setMobile(
-                      value
-                    );
-
+                    const value = event.target.value.replace(/\D/g, "").slice(0, 10);
+                    setMobile(value);
                     setError("");
-
                   }}
-                  inputProps={{
-                    maxLength: 10,
-                    inputMode:
-                      "numeric",
-                  }}
+                  inputProps={{ maxLength: 10, inputMode: "numeric" }}
                   InputProps={{
                     startAdornment: (
-                      <InputAdornment
-                        position="start"
-                      >
-                        <Phone />
+                      <InputAdornment position="start">
+                        <Phone fontSize="small" />
                       </InputAdornment>
                     ),
                   }}
                 />
 
-
                 <Button
                   variant="contained"
                   color="success"
-                  size="large"
-                  onClick={
-                    handleGuestSearch
-                  }
-                  disabled={
-                    loading
-                  }
+                  onClick={handleGuestSearch}
+                  disabled={loading}
                   startIcon={
                     loading ? (
-                      <CircularProgress
-                        size={18}
-                        color="inherit"
-                      />
+                      <CircularProgress size={16} color="inherit" />
                     ) : (
-                      <Search />
+                      <Search fontSize="small" />
                     )
                   }
                   sx={{
-                    minWidth: {
-                      xs:
-                        "100%",
-                      sm:
-                        180,
-                    },
-
-                    minHeight:
-                      56,
-
-                    borderRadius:
-                      2,
-
-                    textTransform:
-                      "none",
-
-                    fontWeight:
-                      800,
+                    minWidth: { xs: "100%", sm: 155 },
+                    height: 40,
+                    borderRadius: 1.5,
+                    textTransform: "none",
+                    fontWeight: 700,
+                    whiteSpace: "nowrap",
+                    boxShadow: "none",
                   }}
                 >
-                  {loading
-                    ? "Searching..."
-                    : "View Orders"}
+                  {loading ? "Searching..." : "Find Orders"}
                 </Button>
-
               </Stack>
-
             </CardContent>
-
           </Card>
-
         )}
 
-
-        {/* ==================================================
-            ERROR
-        ================================================== */}
-
+        {/* ERROR */}
         {error && (
-
-          <Alert
-            severity="error"
-            sx={{
-              mb: 2,
-
-              borderRadius:
-                2,
-            }}
-          >
+          <Alert severity="error" sx={{ mb: 1.5, borderRadius: 1.5, py: 0.5 }}>
             {error}
           </Alert>
-
         )}
 
+        {/* LOADING */}
+        {loading && isLoggedIn && (
+          <Box sx={{ display: "flex", justifyContent: "center", py: 4 }}>
+            <CircularProgress color="success" size={28} />
+          </Box>
+        )}
 
-        {/* ==================================================
-            LOADING
-        ================================================== */}
-
-        {loading &&
-          isLoggedIn && (
-
-            <Box
-              sx={{
-                display:
-                  "flex",
-
-                justifyContent:
-                  "center",
-
-                py: 5,
-              }}
-            >
-
-              <CircularProgress
-                color="success"
-              />
-
-            </Box>
-
-          )}
-
-
-        {/* ==================================================
-            NO ORDERS
-        ================================================== */}
-
-        {!loading &&
-          searched &&
-          orders.length === 0 &&
-          !error && (
-
-            <Card
-              elevation={0}
-              sx={{
-                borderRadius:
-                  3,
-
-                border:
-                  "1px solid #E0E0E0",
-
-                textAlign:
-                  "center",
-              }}
-            >
-
-              <CardContent
-                sx={{
-                  py: 5,
-                }}
-              >
-
-                <ShoppingBag
-                  sx={{
-                    fontSize:
-                      65,
-
-                    color:
-                      "#9E9E9E",
-
-                    mb: 1.5,
-                  }}
-                />
-
-                <Typography
-                  variant="h6"
-                  fontWeight={800}
-                >
-                  No Orders Found
-                </Typography>
-
-                <Typography
-                  color="text.secondary"
-                  sx={{
-                    mt: 0.8,
-                  }}
-                >
-                  {isLoggedIn
-                    ? "You have not placed any orders yet."
-                    : "No orders were found for this mobile number."}
-                </Typography>
-
-                <Button
-                  variant="outlined"
-                  color="success"
-                  onClick={() =>
-                    navigate(
-                      isLoggedIn
-                        ? "/member/products"
-                        : "/products"
-                    )
-                  }
-                  sx={{
-                    mt: 2,
-
-                    textTransform:
-                      "none",
-
-                    fontWeight:
-                      700,
-                  }}
-                >
-                  Continue Shopping
-                </Button>
-
-              </CardContent>
-
-            </Card>
-
-          )}
-
-
-        {/* ==================================================
-            ORDERS LIST
-        ================================================== */}
-
-        {!loading &&
-          orders.length > 0 && (
-
-            <Stack
-              spacing={2}
-            >
-
-              <Typography
-                fontWeight={800}
-                sx={{
-                  px: 0.5,
-                }}
-              >
-                {orders.length}{" "}
-                {orders.length === 1
-                  ? "Order"
-                  : "Orders"}{" "}
-                Found
+        {/* NO ORDERS */}
+        {!loading && searched && orders.length === 0 && !error && (
+          <Card
+            elevation={0}
+            sx={{
+              borderRadius: 2,
+              border: "1px solid #E0E0E0",
+              textAlign: "center",
+            }}
+          >
+            <CardContent sx={{ py: 3 }}>
+              <ShoppingBag sx={{ fontSize: 42, color: "#9E9E9E", mb: 1 }} />
+              <Typography variant="subtitle1" fontWeight={800}>
+                No Orders Found
               </Typography>
+              <Typography color="text.secondary" sx={{ fontSize: "0.8rem", mt: 0.4 }}>
+                {isLoggedIn
+                  ? "You have not placed any orders yet."
+                  : "No orders were found for this mobile number."}
+              </Typography>
+              <Button
+                variant="outlined"
+                color="success"
+                size="small"
+                onClick={() => navigate(isLoggedIn ? "/member/products" : "/products")}
+                sx={{ mt: 1.5, textTransform: "none", fontWeight: 700 }}
+              >
+                Continue Shopping
+              </Button>
+            </CardContent>
+          </Card>
+        )}
 
+        {/* COMPACT ORDERS LIST */}
+        {!loading && orders.length > 0 && (
+          <Stack spacing={1.25}>
+            {orders.map((order) => {
+              const idKey = String(order._id || order.orderId);
+              const showPayNow =
+                String(order.paymentStatus || "PENDING").toUpperCase() !== "PAID" &&
+                String(order.status || "").toUpperCase() !== "CANCELLED";
 
-              {orders.map(
-                (order) => (
-
-                  <Card
-                    key={
-                      order._id
-                    }
-                    elevation={0}
+              return (
+                <Card
+                  key={order._id}
+                  elevation={0}
+                  sx={{
+                    borderRadius: 2,
+                    border: "1px solid #DDE7DE",
+                    transition: "border-color 0.2s",
+                    "&:hover": { borderColor: "#2E7D32" },
+                  }}
+                >
+                  <CardContent
                     sx={{
-                      borderRadius:
-                        3,
-
-                      border:
-                        "1px solid #DDE7DE",
-
-                      transition:
-                        "0.2s",
-
-                      "&:hover": {
-                        boxShadow:
-                          "0 6px 20px rgba(0,0,0,.07)",
-                      },
+                      p: { xs: 1.5, sm: 1.75 },
+                      "&:last-child": { pb: { xs: 1.5, sm: 1.75 } },
                     }}
                   >
-
-                    <CardContent
-                      sx={{
-                        p: {
-                          xs: 2,
-                          sm: 2.5,
-                        },
-                      }}
+                    {/* TOP ROW: ORDER NO + DATE + STATUS */}
+                    <Stack
+                      direction="row"
+                      justifyContent="space-between"
+                      alignItems="center"
+                      gap={1}
+                      flexWrap="wrap"
                     >
-
-                      {/* ORDER TOP */}
-
-                      <Stack
-                        direction={{
-                          xs: "column",
-                          sm: "row",
-                        }}
-                        justifyContent=
-                          "space-between"
-                        alignItems={{
-                          xs:
-                            "flex-start",
-                          sm:
-                            "center",
-                        }}
-                        spacing={1}
-                      >
-
-                        <Box>
-
-                          <Typography
-                            fontWeight={900}
-                          >
-                            {order.orderNumber ||
-                              "Order"}
+                      <Stack direction="row" spacing={1.25} alignItems="baseline" flexWrap="wrap">
+                        <Typography fontWeight={800} sx={{ fontSize: "0.92rem" }}>
+                          {order.orderNumber || "Order"}
+                        </Typography>
+                        <Typography variant="caption" color="text.secondary">
+                          • {formatDate(order.createdAt || order.placedAt)}
+                        </Typography>
+                        {order.items?.length > 0 && (
+                          <Typography variant="caption" color="text.secondary">
+                            • {order.items.length} {order.items.length === 1 ? "item" : "items"}
                           </Typography>
-
-                          <Typography
-                            variant="body2"
-                            color="text.secondary"
-                            sx={{
-                              mt: 0.4,
-                            }}
-                          >
-                            {formatDate(
-                              order.createdAt ||
-                              order.placedAt
-                            )}
-                          </Typography>
-
-                        </Box>
-
-
-<Chip
-  size="small"
-  label={getStatusLabel(order.status)}
-  color={getStatusColor(order.status)}
-  sx={{
-    fontWeight: 700,
-  }}
-/>
-
+                        )}
                       </Stack>
 
-
-                      <Divider
-                        sx={{
-                          my: 2,
-                        }}
+                      <Chip
+                        size="small"
+                        label={getStatusLabel(order.status)}
+                        color={getStatusColor(order.status)}
+                        sx={{ height: 22, fontSize: "0.68rem", fontWeight: 700 }}
                       />
+                    </Stack>
 
+                    <Divider sx={{ my: 1.1 }} />
 
-                      {/* ORDER DETAILS */}
-
+                    {/* BOTTOM ROW: META + ACTIONS */}
+                    <Stack
+                      direction={{ xs: "column", sm: "row" }}
+                      justifyContent="space-between"
+                      alignItems={{ xs: "stretch", sm: "center" }}
+                      gap={1.25}
+                    >
                       <Stack
-                        direction={{
-                          xs: "column",
-                          sm: "row",
-                        }}
-                        spacing={{
-                          xs: 1.5,
-                          sm: 4,
-                        }}
+                        direction="row"
+                        spacing={{ xs: 2, sm: 3 }}
+                        alignItems="center"
+                        flexWrap="wrap"
+                        useFlexGap
                       >
-
                         <Box>
-
-                          <Typography
-                            variant="caption"
-                            color="text.secondary"
-                          >
+                          <Typography variant="caption" color="text.secondary" display="block" lineHeight={1.2}>
                             Amount
                           </Typography>
-
-                          <Typography
-                            fontWeight={900}
-                            color="#2E7D32"
-                          >
-                            ₹
-                            {Number(
-                              order.finalAmount ||
-                              0
-                            ).toLocaleString(
-                              "en-IN"
-                            )}
+                          <Typography fontWeight={800} color="#2E7D32" sx={{ fontSize: "0.92rem" }}>
+                            ₹{Number(order.finalAmount || 0).toLocaleString("en-IN")}
                           </Typography>
-
-                        </Box>
-
-
-                        <Box
-                          sx={{
-                            minWidth: { xs: "100%", sm: 150 },
-                            flex: { xs: "1 1 100%", sm: "0 0 auto" },
-                          }}
-                        >
-                          <Typography variant="caption" color="text.secondary">
-                            Payment
-                          </Typography>
-
-                          <Stack
-                            spacing={1}
-                            alignItems="flex-start"
-                            sx={{ mt: 0.5, width: "100%" }}
-                          >
-                            <Chip
-                              size="small"
-                              label={String(order.paymentStatus || "PENDING").toUpperCase()}
-                              color={getPaymentColor(order.paymentStatus)}
-                              sx={{ fontWeight: 700 }}
-                            />
-
-                            {String(order.paymentStatus || "PENDING").toUpperCase() !== "PAID" &&
-                              String(order.status || "").toUpperCase() !== "CANCELLED" && (
-                                <Button
-                                  variant="contained"
-                                  size="medium"
-                                  fullWidth
-                                  onClick={() => handleRetryPayment(order)}
-                                  disabled={retryingOrderId === String(order._id || order.orderId)}
-                                  sx={{
-                                    width: { xs: "100%", sm: "auto" },
-                                    minWidth: { xs: "100%", sm: 140 },
-                                    minHeight: 44,
-                                    px: 2.5,
-                                    borderRadius: 2,
-                                    bgcolor: "#5F259F",
-                                    color: "#FFFFFF",
-                                    fontWeight: 800,
-                                    fontSize: "0.9rem",
-                                    textTransform: "none",
-                                    whiteSpace: "nowrap",
-                                    boxShadow: "0 3px 8px rgba(95, 37, 159, 0.22)",
-                                    "&:hover": { bgcolor: "#4B1C80" },
-                                    "&.Mui-disabled": { bgcolor: "#B9A0D3", color: "#FFFFFF" },
-                                  }}
-                                >
-                                  {retryingOrderId === String(order._id || order.orderId)
-                                    ? <CircularProgress size={18} color="inherit" />
-                                    : "Pay Now"}
-                                </Button>
-                              )}
-                          </Stack>
-
-                          {paymentErrors[String(order._id || order.orderId)] && (
-                            <Typography
-                              variant="caption"
-                              color="error"
-                              sx={{ display: "block", mt: 0.75, maxWidth: 260, overflowWrap: "anywhere" }}
-                            >
-                              {paymentErrors[String(order._id || order.orderId)]}
-                            </Typography>
-                          )}
                         </Box>
 
                         <Box>
-
-                          <Typography
-                            variant="caption"
-                            color="text.secondary"
-                          >
-                            Order Type
+                          <Typography variant="caption" color="text.secondary" display="block" lineHeight={1.2}>
+                            Payment
                           </Typography>
-
-                          <Typography
-                            fontWeight={700}
-                          >
-                            {order.orderType ||
-                              "MEMBER"}
-                          </Typography>
-
+                          <Chip
+                            size="small"
+                            label={String(order.paymentStatus || "PENDING").toUpperCase()}
+                            color={getPaymentColor(order.paymentStatus)}
+                            sx={{ mt: 0.25, height: 20, fontSize: "0.65rem", fontWeight: 700 }}
+                          />
                         </Box>
 
+                        <Box>
+                          <Typography variant="caption" color="text.secondary" display="block" lineHeight={1.2}>
+                            Type
+                          </Typography>
+                          <Typography fontWeight={700} sx={{ fontSize: "0.78rem" }}>
+                            {order.orderType || "MEMBER"}
+                          </Typography>
+                        </Box>
                       </Stack>
 
-
-                      {/* ITEMS */}
-
-                      {order.items &&
-                        order.items.length >
-                          0 && (
-
-                          <Box
+                      <Stack direction="row" spacing={1} justifyContent="flex-end">
+                        {showPayNow && (
+                          <Button
+                            variant="contained"
+                            size="small"
+                            onClick={() => handleRetryPayment(order)}
+                            disabled={retryingOrderId === idKey}
                             sx={{
-                              mt: 2,
+                              minWidth: 96,
+                              height: 32,
+                              px: 1.75,
+                              borderRadius: 1.5,
+                              bgcolor: "#5F259F",
+                              color: "#FFFFFF",
+                              fontWeight: 700,
+                              fontSize: "0.76rem",
+                              textTransform: "none",
+                              boxShadow: "none",
+                              "&:hover": { bgcolor: "#4B1C80", boxShadow: "none" },
                             }}
                           >
-
-                            <Typography
-                              variant="body2"
-                              fontWeight={700}
-                            >
-                              {order.items.length}{" "}
-                              {order.items.length ===
-                              1
-                                ? "item"
-                                : "items"}
-                            </Typography>
-
-                          </Box>
-
+                            {retryingOrderId === idKey ? (
+                              <CircularProgress size={15} color="inherit" />
+                            ) : (
+                              "Pay Now"
+                            )}
+                          </Button>
                         )}
 
+                        <Button
+                          variant="outlined"
+                          color="success"
+                          size="small"
+                          endIcon={<ArrowForward sx={{ fontSize: 15 }} />}
+                          onClick={() => handleOrderClick(order)}
+                          sx={{
+                            height: 32,
+                            px: 1.75,
+                            borderRadius: 1.5,
+                            textTransform: "none",
+                            fontWeight: 700,
+                            fontSize: "0.76rem",
+                            whiteSpace: "nowrap",
+                          }}
+                        >
+                          View Details
+                        </Button>
+                      </Stack>
+                    </Stack>
 
-                      {/* VIEW DETAILS */}
-
-                      <Button
-                        fullWidth
-                        variant="outlined"
-                        color="success"
-                        endIcon={
-                          <ArrowForward />
-                        }
-                        onClick={() =>
-                          handleOrderClick(
-                            order
-                          )
-                        }
-                        sx={{
-                          mt: 2,
-
-                          minHeight:
-                            44,
-
-                          borderRadius:
-                            2,
-
-                          textTransform:
-                            "none",
-
-                          fontWeight:
-                            800,
-                        }}
+                    {paymentErrors[idKey] && (
+                      <Typography
+                        variant="caption"
+                        color="error"
+                        sx={{ display: "block", mt: 0.75 }}
                       >
-                        View Order Details
-                      </Button>
-
-                    </CardContent>
-
-                  </Card>
-
-                )
-              )}
-
-            </Stack>
-
-          )}
-
+                        {paymentErrors[idKey]}
+                      </Typography>
+                    )}
+                  </CardContent>
+                </Card>
+              );
+            })}
+          </Stack>
+        )}
       </Box>
-
     </Box>
-
   );
 };
 

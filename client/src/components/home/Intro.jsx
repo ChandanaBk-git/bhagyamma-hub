@@ -1,6 +1,7 @@
 import {
   Box,
   Container,
+  Divider,
   Grid,
   Typography,
   Paper,
@@ -11,11 +12,11 @@ const Intro = () => {
     <Box
       sx={{
         width: "100%",
-        bgcolor: "#fff",
+        bgcolor: "#FFFFFF",
         py: {
-          xs: 4,
-          sm: 6,
-          md: 10,
+          xs: 2.5,
+          sm: 3.5,
+          md: 4.5,
         },
       }}
     >
@@ -25,60 +26,47 @@ const Intro = () => {
           px: {
             xs: 2,
             sm: 3,
-            md: 3,
           },
         }}
       >
         <Grid
           container
           spacing={{
-            xs: 3,
-            sm: 4,
-            md: 6,
+            xs: 2,
+            sm: 3,
+            md: 4,
           }}
           alignItems="center"
         >
+          {/* LEFT: WELCOME TEXT */}
           <Grid size={{ xs: 12, md: 6 }}>
             <Typography
-              variant="h3"
-              fontWeight={700}
+              variant="h4"
+              fontWeight={800}
               color="primary"
-              gutterBottom
               sx={{
                 fontSize: {
-                  xs: "1.35rem",
-                  sm: "1.7rem",
-                  md: "3rem",
+                  xs: "1.25rem",
+                  sm: "1.5rem",
+                  md: "1.85rem",
                 },
-                lineHeight: {
-                  xs: 1.2,
-                  sm: 1.25,
-                  md: 1.2,
-                },
-                mb: {
-                  xs: 1.5,
-                  sm: 2,
-                  md: 2,
-                },
+                lineHeight: 1.25,
+                mb: 1,
               }}
             >
               Welcome to Bhagyamma Hub
             </Typography>
 
             <Typography
-              variant="body1"
+              variant="body2"
               color="text.secondary"
               sx={{
                 fontSize: {
-                  xs: "0.9rem",
-                  sm: "0.98rem",
-                  md: "1rem",
+                  xs: "0.82rem",
+                  sm: "0.88rem",
+                  md: "0.92rem",
                 },
-                lineHeight: {
-                  xs: 1.65,
-                  sm: 1.8,
-                  md: 2,
-                },
+                lineHeight: 1.55,
               }}
             >
               Bhagyamma Hub markets and retails selected Ayurvedic,
@@ -89,24 +77,16 @@ const Intro = () => {
             </Typography>
 
             <Typography
-              variant="body1"
+              variant="body2"
               color="text.secondary"
               sx={{
-                mt: {
-                  xs: 2,
-                  sm: 2.5,
-                  md: 3,
-                },
+                mt: 1.25,
                 fontSize: {
-                  xs: "0.9rem",
-                  sm: "0.98rem",
-                  md: "1rem",
+                  xs: "0.82rem",
+                  sm: "0.88rem",
+                  md: "0.92rem",
                 },
-                lineHeight: {
-                  xs: 1.65,
-                  sm: 1.8,
-                  md: 2,
-                },
+                lineHeight: 1.55,
               }}
             >
               We value clear product information, customer satisfaction
@@ -115,30 +95,33 @@ const Intro = () => {
             </Typography>
           </Grid>
 
+          {/* RIGHT: COMPACT VISION & MISSION CARD */}
           <Grid size={{ xs: 12, md: 6 }}>
             <Paper
-              elevation={4}
+              elevation={0}
               sx={{
                 p: {
-                  xs: 2.5,
-                  sm: 3.5,
-                  md: 5,
+                  xs: 1.75,
+                  sm: 2.25,
+                  md: 2.75,
                 },
-                borderRadius: 4,
-                bgcolor: "#F7F8FA",
+                borderRadius: 2.5,
+                bgcolor: "#F7F9F7",
+                border: "1px solid #E3EAE3",
               }}
             >
               <Typography
-                variant="h5"
+                variant="subtitle1"
                 fontWeight={700}
-                gutterBottom
+                color="#1F2937"
                 sx={{
                   fontSize: {
-                    xs: "1.05rem",
-                    sm: "1.2rem",
-                    md: "1.5rem",
+                    xs: "0.95rem",
+                    sm: "1.05rem",
+                    md: "1.12rem",
                   },
                   lineHeight: 1.25,
+                  mb: 0.5,
                 }}
               >
                 Our Vision
@@ -148,15 +131,11 @@ const Intro = () => {
                 color="text.secondary"
                 sx={{
                   fontSize: {
-                    xs: "0.82rem",
-                    sm: "0.9rem",
-                    md: "1rem",
+                    xs: "0.78rem",
+                    sm: "0.84rem",
+                    md: "0.88rem",
                   },
-                  lineHeight: {
-                    xs: 1.55,
-                    sm: 1.65,
-                    md: 1.7,
-                  },
+                  lineHeight: 1.5,
                 }}
               >
                 To build a trusted platform for marketing and retailing
@@ -164,22 +143,20 @@ const Intro = () => {
                 customer-focused shopping and membership experience.
               </Typography>
 
+              <Divider sx={{ my: 1.5, borderColor: "#E3EAE3" }} />
+
               <Typography
-                variant="h5"
+                variant="subtitle1"
                 fontWeight={700}
-                gutterBottom
+                color="#1F2937"
                 sx={{
-                  mt: {
-                    xs: 3,
-                    sm: 3.5,
-                    md: 4,
-                  },
                   fontSize: {
-                    xs: "1.05rem",
-                    sm: "1.2rem",
-                    md: "1.5rem",
+                    xs: "0.95rem",
+                    sm: "1.05rem",
+                    md: "1.12rem",
                   },
                   lineHeight: 1.25,
+                  mb: 0.5,
                 }}
               >
                 Our Mission
@@ -189,15 +166,11 @@ const Intro = () => {
                 color="text.secondary"
                 sx={{
                   fontSize: {
-                    xs: "0.82rem",
-                    sm: "0.9rem",
-                    md: "1rem",
+                    xs: "0.78rem",
+                    sm: "0.84rem",
+                    md: "0.88rem",
                   },
-                  lineHeight: {
-                    xs: 1.55,
-                    sm: 1.65,
-                    md: 1.7,
-                  },
+                  lineHeight: 1.5,
                 }}
               >
                 Market and retail products from Kisra and Vedgiri with

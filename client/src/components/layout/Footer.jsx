@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 
 import {
@@ -60,7 +59,7 @@ const Footer = () => {
       path: "/policies/grievance-customer-support",
     },
     {
-      label: "Product Information",
+      label: "Product Info & Pricing",
       path: "/policies/product-information-pricing",
     },
     {
@@ -71,16 +70,17 @@ const Footer = () => {
 
   const headingStyles = {
     color: "#FFFFFF",
-    fontSize: "0.82rem",
+    fontSize: "0.78rem",
     fontWeight: 700,
-    mb: 1,
+    mb: 0.6,
     letterSpacing: "0.2px",
+    textTransform: "uppercase",
   };
 
   const linkStyles = {
-    color: "rgba(255,255,255,0.84)",
-    fontSize: "0.73rem",
-    lineHeight: 1.65,
+    color: "rgba(255,255,255,0.82)",
+    fontSize: "0.72rem",
+    lineHeight: 1.5,
     width: "fit-content",
     maxWidth: "100%",
     textDecoration: "none",
@@ -97,14 +97,14 @@ const Footer = () => {
   };
 
   const contactText = {
-    fontSize: "0.72rem",
-    lineHeight: 1.65,
+    fontSize: "0.71rem",
+    lineHeight: 1.45,
     color: "rgba(255,255,255,0.85)",
     overflowWrap: "anywhere",
   };
 
   const iconStyle = {
-    fontSize: 16,
+    fontSize: 14,
     color: "#D4E8C8",
     flexShrink: 0,
     mt: "2px",
@@ -120,8 +120,8 @@ const Footer = () => {
         bgcolor: "#174D20",
         color: "#FFFFFF",
         mt: 0,
-        pt: { xs: 2, sm: 3, md: 4 },
-        pb: { xs: 1, sm: 1.5, md: 2 },
+        pt: { xs: 1.75, sm: 2.25 },
+        pb: { xs: 1.25, sm: 1.5 },
         overflow: "hidden",
       }}
     >
@@ -129,107 +129,55 @@ const Footer = () => {
         maxWidth="lg"
         sx={{
           boxSizing: "border-box",
-          px: { xs: 1.75, sm: 3, md: 3 },
+          px: { xs: 1.75, sm: 3 },
         }}
       >
         <Grid
           container
-          columnSpacing={{ xs: 1.5, sm: 3, md: 4 }}
-          rowSpacing={{ xs: 2, sm: 3, md: 3 }}
+          columnSpacing={{ xs: 1.5, sm: 2.5, md: 3 }}
+          rowSpacing={{ xs: 1.5, sm: 2 }}
           alignItems="flex-start"
         >
-          {/* BRAND - ORIGINAL NAME PRESERVED */}
+          {/* BRAND */}
           <Grid size={{ xs: 12, sm: 6, md: 3 }}>
- 
-{/* BRAND NAMES - SAME SIZE */}
-<Typography
-  sx={{
-    fontSize: "0.98rem",
-    fontWeight: 800,
-    letterSpacing: "0.3px",
-    lineHeight: 1.5,
-    mb: 0.35,
-  }}
->
-  Hucharaddi
-</Typography>
-
-<Typography
-  sx={{
-    fontSize: "0.98rem",
-    fontWeight: 800,
-    letterSpacing: "0.3px",
-    lineHeight: 1.5,
-    color: "#D4E8C8",
-    mb: 0.65,
-  }}
->
-  Bhagya S
-</Typography>
-
+            <Typography
+              sx={{
+                fontSize: "0.95rem",
+                fontWeight: 800,
+                letterSpacing: "0.2px",
+                lineHeight: 1.3,
+                mb: 0.5,
+              }}
+            >
+              Hucharaddi{" "}
+              <Box component="span" sx={{ color: "#D4E8C8" }}>
+                Bhagya S
+              </Box>
+            </Typography>
 
             <Typography
               sx={{
-                fontSize: "0.72rem",
-                lineHeight: 1.65,
+                fontSize: "0.71rem",
+                lineHeight: 1.45,
                 color: "rgba(255,255,255,0.78)",
-                maxWidth: 280,
+                maxWidth: 260,
               }}
             >
-              Your trusted destination for quality products
-              and smart business opportunities.
+              Your trusted destination for quality products and smart business
+              opportunities.
             </Typography>
-
-            {/* SOCIAL LINKS */}
-            <Box
-              sx={{
-                display: "flex",
-                alignItems: "center",
-                gap: 1.5,
-                mt: 1,
-              }}
-            >
-              <Link
-                href="#"
-                color="inherit"
-                aria-label="Facebook"
-                sx={{ display: "flex" }}
-              >
-                <Facebook sx={{ fontSize: 18 }} />
-              </Link>
-
-              <Link
-                href="#"
-                color="inherit"
-                aria-label="Instagram"
-                sx={{ display: "flex" }}
-              >
-                <Instagram sx={{ fontSize: 18 }} />
-              </Link>
-
-              <Link
-                href="#"
-                color="inherit"
-                aria-label="YouTube"
-                sx={{ display: "flex" }}
-              >
-                <YouTube sx={{ fontSize: 18 }} />
-              </Link>
-            </Box>
           </Grid>
 
           {/* QUICK LINKS */}
-          <Grid size={{ xs: 6, sm: 3, md: 2 }}>
-            <Typography sx={headingStyles}>
-              Quick Links
-            </Typography>
+          <Grid size={{ xs: 5, sm: 3, md: 1.75 }}>
+            <Typography sx={headingStyles}>Quick Links</Typography>
 
             <Box
               sx={{
                 display: "flex",
                 flexDirection: "column",
                 alignItems: "flex-start",
-                gap: 0.25,
+                gap: 0.15,
               }}
             >
               {quickLinks.map((item) => (
@@ -245,23 +193,18 @@ const Footer = () => {
             </Box>
           </Grid>
 
-          {/* COLLAPSIBLE POLICIES */}
-          <Grid size={{ xs: 6, sm: 3, md: 3 }}>
+          {/* COLLAPSIBLE / 2-COLUMN POLICIES */}
+          <Grid size={{ xs: 7, sm: 3, md: 3.75 }}>
             <Box
               sx={{
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "space-between",
                 gap: 0.5,
-                mb: 1,
+                mb: 0.6,
               }}
             >
-              <Typography
-                sx={{
-                  ...headingStyles,
-                  mb: 0,
-                }}
-              >
+              <Typography sx={{ ...headingStyles, mb: 0 }}>
                 Policies
               </Typography>
 
@@ -270,20 +213,16 @@ const Footer = () => {
                 type="button"
                 aria-controls="footer-policy-links"
                 aria-label={
-                  policiesOpen
-                    ? "Collapse policies"
-                    : "Expand policies"
+                  policiesOpen ? "Collapse policies" : "Expand policies"
                 }
                 aria-expanded={policiesOpen}
-                onClick={() =>
-                  setPoliciesOpen((open) => !open)
-                }
+                onClick={() => setPoliciesOpen((open) => !open)}
                 sx={{
                   display: { xs: "flex", md: "none" },
                   alignItems: "center",
                   justifyContent: "center",
-                  minWidth: 26,
-                  minHeight: 26,
+                  minWidth: 22,
+                  minHeight: 22,
                   p: 0,
                   border: 0,
                   borderRadius: 1,
@@ -307,12 +246,15 @@ const Footer = () => {
               id="footer-policy-links"
               sx={{
                 display: {
-                  xs: policiesOpen ? "flex" : "none",
-                  md: "flex",
+                  xs: policiesOpen ? "grid" : "none",
+                  md: "grid",
                 },
-                flexDirection: "column",
-                alignItems: "flex-start",
-                gap: 0.2,
+                gridTemplateColumns: {
+                  xs: "1fr",
+                  md: "repeat(2, minmax(0, 1fr))",
+                },
+                columnGap: 1.5,
+                rowGap: 0.15,
               }}
             >
               {policyLinks.map((item) => (
@@ -329,63 +271,44 @@ const Footer = () => {
           </Grid>
 
           {/* CONTACT DETAILS */}
-          <Grid size={{ xs: 12, sm: 6, md: 4 }}>
-            <Typography sx={headingStyles}>
-              Contact Us
-            </Typography>
+          <Grid size={{ xs: 12, sm: 12, md: 3.5 }}>
+            <Typography sx={headingStyles}>Contact Us</Typography>
 
             <Box
               sx={{
                 display: "flex",
-                alignItems: "flex-start",
-                gap: 0.8,
-                mb: 0.6,
-                minWidth: 0,
+                flexWrap: "wrap",
+                columnGap: 1.5,
+                rowGap: 0.4,
+                mb: 0.5,
               }}
             >
-              <Email sx={iconStyle} />
+              <Box sx={{ display: "flex", alignItems: "center", gap: 0.6 }}>
+                <Email sx={iconStyle} />
+                <Typography sx={contactText}>
+                  bhagyammahub@gmail.com
+                </Typography>
+              </Box>
 
-              <Typography sx={contactText}>
-                bhagyammahub@gmail.com
-              </Typography>
+              <Box sx={{ display: "flex", alignItems: "center", gap: 0.6 }}>
+                <Phone sx={iconStyle} />
+                <Typography sx={contactText}>+91 90191 74672</Typography>
+              </Box>
             </Box>
 
             <Box
               sx={{
                 display: "flex",
                 alignItems: "flex-start",
-                gap: 0.8,
-                mb: 0.6,
-                minWidth: 0,
-              }}
-            >
-              <Phone sx={iconStyle} />
-
-              <Typography sx={contactText}>
-                +91 90191 74672
-              </Typography>
-            </Box>
-
-            <Box
-              sx={{
-                display: "flex",
-                alignItems: "flex-start",
-                gap: 0.8,
+                gap: 0.6,
                 minWidth: 0,
               }}
             >
               <LocationOn sx={iconStyle} />
 
               <Typography sx={contactText}>
-                <Box
-                  component="span"
-                  sx={{ color: "#FFFFFF", fontWeight: 700 }}
-                >
-                  Business Address:{" "}
-                </Box>
-                Ward No. 22, Near Veeranjaneya Temple,
-                Gadag Betageri, Gadag District,
-                Karnataka - 582101, India.
+                Ward No. 22, Near Veeranjaneya Temple, Gadag Betageri, Gadag
+                Dist., Karnataka - 582101, India.
               </Typography>
             </Box>
           </Grid>
@@ -393,24 +316,73 @@ const Footer = () => {
 
         <Divider
           sx={{
-            my: { xs: 1.5, sm: 2.5, md: 3 },
-            borderColor: "rgba(255,255,255,0.18)",
+            my: 1.25,
+            borderColor: "rgba(255,255,255,0.16)",
           }}
         />
 
-        {/* ORIGINAL COPYRIGHT NAME PRESERVED */}
-        <Typography
-          align="center"
+        {/* COMPACT BOTTOM BAR: COPYRIGHT + SOCIALS */}
+        <Box
           sx={{
-            fontSize: "0.67rem",
-            lineHeight: 1.6,
-            color: "rgba(255,255,255,0.75)",
-            px: 1,
+            display: "flex",
+            flexDirection: { xs: "column", sm: "row" },
+            alignItems: "center",
+            justifyContent: "space-between",
+            gap: 0.75,
           }}
         >
-          © {new Date().getFullYear()} Hucharaddi.
-          All Rights Reserved.
-        </Typography>
+          <Typography
+            sx={{
+              fontSize: "0.68rem",
+              lineHeight: 1.4,
+              color: "rgba(255,255,255,0.75)",
+              textAlign: { xs: "center", sm: "left" },
+            }}
+          >
+            © {new Date().getFullYear()} Hucharaddi. All Rights Reserved.
+          </Typography>
+
+          <Box sx={{ display: "flex", alignItems: "center", gap: 1.25 }}>
+            <Link
+              href="#"
+              color="inherit"
+              aria-label="Facebook"
+              sx={{
+                display: "flex",
+                color: "rgba(255,255,255,0.8)",
+                "&:hover": { color: "#D4E8C8" },
+              }}
+            >
+              <Facebook sx={{ fontSize: 16 }} />
+            </Link>
+
+            <Link
+              href="#"
+              color="inherit"
+              aria-label="Instagram"
+              sx={{
+                display: "flex",
+                color: "rgba(255,255,255,0.8)",
+                "&:hover": { color: "#D4E8C8" },
+              }}
+            >
+              <Instagram sx={{ fontSize: 16 }} />
+            </Link>
+
+            <Link
+              href="#"
+              color="inherit"
+              aria-label="YouTube"
+              sx={{
+                display: "flex",
+                color: "rgba(255,255,255,0.8)",
+                "&:hover": { color: "#D4E8C8" },
+              }}
+            >
+              <YouTube sx={{ fontSize: 16 }} />
+            </Link>
+          </Box>
+        </Box>
       </Container>
     </Box>
   );

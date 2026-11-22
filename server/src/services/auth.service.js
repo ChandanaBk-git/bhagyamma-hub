@@ -6,6 +6,8 @@ const generateOTP = require("../utils/otp");
 
 const sendEmail = require("../utils/sendEmail");
 
+const sendSmsOtp = require("../utils/sendSmsOtp");
+
 const bcrypt = require("bcryptjs");
 
 const userRepository = require("../repositories/user.repository");
@@ -595,14 +597,6 @@ const register = async (payload) => {
 
 // =====================================================
 // LOGIN
-// =====================================================
-
-// =====================================================
-// COMMON LOGIN
-// USER + PACKAGING STAFF
-// =====================================================
-// =====================================================
-// LOGIN
 // COMMON LOGIN
 // USER + PACKAGING STAFF
 // =====================================================
@@ -900,34 +894,34 @@ const login = async ({
 
             token,
 
-user: {
-    id: packagingStaff._id,
-    _id: packagingStaff._id,
+            user: {
+                id: packagingStaff._id,
+                _id: packagingStaff._id,
 
-    packagingStaffId: packagingStaff._id,
+                packagingStaffId: packagingStaff._id,
 
-    loginId: packagingStaff.loginId,
+                loginId: packagingStaff.loginId,
 
-    name: packagingStaff.name,
+                name: packagingStaff.name,
 
-    role: "PACKAGING",
+                role: "PACKAGING",
 
-    branchId: packagingStaff.branchId,
+                branchId: packagingStaff.branchId,
 
-    branchName: packagingStaff.branchName,
+                branchName: packagingStaff.branchName,
 
-    branchMemberNumber:
-        packagingStaff.branchMemberNumber,
+                branchMemberNumber:
+                    packagingStaff.branchMemberNumber,
 
-    isActive:
-        packagingStaff.isActive,
+                isActive:
+                    packagingStaff.isActive,
 
-    createdAt:
-        packagingStaff.createdAt,
+                createdAt:
+                    packagingStaff.createdAt,
 
-    lastLoginAt:
-        packagingStaff.lastLoginAt,
-},
+                lastLoginAt:
+                    packagingStaff.lastLoginAt,
+            },
         };
     }
 
@@ -1145,9 +1139,9 @@ const forgotPassword = async ({
     };
 };
 
+
 // =====================================================
-// SEND MOBILE OTP
-// DEVELOPMENT MODE
+// SEND MOBILE OTP (FAST2SMS QUICK ROUTE)
 // =====================================================
 
 const sendMobileResetOtp = async ({
@@ -1156,7 +1150,8 @@ const sendMobileResetOtp = async ({
 
     const cleanMobile =
         String(mobile || "")
-            .replace(/\D/g, "");
+            .replace(/\D/g, "")
+            .slice(-10);
 
 
     if (
@@ -1220,7 +1215,7 @@ const sendMobileResetOtp = async ({
 
 
     // -------------------------------------------------
-    // SAVE OTP
+    // SAVE NEW OTP
     // -------------------------------------------------
 
     await userRepository.updateOtp(
@@ -1232,40 +1227,26 @@ const sendMobileResetOtp = async ({
 
 
     // -------------------------------------------------
-    // DEVELOPMENT TERMINAL LOG
+    // SEND SMS VIA FAST2SMS (ROLLBACK OTP IF SMS FAILS)
     // -------------------------------------------------
 
-    console.log(
-        "=============================================="
-    );
+    try {
+        await sendSmsOtp(
+            cleanMobile,
+            otp
+        );
+    } catch (smsError) {
+        await userRepository.updateById(
+            user._id,
+            {
+                otp: undefined,
+                otpExpires: undefined,
+                otpPurpose: undefined,
+            }
+        );
 
-    console.log(
-        "PASSWORD RESET OTP"
-    );
-
-    console.log(
-        "User:",
-        user.name
-    );
-
-    console.log(
-        "Mobile:",
-        cleanMobile
-    );
-
-    console.log(
-        "OTP:",
-        otp
-    );
-
-    console.log(
-        "Expires:",
-        otpExpires
-    );
-
-    console.log(
-        "=============================================="
-    );
+        throw smsError;
+    }
 
 
     // -------------------------------------------------
@@ -1278,29 +1259,16 @@ const sendMobileResetOtp = async ({
             true,
 
         message:
-            "OTP generated successfully.",
+            "OTP sent successfully to your registered mobile number.",
 
         mobile:
             cleanMobile,
-
-        // ---------------------------------------------
-        // DEVELOPMENT ONLY
-        // This allows ForgotPassword.jsx to show
-        // the OTP inside the MUI Dialog.
-        // ---------------------------------------------
-        ...(process.env.NODE_ENV !== "production"
-            ? {
-                developmentOtp:
-                    otp,
-            }
-            : {}),
     };
 };
 
 
 // =====================================================
 // VERIFY MOBILE RESET OTP
-// DEVELOPMENT MODE
 // =====================================================
 
 const verifyResetOtp = async ({
@@ -1310,7 +1278,8 @@ const verifyResetOtp = async ({
 
     const cleanMobile =
         String(mobile || "")
-            .replace(/\D/g, "");
+            .replace(/\D/g, "")
+            .slice(-10);
 
     const cleanOtp =
         String(otp || "")
@@ -1429,15 +1398,6 @@ const verifyResetOtp = async ({
     );
 
 
-    // -------------------------------------------------
-    // IMPORTANT
-    // -------------------------------------------------
-    // NO JWT IS GENERATED HERE.
-    //
-    // This token is ONLY for password reset.
-    // It cannot be used as a login token.
-    // -------------------------------------------------
-
     return {
 
         success:
@@ -1474,7 +1434,8 @@ const resetPassword = async ({
 
     const cleanMobile =
         String(mobile || "")
-            .replace(/\D/g, "");
+            .replace(/\D/g, "")
+            .slice(-10);
 
     const cleanResetToken =
         String(resetToken || "")
@@ -1583,7 +1544,6 @@ const resetPassword = async ({
         await User.findOne({
             mobile:
                 cleanMobile,
-
         })
             .select(
                 "+passwordResetToken +passwordResetExpires"
@@ -1630,21 +1590,17 @@ const resetPassword = async ({
 
 
     // -------------------------------------------------
-    // HASH NEW PASSWORD
+    // UPDATE PASSWORD
+    // (user.model.js pre-save hook hashes automatically)
     // -------------------------------------------------
 
-// -------------------------------------------------
-// UPDATE PASSWORD
-// -------------------------------------------------
-// Do NOT hash here.
-// user.model.js automatically hashes the password
-// before saving.
+    user.password =
+        password;
 
-user.password =
-    password;
+    user.passwordChangedAt =
+        new Date();
 
-user.passwordChangedAt =
-    new Date();
+
     // -------------------------------------------------
     // CLEAR RESET AUTHORIZATION
     // -------------------------------------------------

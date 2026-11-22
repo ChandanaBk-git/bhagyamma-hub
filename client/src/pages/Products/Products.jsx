@@ -1,4 +1,3 @@
-
 import { useEffect, useMemo, useState } from "react";
 
 import {
@@ -7,15 +6,19 @@ import {
   Button,
   Chip,
   CircularProgress,
+  Collapse,
   Container,
   Divider,
+  InputAdornment,
   TextField,
   Typography,
 } from "@mui/material";
 
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+import ExpandLessIcon from "@mui/icons-material/ExpandLess";
 import ChevronRightIcon from "@mui/icons-material/ChevronRight";
 import RestartAltIcon from "@mui/icons-material/RestartAlt";
+import TuneIcon from "@mui/icons-material/Tune";
 
 import ProductBanner from "../../components/products/ProductBanner";
 import ProductSearch from "../../components/products/ProductSearch";
@@ -34,25 +37,15 @@ const getId = (value) => {
   return String(value);
 };
 
-const getName = (value) => {
-  if (!value) return "";
-
-  if (typeof value === "object") {
-    return value.name || "";
-  }
-
-  return String(value);
-};
-
 const Products = () => {
   const [products, setProducts] = useState([]);
   const [categories, setCategories] = useState([]);
 
   const [searchTerm, setSearchTerm] = useState("");
+  const [filtersOpen, setFiltersOpen] = useState(false);
 
   const [selectedParent, setSelectedParent] = useState("");
   const [selectedChild, setSelectedChild] = useState("");
-
   const [expandedParent, setExpandedParent] = useState("");
 
   const [minPrice, setMinPrice] = useState("");
@@ -88,7 +81,6 @@ const Products = () => {
 
         if (productResult.status === "fulfilled") {
           const result = productResult.value;
-
           setProducts(Array.isArray(result) ? result : []);
         } else {
           throw productResult.reason;
@@ -96,7 +88,6 @@ const Products = () => {
 
         if (categoryResult.status === "fulfilled") {
           const result = categoryResult.value;
-
           setCategories(Array.isArray(result) ? result : []);
         } else {
           setCategoryError(
@@ -106,9 +97,7 @@ const Products = () => {
         }
       } catch (err) {
         if (!mounted) return;
-
         console.error("PRODUCT FETCH ERROR:", err);
-
         setError(
           err?.response?.data?.message ||
             err?.message ||
@@ -156,26 +145,14 @@ const Products = () => {
 
   const filteredProducts = useMemo(() => {
     const search = searchTerm.trim().toLowerCase();
-
-    const min =
-      minPrice === "" ? null : Number(minPrice);
-
-    const max =
-      maxPrice === "" ? null : Number(maxPrice);
+    const min = minPrice === "" ? null : Number(minPrice);
+    const max = maxPrice === "" ? null : Number(maxPrice);
 
     return products.filter((product) => {
-      // SEARCH
-      const productName =
-        product?.productName?.toLowerCase() || "";
-
-      const categoryName =
-        product?.category?.toLowerCase() || "";
-
-      const brand =
-        product?.brand?.toLowerCase() || "";
-
-      const description =
-        product?.description?.toLowerCase() || "";
+      const productName = product?.productName?.toLowerCase() || "";
+      const categoryName = product?.category?.toLowerCase() || "";
+      const brand = product?.brand?.toLowerCase() || "";
+      const description = product?.description?.toLowerCase() || "";
 
       const searchMatch =
         !search ||
@@ -186,28 +163,22 @@ const Products = () => {
 
       if (!searchMatch) return false;
 
-      // PARENT CATEGORY
       if (selectedParent) {
         const productParent = getId(product.parentCategory);
-
-        const selectedParentName =
-          parentCategories.find(
-            (item) => String(item._id) === selectedParent
-          )?.name;
+        const selectedParentName = parentCategories.find(
+          (item) => String(item._id) === selectedParent
+        )?.name;
 
         const parentMatch =
           productParent === selectedParent ||
-          (
-            !productParent &&
+          (!productParent &&
             selectedParentName &&
             product.category?.toLowerCase() ===
-              selectedParentName.toLowerCase()
-          );
+              selectedParentName.toLowerCase());
 
         if (!parentMatch) return false;
       }
 
-      // CHILD CATEGORY
       if (selectedChild) {
         const productCategories = Array.isArray(product.categories)
           ? product.categories.map(getId)
@@ -218,13 +189,9 @@ const Products = () => {
         }
       }
 
-      // PRICE
       const price = Number(product.price);
-
       if (!Number.isFinite(price)) return false;
-
       if (min !== null && price < min) return false;
-
       if (max !== null && price > max) return false;
 
       return true;
@@ -240,7 +207,7 @@ const Products = () => {
   ]);
 
   // =====================================================
-  // SELECT PARENT
+  // HANDLERS
   // =====================================================
 
   const handleParentClick = (parentId) => {
@@ -256,19 +223,11 @@ const Products = () => {
     setSelectedChild("");
   };
 
-  // =====================================================
-  // SELECT CHILD
-  // =====================================================
-
   const handleChildClick = (childId) => {
     setSelectedChild((previous) =>
       previous === childId ? "" : childId
     );
   };
-
-  // =====================================================
-  // CLEAR FILTERS
-  // =====================================================
 
   const clearFilters = () => {
     setSearchTerm("");
@@ -279,12 +238,13 @@ const Products = () => {
     setMaxPrice("");
   };
 
+  const activeFilterCount =
+    (selectedParent ? 1 : 0) +
+    (selectedChild ? 1 : 0) +
+    (minPrice !== "" || maxPrice !== "" ? 1 : 0);
+
   const hasFilters =
-    searchTerm.trim() !== "" ||
-    selectedParent !== "" ||
-    selectedChild !== "" ||
-    minPrice !== "" ||
-    maxPrice !== "";
+    searchTerm.trim() !== "" || activeFilterCount > 0;
 
   // =====================================================
   // RENDER
@@ -303,309 +263,290 @@ const Products = () => {
       <Container
         maxWidth="xl"
         sx={{
-          px: {
-            xs: 1.5,
-            sm: 2,
-            md: 3,
-          },
-          py: {
-            xs: 2.5,
-            sm: 3.5,
-            md: 4.5,
-          },
+          px: { xs: 1.5, sm: 2, md: 3 },
+          py: { xs: 2, sm: 3, md: 3.5 },
         }}
       >
-        {/* SEARCH */}
-
+        {/* SEARCH + MINIMISED FILTER BAR */}
         <Box
           sx={{
-            maxWidth: 650,
-            mx: "auto",
-            mb: 3,
+            display: "flex",
+            flexDirection: { xs: "column", md: "row" },
+            alignItems: { xs: "stretch", md: "center" },
+            gap: 1.25,
+            mb: 2,
           }}
         >
-          <ProductSearch
-            searchTerm={searchTerm}
-            setSearchTerm={setSearchTerm}
-          />
-        </Box>
+          <Box sx={{ flex: 1, minWidth: 0 }}>
+            <ProductSearch
+              searchTerm={searchTerm}
+              setSearchTerm={setSearchTerm}
+            />
+          </Box>
 
-        {/* FILTER SECTION */}
-
-        <Box
-          sx={{
-            bgcolor: "#FFFFFF",
-            border: "1px solid #E7ECE7",
-            borderRadius: { xs: 2.5, sm: 3 },
-            boxShadow: "0 8px 28px rgba(35, 65, 40, 0.045)",
-            p: {
-              xs: 1.5,
-              sm: 2.5,
-              md: 3,
-            },
-            mb: { xs: 2.5, sm: 3 },
-          }}
-        >
           <Box
-            display="flex"
-            alignItems="center"
-            justifyContent="space-between"
-            flexWrap="wrap"
-            gap={1}
-            mb={2}
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              gap: 1,
+            }}
           >
-            <Typography
-              variant="h6"
-              fontWeight={700}
-              color="#263C2B"
+            <Button
+              variant={filtersOpen || activeFilterCount > 0 ? "contained" : "outlined"}
+              color="success"
+              size="small"
+              startIcon={<TuneIcon fontSize="small" />}
+              endIcon={
+                filtersOpen ? (
+                  <ExpandLessIcon fontSize="small" />
+                ) : (
+                  <ExpandMoreIcon fontSize="small" />
+                )
+              }
+              onClick={() => setFiltersOpen((prev) => !prev)}
+              sx={{
+                height: 40,
+                px: 2,
+                borderRadius: 2,
+                textTransform: "none",
+                fontWeight: 600,
+                boxShadow: "none",
+                whiteSpace: "nowrap",
+              }}
             >
-              Browse Categories
-            </Typography>
+              Filters
+              {activeFilterCount > 0 ? ` (${activeFilterCount})` : ""}
+            </Button>
 
             {hasFilters && (
               <Button
                 size="small"
                 color="inherit"
-                startIcon={<RestartAltIcon />}
+                startIcon={<RestartAltIcon fontSize="small" />}
                 onClick={clearFilters}
+                sx={{
+                  height: 40,
+                  textTransform: "none",
+                  whiteSpace: "nowrap",
+                }}
               >
-                Clear Filters
+                Reset
               </Button>
             )}
           </Box>
-
-          {categoryLoading ? (
-            <Box display="flex" alignItems="center" gap={1}>
-              <CircularProgress size={18} color="success" />
-              <Typography variant="body2" color="text.secondary">
-                Loading categories...
-              </Typography>
-            </Box>
-          ) : categoryError ? (
-            <Alert severity="warning">
-              {categoryError}
-            </Alert>
-          ) : parentCategories.length === 0 ? (
-            <Typography color="text.secondary" variant="body2">
-              No categories available.
-            </Typography>
-          ) : (
-            <Box
-              sx={{
-                display: { xs: "flex", sm: "grid" },
-                flexWrap: { xs: "nowrap", sm: "initial" },
-                overflowX: { xs: "auto", sm: "visible" },
-                overscrollBehaviorX: "contain",
-                WebkitOverflowScrolling: "touch",
-                scrollbarWidth: { xs: "none", sm: "auto" },
-                "&::-webkit-scrollbar": { display: { xs: "none", sm: "block" } },
-                gridTemplateColumns: {
-                  sm: "repeat(2, minmax(0, 1fr))",
-                  lg: "repeat(3, minmax(0, 1fr))",
-                  xl: "repeat(4, minmax(0, 1fr))",
-                },
-                gap: { xs: 1, sm: 1.5 },
-                alignItems: "start",
-                pb: { xs: 0.5, sm: 0 },
-              }}
-            >
-              {parentCategories.map((parent) => {
-                const parentId = String(parent._id);
-
-                const isExpanded =
-                  expandedParent === parentId;
-
-                const isSelected =
-                  selectedParent === parentId;
-
-                const children = categories.filter(
-                  (category) =>
-                    getId(category.parentCategory) === parentId
-                );
-
-                return (
-                  <Box
-                    key={parentId}
-                    sx={{
-                      border: "1px solid",
-                      borderColor: isSelected ? "#8AA88D" : "#E5E9E5",
-                      borderRadius: 2,
-                      overflow: "hidden",
-                      minWidth: { xs: 142, sm: 0 },
-                      flex: { xs: "0 0 142px", sm: "initial" },
-                      transition: "border-color 160ms ease",
-                      bgcolor: "#FFFFFF",
-                    }}
-                  >
-                    <Button
-                      fullWidth
-                      onClick={() => handleParentClick(parentId)}
-                      endIcon={
-                        isExpanded ? (
-                          <ExpandMoreIcon />
-                        ) : (
-                          <ChevronRightIcon />
-                        )
-                      }
-                      sx={{
-                        width: "100%",
-                        justifyContent: "space-between",
-                        px: { xs: 1, sm: 1.75 },
-                        py: { xs: 0.8, sm: 1.5 },
-                        minHeight: { xs: 40, sm: 48 },
-                        color: "#344238",
-                        backgroundColor: "#FFFFFF",
-                        fontWeight: 600,
-                        fontSize: { xs: "0.72rem", sm: "0.95rem" },
-                        lineHeight: 1.2,
-                        whiteSpace: "normal",
-                        overflowWrap: "anywhere",
-                        textTransform: "none",
-                        textAlign: "left",
-                        "&:hover": { backgroundColor: "#F7F9F7" },
-                        "& .MuiButton-endIcon": { ml: 0.4 },
-                      }}
-                    >
-                      {parent.name}
-                    </Button>
-
-                    {isExpanded && (
-                      <>
-                        <Divider />
-
-                        <Box
-                          sx={{
-                            p: { xs: 1.25, sm: 1.5 },
-                            display: "flex",
-                            flexWrap: "wrap",
-                            gap: 0.75,
-                            maxHeight: { xs: 180, sm: 220 },
-                            overflowY: "auto",
-                            alignContent: "flex-start",
-                          }}
-                        >
-                          <Chip
-                            label="All"
-                            size="small"
-                            clickable
-                            color={
-                              !selectedChild
-                                ? "success"
-                                : "default"
-                            }
-                            variant={
-                              !selectedChild
-                                ? "filled"
-                                : "outlined"
-                            }
-                            onClick={() => setSelectedChild("")}
-                          />
-
-                          {children.map((child) => {
-                            const childId = String(child._id);
-
-                            return (
-                              <Chip
-                                key={childId}
-                                label={child.name}
-                                size="small"
-                                clickable
-                                color={
-                                  selectedChild === childId
-                                    ? "success"
-                                    : "default"
-                                }
-                                variant={
-                                  selectedChild === childId
-                                    ? "filled"
-                                    : "outlined"
-                                }
-                                onClick={() =>
-                                  handleChildClick(childId)
-                                }
-                              />
-                            );
-                          })}
-
-                          {children.length === 0 && (
-                            <Typography
-                              variant="caption"
-                              color="text.secondary"
-                            >
-                              No subcategories yet.
-                            </Typography>
-                          )}
-                        </Box>
-                      </>
-                    )}
-                  </Box>
-                );
-              })}
-            </Box>
-          )}
-
-          {/* PRICE FILTER */}
-
-          <Divider sx={{ my: 2.5 }} />
-
-          <Typography
-            fontWeight={700}
-            color="#263C2B"
-            mb={1.5}
-          >
-            Filter by Price
-          </Typography>
-
-          <Box
-            sx={{
-              display: "grid",
-              gridTemplateColumns: { xs: "minmax(0, 1fr)", sm: "repeat(2, minmax(0, 220px))" },
-              alignItems: "start",
-              gap: 1.25,
-            }}
-          >
-            <TextField
-              label="Minimum Price (₹)"
-              type="number"
-              size="small"
-              value={minPrice}
-              onChange={(e) => setMinPrice(e.target.value)}
-              inputProps={{ min: 0 }}
-              sx={{
-                width: "100%",
-                minWidth: 0,
-              }}
-            />
-
-            <TextField
-              label="Maximum Price (₹)"
-              type="number"
-              size="small"
-              value={maxPrice}
-              onChange={(e) => setMaxPrice(e.target.value)}
-              inputProps={{ min: 0 }}
-              sx={{
-                flex: 1,
-                minWidth: 130,
-              }}
-            />
-          </Box>
-
-          {minPrice !== "" &&
-            maxPrice !== "" &&
-            Number(minPrice) > Number(maxPrice) && (
-              <Typography
-                color="error"
-                variant="caption"
-                sx={{ display: "block", mt: 1 }}
-              >
-                Minimum price cannot be greater than maximum price.
-              </Typography>
-            )}
         </Box>
 
-        {/* LOADING */}
+        {/* COLLAPSIBLE COMPACT FILTER DRAWER */}
+        <Collapse in={filtersOpen}>
+          <Box
+            sx={{
+              bgcolor: "#FFFFFF",
+              border: "1px solid #E2E8E2",
+              borderRadius: 2,
+              p: { xs: 1.5, sm: 2 },
+              mb: 2.5,
+            }}
+          >
+            <Box
+              sx={{
+                display: "flex",
+                flexDirection: { xs: "column", md: "row" },
+                alignItems: { xs: "stretch", md: "flex-start" },
+                justifyContent: "space-between",
+                gap: 2,
+              }}
+            >
+              {/* COMPACT CATEGORIES */}
+              <Box sx={{ flex: 1, minWidth: 0 }}>
+                <Typography
+                  variant="caption"
+                  fontWeight={700}
+                  color="#263C2B"
+                  sx={{ display: "block", mb: 0.75, textTransform: "uppercase", letterSpacing: 0.5 }}
+                >
+                  Categories
+                </Typography>
 
+                {categoryLoading ? (
+                  <Box display="flex" alignItems="center" gap={1}>
+                    <CircularProgress size={16} color="success" />
+                    <Typography variant="caption" color="text.secondary">
+                      Loading...
+                    </Typography>
+                  </Box>
+                ) : categoryError ? (
+                  <Alert severity="warning" sx={{ py: 0, fontSize: "0.75rem" }}>
+                    {categoryError}
+                  </Alert>
+                ) : parentCategories.length === 0 ? (
+                  <Typography color="text.secondary" variant="caption">
+                    No categories available.
+                  </Typography>
+                ) : (
+                  <Box
+                    sx={{
+                      display: "flex",
+                      flexWrap: "wrap",
+                      gap: 0.75,
+                    }}
+                  >
+                    {parentCategories.map((parent) => {
+                      const parentId = String(parent._id);
+                      const isExpanded = expandedParent === parentId;
+                      const isSelected = selectedParent === parentId;
+
+                      return (
+                        <Chip
+                          key={parentId}
+                          label={parent.name}
+                          size="small"
+                          clickable
+                          color={isSelected ? "success" : "default"}
+                          variant={isSelected ? "filled" : "outlined"}
+                          onClick={() => handleParentClick(parentId)}
+                          onDelete={() => handleParentClick(parentId)}
+                          deleteIcon={
+                            isExpanded ? (
+                              <ExpandMoreIcon fontSize="small" />
+                            ) : (
+                              <ChevronRightIcon fontSize="small" />
+                            )
+                          }
+                          sx={{
+                            fontWeight: 600,
+                            fontSize: "0.78rem",
+                          }}
+                        />
+                      );
+                    })}
+                  </Box>
+                )}
+
+                {/* SUBCATEGORIES ROW */}
+                {expandedParent && (
+                  <Box
+                    sx={{
+                      mt: 1,
+                      pt: 1,
+                      borderTop: "1px dashed #E5E9E5",
+                      display: "flex",
+                      flexWrap: "wrap",
+                      alignItems: "center",
+                      gap: 0.6,
+                    }}
+                  >
+                    <Chip
+                      label="All"
+                      size="small"
+                      clickable
+                      color={!selectedChild ? "success" : "default"}
+                      variant={!selectedChild ? "filled" : "outlined"}
+                      onClick={() => setSelectedChild("")}
+                      sx={{ height: 24, fontSize: "0.72rem" }}
+                    />
+
+                    {childCategories.map((child) => {
+                      const childId = String(child._id);
+                      return (
+                        <Chip
+                          key={childId}
+                          label={child.name}
+                          size="small"
+                          clickable
+                          color={selectedChild === childId ? "success" : "default"}
+                          variant={selectedChild === childId ? "filled" : "outlined"}
+                          onClick={() => handleChildClick(childId)}
+                          sx={{ height: 24, fontSize: "0.72rem" }}
+                        />
+                      );
+                    })}
+
+                    {childCategories.length === 0 && (
+                      <Typography variant="caption" color="text.secondary">
+                        No subcategories
+                      </Typography>
+                    )}
+                  </Box>
+                )}
+              </Box>
+
+              <Divider
+                orientation="vertical"
+                flexItem
+                sx={{ display: { xs: "none", md: "block" } }}
+              />
+
+              {/* COMPACT PRICE RANGE */}
+              <Box sx={{ width: { xs: "100%", md: 250 }, flexShrink: 0 }}>
+                <Typography
+                  variant="caption"
+                  fontWeight={700}
+                  color="#263C2B"
+                  sx={{ display: "block", mb: 0.75, textTransform: "uppercase", letterSpacing: 0.5 }}
+                >
+                  Price Range
+                </Typography>
+
+                <Box
+                  sx={{
+                    display: "grid",
+                    gridTemplateColumns: "1fr 1fr",
+                    gap: 1,
+                  }}
+                >
+                  <TextField
+                    placeholder="Min"
+                    type="number"
+                    size="small"
+                    value={minPrice}
+                    onChange={(e) => setMinPrice(e.target.value)}
+                    inputProps={{ min: 0 }}
+                    InputProps={{
+                      startAdornment: (
+                        <InputAdornment position="start">₹</InputAdornment>
+                      ),
+                    }}
+                    sx={{
+                      "& .MuiInputBase-root": { height: 34, fontSize: "0.82rem" },
+                    }}
+                  />
+
+                  <TextField
+                    placeholder="Max"
+                    type="number"
+                    size="small"
+                    value={maxPrice}
+                    onChange={(e) => setMaxPrice(e.target.value)}
+                    inputProps={{ min: 0 }}
+                    InputProps={{
+                      startAdornment: (
+                        <InputAdornment position="start">₹</InputAdornment>
+                      ),
+                    }}
+                    sx={{
+                      "& .MuiInputBase-root": { height: 34, fontSize: "0.82rem" },
+                    }}
+                  />
+                </Box>
+
+                {minPrice !== "" &&
+                  maxPrice !== "" &&
+                  Number(minPrice) > Number(maxPrice) && (
+                    <Typography
+                      color="error"
+                      variant="caption"
+                      sx={{ display: "block", mt: 0.5, fontSize: "0.7rem" }}
+                    >
+                      Min price cannot exceed Max price.
+                    </Typography>
+                  )}
+              </Box>
+            </Box>
+          </Box>
+        </Collapse>
+
+        {/* LOADING */}
         {loading && (
           <Box
             sx={{
@@ -618,7 +559,6 @@ const Products = () => {
             }}
           >
             <CircularProgress color="success" size={28} />
-
             <Typography color="text.secondary" variant="body2">
               Loading products...
             </Typography>
@@ -626,7 +566,6 @@ const Products = () => {
         )}
 
         {/* ERROR */}
-
         {!loading && error && (
           <Box sx={{ maxWidth: 600, mx: "auto", py: 3 }}>
             <Alert severity="error" sx={{ borderRadius: 0 }}>
@@ -636,75 +575,60 @@ const Products = () => {
         )}
 
         {/* EMPTY RESULTS */}
+        {!loading && !error && filteredProducts.length === 0 && (
+          <Box
+            sx={{
+              minHeight: 180,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              textAlign: "center",
+              flexDirection: "column",
+            }}
+          >
+            <Typography fontWeight={700} color="#333">
+              No Products Found
+            </Typography>
 
-        {!loading &&
-          !error &&
-          filteredProducts.length === 0 && (
-            <Box
-              sx={{
-                minHeight: 180,
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                textAlign: "center",
-                flexDirection: "column",
-              }}
-            >
-              <Typography fontWeight={700} color="#333">
-                No Products Found
-              </Typography>
+            <Typography mt={0.5} color="#777" variant="body2">
+              Try changing your search or filters.
+            </Typography>
 
-              <Typography
-                mt={0.5}
-                color="#777"
-                variant="body2"
+            {hasFilters && (
+              <Button
+                onClick={clearFilters}
+                color="success"
+                sx={{ mt: 1 }}
               >
-                Try changing your search or filters.
-              </Typography>
-
-              {hasFilters && (
-                <Button
-                  onClick={clearFilters}
-                  color="success"
-                  sx={{ mt: 1 }}
-                >
-                  Clear All Filters
-                </Button>
-              )}
-            </Box>
-          )}
+                Clear All Filters
+              </Button>
+            )}
+          </Box>
+        )}
 
         {/* PRODUCT COUNT + GRID */}
-
-        {!loading &&
-          !error &&
-          filteredProducts.length > 0 && (
-            <>
-              <Box
-                sx={{
-                  display: "flex",
-                  alignItems: "center",
-                  mb: 1.5,
-                }}
+        {!loading && !error && filteredProducts.length > 0 && (
+          <>
+            <Box
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                mb: 1.5,
+              }}
+            >
+              <Typography
+                color="#555"
+                fontSize={{ xs: "0.75rem", sm: "0.85rem" }}
+                fontWeight={600}
               >
-                <Typography
-                  color="#555"
-                  fontSize={{
-                    xs: "0.75rem",
-                    sm: "0.85rem",
-                  }}
-                  fontWeight={600}
-                >
-                  {filteredProducts.length}{" "}
-                  {filteredProducts.length === 1
-                    ? "Product"
-                    : "Products"}
-                </Typography>
-              </Box>
+                {filteredProducts.length}{" "}
+                {filteredProducts.length === 1 ? "Product" : "Products"}
+              </Typography>
+            </Box>
 
-              <ProductGrid products={filteredProducts} />
-            </>
-          )}
+            <ProductGrid products={filteredProducts} />
+          </>
+        )}
       </Container>
     </Box>
   );

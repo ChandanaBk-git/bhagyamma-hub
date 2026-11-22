@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
@@ -68,7 +67,6 @@ const ProductInfo = ({ product }) => {
 
   // =====================================================
   // BUY NOW
-  // Add this product to the existing cart, then display it.
   // =====================================================
 
   const handleBuyNow = async () => {
@@ -108,35 +106,38 @@ const ProductInfo = ({ product }) => {
     }
   };
 
+  const specs = [
+    { title: "Category", value: product.category },
+    { title: "Brand", value: product.brand },
+    { title: "Weight", value: product.weight },
+    { title: "Quantity", value: product.quantity },
+    { title: "Shelf Life", value: product.shelfLife },
+    { title: "Manufacturer", value: product.manufacturer },
+    { title: "Origin", value: product.countryOfOrigin },
+    { title: "SKU", value: product.sku },
+  ];
+
   return (
     <>
-      <Stack
-        spacing={{
-          xs: 1.2,
-          sm: 1.5,
-        }}
-      >
+      <Stack spacing={1}>
         {/* PRODUCT NAME */}
         <Typography
           component="h1"
           sx={{
             fontWeight: 700,
             color: "#222",
-            fontSize: {
-              xs: "1.2rem",
-              sm: "1.5rem",
-              md: "1.8rem",
-            },
+            fontSize: { xs: "1.1rem", sm: "1.3rem", md: "1.45rem" },
             lineHeight: 1.25,
           }}
         >
           {product.productName}
         </Typography>
 
-        {/* CATEGORY + STATUS */}
+        {/* INLINE CATEGORY + STATUS + BRAND */}
         <Stack
           direction="row"
-          spacing={0.7}
+          alignItems="center"
+          spacing={0.75}
           flexWrap="wrap"
           useFlexGap
         >
@@ -145,18 +146,12 @@ const ProductInfo = ({ product }) => {
               label={product.category}
               size="small"
               sx={{
-                height: {
-                  xs: 22,
-                  sm: 25,
-                },
+                height: 20,
                 bgcolor: "#E8F5E9",
                 color: "#1B5E20",
                 borderRadius: 0,
                 fontWeight: 700,
-                fontSize: {
-                  xs: "0.52rem",
-                  sm: "0.6rem",
-                },
+                fontSize: "0.62rem",
               }}
             />
           )}
@@ -166,185 +161,180 @@ const ProductInfo = ({ product }) => {
               label={product.status}
               size="small"
               sx={{
-                height: {
-                  xs: 22,
-                  sm: 25,
-                },
-                bgcolor:
-                  product.status === "Active"
-                    ? "#E8F5E9"
-                    : "#F5F5F5",
-                color:
-                  product.status === "Active"
-                    ? "#2E7D32"
-                    : "#777",
+                height: 20,
+                bgcolor: product.status === "Active" ? "#E8F5E9" : "#F5F5F5",
+                color: product.status === "Active" ? "#2E7D32" : "#777",
                 borderRadius: 0,
                 fontWeight: 600,
-                fontSize: {
-                  xs: "0.52rem",
-                  sm: "0.6rem",
-                },
+                fontSize: "0.62rem",
               }}
             />
           )}
+
+          {product.brand && (
+            <Typography sx={{ color: "#666", fontSize: "0.72rem", pl: 0.5 }}>
+              Brand:{" "}
+              <Box component="span" sx={{ color: "#222", fontWeight: 600 }}>
+                {product.brand}
+              </Box>
+            </Typography>
+          )}
         </Stack>
 
-        {/* BRAND */}
-        {product.brand && (
+        {/* PRICE + ACTION BUTTONS ROW */}
+        <Box
+          sx={{
+            display: "flex",
+            flexDirection: { xs: "column", sm: "row" },
+            alignItems: { xs: "stretch", sm: "center" },
+            justifyContent: "space-between",
+            gap: 1.25,
+            py: 0.5,
+          }}
+        >
           <Typography
             sx={{
-              color: "#777",
-              fontSize: {
-                xs: "0.62rem",
-                sm: "0.7rem",
-              },
+              color: "#1B5E20",
+              fontWeight: 800,
+              fontSize: { xs: "1.3rem", sm: "1.5rem" },
+              lineHeight: 1.1,
             }}
           >
-            Brand:{" "}
-            <Box
-              component="span"
+            ₹{Number(product.price || 0).toLocaleString("en-IN")}
+          </Typography>
+
+          <Stack direction="row" spacing={1} sx={{ width: { xs: "100%", sm: "auto" } }}>
+            <Button
+              variant="contained"
+              onClick={handleAddToCart}
               sx={{
-                color: "#333",
-                fontWeight: 600,
+                flex: { xs: 1, sm: "initial" },
+                minWidth: { sm: 125 },
+                height: 34,
+                bgcolor: "#1B5E20",
+                color: "#fff",
+                borderRadius: 0,
+                textTransform: "none",
+                fontWeight: 700,
+                fontSize: "0.72rem",
+                boxShadow: "none",
+                "&:hover": {
+                  bgcolor: "#154A19",
+                  boxShadow: "none",
+                },
               }}
             >
-              {product.brand}
-            </Box>
+              Add To Cart
+            </Button>
+
+            <Button
+              variant="outlined"
+              onClick={handleBuyNow}
+              disabled={buyNowLoading}
+              sx={{
+                flex: { xs: 1, sm: "initial" },
+                minWidth: { sm: 115 },
+                height: 34,
+                borderColor: "#B08D3C",
+                color: "#8A6B25",
+                borderRadius: 0,
+                textTransform: "none",
+                fontWeight: 700,
+                fontSize: "0.72rem",
+                "&:hover": {
+                  borderColor: "#8A6B25",
+                  bgcolor: "#FBF8EF",
+                },
+              }}
+            >
+              {buyNowLoading ? "Adding..." : "Buy Now"}
+            </Button>
+          </Stack>
+        </Box>
+
+        {/* COMPACT 2-LINE SUMMARY DESCRIPTION */}
+        {product.description && (
+          <Typography
+            sx={{
+              color: "#666",
+              fontSize: { xs: "0.7rem", sm: "0.76rem" },
+              lineHeight: 1.45,
+              display: "-webkit-box",
+              WebkitLineClamp: 2,
+              WebkitBoxOrient: "vertical",
+              overflow: "hidden",
+            }}
+          >
+            {product.description}
           </Typography>
         )}
 
-        {/* PRICE */}
-        <Typography
-          sx={{
-            color: "#1B5E20",
-            fontWeight: 800,
-            fontSize: {
-              xs: "1.35rem",
-              sm: "1.55rem",
-              md: "1.8rem",
-            },
-            lineHeight: 1.2,
-          }}
-        >
-          ₹{product.price}
-        </Typography>
+        <Divider sx={{ my: 0.5 }} />
 
-        <Divider />
+        {/* COMPACT 2-COLUMN SPECIFICATIONS GRID */}
+        <Box>
+          <Typography
+            sx={{
+              fontWeight: 700,
+              color: "#222",
+              fontSize: "0.78rem",
+              mb: 0.6,
+            }}
+          >
+            Specifications
+          </Typography>
 
-        {/* DESCRIPTION */}
-        <Typography
-          sx={{
-            color: "#666",
-            fontSize: {
-              xs: "0.65rem",
-              sm: "0.72rem",
-              md: "0.8rem",
-            },
-            lineHeight: 1.55,
-          }}
-        >
-          {product.description}
-        </Typography>
+          <Box
+            sx={{
+              display: "grid",
+              gridTemplateColumns: { xs: "1fr", sm: "repeat(2, minmax(0, 1fr))" },
+              borderTop: "1px solid #E1E6E2",
+              borderLeft: "1px solid #E1E6E2",
+              bgcolor: "#FAFAFA",
+            }}
+          >
+            {specs.map((item) => (
+              <Box
+                key={item.title}
+                sx={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  gap: 1,
+                  px: 1.1,
+                  py: 0.55,
+                  borderRight: "1px solid #E1E6E2",
+                  borderBottom: "1px solid #E1E6E2",
+                }}
+              >
+                <Typography
+                  sx={{
+                    fontWeight: 600,
+                    color: "#666",
+                    fontSize: "0.66rem",
+                    whiteSpace: "nowrap",
+                  }}
+                >
+                  {item.title}
+                </Typography>
 
-        <Divider />
-
-        {/* SPECIFICATIONS */}
-        <Typography
-          sx={{
-            fontWeight: 700,
-            color: "#222",
-            fontSize: {
-              xs: "0.82rem",
-              sm: "0.95rem",
-            },
-          }}
-        >
-          Product Specifications
-        </Typography>
-
-        <Box
-          sx={{
-            border: "1px solid #E1E6E2",
-            bgcolor: "#fff",
-          }}
-        >
-          <Specification title="Category" value={product.category} />
-          <Specification title="Brand" value={product.brand} />
-          <Specification title="Weight" value={product.weight || "-"} />
-          <Specification title="Quantity" value={product.quantity || "-"} />
-          <Specification title="Shelf Life" value={product.shelfLife || "-"} />
-          <Specification title="Manufacturer" value={product.manufacturer || "-"} />
-          <Specification
-            title="Country Of Origin"
-            value={product.countryOfOrigin || "-"}
-          />
-          <Specification title="SKU" value={product.sku || "-"} last />
+                <Typography
+                  sx={{
+                    color: "#222",
+                    fontWeight: 500,
+                    fontSize: "0.66rem",
+                    textAlign: "right",
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                    whiteSpace: "nowrap",
+                  }}
+                >
+                  {item.value || "-"}
+                </Typography>
+              </Box>
+            ))}
+          </Box>
         </Box>
-
-        {/* ACTION BUTTONS */}
-        <Stack
-          direction="row"
-          spacing={1}
-          sx={{
-            pt: 0.5,
-          }}
-        >
-          <Button
-            fullWidth
-            variant="contained"
-            onClick={handleAddToCart}
-            sx={{
-              height: {
-                xs: 36,
-                sm: 40,
-              },
-              bgcolor: "#1B5E20",
-              color: "#fff",
-              borderRadius: 0,
-              textTransform: "none",
-              fontWeight: 700,
-              fontSize: {
-                xs: "0.58rem",
-                sm: "0.68rem",
-              },
-              boxShadow: "none",
-              "&:hover": {
-                bgcolor: "#154A19",
-                boxShadow: "none",
-              },
-            }}
-          >
-            Add To Cart
-          </Button>
-
-          <Button
-            fullWidth
-            variant="outlined"
-            onClick={handleBuyNow}
-            disabled={buyNowLoading}
-            sx={{
-              height: {
-                xs: 36,
-                sm: 40,
-              },
-              borderColor: "#B08D3C",
-              color: "#8A6B25",
-              borderRadius: 0,
-              textTransform: "none",
-              fontWeight: 700,
-              fontSize: {
-                xs: "0.58rem",
-                sm: "0.68rem",
-              },
-              "&:hover": {
-                borderColor: "#8A6B25",
-                bgcolor: "#FBF8EF",
-              },
-            }}
-          >
-            {buyNowLoading ? "Adding..." : "Buy Now"}
-          </Button>
-        </Stack>
       </Stack>
 
       {/* SNACKBAR */}
@@ -373,85 +363,13 @@ const ProductInfo = ({ product }) => {
           }
           sx={{
             width: "100%",
-            fontSize: {
-              xs: "0.65rem",
-              sm: "0.75rem",
-            },
+            fontSize: { xs: "0.7rem", sm: "0.78rem" },
           }}
         >
           {snackbar.message}
         </Alert>
       </Snackbar>
     </>
-  );
-};
-
-// =====================================================
-// SPECIFICATION ROW
-// =====================================================
-
-const Specification = ({
-  title,
-  value,
-  last = false,
-}) => {
-  return (
-    <Box>
-      <Box
-        sx={{
-          display: "grid",
-          gridTemplateColumns: {
-            xs: "40% 60%",
-            sm: "35% 65%",
-          },
-          alignItems: "center",
-          minHeight: {
-            xs: 31,
-            sm: 35,
-          },
-          px: {
-            xs: 1,
-            sm: 1.5,
-          },
-          py: 0.4,
-        }}
-      >
-        <Typography
-          sx={{
-            fontWeight: 600,
-            color: "#555",
-            fontSize: {
-              xs: "0.57rem",
-              sm: "0.65rem",
-            },
-          }}
-        >
-          {title}
-        </Typography>
-
-        <Typography
-          sx={{
-            color: "#333",
-            fontSize: {
-              xs: "0.57rem",
-              sm: "0.65rem",
-            },
-            textAlign: "right",
-            wordBreak: "break-word",
-          }}
-        >
-          {value || "-"}
-        </Typography>
-      </Box>
-
-      {!last && (
-        <Divider
-          sx={{
-            borderColor: "#EDF0ED",
-          }}
-        />
-      )}
-    </Box>
   );
 };
 

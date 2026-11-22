@@ -9,7 +9,9 @@ import {
   CardMedia,
   Chip,
   CircularProgress,
+  Collapse,
   Divider,
+  InputAdornment,
   Snackbar,
   Stack,
   TextField,
@@ -17,8 +19,10 @@ import {
 } from "@mui/material";
 
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+import ExpandLessIcon from "@mui/icons-material/ExpandLess";
 import ChevronRightIcon from "@mui/icons-material/ChevronRight";
 import RestartAltIcon from "@mui/icons-material/RestartAlt";
+import TuneIcon from "@mui/icons-material/Tune";
 
 import { Link } from "react-router-dom";
 
@@ -73,6 +77,7 @@ const Products = () => {
   const [categories, setCategories] = useState([]);
 
   const [searchTerm, setSearchTerm] = useState("");
+  const [filtersOpen, setFiltersOpen] = useState(false);
 
   const [selectedParent, setSelectedParent] = useState("");
   const [selectedChild, setSelectedChild] = useState("");
@@ -104,15 +109,12 @@ const Products = () => {
       try {
         setLoading(true);
         setError("");
-
         const response = await getProducts();
-
         if (mounted) {
           setProducts(unwrapArray(response));
         }
       } catch (err) {
         console.error("Member products loading error:", err);
-
         if (mounted) {
           setError(
             err?.response?.data?.message ||
@@ -131,15 +133,12 @@ const Products = () => {
       try {
         setCategoryLoading(true);
         setCategoryError("");
-
         const response = await getCategories();
-
         if (mounted) {
           setCategories(unwrapArray(response));
         }
       } catch (err) {
         console.error("Member categories loading error:", err);
-
         if (mounted) {
           setCategoryError(
             err?.response?.data?.message ||
@@ -163,7 +162,7 @@ const Products = () => {
   }, []);
 
   // =====================================================
-  // PARENT CATEGORIES
+  // PARENT & CHILD CATEGORIES
   // =====================================================
 
   const parentCategories = useMemo(() => {
@@ -171,10 +170,6 @@ const Products = () => {
       (category) => !getId(category.parentCategory)
     );
   }, [categories]);
-
-  // =====================================================
-  // CHILD CATEGORIES
-  // =====================================================
 
   const childCategories = useMemo(() => {
     if (!expandedParent) return [];
@@ -191,31 +186,15 @@ const Products = () => {
 
   const filteredProducts = useMemo(() => {
     const search = searchTerm.trim().toLowerCase();
-
-    const min =
-      minPrice === "" ? null : Number(minPrice);
-
-    const max =
-      maxPrice === "" ? null : Number(maxPrice);
+    const min = minPrice === "" ? null : Number(minPrice);
+    const max = maxPrice === "" ? null : Number(maxPrice);
 
     return products.filter((product) => {
-      const productName = String(
-        product?.productName || ""
-      ).toLowerCase();
+      const productName = String(product?.productName || "").toLowerCase();
+      const brand = String(product?.brand || "").toLowerCase();
+      const description = String(product?.description || "").toLowerCase();
+      const categoryName = getCategoryName(product?.category).toLowerCase();
 
-      const brand = String(
-        product?.brand || ""
-      ).toLowerCase();
-
-      const description = String(
-        product?.description || ""
-      ).toLowerCase();
-
-      const categoryName = getCategoryName(
-        product?.category
-      ).toLowerCase();
-
-      // SEARCH
       const matchesSearch =
         !search ||
         productName.includes(search) ||
@@ -225,35 +204,26 @@ const Products = () => {
 
       if (!matchesSearch) return false;
 
-      // PARENT CATEGORY
       if (selectedParent) {
         const selectedCategory = parentCategories.find(
           (category) => getId(category) === selectedParent
         );
 
-        const productParentId = getId(
-          product?.parentCategory
-        );
+        const productParentId = getId(product?.parentCategory);
 
         const matchesParent =
           productParentId === selectedParent ||
           getId(product?.category) === selectedParent ||
-          (
-            !productParentId &&
+          (!productParentId &&
             selectedCategory?.name &&
-            categoryName ===
-              selectedCategory.name.toLowerCase()
-          );
+            categoryName === selectedCategory.name.toLowerCase());
 
         if (!matchesParent) return false;
       }
 
-      // SUBCATEGORY
       if (selectedChild) {
         const productCategoryIds = [
-          ...(Array.isArray(product?.categories)
-            ? product.categories
-            : []),
+          ...(Array.isArray(product?.categories) ? product.categories : []),
           product?.category,
           product?.subCategory,
           product?.subcategory,
@@ -264,9 +234,7 @@ const Products = () => {
         }
       }
 
-      // PRICE
       const price = Number(product?.price ?? 0);
-
       if (min !== null && price < min) return false;
       if (max !== null && price > max) return false;
 
@@ -283,7 +251,7 @@ const Products = () => {
   ]);
 
   // =====================================================
-  // SELECT PARENT CATEGORY
+  // HANDLERS
   // =====================================================
 
   const handleParentClick = (parentId) => {
@@ -299,19 +267,11 @@ const Products = () => {
     setSelectedChild("");
   };
 
-  // =====================================================
-  // SELECT SUBCATEGORY
-  // =====================================================
-
   const handleChildClick = (childId) => {
     setSelectedChild((previous) =>
       previous === childId ? "" : childId
     );
   };
-
-  // =====================================================
-  // RESET FILTERS
-  // =====================================================
 
   const clearFilters = () => {
     setSearchTerm("");
@@ -322,27 +282,17 @@ const Products = () => {
     setMaxPrice("");
   };
 
-  const hasFilters =
-    searchTerm.trim() !== "" ||
-    selectedParent !== "" ||
-    selectedChild !== "" ||
-    minPrice !== "" ||
-    maxPrice !== "";
+  const activeFilterCount =
+    (selectedParent ? 1 : 0) +
+    (selectedChild ? 1 : 0) +
+    (minPrice !== "" || maxPrice !== "" ? 1 : 0);
 
-  // =====================================================
-  // CART NOTIFICATIONS
-  // =====================================================
+  const hasFilters =
+    searchTerm.trim() !== "" || activeFilterCount > 0;
 
   const handleCloseSnackbar = () => {
-    setSnackbar((previous) => ({
-      ...previous,
-      open: false,
-    }));
+    setSnackbar((previous) => ({ ...previous, open: false }));
   };
-
-  // =====================================================
-  // ADD TO CART
-  // =====================================================
 
   const handleAddToCart = async (product) => {
     try {
@@ -354,7 +304,6 @@ const Products = () => {
           severity: "error",
           message: "Unable to add product to cart.",
         });
-
         return;
       }
 
@@ -365,7 +314,6 @@ const Products = () => {
       });
     } catch (err) {
       console.error("Add to cart error:", err);
-
       setSnackbar({
         open: true,
         severity: "error",
@@ -398,7 +346,6 @@ const Products = () => {
         boxSizing: "border-box",
         overflowX: "hidden",
         bgcolor: "#F5F7FA",
-
         "& .MuiCard-root, & .MuiPaper-root, & .MuiButton-root, & .MuiChip-root, & .MuiAlert-root":
           {
             borderRadius: "0 !important",
@@ -408,15 +355,9 @@ const Products = () => {
       <Box
         sx={{
           width: "100%",
-          maxWidth: {
-            xs: "100%",
-            md: "1600px",
-          },
+          maxWidth: { xs: "100%", md: "1600px" },
           minWidth: 0,
-          mx: {
-            xs: 0,
-            md: "auto",
-          },
+          mx: { xs: 0, md: "auto" },
           p: {
             xs: "8px 8px 16px",
             sm: "12px 12px 20px",
@@ -427,17 +368,12 @@ const Products = () => {
         }}
       >
         {/* PAGE HEADING */}
-
-        <Box sx={{ mb: { xs: 1, sm: 1.5, md: 2 } }}>
+        <Box sx={{ mb: { xs: 1, sm: 1.5 } }}>
           <Typography
             component="h1"
             sx={{
               m: 0,
-              fontSize: {
-                xs: "18px",
-                sm: "22px",
-                md: "27px",
-              },
+              fontSize: { xs: "18px", sm: "22px", md: "26px" },
               lineHeight: 1.25,
               fontWeight: 700,
               color: "#292929",
@@ -449,11 +385,7 @@ const Products = () => {
           <Typography
             sx={{
               mt: "2px",
-              fontSize: {
-                xs: "10px",
-                sm: "12px",
-                md: "13px",
-              },
+              fontSize: { xs: "10px", sm: "12px" },
               lineHeight: 1.4,
               color: "text.secondary",
             }}
@@ -462,325 +394,326 @@ const Products = () => {
           </Typography>
         </Box>
 
-        {/* SEARCH */}
-
+        {/* SEARCH + MINIMISED FILTER TOGGLE BAR */}
         <Box
           sx={{
-            width: "100%",
-            mb: { xs: 1, sm: 1.5, md: 2 },
-            overflow: "hidden",
-            "& > *": {
-              width: "100%",
-              maxWidth: "100%",
-              boxSizing: "border-box",
-            },
-          }}
-        >
-          <ProductSearch
-            searchTerm={searchTerm}
-            setSearchTerm={setSearchTerm}
-          />
-        </Box>
-
-        {/* CATEGORY AND PRICE FILTERS */}
-
-        <Box
-          sx={{
-            width: "100%",
-            bgcolor: "#FFFFFF",
-            border: "1px solid #E0E0E0",
-            p: {
-              xs: 1.25,
-              sm: 2,
-              md: 2.5,
-            },
-            mb: {
-              xs: 1.5,
-              sm: 2,
-            },
-            boxSizing: "border-box",
+            display: "flex",
+            flexDirection: { xs: "column", md: "row" },
+            alignItems: { xs: "stretch", md: "center" },
+            gap: 1,
+            mb: 1.5,
           }}
         >
           <Box
             sx={{
-              display: "flex",
-              alignItems: {
-                xs: "flex-start",
-                sm: "center",
+              flex: 1,
+              minWidth: 0,
+              overflow: "hidden",
+              "& > *": {
+                width: "100%",
+                maxWidth: "100%",
+                boxSizing: "border-box",
               },
-              justifyContent: "space-between",
-              flexDirection: {
-                xs: "column",
-                sm: "row",
-              },
-              gap: 1,
-              mb: 1.5,
             }}
           >
-            <Typography
-              sx={{
-                fontSize: {
-                  xs: 14,
-                  sm: 16,
-                },
-                fontWeight: 700,
-              }}
-            >
-              Browse Categories
-            </Typography>
-
-            <Button
-              size="small"
-              color="success"
-              startIcon={<RestartAltIcon />}
-              onClick={clearFilters}
-              sx={{
-                textTransform: "none",
-                alignSelf: {
-                  xs: "flex-end",
-                  sm: "auto",
-                },
-              }}
-            >
-              Reset Filters
-            </Button>
+            <ProductSearch
+              searchTerm={searchTerm}
+              setSearchTerm={setSearchTerm}
+            />
           </Box>
 
-          {categoryLoading ? (
+          <Box
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              gap: 1,
+            }}
+          >
+            <Button
+              variant={filtersOpen || activeFilterCount > 0 ? "contained" : "outlined"}
+              color="success"
+              size="small"
+              startIcon={<TuneIcon fontSize="small" />}
+              endIcon={
+                filtersOpen ? (
+                  <ExpandLessIcon fontSize="small" />
+                ) : (
+                  <ExpandMoreIcon fontSize="small" />
+                )
+              }
+              onClick={() => setFiltersOpen((prev) => !prev)}
+              sx={{
+                height: 38,
+                px: 1.75,
+                textTransform: "none",
+                fontWeight: 600,
+                fontSize: { xs: 12, sm: 13 },
+                boxShadow: "none",
+                whiteSpace: "nowrap",
+                "&:hover": { boxShadow: "none" },
+              }}
+            >
+              Filters
+              {activeFilterCount > 0 ? ` (${activeFilterCount})` : ""}
+            </Button>
+
+            {hasFilters && (
+              <Button
+                size="small"
+                color="success"
+                variant="outlined"
+                startIcon={<RestartAltIcon fontSize="small" />}
+                onClick={clearFilters}
+                sx={{
+                  height: 38,
+                  textTransform: "none",
+                  fontSize: { xs: 11, sm: 12 },
+                  whiteSpace: "nowrap",
+                }}
+              >
+                Reset
+              </Button>
+            )}
+
+            <Typography
+              sx={{
+                fontSize: { xs: 11, sm: 12 },
+                color: "text.secondary",
+                fontWeight: 600,
+                ml: { xs: "auto", md: 1 },
+                whiteSpace: "nowrap",
+              }}
+            >
+              {filteredProducts.length}{" "}
+              {filteredProducts.length === 1 ? "item" : "items"}
+            </Typography>
+          </Box>
+        </Box>
+
+        {/* COLLAPSIBLE COMPACT CATEGORY & PRICE DRAWER */}
+        <Collapse in={filtersOpen}>
+          <Box
+            sx={{
+              width: "100%",
+              bgcolor: "#FFFFFF",
+              border: "1px solid #E0E0E0",
+              p: { xs: 1.25, sm: 1.75 },
+              mb: 1.5,
+              boxSizing: "border-box",
+            }}
+          >
             <Box
               sx={{
                 display: "flex",
-                alignItems: "center",
-                gap: 1,
-                py: 1,
+                flexDirection: { xs: "column", md: "row" },
+                alignItems: { xs: "stretch", md: "flex-start" },
+                justifyContent: "space-between",
+                gap: 1.75,
               }}
             >
-              <CircularProgress
-                size={18}
-                color="success"
-              />
-
-              <Typography
-                variant="body2"
-                color="text.secondary"
-              >
-                Loading categories...
-              </Typography>
-            </Box>
-          ) : categoryError ? (
-            <Alert severity="warning" sx={{ mb: 1.5 }}>
-              {categoryError}
-            </Alert>
-          ) : parentCategories.length === 0 ? (
-            <Typography
-              variant="body2"
-              color="text.secondary"
-            >
-              No categories available.
-            </Typography>
-          ) : (
-            <Box
-              sx={{
-                display: "grid",
-                gridTemplateColumns: {
-                  xs: "repeat(2, minmax(0, 1fr))",
-                  sm: "repeat(3, minmax(0, 1fr))",
-                  md: "repeat(4, minmax(0, 1fr))",
-                },
-                gap: 1,
-              }}
-            >
-              {parentCategories.map((category) => {
-                const id = getId(category);
-                const selected = selectedParent === id;
-
-                return (
-                  <Button
-                    key={id}
-                    variant={
-                      selected ? "contained" : "outlined"
-                    }
-                    color="success"
-                    onClick={() => handleParentClick(id)}
-                    endIcon={
-                      expandedParent === id ? (
-                        <ExpandMoreIcon />
-                      ) : (
-                        <ChevronRightIcon />
-                      )
-                    }
-                    sx={{
-                      minWidth: 0,
-                      minHeight: {
-                        xs: 38,
-                        sm: 42,
-                      },
-                      justifyContent: "space-between",
-                      textAlign: "left",
-                      textTransform: "none",
-                      fontSize: {
-                        xs: 11,
-                        sm: 13,
-                      },
-                      px: {
-                        xs: 1,
-                        sm: 1.5,
-                      },
-                      overflowWrap: "anywhere",
-                    }}
-                  >
-                    <Box
-                      component="span"
-                      sx={{
-                        overflow: "hidden",
-                        textOverflow: "ellipsis",
-                        whiteSpace: "normal",
-                      }}
-                    >
-                      {category.name || "Category"}
-                    </Box>
-                  </Button>
-                );
-              })}
-            </Box>
-          )}
-
-          {/* SUBCATEGORIES */}
-
-          {expandedParent &&
-            childCategories.length > 0 && (
-              <>
-                <Divider sx={{ my: 2 }} />
-
+              {/* COMPACT CATEGORIES */}
+              <Box sx={{ flex: 1, minWidth: 0 }}>
                 <Typography
                   sx={{
-                    fontSize: 13,
+                    fontSize: 11,
                     fontWeight: 700,
-                    mb: 1,
+                    mb: 0.75,
+                    color: "#444",
+                    textTransform: "uppercase",
+                    letterSpacing: 0.4,
                   }}
                 >
-                  Subcategories
+                  Categories
+                </Typography>
+
+                {categoryLoading ? (
+                  <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                    <CircularProgress size={16} color="success" />
+                    <Typography variant="caption" color="text.secondary">
+                      Loading categories...
+                    </Typography>
+                  </Box>
+                ) : categoryError ? (
+                  <Alert severity="warning" sx={{ py: 0, fontSize: 11 }}>
+                    {categoryError}
+                  </Alert>
+                ) : parentCategories.length === 0 ? (
+                  <Typography variant="caption" color="text.secondary">
+                    No categories available.
+                  </Typography>
+                ) : (
+                  <Box
+                    sx={{
+                      display: "flex",
+                      flexWrap: "wrap",
+                      gap: 0.75,
+                    }}
+                  >
+                    {parentCategories.map((category) => {
+                      const id = getId(category);
+                      const selected = selectedParent === id;
+
+                      return (
+                        <Button
+                          key={id}
+                          size="small"
+                          variant={selected ? "contained" : "outlined"}
+                          color="success"
+                          onClick={() => handleParentClick(id)}
+                          endIcon={
+                            expandedParent === id ? (
+                              <ExpandMoreIcon fontSize="small" />
+                            ) : (
+                              <ChevronRightIcon fontSize="small" />
+                            )
+                          }
+                          sx={{
+                            minHeight: 28,
+                            py: 0.25,
+                            px: 1.25,
+                            textTransform: "none",
+                            fontSize: { xs: 11, sm: 12 },
+                            boxShadow: "none",
+                            "&:hover": { boxShadow: "none" },
+                          }}
+                        >
+                          {category.name || "Category"}
+                        </Button>
+                      );
+                    })}
+                  </Box>
+                )}
+
+                {/* SUBCATEGORIES */}
+                {expandedParent && childCategories.length > 0 && (
+                  <Box
+                    sx={{
+                      mt: 1,
+                      pt: 1,
+                      borderTop: "1px dashed #E0E0E0",
+                      display: "flex",
+                      flexWrap: "wrap",
+                      alignItems: "center",
+                      gap: 0.6,
+                    }}
+                  >
+                    <Typography
+                      sx={{
+                        fontSize: 11,
+                        fontWeight: 600,
+                        color: "text.secondary",
+                        mr: 0.5,
+                      }}
+                    >
+                      Sub:
+                    </Typography>
+
+                    {childCategories.map((category) => {
+                      const id = getId(category);
+                      return (
+                        <Chip
+                          key={id}
+                          size="small"
+                          label={category.name || "Subcategory"}
+                          clickable
+                          color={selectedChild === id ? "success" : "default"}
+                          variant={selectedChild === id ? "filled" : "outlined"}
+                          onClick={() => handleChildClick(id)}
+                          sx={{
+                            height: 24,
+                            fontSize: 11,
+                            maxWidth: "100%",
+                          }}
+                        />
+                      );
+                    })}
+                  </Box>
+                )}
+              </Box>
+
+              <Divider
+                orientation="vertical"
+                flexItem
+                sx={{ display: { xs: "none", md: "block" } }}
+              />
+
+              {/* COMPACT PRICE RANGE */}
+              <Box sx={{ width: { xs: "100%", md: 240 }, flexShrink: 0 }}>
+                <Typography
+                  sx={{
+                    fontSize: 11,
+                    fontWeight: 700,
+                    mb: 0.75,
+                    color: "#444",
+                    textTransform: "uppercase",
+                    letterSpacing: 0.4,
+                  }}
+                >
+                  Price Range
                 </Typography>
 
                 <Box
                   sx={{
-                    display: "flex",
-                    flexWrap: "wrap",
+                    display: "grid",
+                    gridTemplateColumns: "1fr 1fr",
                     gap: 1,
                   }}
                 >
-                  {childCategories.map((category) => {
-                    const id = getId(category);
+                  <TextField
+                    placeholder="Min"
+                    type="number"
+                    size="small"
+                    value={minPrice}
+                    onChange={(event) => setMinPrice(event.target.value)}
+                    inputProps={{ min: 0 }}
+                    InputProps={{
+                      startAdornment: (
+                        <InputAdornment position="start">₹</InputAdornment>
+                      ),
+                    }}
+                    sx={{
+                      "& .MuiInputBase-root": { height: 32, fontSize: 12 },
+                    }}
+                    fullWidth
+                  />
 
-                    return (
-                      <Chip
-                        key={id}
-                        label={category.name || "Subcategory"}
-                        clickable
-                        color={
-                          selectedChild === id
-                            ? "success"
-                            : "default"
-                        }
-                        variant={
-                          selectedChild === id
-                            ? "filled"
-                            : "outlined"
-                        }
-                        onClick={() => handleChildClick(id)}
-                        sx={{
-                          maxWidth: "100%",
-                          "& .MuiChip-label": {
-                            overflow: "hidden",
-                            textOverflow: "ellipsis",
-                          },
-                        }}
-                      />
-                    );
-                  })}
+                  <TextField
+                    placeholder="Max"
+                    type="number"
+                    size="small"
+                    value={maxPrice}
+                    onChange={(event) => setMaxPrice(event.target.value)}
+                    inputProps={{ min: 0 }}
+                    InputProps={{
+                      startAdornment: (
+                        <InputAdornment position="start">₹</InputAdornment>
+                      ),
+                    }}
+                    sx={{
+                      "& .MuiInputBase-root": { height: 32, fontSize: 12 },
+                    }}
+                    fullWidth
+                  />
                 </Box>
-              </>
-            )}
 
-          <Divider sx={{ my: 2 }} />
-
-          {/* PRICE FILTER */}
-
-          <Typography
-            sx={{
-              fontSize: 13,
-              fontWeight: 700,
-              mb: 1.25,
-            }}
-          >
-            Filter by Price
-          </Typography>
-
-          <Box
-            sx={{
-              display: "grid",
-              gridTemplateColumns: {
-                xs: "minmax(0, 1fr)",
-                sm: "repeat(2, minmax(0, 220px))",
-              },
-              gap: 1.25,
-            }}
-          >
-            <TextField
-              label="Minimum Price (₹)"
-              type="number"
-              size="small"
-              value={minPrice}
-              onChange={(event) =>
-                setMinPrice(event.target.value)
-              }
-              inputProps={{ min: 0 }}
-              fullWidth
-            />
-
-            <TextField
-              label="Maximum Price (₹)"
-              type="number"
-              size="small"
-              value={maxPrice}
-              onChange={(event) =>
-                setMaxPrice(event.target.value)
-              }
-              inputProps={{ min: 0 }}
-              fullWidth
-            />
+                {invalidPriceRange && (
+                  <Typography
+                    color="error"
+                    variant="caption"
+                    display="block"
+                    mt={0.5}
+                    fontSize={10}
+                  >
+                    Min price cannot exceed Max price.
+                  </Typography>
+                )}
+              </Box>
+            </Box>
           </Box>
-
-          {invalidPriceRange && (
-            <Typography
-              color="error"
-              variant="caption"
-              display="block"
-              mt={1}
-            >
-              Minimum price cannot be greater than maximum price.
-            </Typography>
-          )}
-
-          <Typography
-            sx={{
-              mt: 1.5,
-              fontSize: {
-                xs: 11,
-                sm: 12,
-              },
-              color: "text.secondary",
-            }}
-          >
-            Showing {filteredProducts.length}{" "}
-            {filteredProducts.length === 1
-              ? "product"
-              : "products"}
-          </Typography>
-        </Box>
+        </Collapse>
 
         {/* LOADING */}
-
         {loading && (
           <Box
             sx={{
@@ -795,7 +728,6 @@ const Products = () => {
         )}
 
         {/* PRODUCT ERROR */}
-
         {!loading && error && (
           <Alert severity="error" sx={{ mb: 1.5 }}>
             {error}
@@ -803,7 +735,6 @@ const Products = () => {
         )}
 
         {/* EMPTY RESULTS */}
-
         {!loading &&
           !error &&
           !invalidPriceRange &&
@@ -823,25 +754,11 @@ const Products = () => {
                 boxSizing: "border-box",
               }}
             >
-              <Typography
-                sx={{
-                  fontSize: {
-                    xs: 12,
-                    sm: 14,
-                  },
-                  fontWeight: 600,
-                }}
-              >
+              <Typography sx={{ fontSize: { xs: 12, sm: 14 }, fontWeight: 600 }}>
                 No products found.
               </Typography>
 
-              <Typography
-                sx={{
-                  mt: 0.5,
-                  color: "text.secondary",
-                  fontSize: 12,
-                }}
-              >
+              <Typography sx={{ mt: 0.5, color: "text.secondary", fontSize: 12 }}>
                 Try changing your search or filters.
               </Typography>
 
@@ -849,10 +766,7 @@ const Products = () => {
                 <Button
                   onClick={clearFilters}
                   color="success"
-                  sx={{
-                    mt: 1,
-                    textTransform: "none",
-                  }}
+                  sx={{ mt: 1, textTransform: "none" }}
                 >
                   Clear All Filters
                 </Button>
@@ -861,7 +775,6 @@ const Products = () => {
           )}
 
         {/* PRODUCT GRID */}
-
         {!loading &&
           !error &&
           !invalidPriceRange &&
@@ -873,27 +786,16 @@ const Products = () => {
                 maxWidth: "100%",
                 minWidth: 0,
                 boxSizing: "border-box",
-                gridTemplateColumns:
-                  "repeat(5, minmax(0, 1fr))",
-                gap: {
-                  xs: "8px",
-                  sm: "10px",
-                  md: "14px",
-                },
-
+                gridTemplateColumns: "repeat(5, minmax(0, 1fr))",
+                gap: { xs: "8px", sm: "10px", md: "14px" },
                 "@media (max-width: 1200px)": {
-                  gridTemplateColumns:
-                    "repeat(4, minmax(0, 1fr))",
+                  gridTemplateColumns: "repeat(4, minmax(0, 1fr))",
                 },
-
                 "@media (max-width: 900px)": {
-                  gridTemplateColumns:
-                    "repeat(3, minmax(0, 1fr))",
+                  gridTemplateColumns: "repeat(3, minmax(0, 1fr))",
                 },
-
                 "@media (max-width: 600px)": {
-                  gridTemplateColumns:
-                    "repeat(2, minmax(0, 1fr))",
+                  gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
                   gap: "8px",
                 },
               }}
@@ -925,7 +827,6 @@ const Products = () => {
                     }}
                   >
                     {/* PRODUCT IMAGE */}
-
                     <Box
                       sx={{
                         width: "100%",
@@ -941,8 +842,7 @@ const Products = () => {
                         alt={product.productName || "Product"}
                         onError={(event) => {
                           event.currentTarget.onerror = null;
-                          event.currentTarget.src =
-                            "/images/no-image.png";
+                          event.currentTarget.src = "/images/no-image.png";
                         }}
                         sx={{
                           width: "100%",
@@ -954,59 +854,30 @@ const Products = () => {
                     </Box>
 
                     {/* PRODUCT INFORMATION */}
-
                     <CardContent
                       sx={{
                         flexGrow: 1,
                         minWidth: 0,
-                        p: {
-                          xs: "7px",
-                          sm: "9px",
-                          md: "11px",
-                        },
+                        p: { xs: "7px", sm: "9px", md: "11px" },
                         "&:last-child": {
-                          pb: {
-                            xs: "7px",
-                            sm: "9px",
-                            md: "11px",
-                          },
+                          pb: { xs: "7px", sm: "9px", md: "11px" },
                         },
                       }}
                     >
-                      <Box
-                        sx={{
-                          mb: {
-                            xs: 0.4,
-                            sm: 0.6,
-                          },
-                          maxWidth: "100%",
-                        }}
-                      >
+                      <Box sx={{ mb: { xs: 0.4, sm: 0.6 }, maxWidth: "100%" }}>
                         <Chip
-                          label={
-                            getCategoryName(product.category) ||
-                            "Product"
-                          }
+                          label={getCategoryName(product.category) || "Product"}
                           color="success"
                           size="small"
                           sx={{
                             maxWidth: "100%",
-                            height: {
-                              xs: "19px",
-                              sm: "21px",
-                            },
-                            fontSize: {
-                              xs: "8px",
-                              sm: "9px",
-                            },
+                            height: { xs: "19px", sm: "21px" },
+                            fontSize: { xs: "8px", sm: "9px" },
                             "& .MuiChip-label": {
                               overflow: "hidden",
                               textOverflow: "ellipsis",
                               whiteSpace: "nowrap",
-                              px: {
-                                xs: 0.6,
-                                sm: 0.8,
-                              },
+                              px: { xs: 0.6, sm: 0.8 },
                             },
                           }}
                         />
@@ -1014,22 +885,14 @@ const Products = () => {
 
                       <Typography
                         sx={{
-                          fontSize: {
-                            xs: "11px",
-                            sm: "12px",
-                            md: "14px",
-                          },
+                          fontSize: { xs: "11px", sm: "12px", md: "14px" },
                           lineHeight: 1.3,
                           fontWeight: 700,
                           display: "-webkit-box",
                           WebkitLineClamp: 2,
                           WebkitBoxOrient: "vertical",
                           overflow: "hidden",
-                          minHeight: {
-                            xs: "29px",
-                            sm: "32px",
-                            md: "36px",
-                          },
+                          minHeight: { xs: "29px", sm: "32px", md: "36px" },
                         }}
                       >
                         {product.productName || "Unnamed product"}
@@ -1039,10 +902,7 @@ const Products = () => {
                         <Typography
                           sx={{
                             mt: "3px",
-                            fontSize: {
-                              xs: "9px",
-                              sm: "10px",
-                            },
+                            fontSize: { xs: "9px", sm: "10px" },
                             lineHeight: 1.3,
                             color: "text.secondary",
                             overflow: "hidden",
@@ -1056,77 +916,42 @@ const Products = () => {
 
                       <Typography
                         sx={{
-                          mt: {
-                            xs: "4px",
-                            sm: "5px",
-                          },
-                          fontSize: {
-                            xs: "8px",
-                            sm: "9px",
-                            md: "11px",
-                          },
+                          mt: { xs: "4px", sm: "5px" },
+                          fontSize: { xs: "8px", sm: "9px", md: "11px" },
                           lineHeight: 1.35,
                           color: "text.secondary",
-                          display: {
-                            xs: "none",
-                            sm: "-webkit-box",
-                          },
+                          display: { xs: "none", sm: "-webkit-box" },
                           WebkitLineClamp: 2,
                           WebkitBoxOrient: "vertical",
                           overflow: "hidden",
                         }}
                       >
-                        {product.description ||
-                          "No description available."}
+                        {product.description || "No description available."}
                       </Typography>
 
                       <Typography
                         sx={{
-                          mt: {
-                            xs: "6px",
-                            sm: "7px",
-                          },
-                          fontSize: {
-                            xs: "13px",
-                            sm: "15px",
-                            md: "17px",
-                          },
+                          mt: { xs: "6px", sm: "7px" },
+                          fontSize: { xs: "13px", sm: "15px", md: "17px" },
                           lineHeight: 1.2,
                           color: "success.main",
                           fontWeight: 800,
                         }}
                       >
-                        ₹
-                        {Number(
-                          product.price || 0
-                        ).toLocaleString("en-IN")}
+                        ₹{Number(product.price || 0).toLocaleString("en-IN")}
                       </Typography>
                     </CardContent>
 
                     {/* PRODUCT ACTIONS */}
-
                     <Box
                       sx={{
                         width: "100%",
-                        px: {
-                          xs: "7px",
-                          sm: "9px",
-                          md: "11px",
-                        },
-                        pb: {
-                          xs: "7px",
-                          sm: "9px",
-                          md: "11px",
-                        },
+                        px: { xs: "7px", sm: "9px", md: "11px" },
+                        pb: { xs: "7px", sm: "9px", md: "11px" },
                         boxSizing: "border-box",
                       }}
                     >
-                      <Stack
-                        spacing={{
-                          xs: 0.6,
-                          sm: 0.75,
-                        }}
-                      >
+                      <Stack spacing={{ xs: 0.6, sm: 0.75 }}>
                         <Button
                           component={Link}
                           to={`/products/${product._id}`}
@@ -1134,19 +959,10 @@ const Products = () => {
                           color="success"
                           fullWidth
                           sx={{
-                            minHeight: {
-                              xs: "28px",
-                              sm: "32px",
-                            },
-                            p: {
-                              xs: "2px 4px",
-                              sm: "4px 6px",
-                            },
+                            minHeight: { xs: "28px", sm: "32px" },
+                            p: { xs: "2px 4px", sm: "4px 6px" },
                             textTransform: "none",
-                            fontSize: {
-                              xs: "9px",
-                              sm: "10px",
-                            },
+                            fontSize: { xs: "9px", sm: "10px" },
                             lineHeight: 1.2,
                             boxShadow: "none",
                           }}
@@ -1158,28 +974,15 @@ const Products = () => {
                           variant="contained"
                           color="success"
                           fullWidth
-                          onClick={() =>
-                            handleAddToCart(product)
-                          }
+                          onClick={() => handleAddToCart(product)}
                           sx={{
-                            minHeight: {
-                              xs: "28px",
-                              sm: "32px",
-                            },
-                            p: {
-                              xs: "2px 4px",
-                              sm: "4px 6px",
-                            },
+                            minHeight: { xs: "28px", sm: "32px" },
+                            p: { xs: "2px 4px", sm: "4px 6px" },
                             textTransform: "none",
-                            fontSize: {
-                              xs: "9px",
-                              sm: "10px",
-                            },
+                            fontSize: { xs: "9px", sm: "10px" },
                             lineHeight: 1.2,
                             boxShadow: "none",
-                            "&:hover": {
-                              boxShadow: "none",
-                            },
+                            "&:hover": { boxShadow: "none" },
                           }}
                         >
                           Add to Cart
@@ -1194,15 +997,11 @@ const Products = () => {
       </Box>
 
       {/* CART NOTIFICATION */}
-
       <Snackbar
         open={snackbar.open}
         autoHideDuration={3000}
         onClose={handleCloseSnackbar}
-        anchorOrigin={{
-          vertical: "bottom",
-          horizontal: "center",
-        }}
+        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
       >
         <Alert
           severity={snackbar.severity}
@@ -1210,10 +1009,7 @@ const Products = () => {
           onClose={handleCloseSnackbar}
           sx={{
             width: "100%",
-            fontSize: {
-              xs: "10px",
-              sm: "12px",
-            },
+            fontSize: { xs: "10px", sm: "12px" },
           }}
         >
           {snackbar.message}
