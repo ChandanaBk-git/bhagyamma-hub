@@ -1188,7 +1188,7 @@ const sendMobileResetOtp = async ({
 
 
     const otp =
-        generateOTP();
+        String(generateOTP()).trim();
 
 
     const otpExpires =
@@ -1199,7 +1199,7 @@ const sendMobileResetOtp = async ({
 
 
     // -------------------------------------------------
-    // CLEAR ANY OLD RESET TOKEN
+    // SAVE OTP & CLEAR ANY OLD RESET TOKEN DIRECTLY BY ID
     // -------------------------------------------------
 
     await userRepository.updateById(
@@ -1210,19 +1210,14 @@ const sendMobileResetOtp = async ({
 
             passwordResetExpires:
                 undefined,
+
+            otp,
+
+            otpExpires,
+
+            otpPurpose:
+                "FORGOT_PASSWORD",
         }
-    );
-
-
-    // -------------------------------------------------
-    // SAVE NEW OTP
-    // -------------------------------------------------
-
-    await userRepository.updateOtp(
-        cleanMobile,
-        otp,
-        otpExpires,
-        "FORGOT_PASSWORD"
     );
 
 
@@ -1324,7 +1319,7 @@ const verifyResetOtp = async ({
 
 
     if (
-        String(user.otp || "") !==
+        String(user.otp || "").trim() !==
         cleanOtp
     ) {
         throw new ApiError(
