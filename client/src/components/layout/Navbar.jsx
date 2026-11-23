@@ -177,14 +177,16 @@ const Navbar = () => {
   return (
     <>
       {/* =================================================
-          APP BAR
+          ENLARGED STICKY APP BAR
       ================================================= */}
 
       <AppBar
         position="sticky"
         elevation={0}
         sx={{
-          bgcolor: "rgba(255,255,255,0.96)",
+          top: 0,
+          zIndex: 1200,
+          bgcolor: "rgba(255,255,255,0.97)",
           backdropFilter: "blur(14px)",
           borderBottom:
             "1px solid rgba(0,0,0,0.08)",
@@ -196,14 +198,19 @@ const Navbar = () => {
             disableGutters
             sx={{
               minHeight: {
-                xs: 64,
-                sm: 68,
-                md: 72,
+                xs: 78,
+                sm: 84,
+                md: 92,
+              },
+
+              py: {
+                xs: 0.75,
+                md: 1,
               },
 
               px: {
                 xs: 1,
-                sm: 1,
+                sm: 1.5,
                 md: 2,
               },
 
@@ -229,20 +236,20 @@ const Navbar = () => {
 
                 mr: 0.5,
 
-                width: 44,
-                height: 44,
+                width: 48,
+                height: 48,
               }}
             >
               {mobileOpen ? (
-                <CloseIcon />
+                <CloseIcon sx={{ fontSize: 28 }} />
               ) : (
-                <MenuIcon />
+                <MenuIcon sx={{ fontSize: 28 }} />
               )}
             </IconButton>
 
 
             {/* =================================================
-                BRAND LOGO
+                ENLARGED BRAND LOGO
             ================================================= */}
 
             <Box
@@ -280,15 +287,15 @@ const Navbar = () => {
                 alt="Bhagyamma Hub"
                 sx={{
                   width: {
-                    xs: 48,
-                    sm: 54,
-                    md: 64,
+                    xs: 60,
+                    sm: 68,
+                    md: 78,
                   },
 
                   height: {
-                    xs: 48,
-                    sm: 54,
-                    md: 64,
+                    xs: 60,
+                    sm: 68,
+                    md: 78,
                   },
 
                   objectFit: "contain",
@@ -309,7 +316,7 @@ const Navbar = () => {
                   md: "flex",
                 },
 
-                gap: 0.5,
+                gap: 0.75,
 
                 alignItems: "center",
 
@@ -325,14 +332,15 @@ const Navbar = () => {
                   sx={{
                     color: "#333",
 
-                    px: 1.25,
-                    py: 0.7,
+                    px: 1.5,
+                    py: 0.9,
 
                     borderRadius: 0,
 
                     textTransform: "none",
 
                     fontWeight: 600,
+                    fontSize: "0.95rem",
 
                     "&.active": {
                       color: "#fff",
@@ -360,14 +368,15 @@ const Navbar = () => {
                 sx={{
                   color: "#333",
 
-                  px: 1.25,
-                  py: 0.7,
+                  px: 1.5,
+                  py: 0.9,
 
                   borderRadius: 0,
 
                   textTransform: "none",
 
                   fontWeight: 600,
+                  fontSize: "0.95rem",
 
                   "&.active": {
                     color: "#fff",
@@ -394,14 +403,15 @@ const Navbar = () => {
                 sx={{
                   color: "#333",
 
-                  px: 1.25,
-                  py: 0.7,
+                  px: 1.5,
+                  py: 0.9,
 
                   borderRadius: 0,
 
                   textTransform: "none",
 
                   fontWeight: 600,
+                  fontSize: "0.95rem",
 
                   "&.active": {
                     color: "#fff",
@@ -433,9 +443,11 @@ const Navbar = () => {
 
                       borderRadius: 0,
 
-                      height: 34,
+                      height: 38,
+                      px: 2,
 
                       fontWeight: 700,
+                      fontSize: "0.92rem",
                     }}
                   >
                     Login
@@ -451,9 +463,11 @@ const Navbar = () => {
 
                       borderRadius: 0,
 
-                      height: 34,
+                      height: 38,
+                      px: 2,
 
                       fontWeight: 700,
+                      fontSize: "0.92rem",
                     }}
                   >
                     Register
@@ -481,9 +495,11 @@ const Navbar = () => {
 
                       borderRadius: 0,
 
-                      height: 34,
+                      height: 38,
+                      px: 2,
 
                       fontWeight: 700,
+                      fontSize: "0.92rem",
                     }}
                   >
                     Profile
@@ -501,9 +517,11 @@ const Navbar = () => {
 
                       borderRadius: 0,
 
-                      height: 34,
+                      height: 38,
+                      px: 2,
 
                       fontWeight: 700,
+                      fontSize: "0.92rem",
                     }}
                   >
                     Logout
@@ -535,8 +553,8 @@ const Navbar = () => {
                 sx={{
                   color: "#2E7D32",
 
-                  width: 44,
-                  height: 44,
+                  width: 48,
+                  height: 48,
 
                   "&:hover": {
                     bgcolor: "#E8F5E9",
@@ -550,7 +568,7 @@ const Navbar = () => {
                 >
                   <ShoppingCartOutlined
                     sx={{
-                      fontSize: 27,
+                      fontSize: 29,
                     }}
                   />
                 </Badge>
@@ -569,8 +587,8 @@ const Navbar = () => {
       <Box
         sx={{
           height: {
-            xs: 22,
-            md: 24,
+            xs: 28,
+            md: 32,
           },
 
           display: "flex",
@@ -591,16 +609,16 @@ const Navbar = () => {
         <Typography
           sx={{
             fontSize: {
-              xs: "0.5rem",
-              sm: "0.55rem",
-              md: "0.6rem",
+              xs: "0.58rem",
+              sm: "0.64rem",
+              md: "0.7rem",
             },
 
             fontWeight: 700,
 
             letterSpacing: {
-              xs: 0.6,
-              md: 1,
+              xs: 0.8,
+              md: 1.2,
             },
 
             whiteSpace: "nowrap",
@@ -626,11 +644,11 @@ const Navbar = () => {
         }}
         sx={{
           "& .MuiDrawer-paper": {
-            width: "40vw",
+            width: "55vw",
 
-            minWidth: "40vw",
+            minWidth: 210,
 
-            maxWidth: "40vw",
+            maxWidth: 280,
 
             borderRadius: 0,
 
@@ -649,7 +667,7 @@ const Navbar = () => {
 
           <Box
             sx={{
-              minHeight: 64,
+              minHeight: 78,
 
               px: 1,
 
@@ -671,8 +689,8 @@ const Navbar = () => {
               src={logo}
               alt="Bhagyamma Hub"
               sx={{
-                width: 42,
-                height: 42,
+                width: 54,
+                height: 54,
                 objectFit: "contain",
                 display: "block",
               }}
@@ -701,9 +719,9 @@ const Navbar = () => {
                   to={item.path}
                   onClick={closeDrawer}
                   sx={{
-                    minHeight: 42,
-                    px: 1,
-                    py: 0.4,
+                    minHeight: 44,
+                    px: 1.5,
+                    py: 0.5,
                     borderRadius: 0,
                     overflow: "hidden",
                     "&.active": {
@@ -730,9 +748,9 @@ const Navbar = () => {
               <ListItemButton
                 onClick={handleCartClick}
                 sx={{
-                  minHeight: 42,
-                  px: 1,
-                  py: 0.4,
+                  minHeight: 44,
+                  px: 1.5,
+                  py: 0.5,
                   borderRadius: 0,
                   "&:hover": {
                     bgcolor: "#F5F9F5",
@@ -761,9 +779,9 @@ const Navbar = () => {
                 to="/orders"
                 onClick={closeDrawer}
                 sx={{
-                  minHeight: 42,
-                  px: 1,
-                  py: 0.4,
+                  minHeight: 44,
+                  px: 1.5,
+                  py: 0.5,
                   borderRadius: 0,
                   "&.active": {
                     bgcolor: "#E8F5E9",
@@ -802,9 +820,9 @@ const Navbar = () => {
                     to="/login"
                     onClick={closeDrawer}
                     sx={{
-                      minHeight: 42,
-                      px: 1,
-                      py: 0.4,
+                      minHeight: 44,
+                      px: 1.5,
+                      py: 0.5,
                       borderRadius: 0,
                       "&.active": {
                         bgcolor: "#E8F5E9",
@@ -828,9 +846,9 @@ const Navbar = () => {
                     to="/register"
                     onClick={closeDrawer}
                     sx={{
-                      minHeight: 42,
-                      px: 1,
-                      py: 0.4,
+                      minHeight: 44,
+                      px: 1.5,
+                      py: 0.5,
                       borderRadius: 0,
                       "&.active": {
                         bgcolor: "#E8F5E9",
@@ -861,9 +879,9 @@ const Navbar = () => {
                     to={profilePath}
                     onClick={closeDrawer}
                     sx={{
-                      minHeight: 42,
-                      px: 1,
-                      py: 0.4,
+                      minHeight: 44,
+                      px: 1.5,
+                      py: 0.5,
                       borderRadius: 0,
                       "&.active": {
                         bgcolor: "#E8F5E9",
@@ -892,9 +910,9 @@ const Navbar = () => {
                   <ListItemButton
                     onClick={handleLogout}
                     sx={{
-                      minHeight: 42,
-                      px: 1,
-                      py: 0.4,
+                      minHeight: 44,
+                      px: 1.5,
+                      py: 0.5,
                       borderRadius: 0,
                       "&:hover": {
                         bgcolor: "#F5F9F5",

@@ -179,15 +179,20 @@ const TopNavbar = ({
       <Toolbar
         sx={{
           minHeight: {
-            xs: 60,
-            sm: 64,
-            md: 68,
+            xs: 74,
+            sm: 80,
+            md: 86,
+          },
+
+          py: {
+            xs: 0.75,
+            md: 1,
           },
 
           px: {
-            xs: 1,
-            sm: 2,
-            md: 3,
+            xs: 1.5,
+            sm: 2.5,
+            md: 3.5,
           },
 
           display: "flex",
@@ -238,9 +243,9 @@ const TopNavbar = ({
               }}
             >
               {collapsed ? (
-                <MenuRounded />
+                <MenuRounded sx={{ fontSize: 26 }} />
               ) : (
-                <MenuOpenRounded />
+                <MenuOpenRounded sx={{ fontSize: 26 }} />
               )}
             </IconButton>
           </Tooltip>
@@ -251,7 +256,7 @@ const TopNavbar = ({
           <Box
             sx={{
               ml: {
-                xs: 0.5,
+                xs: 0.75,
                 sm: 1.5,
               },
 
@@ -261,9 +266,9 @@ const TopNavbar = ({
             <Typography
               sx={{
                 fontSize: {
-                  xs: 15,
-                  sm: 17,
-                  md: 19,
+                  xs: 17,
+                  sm: 20,
+                  md: 22,
                 },
 
                 fontWeight: 800,
@@ -284,15 +289,15 @@ const TopNavbar = ({
             <Typography
               sx={{
                 fontSize: {
-                  xs: 10,
-                  sm: 11,
-                  md: 12,
+                  xs: 11,
+                  sm: 12,
+                  md: 13,
                 },
 
                 color:
                   "text.secondary",
 
-                mt: 0.2,
+                mt: 0.25,
 
                 whiteSpace:
                   "nowrap",
@@ -316,9 +321,9 @@ const TopNavbar = ({
             alignItems: "center",
 
             gap: {
-              xs: 0.5,
-              sm: 1,
-              md: 1.5,
+              xs: 0.75,
+              sm: 1.25,
+              md: 1.75,
             },
 
             flexShrink: 0,
@@ -351,7 +356,7 @@ const TopNavbar = ({
             >
               <span
                 style={{
-                  fontSize: 14,
+                  fontSize: 15,
                   fontWeight: 600,
                 }}
               >
@@ -375,6 +380,9 @@ const TopNavbar = ({
 
                 color:
                   "#475569",
+
+                width: 42,
+                height: 42,
 
                 "&:hover": {
                   bgcolor:
@@ -410,11 +418,11 @@ const TopNavbar = ({
               borderRadius: 2,
 
               px: {
-                xs: 0.4,
-                sm: 0.8,
+                xs: 0.5,
+                sm: 1,
               },
 
-              py: 0.5,
+              py: 0.6,
 
               transition:
                 "background-color 0.2s ease",
@@ -431,15 +439,15 @@ const TopNavbar = ({
             <Avatar
               sx={{
                 width: {
-                  xs: 34,
-                  sm: 40,
-                  md: 42,
+                  xs: 38,
+                  sm: 44,
+                  md: 46,
                 },
 
                 height: {
-                  xs: 34,
-                  sm: 40,
-                  md: 42,
+                  xs: 38,
+                  sm: 44,
+                  md: 46,
                 },
 
                 bgcolor:
@@ -457,8 +465,8 @@ const TopNavbar = ({
                 fontWeight: 800,
 
                 fontSize: {
-                  xs: 14,
-                  sm: 16,
+                  xs: 15,
+                  sm: 17,
                 },
               }}
             >
@@ -484,8 +492,8 @@ const TopNavbar = ({
                 minWidth: 0,
 
                 maxWidth: {
-                  sm: 120,
-                  md: 180,
+                  sm: 130,
+                  md: 190,
                 },
               }}
             >
@@ -493,8 +501,8 @@ const TopNavbar = ({
               <Typography
                 fontWeight={700}
                 fontSize={{
-                  sm: 12,
-                  md: 14,
+                  sm: 13,
+                  md: 15,
                 }}
                 noWrap
                 sx={{
@@ -510,8 +518,8 @@ const TopNavbar = ({
                 color="text.secondary"
                 sx={{
                   fontSize: {
-                    sm: 9,
-                    md: 10,
+                    sm: 10,
+                    md: 11,
                   },
 
                   lineHeight: 1.2,

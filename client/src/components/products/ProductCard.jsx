@@ -29,12 +29,16 @@ const ProductCard = ({ product }) => {
   });
 
   const image = getImageUrl(product?.images?.[0]);
+  const productUrl = `/products/${product?._id}`;
 
   // =====================================================
   // ADD TO CART
   // =====================================================
 
-  const handleAddToCart = async () => {
+  const handleAddToCart = async (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+
     try {
       const result = await addToCart(product, 1);
 
@@ -99,10 +103,12 @@ const ProductCard = ({ product }) => {
         }}
       >
         {/* =====================================================
-            IMAGE
+            CLICKABLE IMAGE
         ===================================================== */}
 
         <Box
+          component={Link}
+          to={productUrl}
           sx={{
             position: "relative",
             width: "100%",
@@ -116,8 +122,15 @@ const ProductCard = ({ product }) => {
             bgcolor: "#F7F8F7",
             overflow: "hidden",
             flexShrink: 0,
+            display: "block",
+            cursor: "pointer",
+            textDecoration: "none",
 
             borderBottom: "1px solid #E5E9E6",
+
+            "&:hover img": {
+              transform: "scale(1.04)",
+            },
           }}
         >
           <CardMedia
@@ -136,6 +149,7 @@ const ProductCard = ({ product }) => {
               },
 
               display: "block",
+              transition: "transform 0.25s ease",
             }}
           />
 
@@ -185,16 +199,21 @@ const ProductCard = ({ product }) => {
         </Box>
 
         {/* =====================================================
-            CONTENT
+            CONTENT (CLICKABLE TITLE & DETAILS)
         ===================================================== */}
 
         <CardContent
+          component={Link}
+          to={productUrl}
           sx={{
             flex: 1,
             minWidth: 0,
 
             display: "flex",
             flexDirection: "column",
+            textDecoration: "none",
+            color: "inherit",
+            cursor: "pointer",
 
             p: {
               xs: 0.9,
@@ -209,17 +228,23 @@ const ProductCard = ({ product }) => {
                 md: 1.4,
               },
             },
+
+            "&:hover .product-title": {
+              color: "#1B5E20",
+            },
           }}
         >
           {/* PRODUCT NAME */}
 
           <Typography
+            className="product-title"
             component="h2"
             sx={{
               minWidth: 0,
 
               fontWeight: 700,
               color: "#222",
+              transition: "color 0.2s ease",
 
               fontSize: {
                 xs: "0.66rem",
@@ -369,7 +394,7 @@ const ProductCard = ({ product }) => {
 
             <Button
               component={Link}
-              to={`/products/${product?._id}`}
+              to={productUrl}
               variant="contained"
               disableElevation
               startIcon={
@@ -530,6 +555,10 @@ const ProductCard = ({ product }) => {
           vertical: "top",
           horizontal: "center",
         }}
+        sx={{
+          zIndex: 2000,
+          mt: { xs: 1, sm: 2 },
+        }}
       >
         <Alert
           severity={snackbar.severity}
@@ -542,13 +571,15 @@ const ProductCard = ({ product }) => {
           }
           sx={{
             width: "100%",
-
             borderRadius: 0,
-
+            bgcolor: snackbar.severity === "success" ? "#1B5E20" : undefined,
+            color: "#FFFFFF",
+            fontWeight: 600,
             fontSize: {
-              xs: "0.62rem",
-              sm: "0.72rem",
+              xs: "0.72rem",
+              sm: "0.8rem",
             },
+            boxShadow: "0 4px 16px rgba(0,0,0,0.22)",
           }}
         >
           {snackbar.message}

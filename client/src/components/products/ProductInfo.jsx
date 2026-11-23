@@ -337,7 +337,7 @@ const ProductInfo = ({ product }) => {
         </Box>
       </Stack>
 
-      {/* SNACKBAR */}
+      {/* SNACKBAR - TOP CENTER SO IT IS NEVER CLIPPED AT THE BOTTOM */}
       <Snackbar
         open={snackbar.open}
         autoHideDuration={3000}
@@ -348,8 +348,12 @@ const ProductInfo = ({ product }) => {
           }))
         }
         anchorOrigin={{
-          vertical: "bottom",
+          vertical: "top",
           horizontal: "center",
+        }}
+        sx={{
+          zIndex: 2000,
+          mt: { xs: 1, sm: 2 },
         }}
       >
         <Alert
@@ -363,7 +367,12 @@ const ProductInfo = ({ product }) => {
           }
           sx={{
             width: "100%",
-            fontSize: { xs: "0.7rem", sm: "0.78rem" },
+            borderRadius: 0,
+            bgcolor: snackbar.severity === "success" ? "#1B5E20" : undefined,
+            color: "#FFFFFF",
+            fontWeight: 600,
+            fontSize: { xs: "0.75rem", sm: "0.82rem" },
+            boxShadow: "0 4px 16px rgba(0,0,0,0.22)",
           }}
         >
           {snackbar.message}
