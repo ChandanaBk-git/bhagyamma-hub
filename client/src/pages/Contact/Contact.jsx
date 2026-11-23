@@ -9,6 +9,7 @@ import {
   Button,
   Alert,
   Snackbar,
+  Stack,
 } from "@mui/material";
 import API from "../../api";
 import { useState } from "react";
@@ -18,7 +19,12 @@ import {
   Email,
   Phone,
   LocationOn,
+  WhatsApp,
+  Call,
 } from "@mui/icons-material";
+
+const WHATSAPP_NUMBER = "919019174672";
+const CALL_NUMBER = "+919019174672";
 
 const Contact = () => {
   const [form, setForm] = useState({
@@ -40,29 +46,54 @@ const Contact = () => {
     setForm((previous) => ({ ...previous, [name]: value }));
   };
 
+  const buildWhatsAppUrl = (data) => {
+    const lines = [
+      "Hello Bhagyamma Hub,",
+      data.name?.trim() ? `*Name:* ${data.name.trim()}` : null,
+      data.email?.trim() ? `*Email:* ${data.email.trim()}` : null,
+      data.subject?.trim() ? `*Subject:* ${data.subject.trim()}` : null,
+      data.message?.trim() ? `*Message:*\n${data.message.trim()}` : null,
+    ].filter(Boolean);
+
+    const text =
+      lines.length > 1
+        ? lines.join("\n")
+        : "Hello Bhagyamma Hub! I would like to enquire about your products.";
+
+    return `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(text)}`;
+  };
+
   const handleSubmit = async (event) => {
     event.preventDefault();
     if (loading) return;
 
-    setLoading(true);
-    try {
-      const response = await API.post("/contact", form);
-      setNotice({
-        open: true,
-        type: "success",
-        message: response.data?.message || "Your message has been sent successfully.",
-      });
-      setForm({ name: "", email: "", subject: "", message: "" });
-    } catch (error) {
+    if (!form.message.trim()) {
       setNotice({
         open: true,
         type: "error",
-        message:
-          error.response?.data?.message ||
-          "Unable to send your message right now. Please try again.",
+        message: "Please enter your message before sending.",
       });
+      return;
+    }
+
+    const whatsappUrl = buildWhatsAppUrl(form);
+
+    // Open WhatsApp immediately with the typed message
+    window.open(whatsappUrl, "_blank", "noopener,noreferrer");
+
+    setLoading(true);
+    try {
+      await API.post("/contact", form);
+    } catch (error) {
+      console.error("Contact API log error:", error);
     } finally {
       setLoading(false);
+      setNotice({
+        open: true,
+        type: "success",
+        message: "Redirecting to WhatsApp with your message.",
+      });
+      setForm({ name: "", email: "", subject: "", message: "" });
     }
   };
 
@@ -297,7 +328,10 @@ const Contact = () => {
                     </Typography>
 
                     <Typography
+                      component="a"
+                      href="mailto:bhagyammahub@gmail.com"
                       sx={{
+                        display: "block",
                         color: "#777",
                         fontSize: {
                           xs: "0.58rem",
@@ -307,6 +341,7 @@ const Contact = () => {
                         overflow: "hidden",
                         textOverflow: "ellipsis",
                         whiteSpace: "nowrap",
+                        "&:hover": { color: "#1B5E20" },
                       }}
                     >
                       bhagyammahub@gmail.com
@@ -350,12 +385,16 @@ const Contact = () => {
                     </Typography>
 
                     <Typography
+                      component="a"
+                      href={`tel:${CALL_NUMBER}`}
                       sx={{
+                        display: "block",
                         color: "#777",
                         fontSize: {
                           xs: "0.58rem",
                           sm: "0.66rem",
                         },
+                        "&:hover": { color: "#1B5E20" },
                       }}
                     >
                       +91 90191 74672
@@ -410,6 +449,75 @@ const Contact = () => {
                       Gadag, Karnataka, India
                     </Typography>
                   </Box>
+                </Box>
+
+                {/* CALL NOW + WHATSAPP BUTTONS */}
+
+                <Box
+                  sx={{
+                    mt: 2.2,
+                    display: "grid",
+                    gridTemplateColumns: "1fr 1fr",
+                    gap: 1,
+                  }}
+                >
+                  <Button
+                    component="a"
+                    href={`tel:${CALL_NUMBER}`}
+                    variant="contained"
+                    disableElevation
+                    startIcon={<Call sx={{ fontSize: 16 }} />}
+                    sx={{
+                      height: {
+                        xs: 34,
+                        sm: 36,
+                      },
+                      borderRadius: 0,
+                      bgcolor: "#1B5E20",
+                      color: "#fff",
+                      textTransform: "none",
+                      fontWeight: 700,
+                      fontSize: {
+                        xs: "0.62rem",
+                        sm: "0.72rem",
+                      },
+                      "&:hover": {
+                        bgcolor: "#154A19",
+                      },
+                    }}
+                  >
+                    Call Now
+                  </Button>
+
+                  <Button
+                    component="a"
+                    href={buildWhatsAppUrl({})}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    variant="contained"
+                    disableElevation
+                    startIcon={<WhatsApp sx={{ fontSize: 16 }} />}
+                    sx={{
+                      height: {
+                        xs: 34,
+                        sm: 36,
+                      },
+                      borderRadius: 0,
+                      bgcolor: "#25D366",
+                      color: "#fff",
+                      textTransform: "none",
+                      fontWeight: 700,
+                      fontSize: {
+                        xs: "0.62rem",
+                        sm: "0.72rem",
+                      },
+                      "&:hover": {
+                        bgcolor: "#1EBE5D",
+                      },
+                    }}
+                  >
+                    WhatsApp
+                  </Button>
                 </Box>
               </CardContent>
             </Card>
@@ -470,172 +578,173 @@ const Contact = () => {
                 </Typography>
 
                 <Box component="form" onSubmit={handleSubmit} noValidate>
-                {/* NAME */}
+                  {/* NAME */}
 
-                <TextField
-                  fullWidth
-                  size="small"
-                  label="Full Name"
-                  name="name"
-                  value={form.name}
-                  onChange={handleChange}
-                  required
-                  inputProps={{ maxLength: 100 }}
-                  margin="dense"
-                  sx={{
-                    mt: 0.8,
+                  <TextField
+                    fullWidth
+                    size="small"
+                    label="Full Name"
+                    name="name"
+                    value={form.name}
+                    onChange={handleChange}
+                    required
+                    inputProps={{ maxLength: 100 }}
+                    margin="dense"
+                    sx={{
+                      mt: 0.8,
 
-                    "& .MuiInputBase-root": {
-                      borderRadius: 0,
-                      fontSize: {
-                        xs: "0.62rem",
-                        sm: "0.7rem",
+                      "& .MuiInputBase-root": {
+                        borderRadius: 0,
+                        fontSize: {
+                          xs: "0.62rem",
+                          sm: "0.7rem",
+                        },
                       },
-                    },
 
-                    "& .MuiInputLabel-root": {
-                      fontSize: {
-                        xs: "0.62rem",
-                        sm: "0.7rem",
+                      "& .MuiInputLabel-root": {
+                        fontSize: {
+                          xs: "0.62rem",
+                          sm: "0.7rem",
+                        },
                       },
-                    },
-                  }}
-                />
+                    }}
+                  />
 
-                {/* EMAIL */}
+                  {/* EMAIL */}
 
-                <TextField
-                  fullWidth
-                  size="small"
-                  label="Email Address"
-                  type="email"
-                  name="email"
-                  value={form.email}
-                  onChange={handleChange}
-                  required
-                  inputProps={{ maxLength: 254 }}
-                  margin="dense"
-                  sx={{
-                    "& .MuiInputBase-root": {
-                      borderRadius: 0,
-                      fontSize: {
-                        xs: "0.62rem",
-                        sm: "0.7rem",
+                  <TextField
+                    fullWidth
+                    size="small"
+                    label="Email Address"
+                    type="email"
+                    name="email"
+                    value={form.email}
+                    onChange={handleChange}
+                    required
+                    inputProps={{ maxLength: 254 }}
+                    margin="dense"
+                    sx={{
+                      "& .MuiInputBase-root": {
+                        borderRadius: 0,
+                        fontSize: {
+                          xs: "0.62rem",
+                          sm: "0.7rem",
+                        },
                       },
-                    },
 
-                    "& .MuiInputLabel-root": {
-                      fontSize: {
-                        xs: "0.62rem",
-                        sm: "0.7rem",
+                      "& .MuiInputLabel-root": {
+                        fontSize: {
+                          xs: "0.62rem",
+                          sm: "0.7rem",
+                        },
                       },
-                    },
-                  }}
-                />
+                    }}
+                  />
 
-                {/* SUBJECT */}
+                  {/* SUBJECT */}
 
-                <TextField
-                  fullWidth
-                  size="small"
-                  label="Subject"
-                  name="subject"
-                  value={form.subject}
-                  onChange={handleChange}
-                  required
-                  inputProps={{ maxLength: 200 }}
-                  margin="dense"
-                  sx={{
-                    "& .MuiInputBase-root": {
-                      borderRadius: 0,
-                      fontSize: {
-                        xs: "0.62rem",
-                        sm: "0.7rem",
+                  <TextField
+                    fullWidth
+                    size="small"
+                    label="Subject"
+                    name="subject"
+                    value={form.subject}
+                    onChange={handleChange}
+                    required
+                    inputProps={{ maxLength: 200 }}
+                    margin="dense"
+                    sx={{
+                      "& .MuiInputBase-root": {
+                        borderRadius: 0,
+                        fontSize: {
+                          xs: "0.62rem",
+                          sm: "0.7rem",
+                        },
                       },
-                    },
 
-                    "& .MuiInputLabel-root": {
-                      fontSize: {
-                        xs: "0.62rem",
-                        sm: "0.7rem",
+                      "& .MuiInputLabel-root": {
+                        fontSize: {
+                          xs: "0.62rem",
+                          sm: "0.7rem",
+                        },
                       },
-                    },
-                  }}
-                />
+                    }}
+                  />
 
-                {/* MESSAGE */}
+                  {/* MESSAGE */}
 
-                <TextField
-                  fullWidth
-                  size="small"
-                  label="Message"
-                  name="message"
-                  value={form.message}
-                  onChange={handleChange}
-                  required
-                  multiline
-                  rows={3}
-                  inputProps={{ maxLength: 5000 }}
-                  margin="dense"
-                  sx={{
-                    "& .MuiInputBase-root": {
-                      borderRadius: 0,
-                      fontSize: {
-                        xs: "0.62rem",
-                        sm: "0.7rem",
+                  <TextField
+                    fullWidth
+                    size="small"
+                    label="Message"
+                    name="message"
+                    value={form.message}
+                    onChange={handleChange}
+                    required
+                    multiline
+                    rows={3}
+                    inputProps={{ maxLength: 5000 }}
+                    margin="dense"
+                    sx={{
+                      "& .MuiInputBase-root": {
+                        borderRadius: 0,
+                        fontSize: {
+                          xs: "0.62rem",
+                          sm: "0.7rem",
+                        },
                       },
-                    },
 
-                    "& .MuiInputLabel-root": {
-                      fontSize: {
-                        xs: "0.62rem",
-                        sm: "0.7rem",
+                      "& .MuiInputLabel-root": {
+                        fontSize: {
+                          xs: "0.62rem",
+                          sm: "0.7rem",
+                        },
                       },
-                    },
-                  }}
-                />
+                    }}
+                  />
 
-                {/* SEND BUTTON */}
+                  {/* SEND VIA WHATSAPP BUTTON */}
 
-                <Button
-                  type="submit"
-                  variant="contained"
-                  disableElevation
-                  disabled={loading}
-                  sx={{
-                    mt: 1.2,
+                  <Stack direction="row" spacing={1} sx={{ mt: 1.2 }}>
+                    <Button
+                      type="submit"
+                      variant="contained"
+                      disableElevation
+                      disabled={loading}
+                      startIcon={<WhatsApp sx={{ fontSize: 16 }} />}
+                      sx={{
+                        height: {
+                          xs: 34,
+                          sm: 36,
+                        },
 
-                    height: {
-                      xs: 30,
-                      sm: 33,
-                    },
+                        px: {
+                          xs: 2,
+                          sm: 2.5,
+                        },
 
-                    px: {
-                      xs: 2,
-                      sm: 2.5,
-                    },
+                        borderRadius: 0,
 
-                    borderRadius: 0,
+                        bgcolor: "#1B5E20",
+                        color: "#fff",
 
-                    bgcolor: "#1B5E20",
-                    color: "#fff",
+                        textTransform: "none",
 
-                    textTransform: "none",
+                        fontWeight: 600,
 
-                    fontWeight: 600,
+                        fontSize: {
+                          xs: "0.62rem",
+                          sm: "0.72rem",
+                        },
 
-                    fontSize: {
-                      xs: "0.58rem",
-                      sm: "0.68rem",
-                    },
-
-                    "&:hover": {
-                      bgcolor: "#154A19",
-                    },
-                  }}
-                >
-                  {loading ? "Sending..." : "Send Message"}
-                </Button>
+                        "&:hover": {
+                          bgcolor: "#154A19",
+                        },
+                      }}
+                    >
+                      {loading ? "Opening WhatsApp..." : "Send Message on WhatsApp"}
+                    </Button>
+                  </Stack>
                 </Box>
               </CardContent>
             </Card>
@@ -645,11 +754,12 @@ const Contact = () => {
 
       <Snackbar
         open={notice.open}
-        autoHideDuration={5000}
+        autoHideDuration={4000}
         onClose={() =>
           setNotice((previous) => ({ ...previous, open: false }))
         }
-        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+        anchorOrigin={{ vertical: "top", horizontal: "center" }}
+        sx={{ zIndex: 2000 }}
       >
         <Alert
           severity={notice.type}
@@ -657,7 +767,12 @@ const Contact = () => {
           onClose={() =>
             setNotice((previous) => ({ ...previous, open: false }))
           }
-          sx={{ width: "100%" }}
+          sx={{
+            width: "100%",
+            borderRadius: 0,
+            color: "#fff",
+            fontWeight: 600,
+          }}
         >
           {notice.message}
         </Alert>
